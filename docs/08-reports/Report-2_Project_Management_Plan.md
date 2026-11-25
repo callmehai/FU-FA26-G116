@@ -205,6 +205,8 @@ Two properties of TrustCabinet made this the right model. First, the two feature
 
 Figure 1: Phases of the Iterative Incremental Model
 
+View the full-size image on Google Drive
+
 The project is organised into an initial planning phase, six iterations and a deployment phase. Initial planning is performed once, lasts one week and produces no increment: it sets up the environment, fixes the architecture and carries out the feasibility study on the two risky features. Iterations 1 to 6 last two weeks each and every one of them passes through the six phases of the model:
 
 ●  	Planning - set the goal of the iteration, select from Report 1, Section V.1 the features it will deliver, break them into tasks in Jira with an owner and an estimate, and allocate the work across the team using the effort actually consumed in the previous iteration.
@@ -536,6 +538,8 @@ Quality is managed on the principle that a defect is cheapest to remove in the p
 The team consists of five members working under one supervisor. The supervisor's role is academic: he guides the team and reviews its work, and does not take the Product Owner role. The Product Owner is Dinh Van Toi of TrustSoft, who decides the product requirements and their priority, confirms the acceptance criteria and accepts the product. The team leader also leads the front end; the Business Analyst owns the requirements and the project documentation; and the Backend Lead and the Test Lead own the back end and testing respectively. Because five members cannot cover fifteen active features in specialised silos, and because every iteration passes through requirements, design, implementation and testing within two weeks, each member works across more than one phase and writes code in both layers. A lead role therefore means accountability for the decisions, the review and the quality of that area, not exclusive ownership of the work in it.
 
 Figure 2: Project organisational chart
+
+View the full-size image on Google Drive
 
 | # | Member | Roles |
 | --- | --- | --- |

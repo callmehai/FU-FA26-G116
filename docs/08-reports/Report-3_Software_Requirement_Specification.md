@@ -120,7 +120,7 @@ Through these interactions, TrustCabinet acts as the central point connecting me
 
 Figure 1: Context Diagram
 
-Full-size image: https://github.com/callmehai/FU-FA26-G116/blob/app/docs/11-contextdiagram/trustcabinet-context.drawio.png
+View the full-size image on Google Drive
 
 ### 2. Main Business Flow
 
@@ -132,7 +132,7 @@ End condition: The user has a valid account with the appropriate system role and
 
 Figure 2: Business Flow BF-01 – System Access & Administration
 
-Full-size image: https://github.com/callmehai/FU-FA26-G116/blob/app/docs/09-bussinessflow/BF-01_System_Access_Administration.drawio.png
+View the full-size image on Google Drive
 
 #### 2.2 Meeting Preparation, Approval & Participant Coordination (BF-02)
 
@@ -142,7 +142,7 @@ End condition: The meeting is Published, invitations have been issued, invitees 
 
 Figure 3: Business Flow BF-02 – Meeting Preparation, Approval & Participant Coordination
 
-Full-size image: https://github.com/callmehai/FU-FA26-G116/blob/app/docs/09-bussinessflow/BF-02_Meeting_Preparation_Approval.drawio.png
+View the full-size image on Google Drive
 
 #### 2.3 Meeting Execution & Decision Making (BF-03)
 
@@ -152,7 +152,7 @@ End condition: The meeting is Ended; its agenda outcomes and meeting-level votin
 
 Figure 4: Business Flow BF-03 – Meeting Execution & Decision Making
 
-Full-size image: https://github.com/callmehai/FU-FA26-G116/blob/app/docs/09-bussinessflow/BF-03_Meeting_Execution_Decision_Making.drawio.png
+View the full-size image on Google Drive
 
 #### 2.4 Post-Meeting Processing & Formal Records (BF-04)
 
@@ -162,7 +162,7 @@ End condition: The meeting has formal minutes that have been approved and issued
 
 Figure 5: Business Flow BF-04 – Post-Meeting Processing & Formal Records
 
-Full-size image: https://github.com/callmehai/FU-FA26-G116/blob/app/docs/09-bussinessflow/BF-04_Post_Meeting_Processing_Formal_Records.drawio.png
+View the full-size image on Google Drive
 
 ### 3. Conceptual Data Model
 
@@ -172,7 +172,7 @@ Figure 6 shows the data model of TrustCabinet as 42 tables: the 34 entities desc
 
 Figure 6: Entity Relationship Diagram
 
-Full-size image: https://github.com/callmehai/FU-FA26-G116/blob/app/docs/13-erd/muc-tieu/trustcabinet-erd-muc-tieu.drawio.png
+View the full-size image on Google Drive
 
 #### 3.2 Entity Descriptions
 
@@ -760,7 +760,7 @@ One enrolment sample of a person's voice, kept only encrypted, used to suggest t
 | # | Actor | Description |
 | --- | --- | --- |
 | 1 | Guest | An external person who does not have an internal user account. A Guest is invited to a specific meeting by name and email and accesses only that meeting through a secure meeting-specific guest invitation and email verification, without signing in to an internal account. Guest access is limited to permitted meeting functions. |
-| 2 | Member (Thành viên) | An internal user whose system role may create meetings. A Member creates, updates, submits for approval and publishes the meetings they organise. An Approver can do the same, because that role also holds the create-meeting permission. |
+| 2 | Member (Thành viên) | An internal user whose system role may create meetings. A Member creates, updates, submits for approval and publishes the meetings they organise. An Approver or a System Admin can do the same, because both roles also hold the create-meeting permission. |
 | 3 | Approver (Phê duyệt viên) | A system-authorized user who may be assigned to review a specific meeting approval request and decide whether to approve or reject it. An approval permission alone does not grant access to all meetings. |
 | 4 | System Admin | An administrator responsible for managing user accounts, roles, permissions and system-wide configuration, including viewing relevant business and security audit events. |
 | 5 | Chair | A user assigned to chair a meeting, start/end it, control agenda execution, open/close Votes and record their conclusions, and moderate authorized meeting-room interactions. |
@@ -879,19 +879,19 @@ Feature priority. The features are prioritised with the Product Owner: FE-01 to 
 
 #### 4.3 Use Case Diagrams
 
-Figure 7 shows the whole system: each actor is linked to the features (FE) whose use cases it takes part in. Chair and Secretary are kinds of Participant, and Approver is a kind of Member. The diagrams in 4.3.1 to 4.3.7 show the use cases of each actor.
+Figure 7 shows the whole system: each actor is linked to the features (FE) whose use cases it takes part in. Chair and Secretary are kinds of Participant, and Approver and System Admin are kinds of Member. The diagrams in 4.3.1 to 4.3.7 show the use cases of each actor.
 
 Figure 7: System Overview Use Case Diagram
 
-Full-size image: https://github.com/callmehai/FU-FA26-G116/blob/app/docs/14-uc-diagram/uc-system-overview.png
+View the full-size image on Google Drive
 
 ##### 4.3.1 UCs for System Admin
 
-The System Admin manages user accounts (create, update, deactivate/reactivate, reset password, assign system roles), configures roles and permissions, and reviews the audit log. The Admin can also view meetings and their records, reports and statistics, notifications and the personal document library.
+The System Admin manages user accounts (create, update, deactivate/reactivate, reset password, assign system roles), configures roles and permissions, and reviews the audit log. Because the System Admin role also holds the create-meeting permission, the Admin can create, update, submit and publish meetings as a Member does (Figure 7). The Admin can also view meetings and their records, reports and statistics, notifications and the personal document library.
 
 Figure 8: Use Case Diagram – System Admin
 
-Full-size image: https://github.com/callmehai/FU-FA26-G116/blob/app/docs/14-uc-diagram/uc-system-admin.png
+View the full-size image on Google Drive
 
 ##### 4.3.2 UCs for Member
 
@@ -899,15 +899,15 @@ The Member creates and updates meetings, submits them for approval and publishes
 
 Figure 9: Use Case Diagram – Member
 
-Full-size image: https://github.com/callmehai/FU-FA26-G116/blob/app/docs/14-uc-diagram/uc-member.png
+View the full-size image on Google Drive
 
 ##### 4.3.3 UCs for Approver
 
-The Approver reviews assigned meeting approval requests and approves or rejects them. The Approver can view meeting details and related records (agenda, documents, media, votes and minutes), use the online room (controls, room participants, in-room chat, leave room), and view reports, notifications and the personal workspace.
+The Approver reviews assigned meeting approval requests and approves or rejects them. Because the Approver role also holds the create-meeting permission, the Approver can create, update, submit and publish meetings as a Member does (Figure 7). The Approver can view meeting details and related records (agenda, documents, media, votes and minutes), use the online room (controls, room participants, in-room chat, leave room), and view reports, notifications and the personal workspace.
 
 Figure 10: Use Case Diagram – Approver
 
-Full-size image: https://github.com/callmehai/FU-FA26-G116/blob/app/docs/14-uc-diagram/uc-approver.png
+View the full-size image on Google Drive
 
 ##### 4.3.4 UCs for Chair
 
@@ -915,7 +915,7 @@ The Chair starts and ends the meeting, steers the agenda (set current / complete
 
 Figure 11: Use Case Diagram – Chair
 
-Full-size image: https://github.com/callmehai/FU-FA26-G116/blob/app/docs/14-uc-diagram/uc-chair.png
+View the full-size image on Google Drive
 
 ##### 4.3.5 UCs for Secretary
 
@@ -923,7 +923,7 @@ The Secretary prepares the meeting: agenda items, participants and meeting roles
 
 Figure 12: Use Case Diagram – Secretary
 
-Full-size image: https://github.com/callmehai/FU-FA26-G116/blob/app/docs/14-uc-diagram/uc-secretary.png
+View the full-size image on Google Drive
 
 ##### 4.3.6 UCs for Participant
 
@@ -931,7 +931,7 @@ The Participant responds to the meeting invitation, joins the online room, views
 
 Figure 13: Use Case Diagram – Participant
 
-Full-size image: https://github.com/callmehai/FU-FA26-G116/blob/app/docs/14-uc-diagram/uc-participant.png
+View the full-size image on Google Drive
 
 ##### 4.3.7 UCs for Guest
 
@@ -939,7 +939,7 @@ The Guest verifies the invited email by OTP, then supplies a self-declared displ
 
 Figure 14: Use Case Diagram – Guest
 
-Full-size image: https://github.com/callmehai/FU-FA26-G116/blob/app/docs/14-uc-diagram/uc-guest.png
+View the full-size image on Google Drive
 
 #### 4.4 Permission Matrix
 
@@ -961,19 +961,19 @@ Full = unrestricted  ·  Restricted = conditions apply (see footnotes)  ·  No =
 | Audit log | View | Full | No | No | No | No | No | No |
 | Authentication | Sign in (email / Google) / Sign out | Full | Full | Full | Full | Full | Full | No |
 | Authentication | Access meeting via Guest invitation | No | No | No | No | No | No | Full |
-| Meeting | Create | No | Full | No | No | No | No | No |
-| Meeting | Update / Reschedule | No | Restricted ² | No | No | No | No | No |
+| Meeting | Create | Full | Full | Full | No | No | No | No |
+| Meeting | Update / Reschedule | Restricted ² | Restricted ² | Restricted ² | No | No | No | No |
 | Meeting | View list | Full | Restricted ³ | Restricted ³ | Restricted ³ | Restricted ³ | Restricted ³ | No |
 | Meeting | View details | Full | Restricted ³ | Restricted ³ | Restricted ³ | Restricted ³ | Restricted ³ | Restricted ¹¹: Member rules within the invited Meeting |
-| Meeting | Submit for approval | No | Restricted ² | No | No | No | No | No |
+| Meeting | Submit for approval | Restricted ² | Restricted ² | Restricted ² | No | No | No | No |
 | Meeting | Approve / Reject | No | No | Restricted ⁴ | No | No | No | No |
-| Meeting | Publish | No | Restricted ⁵ | No | No | No | No | No |
+| Meeting | Publish | Restricted ⁵ | Restricted ⁵ | Restricted ⁵ | No | No | No | No |
 | Meeting | Start / End | No | No | No | Restricted ⁶ | No | No | No |
 | Agenda item | View | Full | Restricted ³ | Restricted ³ | Restricted ³ | Restricted ³ | Restricted ³ | Restricted ¹¹: Member rules within the invited Meeting |
 | Agenda item | Create / Update / Delete / Reorder | No | No | No | No | Restricted ⁸ | No | No |
 | Agenda item | Set current / Complete | No | No | No | Restricted ⁹ | No | No | No |
 | Participant | View participants / response status | No | No | No | Full from Published onward | Restricted ³: roster under existing rules; responses from Published onward | Restricted ³: from Published, each view requires its matching additional permission | Restricted ¹¹: from Published, each view requires its matching additional permission |
-| Participant | Add participant / Invite Guest | No | Restricted ³ | No | No | Restricted ³ | No | No |
+| Participant | Add participant / Invite Guest | Restricted ³ | Restricted ³ | Restricted ³ | No | Restricted ³ | No | No |
 | Participant | Manage meeting role | No | No | No | No | Restricted ³ | No | No |
 | Participant | Remove participant / Revoke Guest | No | No | No | No | Restricted ³ | No | No |
 | Invitation response | Respond (accept / decline) | No | No | No | No | Restricted ¹⁰ | Restricted ¹⁰ | Restricted ¹¹ |
@@ -1017,7 +1017,7 @@ Notes:
 
 ¹ Only custom roles; built-in system roles cannot be modified or deleted, and a role can be deleted only when no user is assigned to it.
 
-² Only meetings created by the Member. Submit for approval and general information edits are permitted only in Draft or Rejected. A Published Meeting may be rescheduled before it starts under UC-14 and BR-015; only planned times, location and optional Online Link may change, and the new planned start must be later than the current time.
+² Only meetings the user created. Submit for approval and general information edits are permitted only in Draft or Rejected. A Published Meeting may be rescheduled before it starts under UC-14 and BR-015; only planned times, location and optional Online Link may change, and the new planned start must be later than the current time.
 
 ³ Only Meetings within the user’s authorized relationship and lifecycle scope: Organizer at any status; assigned Approver from WaitingApproval onward; active assigned Secretary before and after publication (BR-016, BR-017, BR-030); Chair at any status, or Participant from Published onward. Each action still requires its own permission and status checks. Guests do not use the internal Meeting list.
 
@@ -1055,7 +1055,7 @@ Notes:
 
 Figure 15: Screen Flow
 
-Full-size image: https://github.com/callmehai/FU-FA26-G116/blob/app/docs/12-screenflow/TrustCabinet-screen-flow.png
+View the full-size image on Google Drive
 
 ##### b. Screen List
 
@@ -1581,7 +1581,7 @@ This single end-to-end sequence covers code request, invited-email verification,
 | Preconditions | ● PRE-1: The actor is a current authorized Secretary or a current authorized Chair, while the Meeting status permits roster changes.<br>● PRE-2: The Meeting permits participant management, and the selected target is a current internal participant. (BR-036, BR-037) |  |  |
 | Postconditions | ● POST-1: Approved role changes are saved for this Meeting.<br>● POST-2: A Chair replacement changes both affected internal Meeting Roles together. System Role and Invitation Response remain unchanged. (BR-043, BR-041, BR-042) |  |  |
 | Normal Flow | Manage Meeting Role<br>1. The Secretary opens a current participant’s role details.<br>2. The system displays the current Meeting Role.<br>3. The Secretary changes the internal participant’s Meeting Role.<br>4. The Secretary confirms the changes.<br>5. The system rechecks current authority, Meeting status, role constraints and required roles. Draft, Rejected and Approved may have no Secretary; Published and InProgress must retain or replace the last Secretary in the same save. (BR-040, BR-016, BR-017)<br>6. The system saves all requested changes together. When the Meeting is Published or InProgress, the affected participants are notified.<br>7. If no requested change is made, the system displays MSG154 – “No changes to save.” Otherwise it displays MSG100 – “Meeting role updated successfully.” |  |  |
-| Alternative Flows | AF-1 – Replace the chair<br>1. At Step 3, while the Meeting is not yet Published, or once it is Published or InProgress and the Chair's account is locked, the Secretary selects a current active internal participant as the new Chair. After publication the selected participant must not be the Secretary. (BR-041, BR-042) Before saving, the system asks for confirmation and names the participant who will become a Member.<br>2. The system changes the former Chair to Member and the selected participant to Chair in the same save, subject to the current Secretary requirements.<br>3. The system notifies the affected participants when required, but never the actor who made the change: a Chair reassigning his or her own role notifies only the new Chair, while a Secretary replacing the Chair notifies both the former and the new Chair. (BR-035) The system displays MSG100 – “Meeting role updated successfully.” The use case ends. (BR-040, BR-041, BR-042) |  |  |
+| Alternative Flows | AF-1 – Replace the chair<br>1. At Step 3, while the Meeting is not yet Published, or once it is Published or InProgress and the Chair's account is deactivated, the Secretary selects a current active internal participant as the new Chair. After publication the selected participant must not be the Secretary. (BR-041, BR-042) Before saving, the system asks for confirmation and names the participant who will become a Member.<br>2. The system changes the former Chair to Member and the selected participant to Chair in the same save, subject to the current Secretary requirements.<br>3. The system notifies the affected participants when required, but never the actor who made the change: a Chair reassigning his or her own role notifies only the new Chair, while a Secretary replacing the Chair notifies both the former and the new Chair. (BR-035) The system displays MSG100 – “Meeting role updated successfully.” The use case ends. (BR-040, BR-041, BR-042) |  |  |
 | Exception Flows | EX-1 – Meeting role is invalid<br>1. At Step 5, the selected Meeting Role is invalid.<br>2. No requested change is saved. The system displays MSG101 – “A valid meeting role is required.”<br>3. The Secretary may correct the selection. The flow resumes at Step 3 of the Normal Flow.<br>EX-2 – Required meeting role would be lost<br>1. At Step 5, the change would violate the Chair/Secretary requirement for the current Meeting status.<br>2. No role change is saved. The system displays MSG109 – “The meeting must retain its required Chair and Secretary. Assign a replacement first.” The Secretary may revise the change. The flow resumes at Step 3 of the Normal Flow.<br>EX-3 – Actor, target or meeting is no longer eligible<br>1. At Step 5, the Secretary assignment, target relationship or Meeting status changed after the details were opened.<br>2. No change is saved. The system displays MSG98 – “The meeting participant list cannot be modified in its current status.” The use case ends. |  |  |
 
 ##### 6.2.3 UC-30c – Remove Meeting Participant
@@ -1735,7 +1735,7 @@ Delivery scope: UC-33 attendance is delivered separately from the roster, invita
 | Postconditions | ● POST-1: The System Admin has seen the folders and documents of the deactivated account’s library that BR-085 allows. Nothing in the library has changed. (BR-085)<br>● POST-2: Each read has an audit entry stating who read, whose library, which folder or document and when. (BR-011) |  |  |
 | Normal Flow | View a Deactivated Account’s Personal Library<br>1. The System Admin opens the user list and chooses to view the personal library of a deactivated account. The library of an active account cannot be opened. (BR-085)<br>2. The system rechecks the System Admin’s capability and that the account is still deactivated, and that the selected folder, if any, is in that library and is not hidden by BR-085. (BR-085)<br>3. The system records the read in the audit log before showing anything. (BR-011)<br>4. The system displays the folders and documents of the account’s library at the root, read-only. The files of Secret Meetings and each such Meeting’s upload folder with its subfolders are left out. (BR-085)<br>5. The System Admin opens a folder. The system repeats Steps 2 and 3 for that read and displays the folder’s contents. |  |  |
 | Alternative Flows | AF-1 – Read a document<br>1. At Step 4 or 5, the System Admin chooses a document to preview or download.<br>2. The system repeats the checks of Step 2, opens the file, records an audit entry naming the document and only then returns the file read-only. (BR-085, BR-011)<br>3. The flow resumes at Step 4 of the Normal Flow. |  |  |
-| Exception Flows | EX-1 – Account is missing or is not locked<br>1. At Step 2, the account is no longer deactivated (or was reactivated while viewing), or the selected folder or document does not exist in that library or is hidden by BR-085.<br>2. Nothing is shown. The system displays MSG175 – “This personal-library item is not available.” and navigates back to the user list if the account was reactivated, or returns to the library root if a folder was deleted or hidden.<br>3. The use case ends. |  |  |
+| Exception Flows | EX-1 – Account is missing or is not deactivated<br>1. At Step 2, the account is no longer deactivated (or was reactivated while viewing), or the selected folder or document does not exist in that library or is hidden by BR-085.<br>2. Nothing is shown. The system displays MSG175 – “This personal-library item is not available.” and navigates back to the user list if the account was reactivated, or returns to the library root if a folder was deleted or hidden.<br>3. The use case ends. |  |  |
 
 #### 7.4 UC-38 – Comment on Meeting Document
 

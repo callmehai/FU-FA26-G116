@@ -19917,12 +19917,12 @@
         </UserObject>
       </root>
     </mxGraphModel>
-  </diagram><diagram id="uc37a_viewlockedaccountlibrary" name="UC-37a - View a Locked Account's Personal Library">
+  </diagram><diagram id="uc37a_viewlockedaccountlibrary" name="UC-37a - View a Deactivated Account’s Personal Library">
     <mxGraphModel grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="0" page="0" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="title-uc37a_viewlockedaccountlibrary" value="UC-37a - View a Deactivated Account’s Personal Library" style="text;html=1;align=center;verticalAlign=middle;fontSize=18;fontStyle=1;fontColor=#000000;" vertex="1" parent="1"><mxGeometry x="0" y="0" width="2704" height="42" as="geometry" /></mxCell><UserObject label="System Admin" mermaidId="n:Actor" mermaidBaseStyle="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=#000000;lifelineMirror=0;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;strokeWidth=1.25;size=90;participant=seqActorStick;verticalAlign=bottom;align=center;spacingBottom=4;" mermaidBaseValue="System Admin" id="2">
+        <mxCell id="title-uc37a_viewlockedaccountlibrary" value="UC-37a - View a Deactivated Account’s Personal Library" style="text;html=1;align=center;verticalAlign=middle;fontSize=18;fontStyle=1;fontColor=#000000;" vertex="1" parent="1"><mxGeometry x="0" y="0" width="2759" height="42" as="geometry" /></mxCell><UserObject label="System Admin" mermaidId="n:Actor" mermaidBaseStyle="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=#000000;lifelineMirror=0;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;strokeWidth=1.25;size=90;participant=seqActorStick;verticalAlign=bottom;align=center;spacingBottom=4;" mermaidBaseValue="System Admin" id="2">
           <mxCell parent="1" style="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=#000000;lifelineMirror=0;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;strokeWidth=1.25;size=90;participant=seqActorStick;verticalAlign=bottom;align=center;spacingBottom=4;" vertex="1">
             <mxGeometry height="1295" width="150" as="geometry" y="50" />
           </mxCell>
@@ -19945,7 +19945,7 @@
         </mxCell>
         <UserObject label=":Document Service" mermaidId="n:DocumentService" mermaidBaseStyle="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=#000000;lifelineMirror=0;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;strokeWidth=2;size=80;participant=seqControl;verticalAlign=bottom;align=center;spacingBottom=4;" mermaidBaseValue=":Document Service" id="5">
           <mxCell parent="1" style="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=#000000;lifelineMirror=0;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;strokeWidth=2;size=80;participant=seqControl;verticalAlign=bottom;align=center;spacingBottom=4;" vertex="1">
-            <mxGeometry height="1270" width="150" x="1500" as="geometry" y="50" />
+            <mxGeometry height="1270" width="150" x="1517" as="geometry" y="50" />
           </mxCell>
         </UserObject>
         <mxCell id="20" parent="5" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=light-dark(#f4f4f4,#2a2a2a);strokeColor=light-dark(#666666,#cccccc);fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" value="" vertex="1">
@@ -19953,7 +19953,7 @@
         </mxCell>
         <UserObject label=":User Repository" mermaidId="n:UserRepository" mermaidBaseStyle="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=#000000;lifelineMirror=0;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;strokeWidth=2;size=65;" mermaidBaseValue=":User Repository" id="6">
           <mxCell parent="1" style="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=#000000;lifelineMirror=0;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;strokeWidth=2;size=65;" vertex="1">
-            <mxGeometry height="1270" width="150" x="1812" as="geometry" y="50" />
+            <mxGeometry height="1270" width="150" x="1867" as="geometry" y="50" />
           </mxCell>
         </UserObject>
         <mxCell id="15" parent="6" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=light-dark(#f4f4f4,#2a2a2a);strokeColor=light-dark(#666666,#cccccc);fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" value="" vertex="1">
@@ -19961,7 +19961,7 @@
         </mxCell>
         <UserObject label=":Document Repository" mermaidId="n:DocumentRepository" mermaidBaseStyle="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=#000000;lifelineMirror=0;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;strokeWidth=2;size=65;" mermaidBaseValue=":Document Repository" id="7">
           <mxCell parent="1" style="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=#000000;lifelineMirror=0;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;strokeWidth=2;size=65;" vertex="1">
-            <mxGeometry height="1270" width="162" x="2078" as="geometry" y="50" />
+            <mxGeometry height="1270" width="162" x="2133" as="geometry" y="50" />
           </mxCell>
         </UserObject>
         <mxCell id="19" parent="7" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=light-dark(#f4f4f4,#2a2a2a);strokeColor=light-dark(#666666,#cccccc);fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" value="" vertex="1">
@@ -19969,7 +19969,7 @@
         </mxCell>
         <UserObject label=":Audit Log" mermaidId="n:AuditLog" mermaidBaseStyle="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=#000000;lifelineMirror=0;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;strokeWidth=2;size=65;" mermaidBaseValue=":Audit Log" id="8">
           <mxCell parent="1" style="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=#000000;lifelineMirror=0;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;strokeWidth=2;size=65;" vertex="1">
-            <mxGeometry height="1270" width="150" x="2319" as="geometry" y="50" />
+            <mxGeometry height="1270" width="150" x="2374" as="geometry" y="50" />
           </mxCell>
         </UserObject>
         <mxCell id="17" parent="8" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=light-dark(#f4f4f4,#2a2a2a);strokeColor=light-dark(#666666,#cccccc);fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" value="" vertex="1">
@@ -19977,7 +19977,7 @@
         </mxCell>
         <UserObject label=":Database" mermaidId="n:Database" mermaidBaseStyle="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=#000000;lifelineMirror=0;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;strokeWidth=2;size=80;participant=seqDatabase;verticalAlign=bottom;align=center;spacingBottom=4;" mermaidBaseValue=":Database" id="9">
           <mxCell parent="1" style="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=#000000;lifelineMirror=0;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;strokeWidth=2;size=80;participant=seqDatabase;verticalAlign=bottom;align=center;spacingBottom=4;" vertex="1">
-            <mxGeometry height="1270" width="150" x="2554" as="geometry" y="50" />
+            <mxGeometry height="1270" width="150" x="2609" as="geometry" y="50" />
           </mxCell>
         </UserObject>
         <mxCell id="14" parent="9" style="html=1;points=[];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;sequenceEdgeStyle&quot;,&quot;libavoidRouting&quot;:0,&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=light-dark(#f4f4f4,#2a2a2a);strokeColor=light-dark(#666666,#cccccc);fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" value="" vertex="1">
@@ -19991,19 +19991,19 @@
         </mxCell>
         <UserObject label="alt" mermaidId="n:f0" mermaidBaseStyle="html=1;shape=umlFrame;dashed=1;fixDash=1;dashPattern=2 2;strokeWidth=2;pointerEvents=0;dropTarget=0;fillColor=#ffffff;strokeColor=#000000;fontSize=16;align=center;verticalAlign=middle;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;height=20;width=50;" mermaidBaseValue="alt" id="10">
           <mxCell parent="1" style="html=1;shape=umlFrame;dashed=1;fixDash=1;dashPattern=2 2;strokeWidth=1;pointerEvents=0;dropTarget=0;fillColor=none;strokeColor=#000000;fontSize=13;align=center;verticalAlign=middle;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;height=20;width=50;" vertex="1">
-            <mxGeometry height="770" width="2574" x="65" y="465.0" as="geometry" />
+            <mxGeometry height="770" width="2629" x="65" y="465.0" as="geometry" />
           </mxCell>
         </UserObject>
-        <mxCell id="11" parent="10" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;labelBackgroundColor=#ffffff;" value="[Account is missing or is not locked - EX-1]" vertex="1">
-          <mxGeometry height="16" width="2520" x="54" y="2" as="geometry" />
+        <mxCell id="11" parent="10" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;labelBackgroundColor=#ffffff;" value="[Account is missing or is not deactivated - EX-1]" vertex="1">
+          <mxGeometry height="16" width="2575" x="54" y="2" as="geometry" />
         </mxCell>
         <mxCell id="12" parent="10" style="shape=line;dashed=1;fixDash=1;dashPattern=2 2;strokeColor=#000000;" vertex="1">
-          <mxGeometry height="1" width="2574" y="188" as="geometry" />
+          <mxGeometry height="1" width="2629" y="188" as="geometry" />
         </mxCell>
-        <mxCell id="13" parent="10" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;labelBackgroundColor=#ffffff;" value="[Account is locked]" vertex="1">
-          <mxGeometry height="16" width="2574" y="190" as="geometry" />
+        <mxCell id="13" parent="10" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=13;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=#000000;labelBackgroundColor=#ffffff;" value="[Account is deactivated]" vertex="1">
+          <mxGeometry height="16" width="2629" y="190" as="geometry" />
         </mxCell>
-        <UserObject label="Choose View personal library for a locked account&#10;(optionally open a folder)" mermaidId="e:Actor-&gt;UserScreen#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Choose View personal library for a locked account&#10;(optionally open a folder)" id="23">
+        <UserObject label="Choose View personal library for a deactivated account&#10;(optionally open a folder)" mermaidId="e:Actor-&gt;UserScreen#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Choose View personal library for a deactivated account&#10;(optionally open a folder)" id="23">
           <mxCell edge="1" parent="1" source="2" style="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="22">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
@@ -20025,25 +20025,25 @@
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="viewLockedLibrary(adminId, accountId, folderId?)" mermaidId="e:DocumentController-&gt;DocumentService#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="viewLockedLibrary(adminId, accountId, folderId?)" id="25">
+        <UserObject label="viewDeactivatedLibrary(adminId, accountId, folderId?)" mermaidId="e:DocumentController-&gt;DocumentService#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="viewDeactivatedLibrary(adminId, accountId, folderId?)" id="25">
           <mxCell edge="1" parent="1" source="21" style="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="20">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
-                <mxPoint x="1363" y="271.0" />
+                <mxPoint x="1371" y="271.0" />
               </Array>
               <mxPoint x="1156" y="271.0" as="sourcePoint" />
-              <mxPoint x="1570" y="271.0" as="targetPoint" />
+              <mxPoint x="1587" y="271.0" as="targetPoint" />
             </mxGeometry>
           </mxCell>
         </UserObject>
-        <UserObject label="Get the account and its locked state" mermaidId="e:DocumentService-&gt;UserRepository#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Get the account and its locked state" id="26">
+        <UserObject label="Get the account and its deactivated state" mermaidId="e:DocumentService-&gt;UserRepository#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Get the account and its deactivated state" id="26">
           <mxCell edge="1" parent="1" source="20" style="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="15">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
-                <mxPoint x="1731" y="317.0" />
+                <mxPoint x="1767" y="317.0" />
               </Array>
-              <mxPoint x="1580" y="317.0" as="sourcePoint" />
-              <mxPoint x="1882" y="317.0" as="targetPoint" />
+              <mxPoint x="1597" y="317.0" as="sourcePoint" />
+              <mxPoint x="1937" y="317.0" as="targetPoint" />
             </mxGeometry>
           </mxCell>
         </UserObject>
@@ -20051,10 +20051,10 @@
           <mxCell edge="1" parent="1" source="15" style="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="14">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
-                <mxPoint x="2258" y="363.0" />
+                <mxPoint x="2313" y="363.0" />
               </Array>
-              <mxPoint x="1892" y="363.0" as="sourcePoint" />
-              <mxPoint x="2624" y="363.0" as="targetPoint" />
+              <mxPoint x="1947" y="363.0" as="sourcePoint" />
+              <mxPoint x="2679" y="363.0" as="targetPoint" />
             </mxGeometry>
           </mxCell>
         </UserObject>
@@ -20062,10 +20062,10 @@
           <mxCell edge="1" parent="1" source="14" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="15">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
-                <mxPoint x="2258" y="409.0" />
+                <mxPoint x="2313" y="409.0" />
               </Array>
-              <mxPoint x="2624" y="409.0" as="sourcePoint" />
-              <mxPoint x="1892" y="409.0" as="targetPoint" />
+              <mxPoint x="2679" y="409.0" as="sourcePoint" />
+              <mxPoint x="1947" y="409.0" as="targetPoint" />
             </mxGeometry>
           </mxCell>
         </UserObject>
@@ -20073,10 +20073,10 @@
           <mxCell edge="1" parent="1" source="15" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="20">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
-                <mxPoint x="1731" y="455.0" />
+                <mxPoint x="1767" y="455.0" />
               </Array>
-              <mxPoint x="1882" y="455.0" as="sourcePoint" />
-              <mxPoint x="1580" y="455.0" as="targetPoint" />
+              <mxPoint x="1937" y="455.0" as="sourcePoint" />
+              <mxPoint x="1597" y="455.0" as="targetPoint" />
             </mxGeometry>
           </mxCell>
         </UserObject>
@@ -20084,9 +20084,9 @@
           <mxCell edge="1" parent="1" source="20" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="21">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
-                <mxPoint x="1363" y="546.0" />
+                <mxPoint x="1371" y="546.0" />
               </Array>
-              <mxPoint x="1570" y="546.0" as="sourcePoint" />
+              <mxPoint x="1587" y="546.0" as="sourcePoint" />
               <mxPoint x="1156" y="546.0" as="targetPoint" />
             </mxGeometry>
           </mxCell>
@@ -20117,10 +20117,10 @@
           <mxCell edge="1" parent="1" source="20" style="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="17">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
-                <mxPoint x="1985" y="729.0" />
+                <mxPoint x="2021" y="729.0" />
               </Array>
-              <mxPoint x="1580" y="729.0" as="sourcePoint" />
-              <mxPoint x="2389" y="729.0" as="targetPoint" />
+              <mxPoint x="1597" y="729.0" as="sourcePoint" />
+              <mxPoint x="2444" y="729.0" as="targetPoint" />
             </mxGeometry>
           </mxCell>
         </UserObject>
@@ -20128,10 +20128,10 @@
           <mxCell edge="1" parent="1" source="17" style="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="16">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
-                <mxPoint x="2512" y="775.0" />
+                <mxPoint x="2567" y="775.0" />
               </Array>
-              <mxPoint x="2399" y="775.0" as="sourcePoint" />
-              <mxPoint x="2624" y="775.0" as="targetPoint" />
+              <mxPoint x="2454" y="775.0" as="sourcePoint" />
+              <mxPoint x="2679" y="775.0" as="targetPoint" />
             </mxGeometry>
           </mxCell>
         </UserObject>
@@ -20139,10 +20139,10 @@
           <mxCell edge="1" parent="1" source="16" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="17">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
-                <mxPoint x="2512" y="821.0" />
+                <mxPoint x="2567" y="821.0" />
               </Array>
-              <mxPoint x="2624" y="821.0" as="sourcePoint" />
-              <mxPoint x="2399" y="821.0" as="targetPoint" />
+              <mxPoint x="2679" y="821.0" as="sourcePoint" />
+              <mxPoint x="2454" y="821.0" as="targetPoint" />
             </mxGeometry>
           </mxCell>
         </UserObject>
@@ -20150,10 +20150,10 @@
           <mxCell edge="1" parent="1" source="17" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="20">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
-                <mxPoint x="1985" y="867.0" />
+                <mxPoint x="2021" y="867.0" />
               </Array>
-              <mxPoint x="2389" y="867.0" as="sourcePoint" />
-              <mxPoint x="1580" y="867.0" as="targetPoint" />
+              <mxPoint x="2444" y="867.0" as="sourcePoint" />
+              <mxPoint x="1597" y="867.0" as="targetPoint" />
             </mxGeometry>
           </mxCell>
         </UserObject>
@@ -20161,10 +20161,10 @@
           <mxCell edge="1" parent="1" source="20" style="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="19">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
-                <mxPoint x="1867" y="949.0" />
+                <mxPoint x="1903" y="949.0" />
               </Array>
-              <mxPoint x="1580" y="949.0" as="sourcePoint" />
-              <mxPoint x="2154" y="949.0" as="targetPoint" />
+              <mxPoint x="1597" y="949.0" as="sourcePoint" />
+              <mxPoint x="2209" y="949.0" as="targetPoint" />
             </mxGeometry>
           </mxCell>
         </UserObject>
@@ -20172,10 +20172,10 @@
           <mxCell edge="1" parent="1" source="19" style="endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="18">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
-                <mxPoint x="2394" y="995.0" />
+                <mxPoint x="2449" y="995.0" />
               </Array>
-              <mxPoint x="2164" y="995.0" as="sourcePoint" />
-              <mxPoint x="2624" y="995.0" as="targetPoint" />
+              <mxPoint x="2219" y="995.0" as="sourcePoint" />
+              <mxPoint x="2679" y="995.0" as="targetPoint" />
             </mxGeometry>
           </mxCell>
         </UserObject>
@@ -20183,10 +20183,10 @@
           <mxCell edge="1" parent="1" source="18" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="19">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
-                <mxPoint x="2394" y="1041.0" />
+                <mxPoint x="2449" y="1041.0" />
               </Array>
-              <mxPoint x="2624" y="1041.0" as="sourcePoint" />
-              <mxPoint x="2164" y="1041.0" as="targetPoint" />
+              <mxPoint x="2679" y="1041.0" as="sourcePoint" />
+              <mxPoint x="2219" y="1041.0" as="targetPoint" />
             </mxGeometry>
           </mxCell>
         </UserObject>
@@ -20194,10 +20194,10 @@
           <mxCell edge="1" parent="1" source="19" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="20">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
-                <mxPoint x="1867" y="1087.0" />
+                <mxPoint x="1903" y="1087.0" />
               </Array>
-              <mxPoint x="2154" y="1087.0" as="sourcePoint" />
-              <mxPoint x="1580" y="1087.0" as="targetPoint" />
+              <mxPoint x="2209" y="1087.0" as="sourcePoint" />
+              <mxPoint x="1597" y="1087.0" as="targetPoint" />
             </mxGeometry>
           </mxCell>
         </UserObject>
@@ -20205,9 +20205,9 @@
           <mxCell edge="1" parent="1" source="20" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;spacingBottom=2;edgeStyle=sequenceEdgeStyle;libavoidRouting=0;curved=0;rounded=0;fontSize=13;strokeWidth=1;strokeColor=#000000;fontColor=#000000;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;labelBackgroundColor=#ffffff;" target="21">
             <mxGeometry relative="1" as="geometry">
               <Array as="points">
-                <mxPoint x="1363" y="1133.0" />
+                <mxPoint x="1371" y="1133.0" />
               </Array>
-              <mxPoint x="1570" y="1133.0" as="sourcePoint" />
+              <mxPoint x="1587" y="1133.0" as="sourcePoint" />
               <mxPoint x="1156" y="1133.0" as="targetPoint" />
             </mxGeometry>
           </mxCell>
