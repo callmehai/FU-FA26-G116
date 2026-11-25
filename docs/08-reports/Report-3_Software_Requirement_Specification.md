@@ -1117,20 +1117,30 @@ Full-size image: https://github.com/callmehai/FU-FA26-G116/blob/app/docs/12-scre
 
 | # | API Name | Calling Path | Description |
 | --- | --- | --- | --- |
-| 1 | Google Identity Services (Sign in with Google, browser SDK) | Frontend sign-in button → Google Identity Services SDK in the browser → Google ID token returned to the SPA | Google's sign-in popup authenticates the user's Google account in the browser and hands the SPA a signed ID token; no client secret and no server-side OAuth redirect/callback is used. |
-| 2 | Google Identity Platform – ID token verification (OpenID Connect) | Frontend → TrustCabinet backend (Google sign-in) → Google Identity Platform | Backend verifies the Google ID token (signature against Google's published signing certificates, issuer, audience = configured Client ID, expiry, email_verified, sub) and then signs the user in, auto-linking the Google account on first use by verified email. |
-| 3 | Resend Email (outbound email API; SMTP as an alternative) | Invitation email delivery and password-reset email → Resend Email | Sends meeting invitation emails (with .ics calendar attachment) from the invitation email queue, and password-reset link emails sent directly when an administrator resets a password. |
-| 4 | LiveKit server – RoomService API & client signalling | TrustCabinet backend (room join) → LiveKit server; browser → LiveKit real-time connection | Self-hosted LiveKit SFU for the online meeting room: backend issues LiveKit access tokens after permission checks and calls RoomService (list/mute/remove participants, delete room); media and signalling flow browser ↔ LiveKit. |
-| 5 | LiveKit webhook | LiveKit server → TrustCabinet backend (room events) | Inbound callback from LiveKit on participant_joined/left, room_finished and track_published, used to record call sessions/attendance and enforce the one-screen-share rule. |
-| 6 | AI drafting service | Planned background processing of an uploaded recording → transcript → meeting summary | Writes the three sections of the AI draft of the Meeting content from the transcript, the agenda and the vote results, for the Chair and the Secretary to review (UC-58). It is the team's own AI server, or for a Normal Meeting an outside AI API chosen by the System Admin (ADR-0054, ADR-0056). Speech recognition and speaker identification run inside the system; the model used is stored with every draft. |
-| 7 | File Storage – SeaweedFS, S3-compatible object storage | Document upload, view and download → TrustCabinet backend → File Storage (SeaweedFS) | Stores the bytes of uploaded personal and meeting documents in a private bucket; the backend reads them back after checking the permission of the caller, and a periodic clean-up removes files that were never linked to a document. |
+| 1 | Google Identity Services (Sign in with Google, browser SDK) | Sign-in page → Google Identity Services SDK in the browser → Google ID token returned to the SPA | Google's sign-in popup authenticates the user's Google account in the browser and hands the SPA a signed ID token; no client secret and no server-side OAuth redirect is used (API-01). |
+| 2 | Google ID token verification (OpenID Connect) | SPA → TrustCabinet backend (Google sign-in) → Google's published signing keys | The backend verifies the Google ID token (signature, issuer, audience = configured Client ID, expiry, verified email) and signs in the active account with the same email; no account is created this way (API-02). |
+| 3 | Email delivery – Resend email API, or an SMTP server | Email queue worker, password reset and guest verification → Resend Email or SMTP server | Sends the system's emails: meeting invitations, updates and cancellations with an .ics calendar file, meeting reminders, the issued-minutes notice and guest presenter notices from the email queue with retries; password-reset links and guest verification codes are sent at once (API-03). |
+| 4 | Email delivery webhook (Resend) | Resend → TrustCabinet backend (delivery events) | Inbound, signed callback that reports what happened to an accepted email (delivered, delayed, bounced, marked as spam, failed, suppressed) and records it on the queued email (API-09). |
+| 5 | LiveKit server – RoomService API and access tokens | TrustCabinet backend (room join, chair controls, room reconciliation) → LiveKit server; browser → LiveKit real-time connection | Self-hosted LiveKit SFU for the online meeting room: the backend issues short-lived LiveKit access tokens after its permission checks and calls RoomService (list rooms and participants, mute a track, remove a participant, close a room); media and signalling flow between the browser and LiveKit (API-04). |
+| 6 | LiveKit webhook | LiveKit server → TrustCabinet backend (room events) | Inbound, signed callback on participant joined, left or connection aborted, room finished and track published, used to record call sessions and attendance and to enforce the one-screen-share rule (API-05). |
+| 7 | Speech worker – speech recognition and Voice ID (in-house) | Transcription queue, live sentence recording and Voice ID enrolment → TrustCabinet backend → speech worker over the private network (a backup worker when the main one cannot be reached) | The team's own speech service: turns a recording or a sentence into timed text with speaker separation, reports the progress of a long run, and turns a voice sample into a voice vector. Audio and voice data never leave the system (API-08). |
+| 8 | AI drafting service – language model (chat completions) | Summary queue worker → TrustCabinet backend → the team's own language model server, or for a Normal Meeting the outside AI API the System Admin chose | Writes the three sections of the AI draft of the Meeting content from the transcript, the agenda and the vote results, for the Chair and the Secretary to review (UC-58). Internal, Secret and Top Secret Meetings always use the team's own server; the model used is stored with every draft (API-06). |
+| 9 | File Storage – SeaweedFS, S3-compatible object storage | Document upload, view and download → TrustCabinet backend → File Storage (SeaweedFS) | Stores the bytes of uploaded personal and meeting documents in a private bucket; the backend reads them back after checking the permission of the caller, and a periodic clean-up removes files no document uses any more (API-07). |
 
 #### 5.3 Background Job Inventory
 
 | # | Job Name | Group | Description |
 | --- | --- | --- | --- |
-| 1 | Process notifications | Scheduled worker | Every 5 seconds, creates due meeting reminders and pushes new in-app notifications to connected users. |
-| 2 | Deliver meeting invitation emails | Queue worker | When SMTP is enabled, processes the meeting invitation email queue and retries failed emails under the retry policy. |
+| 1 | Process notifications (JOB-01) | Scheduled worker | Every 5 seconds: creates the “meeting starting soon” reminders and their emails, and pushes new in-app notifications to connected users. |
+| 2 | Deliver queued emails (JOB-02) | Queue worker | When email sending is enabled (Resend or SMTP): queues the invitation emails of published Meetings and sends queued emails one at a time, retrying failures; polls every 5 seconds when the queue is empty. |
+| 3 | Transcribe recordings (JOB-03) | Queue worker | Every 3 seconds: transcribes one waiting recording with the speech worker, suggests speaker names and keeps the Secretary's manual corrections. |
+| 4 | Draft meeting summaries (JOB-04) | Queue worker | Every 3 seconds: writes one requested AI draft of the Meeting content. |
+| 5 | Build combined recordings (JOB-05) | Scheduled worker | Every 30 seconds: builds or rebuilds the combined recording of an ended hybrid or online Meeting. |
+| 6 | Erase expired recordings (JOB-06) | Scheduled worker | Every 15 minutes: erases recordings and recorded speech past their 180-day retention and saves room-microphone takes left open for 12 hours. |
+| 7 | Cancel or end overdue meetings (JOB-07) | Scheduled worker | Every 15 minutes: cancels Meetings not started 24 hours after their planned start and ends Meetings still in progress 24 hours after their planned end. |
+| 8 | Remove expired personal data (JOB-08) | Scheduled worker | Every 60 minutes: removes unused audio, Draft votes of Cancelled Meetings, old notifications, guest verification codes and the bodies of sent emails. |
+| 9 | Purge unused document files (JOB-09) | Scheduled worker | Every 60 minutes: deletes stored document files no document uses any more, after 24 hours. |
+| 10 | Reconcile online meeting rooms (JOB-10) | Scheduled worker | Every 30 seconds: closes the rooms of Meetings no longer in progress and removes people who may no longer be in a room. |
 
 ## II. Use Case Specifications
 
@@ -4387,9 +4397,9 @@ Field Description
 
 Runs inside the backend every 5 seconds. Each cycle creates the “meeting starting soon” reminder, once per recipient, for Meetings that start within the next 15 minutes, and queues the matching reminder email, then pushes up to 100 pending in-app notifications to their recipients over the notification hub and marks them as pushed; deactivated users receive no push. A missed push is not lost, because the notification list is read from the database (UC-76). A failed cycle is logged and retried on the next tick.
 
-#### 16.2 Deliver Meeting Invitation Emails (JOB-02)
+#### 16.2 Deliver Queued Emails (JOB-02)
 
-Runs inside the backend only when SMTP is enabled. It queues the invitation emails of Published Meetings that have not been queued yet, then sends queued emails one at a time from the email queue, and waits before polling again when the queue is empty. A failed email is retried with exponential back-off up to the configured number of attempts (8 by default) and then marked permanently failed (API-03, 17.3).
+Runs inside the backend only when email sending is enabled, through Resend or an SMTP server. It queues the invitation emails of Published Meetings that have not been queued yet, then sends queued emails (invitations, updates, cancellations, reminders, the issued-minutes notice) one at a time, and waits 5 seconds before polling again when the queue is empty. A failed email is retried with exponential back-off up to the configured number of attempts (8 by default) and then marked permanently failed (API-03, 17.3).
 
 #### 16.3 Transcribe Recordings (JOB-03)
 
@@ -4397,7 +4407,7 @@ Runs inside the backend every 3 seconds and takes one waiting transcript at a ti
 
 #### 16.4 Draft Meeting Summaries (JOB-04)
 
-Runs inside the backend every 3 seconds and drafts one requested meeting summary at a time with the AI drafting service the System Admin configured (UC-58–UC-61). A failure is shown on the summary with the option to try again. Details: Report 4, IV.10.
+Runs inside the backend every 3 seconds and drafts one requested meeting summary at a time (UC-58–UC-61) with the team's own language model, or, for a Normal Meeting, with the outside AI API the System Admin chose (API-06, BR-129). A failure is shown on the summary with the option to try again. Details: Report 4, IV.10.
 
 #### 16.5 Build Combined Recordings (JOB-05)
 
@@ -4447,25 +4457,25 @@ Runs inside the backend every 30 seconds. It compares the online meeting rooms w
 | Failure handling | Invalid/malformed tokens collapse to MSG03 and are logged without the token. First sign-in auto-links the account by verified email and writes an audit entry. Network failure fetching Google certificates is not caught (surfaces as HTTP 500). |
 | Configuration | Google sign-in can be switched on or off, and the Google Client ID is set by configuration; the system checks it at startup when sign-in is enabled. |
 
-#### 17.3 Resend Email – outbound email (API-03)
+#### 17.3 Email Delivery – Resend or SMTP (API-03)
 
 | URL | Resend's email API over HTTPS; or the configured SMTP host and port (default port 587) when SMTP is used instead |
 | --- | --- |
-| Purpose | Delivers meeting invitation emails with an .ics calendar invite and password-reset link emails. |
-| Caller | TrustCabinet backend (invitation email delivery and password-reset email) → Resend Email. |
+| Purpose | Delivers the system's emails: meeting invitations, updates and cancellations with an .ics calendar file, meeting reminders, the issued-minutes notice, guest presenter notices, guest verification codes and password-reset links. |
+| Caller | TrustCabinet backend → Resend Email, or the SMTP server when SMTP is chosen. Queued emails go through the email queue worker (JOB-02); password-reset links and guest verification codes are sent at once. |
 | Auth | Resend API key sent as a bearer token over HTTPS; when SMTP is used instead, username/password over STARTTLS (default), SSL-on-connect or none (internal relay only). Credentials are kept in user-secrets/environment variables. |
 | Request / Response | MIME message: From (FromName/FromAddress), To, Subject, plain-text body; invitations add text/calendar METHOD:REQUEST attachment 'thu-moi-hop.ics' and cancellations add text/calendar METHOD:CANCEL attachment 'huy-hop.ics'. Reset links are {ApplicationBaseUrl}/reset-password#token=… (token in URL fragment). |
-| Failure handling | Invitations are queued and retried: up to 8 attempts with exponential back-off, then marked permanently failed. Password-reset emails are sent immediately; a failure is reported to the administrator (MSG15). Delivery only runs when email delivery is enabled. |
+| Failure handling | Queued emails are retried: up to 8 attempts with exponential back-off, then marked permanently failed. Password-reset emails and guest codes are sent immediately; a failed reset email is reported to the administrator (MSG15). Delivery runs only when email sending is enabled; Resend reports later delivery events through API-09. |
 | Configuration | Resend API address and key (or SMTP host, port, security mode and credentials), sender address and name, retry limits and timeouts, and the application base URL used in links; set by configuration, with credentials kept out of the code base. |
 
 #### 17.4 LiveKit server – RoomService API and access tokens (API-04)
 
-| URL | Backend → the LiveKit server's management API (list participants, mute a track, remove a participant, close a room); browser → the LiveKit server's real-time connection. Exposed through the meeting room endpoints (view room, join, mute a participant). |
+| URL | Backend → the LiveKit server's management API (list rooms, list participants, mute a track, remove a participant, close a room); browser → the LiveKit server's real-time connection. Exposed through the meeting room endpoints (view room, join, mute a participant). |
 | --- | --- |
 | Purpose | Runs the online meeting room on a self-hosted LiveKit SFU while the backend decides who may join and enforces chair controls. |
 | Caller | TrustCabinet backend → LiveKit server; browser → LiveKit server with a backend-issued token. |
 | Auth | LiveKit API key and secret; the backend issues short-lived access tokens (about 10 minutes) that identify the user and the Meeting room; the secret is kept outside the code base. |
-| Failure handling | The backend still starts without LiveKit configuration and the room endpoints answer 503; LiveKit errors or timeouts answer 502; a periodic check reconciles room state. |
+| Failure handling | The backend still starts without LiveKit configuration and the room endpoints answer 503; LiveKit errors or timeouts answer 502; the room reconciliation (JOB-10) brings the rooms in line with the Meetings every 30 seconds. |
 | Configuration | LiveKit addresses, API key and secret, token lifetime and whether the roster is enforced; set by configuration. |
 | Status | Built. |
 
@@ -4501,6 +4511,28 @@ Runs inside the backend every 30 seconds. It compares the online meeting rooms w
 | Request / Response | Input: the file bytes with their stored name. Output: the stored bytes when the file is read; the system never gives the browser a direct address of the bucket. |
 | Failure handling | If the store cannot be reached, the upload or download is refused with a message and nothing is recorded as stored; files that were written but never linked to a document are removed by a periodic clean-up. |
 | Status | Built. |
+
+#### 17.8 Speech Worker – speech recognition and Voice ID (API-08)
+
+| URL | The team's own speech worker over HTTP on the private network: POST /v1/transcribe (a recording or one sentence, with speaker separation on or off), GET /v1/progress (progress of a running transcription), POST /v1/embed (voice vector of one Voice ID sample). A second worker can be configured as backup. |
+| --- | --- |
+| Purpose | Speech recognition, speaker separation and voice vectors for Voice ID, run inside the system so that audio and voice data never leave it (BR-121). |
+| Caller | TrustCabinet backend: the transcription queue (JOB-03), the live sentence recording of each participant's microphone, and Voice ID sample enrolment (UC-56c). |
+| Auth | A shared key sent as a bearer token when the worker is configured with one; the key is kept outside the code base. The worker is reachable only on the private network. |
+| Request / Response | In: the audio file and the run parameters. Out: timed lines with a voice label, one voice vector per voice and a confidence score per word; for /v1/embed, one voice vector after the sample's quality checks. |
+| Failure handling | When the main worker cannot be reached, the request goes to the backup worker, which is then asked first for a short while (ADR-0081). A worker error marks the transcript Failed with a reason the Secretary sees (UC-54a); a sample that fails the checks is refused with a message. |
+| Configuration | Worker address, backup address, shared key and timeouts; set by configuration. |
+
+#### 17.9 POST: /api/email/resend/webhook – Email delivery webhook (API-09)
+
+| URL | POST: /api/email/resend/webhook |
+| --- | --- |
+| Purpose | Records what Resend reports after it accepted an email, so the email queue shows whether each email was delivered. |
+| Caller | Resend → TrustCabinet backend. |
+| Auth | Anonymous route verified by signature: Resend signs the raw body (Svix signature) with the configured webhook secret; an old timestamp is refused as a replay. Without a secret nothing is accepted. |
+| Request / Response | Events: email.delivered, email.delivery_delayed, email.bounced, email.complained, email.failed, email.suppressed. Unknown events and emails the system does not track are acknowledged and ignored. |
+| Failure handling | A request with a bad or missing signature is refused and changes nothing. |
+| Configuration | Webhook secret, set with the Resend settings outside the code base. |
 
 ## IV. Non-Functional Requirements
 
