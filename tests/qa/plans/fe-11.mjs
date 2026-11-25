@@ -303,6 +303,17 @@ async function openVotesTab(qa, m) {
 // Guest voter (UC-04 OTP by email): the FE-01 pattern (example.test lands in local Mailpit). The browser stays
 // anonymous; every signed-in call goes through global fetch with a secretary login, like removeFromRoster above.
 
+/**
+ * The guest's code and invitation link are read from Mailpit (:8025), where the local backend's SMTP lands
+ * (container e2e-mailpit). A machine without it cannot judge the guest flow: inconclusive, before anything is sent.
+ */
+async function requireMailpit(qa) {
+  try {
+    if ((await fetch('http://localhost:8025/api/v1/messages?limit=1')).ok) return
+  } catch { /* not running */ }
+  qa.inconclusive('Cần Mailpit trên :8025 (container e2e-mailpit) và backend gửi SMTP vào đó để đọc mã/link mời Khách: máy này không có.')
+}
+
 async function guestMailpit(to) {
   const r = await fetch(`http://localhost:8025/api/v1/search?query=${encodeURIComponent(`to:"${to}"`)}`)
   const j = await r.json()
@@ -324,6 +335,7 @@ async function guestCode(to) {
 }
 
 async function guestInvite(qa, meetingId, name, email) {
+  await requireMailpit(qa)
   const login = await fetch(`${qa.base}/api/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

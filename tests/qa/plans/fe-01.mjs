@@ -98,6 +98,17 @@ async function secretaryToken(qa) {
   return (await res.json()).accessToken
 }
 
+/**
+ * The guest's code and invitation link are read from Mailpit (:8025), where the local backend's SMTP lands
+ * (container e2e-mailpit). A machine without it cannot judge the guest flow: inconclusive, before anything is sent.
+ */
+async function requireMailpit(qa) {
+  try {
+    if ((await fetch('http://localhost:8025/api/v1/messages?limit=1')).ok) return
+  } catch { /* not running */ }
+  qa.inconclusive('Cần Mailpit trên :8025 (container e2e-mailpit) và backend gửi SMTP vào đó để đọc mã/link mời Khách: máy này không có.')
+}
+
 /** Messages mailpit (http://localhost:8025) received for `to`: id and subject, newest first. */
 async function mailpit(to) {
   const r = await fetch(`http://localhost:8025/api/v1/search?query=${encodeURIComponent(`to:"${to}"`)}`)
@@ -1062,6 +1073,7 @@ export default {
       expected:
         'Sau lần sai thứ 5: "Bạn đã nhập sai quá số lần cho phép. Vui lòng gửi lại mã mới." (MSG372), nút "Xác minh" khoá; mã đúng cũng không qua; mã mới vào được form "Thông tin hiển thị"',
       async run(qa) {
+        await requireMailpit(qa)
         const email = `qa-khach-ft23-${RUN}-${qa.device}@example.test`
         const sec = await qa.api('secretary')
         const base = await findGuestInvitation(qa)

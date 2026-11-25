@@ -274,7 +274,8 @@ export default {
         // USER_FT05 E2: "Xoá bộ lọc" restores everything and clears the URL.
         await qa.page.getByRole('button', { name: 'Xoá bộ lọc' }).click()
         await qa.expect(searchBox(qa)).toHaveValue('')
-        await qa.expect(qa.page.locator('tbody tr')).toHaveCount(users.length)
+        // Still 100 rows a page (?pageSize stays): a local database with more accounts fills the first page.
+        await qa.expect(qa.page.locator('tbody tr')).toHaveCount(Math.min(users.length, 100))
         const params = new URL(qa.page.url()).searchParams
         for (const key of ['q', 'role', 'status']) qa.expect(params.get(key), `?${key} survived "Xoá bộ lọc"`).toBeNull()
         await qa.shot('da-xoa-bo-loc')
@@ -1157,6 +1158,8 @@ export default {
           ).toBeVisible()
           await qa.page.keyboard.press('Escape')
           const a = (await listUsers(qa, api)).find((u) => u.email === QA_USERS.a.email)
+          // The list is paged (20 by default): search first so A's row is on screen whatever the local data holds.
+          await searchBox(qa).fill(QA_USERS.a.email)
           const rowA = userRow(qa, QA_USERS.a.email)
           await rowA.scrollIntoViewIfNeeded()
           await rowA.getByRole('button', { name: `Sửa tài khoản ${a.fullName}` }).click()

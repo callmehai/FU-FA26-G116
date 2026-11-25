@@ -353,6 +353,17 @@ const NOTICE_RESTRICTED = 'Dự thảo biên bản do máy AI của nhóm viết
 
 const rand = () => Math.random().toString(36).slice(2, 6)
 
+/**
+ * The guest's code and invitation link are read from Mailpit (:8025), where the local backend's SMTP lands
+ * (container e2e-mailpit). A machine without it cannot judge the guest flow: inconclusive, before anything is sent.
+ */
+async function requireMailpit(qa) {
+  try {
+    if ((await fetch('http://localhost:8025/api/v1/messages?limit=1')).ok) return
+  } catch { /* not running */ }
+  qa.inconclusive('Cần Mailpit trên :8025 (container e2e-mailpit) và backend gửi SMTP vào đó để đọc mã/link mời Khách: máy này không có.')
+}
+
 async function mailpit(to) {
   const r = await fetch(`http://localhost:8025/api/v1/search?query=${encodeURIComponent(`to:"${to}"`)}`)
   const j = await r.json()
@@ -376,6 +387,7 @@ async function guestCode(to) {
 
 /** Invites a guest and returns the invitation link from the mailbox. */
 async function inviteGuest(qa, meetingId, name, email) {
+  await requireMailpit(qa)
   const parts = await get('secretary', `/api/meetings/${meetingId}/participants?pageSize=100`)
   const etag = parts.headers.etag ?? `"participants-${parts.body.revision}"`
   const res = await post('secretary', `/api/meetings/${meetingId}/guest-invitations`, { invitedName: name, email }, { 'If-Match': etag })

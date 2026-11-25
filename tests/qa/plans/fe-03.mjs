@@ -418,7 +418,7 @@ export default {
       id: 'AC6',
       role: 'admin',
       title: 'Trùng tên vai trò (không phân biệt hoa/thường, kể cả vai trò mặc định): báo MSG21 dưới ô tên, không tạo (UC-11a EX-2)',
-      steps: ['Form Tạo vai trò: tên "thư ký"', 'POST /api/roles với tên một vai trò [QA] viết HOA'],
+      steps: ['Form Tạo vai trò: tên "phê duyệt viên" (vai trò mặc định, viết thường)', 'POST /api/roles với tên một vai trò [QA] viết HOA'],
       expected:
         'Ô Tên vai trò báo "Đã có vai trò dùng tên này. Hãy đặt một tên khác.", form vẫn mở; API 409 MSG21; không có vai trò mới',
       async run(qa) {
@@ -429,12 +429,12 @@ export default {
           await openRoles(qa)
           await qa.page.getByRole('button', { name: 'Tạo vai trò' }).click()
           const dialog = qa.page.getByRole('dialog', { name: 'Tạo vai trò' })
-          await dialog.getByLabel('Tên vai trò').fill('thư ký')
+          await dialog.getByLabel('Tên vai trò').fill('phê duyệt viên')
           await dialog.getByRole('button', { name: 'Tạo vai trò' }).click()
           await qa.expect(dialog.getByText('Đã có vai trò dùng tên này. Hãy đặt một tên khác.')).toBeVisible()
           await qa.expect(dialog).toBeVisible()
           await settled(qa)
-          await qa.shot('trung-ten-thu-ky')
+          await qa.shot('trung-ten-phe-duyet-vien')
           qa.expect((await rolesList(api)).length).toBe(before)
 
           const role = await createRole(qa, api, created, 'Trùng')

@@ -2195,9 +2195,13 @@ export default {
           await grip2.focus()
           await qa.page.keyboard.press('Space')
           await qa.expect(row(qa, t3)).toHaveClass(/agenda-item-dragging/)
-          await qa.expect(live).toContainText(`"${t3}"`, { timeout: 10_000 })
-          await qa.page.keyboard.press('Escape')
-          await qa.expect(live).toContainText(`Đã huỷ, "${t3}" giữ nguyên vị trí.`, { timeout: 10_000 })
+          // The live region still holds the previous drag's "đang ở vị trí 2 trên 3", so it cannot gate the
+          // pick-up; dnd-kit's KeyboardSensor binds keydown in a setTimeout after activation and swallows a
+          // key sent before that. Retry Esc (harmless when nothing is lifted) until the cancel is announced.
+          await qa.expect(async () => {
+            await qa.page.keyboard.press('Escape')
+            await qa.expect(live).toContainText(`Đã huỷ, "${t3}" giữ nguyên vị trí.`, { timeout: 1_000 })
+          }).toPass({ timeout: 10_000 })
           const kept = (await snapshot(qa, 'secretary', m.id)).items.map((i) => i.title)
           qa.expect(kept).toEqual(after)
           await qa.expect(qa.page.getByText('Nhấn phím cách để nhấc nội dung lên', { exact: false })).toHaveCount(1)
