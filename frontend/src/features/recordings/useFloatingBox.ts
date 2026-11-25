@@ -28,14 +28,21 @@ function load(key: string, fallback: BoxRect): BoxRect {
   }
 }
 
+/** Room left at the bottom of the window: on a phone the tab bar's, so the box never covers a tab (ADR-0070). */
+function floor() {
+  const bar = document.querySelector('.tabbar')
+  return MARGIN + (bar ? Math.max(0, window.innerHeight - bar.getBoundingClientRect().top) : 0)
+}
+
 /** Pulls the box back inside the window: after a drag, a resize of the window, or a change of what it holds. */
 function keepIn(rect: BoxRect, el: HTMLElement | null): BoxRect {
   const width = rect.width ?? el?.offsetWidth ?? 0
   const height = el?.offsetHeight ?? 0
+  const low = floor()
   return {
     ...rect,
     right: Math.min(Math.max(MARGIN, rect.right), Math.max(MARGIN, window.innerWidth - width - MARGIN)),
-    bottom: Math.min(Math.max(MARGIN, rect.bottom), Math.max(MARGIN, window.innerHeight - height - MARGIN)),
+    bottom: Math.min(Math.max(low, rect.bottom), Math.max(low, window.innerHeight - height - MARGIN)),
   }
 }
 
