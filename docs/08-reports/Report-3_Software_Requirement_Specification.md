@@ -523,35 +523,41 @@ Comment on one MeetingDocument addition, by an internal User or Guest invitation
 
 Entity 22: Recording
 
-Audio file of a meeting uploaded by a participant after the meeting; the system does not record meetings itself. Consent and retention fields support personal data obligations.
+Audio of a meeting: the room microphone's takes appended into one recording, a file uploaded afterwards, or the combined recording of a hybrid or online meeting built by the server. Consent and retention fields support personal data obligations. How takes are saved and the combined recording is built is described in Report 4, IV.4 and IV.5; automatic erasure in Report 4, IV.6.
 
 | No | Field | Data Type | Key | Nullable | Description |
 | --- | --- | --- | --- | --- | --- |
 | 1 | Id | uuid | PK | No | Unique identifier of the recording. |
 | 2 | MeetingId | uuid | FK | No | Meeting the recording belongs to (references Meeting). |
-| 3 | UploadedById | uuid | FK | No | User who uploaded the file (references User). |
-| 4 | Source | enum |  | No | How the recording entered the system. Values: Upload. |
-| 5 | Status | enum |  | No | State of the recording file. Values: Pending, Available, Failed, Deleted. |
-| 6 | StoragePath | string |  | No | Location of the audio file in storage. |
-| 7 | DurationMs | bigint |  | No | Duration of the audio in milliseconds. |
-| 8 | ConsentObtainedAt | timestamptz |  | No | Date and time participants' consent to the recording was confirmed. |
-| 9 | ConsentPurpose | string |  | No | Stated purpose of the recording, as shown to participants. |
-| 10 | RetainUntil | timestamptz |  | Yes | Date and time the file is due to be erased. Null when retention has not been decided. |
-| 11 | DeletedAt | timestamptz |  | Yes | Date and time the audio file was erased; the row is kept as evidence. |
+| 3 | Source | enum |  | No | How the recording entered the system. Values: BrowserCapture (room microphone takes), Upload (file uploaded afterwards), Combined (hybrid or online meeting mixed into one track by the server), CallRoom (reserved, not produced in this version). |
+| 4 | Status | enum |  | No | State of the recording. Values: Pending (a room take still being streamed), Available, Failed, Deleted. |
+| 5 | FileName | string |  | No | File name shown in the list and used when the recording is downloaded. |
+| 6 | StoragePath | string |  | No | Location of the audio file in recording storage. |
+| 7 | ContentType | string |  | No | Media type of the stored file, for example audio/wav. |
+| 8 | ByteSize | bigint |  | No | Size of the stored file in bytes. A room recording of 300 MB or more takes no more takes; the next take starts a new one (Report 4, IV.4). |
+| 9 | DurationMs | bigint |  | No | Duration of the audio in milliseconds. |
+| 10 | ConsentObtainedAt | timestamptz |  | Yes | Date and time participants were told recording was about to start. Null means no consent is on file, and capture must not start. |
+| 11 | ConsentPurpose | string |  | No | Stated purpose of the recording, as shown to participants. |
+| 12 | RetainUntil | timestamptz |  | Yes | Date and time the audio is due to be erased: 180 days after the first take; a combined recording takes the date of its earliest source (BR-110, Report 4, IV.6). |
+| 13 | DeletedAt | timestamptz |  | Yes | Date and time the audio was erased; the row is kept as evidence. |
+| 14 | Takes | jsonb |  | Yes | Room-microphone takes in this recording, in order: offset in the audio, duration and the time each was spoken, so the transcript reads on the meeting's clock (Report 4, IV.4). Null for an uploaded file. |
+| 15 | CreatedById | uuid | FK | No | User who started the first take or uploaded the file; for a combined recording, the creator of its room recording, or the meeting's Secretary (references User). |
 
 Entity 23: Transcript
 
-Speech-to-text result with speaker separation for one recording. Processing runs in the background, so its state and error are stored.
+Speech-to-text result with speaker separation for one recording. It is processed in the background, so its state, progress and error are stored; its life cycle is Pending, Processing, then Completed or Failed (Report 4, IV.1).
 
 | No | Field | Data Type | Key | Nullable | Description |
 | --- | --- | --- | --- | --- | --- |
 | 1 | Id | uuid | PK | No | Unique identifier of the transcript. |
 | 2 | RecordingId | uuid | FK, UK | No | Recording transcribed (references Recording); unique, one transcript per recording. |
-| 3 | Status | enum |  | No | Processing state. Values: Pending, Processing, Completed, Failed. |
+| 3 | Status | enum |  | No | Processing state. Values: Pending, Processing, Completed, Failed. A new take, an upload or the Secretary's request to run it again sets it back to Pending (Report 4, IV.1). |
 | 4 | Provider | string |  | No | Service or model that produced the transcript. |
-| 5 | Language | string |  | No | Language of the transcript (Vietnamese in version 1). |
-| 6 | ProgressPercent | int |  | No | Processing progress from 0 to 100. |
-| 7 | ErrorMessage | string |  | Yes | Reason for failure, shown to the user with the option to retry. |
+| 5 | Language | string |  | No | Language of the transcript (vi). |
+| 6 | ProgressPercent | int |  | No | Processing progress: 0–99 while the speech worker runs, 100 once the result is saved. |
+| 7 | ProcessingStartedAt | timestamptz |  | Yes | Date and time the current or last run was taken off the queue; null while it waits. |
+| 8 | ErrorMessage | string |  | No | Reason for failure, shown to the Secretary with the option to run it again; empty otherwise. |
+| 9 | CompletedAt | timestamptz |  | Yes | Date and time the last run finished. |
 
 Entity 24: TranscriptSegment
 
