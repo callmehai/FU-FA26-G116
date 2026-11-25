@@ -21,7 +21,10 @@ public sealed class VoiceIdOptions
     /// </summary>
     public double SuggestThreshold { get; set; } = 0.6;
 
-    /// <summary>How far the best match must be ahead of the next person, so near ties stay "Người nói N".</summary>
+    /// <summary>
+    /// How far the best match must be ahead of the next person to be named by the machine. A near tie is only suggested
+    /// (ADR-0087): the Secretary sees "Khớp giọng nhất" and confirms or picks the other person.
+    /// </summary>
     public double SuggestMargin { get; set; } = 0.05;
 
     /// <summary>
@@ -49,7 +52,7 @@ public sealed class VoiceIdOptions
     /// Score at which the machine names a voice itself instead of waiting for the Secretary (PO 01/11/2026). The
     /// Secretary can still change or remove the name; the machine never names a guest, who has no enrolled voice.
     /// Equal to <see cref="SuggestThreshold"/> since 22/11/2026 (ADR-0074, was 0.7, before that 0.75): every voice the
-    /// machine suggests is named, as a suggestion already passed the margin over the runner-up and, for a second voice
+    /// machine surely suggests is named, as a sure suggestion already passed the margin over the runner-up and, for a second voice
     /// of the same person, <see cref="SameVoiceThreshold"/> and <see cref="SecondVoiceThreshold"/>. On the 22/11 room
     /// recording the three people were suggested right at 0.61–0.68 and each had to be picked by hand at 0.7.
     /// </summary>
