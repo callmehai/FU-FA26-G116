@@ -4560,7 +4560,6 @@ body:has(.room) :is(.toast-stack, .upload-tray) { transition: bottom 0.3s var(--
 .recording-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; width: fit-content; color: var(--muted-ink); font-size: 13px; font-variant-numeric: tabular-nums; }
 .recording-actions { gap: 6px; }
 /* ADR-0041: the room mic's take being recorded — seen by everyone, heard by nobody yet. */
-.recording-live .recording-icon { color: var(--live); }
 .recording-deleted .recording-name { color: var(--muted-ink); font-weight: 500; text-decoration: line-through; }
 .recording-player { grid-column: 2 / -1; width: 100%; margin: 4px 0 0; }
 audio.recording-player { height: 40px; }

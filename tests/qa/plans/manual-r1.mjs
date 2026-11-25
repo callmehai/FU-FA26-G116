@@ -1297,7 +1297,7 @@ export default {
         qa.note(`Lượt: ${JSON.stringify(rec?.takes)}`)
         if (t?.status !== 'Completed') qa.inconclusive(`Bản gỡ băng ${t?.status}: vạch lượt chỉ hiện khi gỡ băng xong`)
         await openMeeting(qa, m, 'recordings')
-        const row = qa.page.locator('li.recording-row').filter({ hasText: '3 lượt ghi' })
+        const row = qa.page.locator('li.recording-row').filter({ hasText: 'Mic phòng' })
         await qa.expect(row).toBeVisible()
         await qa.expect(row.getByText('Lượt 1', { exact: false }).first()).toBeVisible({ timeout: 15_000 })
         await qa.expect(row.getByText('Lượt 2', { exact: false }).first()).toBeVisible()
@@ -1312,7 +1312,7 @@ export default {
       role: 'secretary',
       title: 'Thư ký xoá một lượt của bản ghi mic phòng',
       steps: ['Bản ghi mic phòng ba lượt đã gỡ băng', 'Bấm "Xoá lượt 2", trong hộp "Xoá lượt 2?" bấm "Xoá lượt"'],
-      expected: 'Hộp báo tiếng và chữ của lượt bị xoá hẳn, các lượt khác giữ nguyên; DELETE takes/2 200 MSG366, toast "Đã xoá lượt ghi."; còn "2 lượt ghi"',
+      expected: 'Hộp báo tiếng và chữ của lượt bị xoá hẳn, các lượt khác giữ nguyên; DELETE takes/2 200 MSG366, toast "Đã xoá lượt ghi."; API còn 2 lượt',
       async run(qa) {
         const m = await meetingAt(qa, 'Ended', { label: 'REC35 xoá lượt', over: {} })
         // Takes need a running meeting: drive a fresh one to InProgress, record, then end it.
@@ -1328,7 +1328,7 @@ export default {
         const del = qa.page.waitForResponse((r) => r.request().method() === 'DELETE' && /\/takes\/2$/.test(r.url()))
         const m2 = (await (await client(qa, 'secretary')).get(`/api/meetings/${live.id}`)).body
         await openMeeting(qa, m2, 'recordings')
-        const row = qa.page.locator('li.recording-row').filter({ hasText: '3 lượt ghi' })
+        const row = qa.page.locator('li.recording-row').filter({ hasText: 'Mic phòng' })
         await qa.expect(row).toBeVisible()
         await qa.expect(row.getByRole('button', { name: 'Xoá lượt 2' })).toBeVisible({ timeout: 15_000 })
         await snap(qa, 'ba-luot', { fullPage: true })
@@ -1345,7 +1345,10 @@ export default {
         qa.expect(res.status()).toBe(200)
         qa.expect(body.code).toBe('MSG366')
         await qa.expect(toast(qa, 'Đã xoá lượt ghi.')).toBeVisible()
-        await qa.expect(qa.page.locator('li.recording-row').filter({ hasText: '2 lượt ghi' })).toBeVisible({ timeout: 15_000 })
+        // The takes count left the row (Hải 25/11/2026): the API carries it.
+        await qa.expect
+          .poll(async () => (await (await client(qa, 'secretary')).get(`/api/meetings/${live.id}/recordings`)).body.items.find((r) => r.id === id)?.takes?.length ?? 0, { timeout: 15_000 })
+          .toBe(2)
         await snap(qa, 'con-hai-luot', { fullPage: true })
       },
     },

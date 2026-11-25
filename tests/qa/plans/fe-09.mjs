@@ -536,7 +536,7 @@ export default {
         'Bấm "Tắt mic, lưu lượt ghi"',
       ],
       expected:
-        'Hộp xác nhận có mục đích mặc định "Lập biên bản cuộc họp", nút "Bắt đầu ghi" tắt tới khi tích; khi ghi: thẻ "Đang ghi cả phòng" có đồng hồ, chip "Đang ghi âm" cạnh tên, dòng "Mic phòng đang ghi"; đổi tab vẫn ghi; tắt mic: toast "Đã lưu lượt ghi.", dòng bản ghi nhãn "Mic phòng", chip mất; API: BrowserCapture, Available, consentObtainedAt có, retainUntil = createdAt + 180 ngày',
+        'Hộp xác nhận có mục đích mặc định "Lập biên bản cuộc họp", nút "Bắt đầu ghi" tắt tới khi tích; khi ghi: thẻ "Đang ghi cả phòng" có đồng hồ, chip "Đang ghi âm" cạnh tên, không có dòng "Mic phòng đang ghi" trong danh sách; đổi tab vẫn ghi; tắt mic: toast "Đã lưu lượt ghi.", dòng bản ghi nhãn "Mic phòng", chip mất; API: BrowserCapture, Available, consentObtainedAt có, retainUntil = createdAt + 180 ngày',
       run: wrap(async (qa) => {
         const m = await meeting(qa, 'ipRun')
         await clean(qa, m.id)
@@ -557,7 +557,8 @@ export default {
           await press(qa, dlg.getByRole('button', { name: 'Bắt đầu ghi' }))
           await qa.expect(card.getByText('Đang ghi cả phòng')).toBeVisible({ timeout: 15_000 })
           await qa.expect(qa.page.getByRole('button', { name: 'Đang ghi âm' })).toBeVisible({ timeout: 10_000 })
-          await qa.expect(roomSection(qa).getByText('Mic phòng đang ghi')).toBeVisible({ timeout: 10_000 })
+          // Hải 25/11/2026: the take being recorded has no row; the mic card and the chip already say so.
+          await qa.expect(roomSection(qa).getByText('Mic phòng đang ghi')).toHaveCount(0)
           await qa.page.waitForTimeout(3000) // the take must carry some audio before it is switched off
           await settled(qa)
           await qa.shot('dang-ghi-ca-phong')
@@ -595,7 +596,7 @@ export default {
     {
       id: 'AC2',
       role: 'secretary',
-      title: 'Tắt rồi bật lại mic (thay Tạm dừng/Ghi tiếp, ADR-0041): lượt sau không hỏi xác nhận lại, nối vào cùng bản ghi ("2 lượt ghi")',
+      title: 'Tắt rồi bật lại mic (thay Tạm dừng/Ghi tiếp, ADR-0041): lượt sau không hỏi xác nhận lại, nối vào cùng bản ghi (API: 2 lượt)',
       steps: [
         'Cuộc họp trực tiếp Đang diễn ra đã có bản ghi mic phòng một lượt (tạo qua API, có xác nhận)',
         'thuky@ mở tab Bản ghi, bấm "Bật mic phòng"',
@@ -622,7 +623,10 @@ export default {
           await qa.expect(toast(qa, 'Đã lưu lượt ghi.')).toBeVisible({ timeout: 20_000 })
           const row = roomSection(qa).locator('li.recording-row').filter({ hasText: 'Mic phòng' })
           await qa.expect(row).toHaveCount(1)
-          await qa.expect(row.getByText('2 lượt ghi')).toBeVisible({ timeout: 10_000 })
+          // The takes count left the row (Hải 25/11/2026): the API carries it.
+          await qa.expect
+            .poll(async () => (await recordings(qa, 'secretary', m.id)).items.find((r) => r.status === 'Available')?.takes?.length ?? 0, { timeout: 10_000 })
+            .toBe(2)
           await settled(qa)
           await qa.shot('noi-thanh-2-luot')
           const kept = (await recordings(qa, 'secretary', m.id)).items.filter((r) => r.status === 'Available')
@@ -679,10 +683,10 @@ export default {
       id: 'AC4',
       role: 'chair',
       devices: ['desktop', 'phone'],
-      title: 'Khi mic phòng đang ghi, người khác (Chủ toạ) thấy chip "Đang ghi âm" và dòng "Mic phòng đang ghi", không nghe được, không có thẻ ghi âm',
+      title: 'Khi mic phòng đang ghi, người khác (Chủ toạ) thấy chip "Đang ghi âm", không nghe được, không có thẻ ghi âm',
       steps: ['Thư ký mở một lượt mic phòng (API)', 'chutoa@ mở tab Bản ghi của cuộc họp', 'API: thanhvien@ xin link nghe lượt đang mở'],
       expected:
-        'Chip "Đang ghi âm" cạnh tên cuộc họp; dòng "Mic phòng đang ghi" nhãn "Đang ghi" kèm tên Thư ký, không có nút nghe/tải/xoá; không có thẻ ghi âm của Thư ký; API playback của lượt đang mở 404',
+        'Chip "Đang ghi âm" cạnh tên cuộc họp; lượt đang ghi không có dòng trong danh sách, không có nút nghe/tải/xoá; không có thẻ ghi âm của Thư ký; API playback của lượt đang mở 404',
       run: wrap(async (qa) => {
         const u = await users(qa)
         const m = await meeting(qa, 'ipRun')
@@ -692,11 +696,9 @@ export default {
           qa.expectStatus(opened, 201)
           await openTab(qa, m)
           await qa.expect(qa.page.getByRole('button', { name: 'Đang ghi âm' })).toBeVisible()
-          const live = roomSection(qa).locator('li.recording-live')
-          await qa.expect(live.getByText('Mic phòng đang ghi')).toBeVisible()
-          await qa.expect(live.getByText('Đang ghi', { exact: true })).toBeVisible()
-          await qa.expect(live.getByText(u.secretary.name)).toBeVisible()
-          await qa.expect(live.getByRole('button', { name: /Nghe|Tải|Xoá/ })).toHaveCount(0)
+          await qa.expect(roomSection(qa).getByText('Mic phòng đang ghi')).toHaveCount(0)
+          await qa.expect(roomSection(qa).locator('li.recording-row')).toHaveCount(0)
+          await qa.expect(roomSection(qa).getByText('Có bản ghi khi tắt mic phòng.')).toBeVisible()
           await qa.expect(micCard(qa)).toHaveCount(0)
           await settled(qa)
           await qa.shot('nguoi-khac-thay-dang-ghi')
@@ -1011,7 +1013,7 @@ export default {
         'API: DELETE takes/1 khi chỉ còn một lượt; Chủ toạ DELETE takes/1',
       ],
       expected:
-        'Hộp "Xoá lượt 2?" cảnh báo tiếng và chữ bị xoá hẳn; toast "Đã xoá lượt ghi."; dòng bản ghi không còn "2 lượt ghi", API takes 1; DELETE lượt duy nhất 409 MSG367; Chủ toạ 403 MSG295',
+        'Hộp "Xoá lượt 2?" cảnh báo tiếng và chữ bị xoá hẳn; toast "Đã xoá lượt ghi."; API takes 1; DELETE lượt duy nhất 409 MSG367; Chủ toạ 403 MSG295',
       run: wrap(async (qa) => {
         const m = await meeting(qa, 'ipRun')
         await clean(qa, m.id)
@@ -1025,7 +1027,7 @@ export default {
           const rec0 = (await recordings(qa, 'secretary', m.id)).items.find((r) => r.id === id)
           qa.note(`Lượt: ${JSON.stringify(rec0?.takes)}; đoạn gỡ băng: ${JSON.stringify(t.segments.map((s) => [s.startMs, s.endMs, s.text.slice(0, 30)]))}`)
           await openTab(qa, m)
-          const row = roomSection(qa).locator('li.recording-row').filter({ hasText: '2 lượt ghi' })
+          const row = roomSection(qa).locator('li.recording-row').filter({ hasText: 'Mic phòng' })
           await qa.expect(row).toBeVisible()
           await qa.expect(row.locator('.transcript-list')).toBeVisible({ timeout: 15_000 })
           await settled(qa)
@@ -1042,7 +1044,9 @@ export default {
           await qa.shot('hoi-xoa-luot-2')
           await dlg.getByRole('button', { name: 'Xoá lượt' }).click()
           await qa.expect(toast(qa, 'Đã xoá lượt ghi.')).toBeVisible({ timeout: 15_000 })
-          await qa.expect(roomSection(qa).getByText('2 lượt ghi')).toHaveCount(0, { timeout: 10_000 })
+          await qa.expect
+            .poll(async () => (await recordings(qa, 'secretary', m.id)).items.find((r) => r.id === id)?.takes?.length ?? 0, { timeout: 10_000 })
+            .toBe(1)
           await settled(qa)
           await qa.shot('con-mot-luot')
           const c = checker(qa)
@@ -1269,9 +1273,9 @@ export default {
       id: 'AC19',
       role: 'secretary',
       devices: ['desktop', 'phone'],
-      title: 'Mỗi bản ghi cho biết mục đích và ngày tự xoá (180 ngày) khi trỏ hoặc chạm vào dòng thông tin',
+      title: 'Mỗi bản ghi cho biết ai lưu khi trỏ hoặc chạm vào dòng thông tin; hạn tự xoá 180 ngày nằm ở API',
       steps: ['Họp trực tiếp có một bản ghi tải lên', 'thuky@ trỏ chuột (máy tính) hoặc chạm (điện thoại) vào dòng thông tin của bản ghi'],
-      expected: 'Chú thích hiện "Lưu bởi <tên> lúc … · Mục đích: … · Tự xoá ngày <ngày tạo + 180 ngày>"; trên điện thoại chạm cũng hiện (không chỉ hover)',
+      expected: 'Chú thích chỉ còn "Lưu bởi <tên>" (Hải 25/11/2026, không giờ, mục đích, ngày tự xoá); trên điện thoại chạm cũng hiện (không chỉ hover); API retainUntil = ngày tạo + 180 ngày',
       run: wrap(async (qa) => {
         const u = await users(qa)
         const m = await meeting(qa, 'ipRun')
@@ -1285,12 +1289,10 @@ export default {
           if (qa.device === 'phone') await meta.tap()
           else await meta.hover()
           const tip = qa.page.getByRole('tooltip')
-          await qa.expect(tip).toContainText('Tự xoá ngày', { timeout: 5000 })
-          await qa.expect(tip).toContainText(`Lưu bởi ${u.secretary.name}`)
-          await qa.expect(tip).toContainText('Mục đích: QA FE-09: lập biên bản')
-          const text = await tip.innerText()
-          qa.note(`Chú thích: ${text} (hạn API ${rec.retainUntil}, mong đợi ngày ${expiry})`)
-          qa.expect(text.replace(/\s+/g, ' ')).toMatch(new RegExp(`Tự xoá ngày\\s*${expiry.replace(/\//g, '\\/')}`))
+          await qa.expect(tip).toHaveText(`Lưu bởi ${u.secretary.name}`, { timeout: 5000 })
+          const days = (new Date(rec.retainUntil) - new Date(rec.createdAt)) / 86_400_000
+          qa.note(`Chú thích: ${await tip.innerText()} (hạn API ${rec.retainUntil}, ngày ${expiry}, ${days.toFixed(1)} ngày)`)
+          qa.expect(Math.round(days)).toBe(180)
           await settled(qa)
           await qa.shot('han-luu-tru-180-ngay')
         } finally {
@@ -1556,7 +1558,7 @@ export default {
         'thanhvien@ mở tab Bản ghi, trỏ/chạm dòng thông tin, bấm "Nghe cả tệp", kéo thanh vị trí, đổi tốc độ, âm lượng, tắt tiếng',
       ],
       expected:
-        'Mỗi dòng có tên tệp, nhãn "Tải lên", độ dài, dung lượng, ngày lưu, nhãn gỡ băng; trình phát mở sẵn; chú thích "Lưu bởi … · Mục đích: … · Tự xoá ngày …"; nghe chạy, tua đổi vị trí, tốc độ/âm lượng/tắt tiếng đổi trên thẻ audio; chỉ có nút "Thu gọn", không "Tải MP3", "Xoá bản ghi", "Tải tệp lên", không thẻ mic',
+        'Mỗi dòng có tên tệp, nhãn "Tải lên", dung lượng, ngày lưu, nhãn gỡ băng; trình phát mở sẵn, có độ dài; chú thích "Lưu bởi …"; nghe chạy, tua đổi vị trí, tốc độ/âm lượng/tắt tiếng đổi trên thẻ audio; chỉ có nút "Thu gọn", không "Tải MP3", "Xoá bản ghi", "Tải tệp lên", không thẻ mic',
       run: wrap(async (qa) => {
         const m = await meeting(qa, 'ipEnd')
         await clean(qa, m.id)
@@ -1569,7 +1571,8 @@ export default {
           for (const n of [0, 1]) {
             const row = rows.nth(n)
             await qa.expect(row.getByText('Tải lên', { exact: true })).toBeVisible()
-            await qa.expect(row.locator('.recording-meta')).toContainText(/\d+:\d{2}/)
+            // The length moved out of the line into the player (Hải 25/11/2026): "0:00 / 0:05".
+            await qa.expect(row).toContainText(/\/\s*\d+:\d{2}/)
             await qa.expect(row.locator('.recording-meta')).toContainText(/(KB|MB)/)
             await qa.expect(row.getByRole('button', { name: 'Thu gọn' })).toBeVisible()
             await qa.expect(row.getByRole('button', { name: 'Tải MP3' })).toHaveCount(0)
@@ -1586,10 +1589,9 @@ export default {
           if (qa.device === 'phone') {
             // Round 1: a tap does not open the details tooltip on a phone (see AC19); noted, not a stop here.
             const shown = await qa.page.getByRole('tooltip').isVisible({ timeout: 3000 }).catch(() => false)
-            qa.note(`Điện thoại: chạm dòng thông tin ${shown ? 'hiện' : 'KHÔNG hiện'} chú thích mục đích + hạn xoá`)
+            qa.note(`Điện thoại: chạm dòng thông tin ${shown ? 'hiện' : 'KHÔNG hiện'} chú thích người lưu`)
           } else {
-            await qa.expect(qa.page.getByRole('tooltip')).toContainText('Tự xoá ngày', { timeout: 5000 })
-            await qa.expect(qa.page.getByRole('tooltip')).toContainText('Mục đích: QA FE-09: lập biên bản')
+            await qa.expect(qa.page.getByRole('tooltip')).toContainText('Lưu bởi', { timeout: 5000 })
           }
           await settled(qa)
           await qa.shot('danh-sach-chu-thich')
@@ -1819,9 +1821,9 @@ export default {
       id: 'AC29',
       role: 'member',
       devices: ['desktop', 'phone'],
-      title: 'Thành viên thấy lượt mic phòng đang ghi (không nghe, không xoá), danh sách tự làm mới khi Thư ký tắt mic',
+      title: 'Lượt mic phòng đang ghi không có dòng trong danh sách của Thành viên (không nghe, không xoá); danh sách tự làm mới khi Thư ký tắt mic',
       steps: ['Thư ký mở một lượt mic phòng (API); thanhvien@ mở tab Bản ghi', 'Thư ký lưu lượt (API)'],
-      expected: 'Dòng "Mic phòng đang ghi" nhãn "Đang ghi", tên Thư ký, "từ <giờ>", không nút nghe/xoá; sau khi lưu, không tải lại trang, dòng đổi thành bản ghi "Mic phòng"',
+      expected: 'Khi đang ghi: "Chưa có bản ghi." và "Có bản ghi khi tắt mic phòng.", không dòng bản ghi, không trình phát; sau khi lưu, không tải lại trang, hiện dòng bản ghi "Mic phòng"',
       run: wrap(async (qa) => {
         const u = await users(qa)
         const m = await meeting(qa, 'ipRun')
@@ -1831,12 +1833,8 @@ export default {
           const opened = await sec.post(`${R(m.id)}/takes`, { consentConfirmed: true })
           qa.expectStatus(opened, 201)
           await openTab(qa, m)
-          const live = roomSection(qa).locator('li.recording-live')
-          await qa.expect(live.getByText('Mic phòng đang ghi')).toBeVisible()
-          await qa.expect(live.getByText('Đang ghi', { exact: true })).toBeVisible()
-          await qa.expect(live.getByText(u.secretary.name)).toBeVisible()
-          await qa.expect(live.getByText(/^từ /)).toBeVisible()
-          await qa.expect(live.getByRole('button', { name: /Nghe|Tải|Xoá/ })).toHaveCount(0)
+          await qa.expect(roomSection(qa).getByText('Có bản ghi khi tắt mic phòng.')).toBeVisible()
+          await qa.expect(roomSection(qa).locator('li.recording-row')).toHaveCount(0)
           await qa.expect(roomSection(qa).locator('audio')).toHaveCount(0)
           await settled(qa)
           await qa.shot('thanh-vien-thay-dang-ghi')
@@ -1848,7 +1846,6 @@ export default {
             qa.expect(res.status).toBe(204)
           }
           qa.expectStatus(await sec.post(`/api/recordings/${opened.body.recordingId}/complete`), 200)
-          await qa.expect(roomSection(qa).locator('li.recording-live')).toHaveCount(0, { timeout: 20_000 })
           await qa.expect(roomSection(qa).locator('li.recording-row').filter({ hasText: 'Mic phòng' }).first()).toBeVisible({ timeout: 20_000 })
           await settled(qa)
           await qa.shot('tu-lam-moi-sau-khi-tat-mic')
@@ -1995,7 +1992,7 @@ export default {
         'Tải lên lại với mục đích "Họp giao ban tháng 11", trỏ/chạm dòng thông tin, bấm "Tải MP3"',
       ],
       expected:
-        'Thẻ thu nhỏ thành bong bóng "Mở ô ghi âm…" rồi mở lại; Huỷ đóng hộp, không bản ghi; ô mục đích có maxlength 1000; chú thích có "Mục đích: Họp giao ban tháng 11"; "Tải MP3" lưu tệp .mp3 theo tên gốc, trang ở nguyên tab, không lỗi',
+        'Thẻ thu nhỏ thành bong bóng "Mở ô ghi âm…" rồi mở lại; Huỷ đóng hộp, không bản ghi; ô mục đích có maxlength 1000; chú thích có "Lưu bởi", API consentPurpose "Họp giao ban tháng 11"; "Tải MP3" lưu tệp .mp3 theo tên gốc, trang ở nguyên tab, không lỗi',
       run: wrap(async (qa) => {
         const m = await meeting(qa, 'ipRun')
         await clean(qa, m.id)
@@ -2032,10 +2029,12 @@ export default {
           await press(qa, dlg.getByRole('button', { name: 'Tải lên' }))
           const row = roomSection(qa).locator('li.recording-row').filter({ hasText: 's1.mp3' })
           await qa.expect(row).toBeVisible({ timeout: 30_000 })
+          const saved = (await recordings(qa, 'secretary', m.id)).items.find((r) => r.fileName === 's1.mp3')
+          qa.expect(saved?.consentPurpose).toBe('Họp giao ban tháng 11')
           const meta = row.locator('.recording-meta')
           if (qa.device === 'phone') await meta.tap()
           else await meta.hover()
-          if (qa.device === 'desktop') await qa.expect(qa.page.getByRole('tooltip')).toContainText('Mục đích: Họp giao ban tháng 11')
+          if (qa.device === 'desktop') await qa.expect(qa.page.getByRole('tooltip')).toContainText('Lưu bởi')
           else qa.note(`Điện thoại: chạm dòng thông tin ${(await qa.page.getByRole('tooltip').isVisible().catch(() => false)) ? 'hiện' : 'KHÔNG hiện'} chú thích`)
           await settled(qa)
           await qa.shot('muc-dich-tuy-chon')
