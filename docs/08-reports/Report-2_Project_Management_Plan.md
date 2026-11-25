@@ -22,9 +22,9 @@ Table of Contents
 | 09/10/2026 | M, D | KhanhPG | Renumber FE-01–FE-15; in-meeting voting with Chair conclusions (no time-box, quorum or Resolution scope); safeguards, effort and dates preserved. |
 | 13/10/2026 | M | HaiTV | Align the plan with the decisions on documents (immutable files, folders, browser previews) and on voting (Chair-selected voters, Guests vote, no close-Votes requirement). |
 | 30/10/2026 | M | HuyNQ | Fix review findings (v1.2): fifteen features in risk R04, EX means Exception, Cancelled lifecycle added, TBDs closed, R03 lowered, no 'versioning' in Iteration 2, ToC fixed. |
-| 15/11/2026 | M, D | KhanhPG | SCRUM-207 (note 51): drop FE-14 from scope and Iteration 6; account lifecycle ends at deactivation, per-minute sign-in limit kept. |
+| 15/11/2026 | M, D | KhanhPG | Drop FE-14 from scope and Iteration 6; account lifecycle ends at deactivation, per-minute sign-in limit kept. |
 | 24/11/2026 | M, A, D | LocHD | Supervisor review: align with Report 1 and the built system: minutes approved, not signed; AI environment decided; in-meeting recording; FE-16 in Iteration 6; app/main branches; Actual metrics to 24/11/2026. |
-| 25/11/2026 | M | LocHD | [PR #548] Outgoing email through Resend only; page breaks moved onto the headings; features numbered FE-01 to FE-15 without a gap; decision-record references removed. |
+| 25/11/2026 | M | LocHD | Outgoing email through Resend only; page breaks moved onto the headings; features numbered FE-01 to FE-15 without a gap; decision-record references removed. |
 
 *A - Added M - Modified D - Deleted
 

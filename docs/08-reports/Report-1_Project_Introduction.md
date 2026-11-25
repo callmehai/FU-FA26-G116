@@ -25,9 +25,9 @@ Table of Contents
 | 09/10/2026 | M, D | KhanhPG | Renumber active features FE-01–FE-15; in-meeting voting with Chair conclusions (no time-box, quorum or separate Resolution scope); audio safeguards kept; schedule and effort preserved. |
 | 13/10/2026 | M | HaiTV | FE-07: no document versions, one immutable file, Chair/Secretary manage meeting documents, library folders, browser previews. FE-11: Chair-selected voters, Guests vote, ending a Meeting needs no closed Votes. |
 | 03/11/2026 | M, D | KhanhPG | Remove stakeholder emails and phone numbers from the public report; keep names and roles only. |
-| 15/11/2026 | M, D | KhanhPG | SCRUM-207 (note 51): drop FE-14 Personal Dashboard & Meeting Workspace and account unlock; sign-in keeps per-minute attempt limits only. |
+| 15/11/2026 | M, D | KhanhPG | Drop FE-14 Personal Dashboard & Meeting Workspace and account unlock; sign-in keeps per-minute attempt limits only. |
 | 24/11/2026 | M, A | LocHD | Supervisor review: align with the built system: minutes are approved, not signed (FE-12); AI environment decided; in-meeting recording, Voice ID, notifications and reports as built; add FE-16; Architecture moves to Nguyen Quang Huy. |
-| 25/11/2026 | M | LocHD | [PR #548] Email via Resend only; no blank page after the Change Log; FE-01 to FE-15; no Vietnamese or decision records. |
+| 25/11/2026 | M | LocHD | Email via Resend only; no blank page after the Change Log; FE-01 to FE-15; no Vietnamese or decision records. |
 
 *A - Added M - Modified D - Deleted
 

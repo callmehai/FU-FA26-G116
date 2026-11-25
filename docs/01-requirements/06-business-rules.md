@@ -31,7 +31,7 @@ thông báo `MSG`.
 | `BR-008` | A change to a role's capabilities or to a user's role takes effect from the user's next action, without ending the session. |
 | `BR-009` | Account and role administration changes and every sign-in are recorded in the audit log. |
 | `BR-010` | Issuing minutes, viewing a document of a Secret Meeting, exporting a report and sharing a calendar are recorded in the audit log. |
-| `BR-011` | Recording or playing a voice sample, adding or removing a meeting document, and reading a deactivated account's library are recorded in the audit log. |
+| `BR-011` | Recording, playing or deleting a voice sample, and reading a deactivated account's library, are recorded in the audit log. |
 | `BR-012` | Only a role with the user-administration capability views the audit log; the audit log is read-only and nobody can edit or delete it. |
 | `BR-013` | A new Meeting starts in Draft; its planned start is later than now and its planned end is later than its planned start. |
 | `BR-014` | Meeting information can be edited only in Draft or Rejected; editing does not change the status. |
