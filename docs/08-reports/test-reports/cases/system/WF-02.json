@@ -48,7 +48,7 @@
             "TC01 passed: Draft meeting exists with Member B as Thư ký.",
             "A guest mailbox the tester can read."
           ],
-          "aiNote": "BF-02 · UC-30a · UC-30a · MSG96 · 5.2: PART_FT15, PART_FT25 · Evidence: QA run SYS-WF02 20261123-064947-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
+          "aiNote": "BF-02 · UC-30a · MSG96 · 5.2: PART_FT15, PART_FT25 · Evidence: QA run SYS-WF02 20261123-064947-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
           "round1": "Passed",
           "date1": "2026-11-23",
           "tester1": "Nguyễn Trường Huy"
@@ -124,7 +124,7 @@
           "preconditions": [
             "TC01 to TC04 passed."
           ],
-          "aiNote": "BF-02 · UC-17 · UC-17 · MSG78 · 5.2: MEET_FT41 · Evidence: QA run SYS-WF02 20261123-064947-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
+          "aiNote": "BF-02 · UC-17 · MSG78 · 5.2: MEET_FT41 · Evidence: QA run SYS-WF02 20261123-064947-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
           "round1": "Passed",
           "date1": "2026-11-23",
           "tester1": "Nguyễn Trường Huy"
@@ -179,7 +179,7 @@
           "preconditions": [
             "TC06 passed: meeting is Chờ duyệt after resubmission."
           ],
-          "aiNote": "BF-02 · UC-18, UC-19 ·  · MSG43, MSG45 · 5.2: MEET_FT49, MEET_FT55 · Evidence: QA run SYS-WF02 20261123-064947-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
+          "aiNote": "BF-02 · UC-18, UC-19 · MSG43, MSG45 · 5.2: MEET_FT49, MEET_FT55 · Evidence: QA run SYS-WF02 20261123-064947-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
           "round1": "Passed",
           "date1": "2026-11-23",
           "tester1": "Nguyễn Trường Huy"

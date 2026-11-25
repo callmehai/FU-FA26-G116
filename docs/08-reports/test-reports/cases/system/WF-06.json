@@ -44,7 +44,7 @@
           "preconditions": [
             "TC01 passed; a person reading aloud; the speech worker computes the voice embedding."
           ],
-          "aiNote": "BF-04 · UC-56c · ADR-0071, ADR-0073, ADR-0075 · MSG473, MSG483 · Run by hand by Nguyễn Trường Huy on the app server (app.trustcabinet.workspace-hub.space; Staging, app e7dc0e7a deployed 2026-11-23T04:12:20Z, Deployments 7990246591 - the build running during the 23/11 daytime hand run; 6baba24f was never deployed), the only environment with the speech worker, the local language model, Google Sign-In and real mail. · Expected corrected per review PR 507: on the UI \"Bắt đầu ghi\" and \"Lưu giọng mẫu\" are disabled until the agreement is ticked, so MSG483 is reached only by calling the API without personAgreed; the QA runner did that on the local build and got 400 MSG483. · Evidence: Staging deployment 7990246591 (https://github.com/callmehai/FU-FA26-G116/commit/e7dc0e7a) + code-matched UI strings; screenshots to be attached on Round 2 re-run.",
+          "aiNote": "BF-04 · UC-56c · ADR-0071, ADR-0073, ADR-0075 · MSG473, MSG483 · Expected corrected per review PR 507: on the UI \"Bắt đầu ghi\" and \"Lưu giọng mẫu\" are disabled until the agreement is ticked, so MSG483 is reached only by calling the API without personAgreed; the QA runner did that on the local build and got 400 MSG483. · Run by hand by Nguyễn Trường Huy on the app server (app.trustcabinet.workspace-hub.space), time not shown on the screenshot, server build not established (time unknown) (GitHub Deployments, server-app). Evidence: dialog \"Giọng nói thu hộ: Hoàng Đức Lộc\" with 2/5 samples and \"Thu\" https://drive.google.com/file/d/1ibM94s3jrkOrSVxLOqiCZ2ZfQeI6yNmI/view.",
           "round1": "Passed",
           "date1": "2026-11-23",
           "tester1": "Nguyễn Trường Huy"
@@ -66,9 +66,9 @@
           "preconditions": [
             "TC02 passed; the speech worker is running."
           ],
-          "aiNote": "BF-04 · UC-54, UC-55b · ADR-0074 · Run by hand by Nguyễn Trường Huy on the app server (app.trustcabinet.workspace-hub.space; Staging, app e7dc0e7a deployed 2026-11-23T04:12:20Z, Deployments 7990246591 - the build running during the 23/11 daytime hand run; 6baba24f was never deployed), the only environment with the speech worker, the local language model, Google Sign-In and real mail. · Evidence: Staging deployment 7990246591 (https://github.com/callmehai/FU-FA26-G116/commit/e7dc0e7a) + code-matched UI strings; screenshots to be attached on Round 2 re-run.",
+          "aiNote": "BF-04 · UC-54, UC-55b · ADR-0074 · Run by hand by Nguyễn Trường Huy on the app server (app.trustcabinet.workspace-hub.space), 2026-11-24 20:23–20:24 ICT (13:23Z, sentence times), server build 85ab2a2a (deployed 10:15Z, replaced 13:30Z) (GitHub Deployments, server-app). Evidence: sentences of voices with samples named automatically, the others left \"Người nói n\" https://drive.google.com/file/d/1M0-uekm0Pbiu4uCejAs0oMOR1B8nGjCz/view.",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-24",
           "tester1": "Nguyễn Trường Huy"
         }
       ]

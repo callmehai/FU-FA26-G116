@@ -46,7 +46,7 @@
      "groups": ["Reschedule Published Meeting", "Hand Over Chair", "Cancel Meeting"]},
     {"id": "WF-08", "sheet": "WorkFlow8", "name": "Documents Across the Meeting", "bf": "BF-02",
      "description": "A user uploads to the personal library, attaches the file to a meeting, participants comment, and sensitivity limits who can see the file.",
-     "precondition": "Organizer and two members; a PDF and a DOCX file; one Confidential meeting",
+     "precondition": "Organizer and two members; a PDF and a DOCX file; one Secret (Mật) meeting",
      "groups": ["Personal Library", "Attach to Meeting", "Comment on Document", "Sensitivity Limits Readers"]},
     {"id": "WF-09", "sheet": "WorkFlow9", "name": "Notifications and Calendar", "bf": "BF-02",
      "description": "Every event of WF-02 to WF-04 reaches the right people in real time on the bell and by email, and the calendar shows each meeting with its current status.",

@@ -20,7 +20,7 @@
           "preconditions": [
             "Published meeting A with Chủ toạ Member A, Thư ký Member B, Member C; their invitation emails already sent."
           ],
-          "aiNote": "BF-02 · UC-14 AF-1 · BR-014 · MSG138 · 5.2: MEET_FT15, NOTI_FT31 · Evidence: QA run SYS-WF07 20261123-065645-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
+          "aiNote": "BF-02 · UC-14 AF-1 · BR-015 · MSG138 · 5.2: MEET_FT15, NOTI_FT31 · Evidence: QA run SYS-WF07 20261123-065645-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
           "round1": "Passed",
           "date1": "2026-11-23",
           "tester1": "Nguyễn Trường Huy"
@@ -70,7 +70,7 @@
           "preconditions": [
             "Published meeting B with the same roster; invitation emails already sent."
           ],
-          "aiNote": "BF-02 · UC-22 · UC-22 · MSG261, MSG262 · 5.2: MEET_FT68, NOTI_FT32 · Evidence: QA run SYS-WF07 20261123-065645-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
+          "aiNote": "BF-02 · UC-22 · BR-028 · MSG261, MSG262 · 5.2: MEET_FT68, NOTI_FT32 · Evidence: QA run SYS-WF07 20261123-065645-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
           "round1": "Passed",
           "date1": "2026-11-23",
           "tester1": "Nguyễn Trường Huy"

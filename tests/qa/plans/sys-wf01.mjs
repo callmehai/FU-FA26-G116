@@ -12,6 +12,7 @@ import {
   checker,
   closeSeconds,
   dialog,
+  mailedMatch,
   noRawCodes,
   noSidewaysScroll,
   secondBrowser,
@@ -323,6 +324,72 @@ export default {
           await admin.put(`/api/users/${state.userId}/status`, { isActive: false })
         }
         if (state.roleId) qa.expectStatus(await admin.delete(`/api/roles/${state.roleId}`), 200)
+      },
+    },
+    {
+      id: 'TC10',
+      role: 'admin',
+      title: 'The Administrator sends a reset link; the user sets a new password from the email; the link works once',
+      async run(qa) {
+        // Precondition (API): an account of its own, so resetting it changes no seed password. The reset email reaches
+        // the local Mailpit inbox (sys-lib, the backend's SMTP pointed at it), the way the user reads their mailbox.
+        const admin = await qa.api('admin')
+        const roles = (await admin.get('/api/roles')).body
+        const member = (roles.items ?? roles).find((r) => r.name === 'Thành viên')
+        const user = { fullName: `Trần Đặt Lại ${RUN}`, email: `sys-wf01-reset-${RUN}@trustcabinet.local` }
+        qa.expectStatus(await admin.post('/api/users', { ...user, password: PASSWORD, roleId: member.id }), 201)
+        const NEW = `Mật khẩu mới ${RUN} 2026!`
+        await qa.goto(`/mgmt/admin/users?q=${encodeURIComponent(user.email)}`)
+        const send = qa.page.getByRole('button', { name: `Gửi liên kết đặt lại mật khẩu cho ${user.fullName}` })
+        await qa.expect(send).toBeVisible()
+        await send.click()
+        const d = dialog(qa.page, 'Đặt lại mật khẩu')
+        await qa.expect(d).toContainText(user.email)
+        await qa.expect(d).toContainText('Liên kết dùng được một lần trong 60 phút')
+        await qa.shot('hoi-gui-lien-ket')
+        const since = Date.now()
+        const sent = qa.page.waitForResponse((r) => r.url().includes('/password-reset') && r.request().method() === 'POST')
+        await d.getByRole('button', { name: 'Gửi liên kết', exact: true }).click()
+        const res = await sent
+        qa.expect((await res.json()).code).toBe('MSG13')
+        await qa.expect(toast(qa.page, 'Đã gửi email đặt lại mật khẩu.')).toBeVisible()
+        await qa.shot('da-gui-email')
+        const mail = await mailedMatch(user.email, since, /(\/reset-password#token=[A-Za-z0-9_-]+)/)
+        const page = await secondBrowser(qa, 'anon', { signIn: false })
+        try {
+          await page.goto(mail.view)
+          await qa.expect(page.getByText('Liên kết có hiệu lực trong 60 phút và chỉ dùng được một lần.')).toBeVisible()
+          await shotOf(qa, page, 'email-dat-lai-mat-khau', 'user')
+          await page.goto(mail.match)
+          await qa.expect(page.getByRole('heading', { level: 1, name: 'Đặt lại mật khẩu' })).toBeVisible()
+          await page.getByLabel('Mật khẩu mới', { exact: true }).fill(NEW)
+          await page.getByLabel('Nhập lại mật khẩu mới').fill(NEW)
+          await shotOf(qa, page, 'nhap-mat-khau-moi', 'user')
+          const reset = page.waitForResponse((r) => r.url().endsWith('/api/auth/password-reset') && r.request().method() === 'POST')
+          await page.getByRole('button', { name: 'Đặt mật khẩu mới', exact: true }).click()
+          qa.expect((await (await reset).json()).code).toBe('MSG92')
+          await qa.expect(toast(page, 'Đặt lại mật khẩu thành công. Vui lòng đăng nhập bằng mật khẩu mới.')).toBeVisible()
+          await shotOf(qa, page, 'dat-lai-thanh-cong', 'user')
+          const oldLogin = await rawLogin(qa, user.email, PASSWORD)
+          const newLogin = await rawLogin(qa, user.email, NEW)
+          qa.expect(oldLogin.status, 'the old password still signs in').not.toBe(200)
+          qa.expect(newLogin.status, 'the new password does not sign in').toBe(200)
+          // The same link a second time.
+          await page.goto('about:blank')
+          await page.goto(mail.match)
+          await page.getByLabel('Mật khẩu mới', { exact: true }).fill(`${NEW}x`)
+          await page.getByLabel('Nhập lại mật khẩu mới').fill(`${NEW}x`)
+          const again = page.waitForResponse((r) => r.url().endsWith('/api/auth/password-reset') && r.request().method() === 'POST')
+          await page.getByRole('button', { name: 'Đặt mật khẩu mới', exact: true }).click()
+          const reused = await again
+          qa.expect(reused.status()).toBe(400)
+          qa.expect((await reused.json()).code).toBe('MSG93')
+          await qa.expect(page.getByRole('alert')).toBeVisible()
+          await shotOf(qa, page, 'lien-ket-dung-lai-bi-tu-choi', 'user')
+          qa.note(`Old password sign-in ${oldLogin.status}; new password ${newLogin.status}; reused link 400 MSG93`)
+        } finally {
+          await closeSeconds(qa)
+        }
       },
     },
   ],

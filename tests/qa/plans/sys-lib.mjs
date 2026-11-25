@@ -127,20 +127,27 @@ export const nowIso = () => new Date().toISOString()
 
 export const MAILPIT = process.env.QA_MAILPIT ?? 'http://127.0.0.1:8025'
 
-/** The newest 6-digit code mailed to `to` since `sinceMs`, read from Mailpit the way the guest reads their mailbox. */
-export async function mailedCode(to, sinceMs, timeoutMs = 45_000) {
+/** The first match of `pattern` in the newest mail to `to` since `sinceMs`, read from Mailpit (the recipient's mailbox). */
+export async function mailedMatch(to, sinceMs, pattern, timeoutMs = 45_000) {
   const end = Date.now() + timeoutMs
   while (Date.now() < end) {
     const res = await fetch(`${MAILPIT}/api/v1/search?query=${encodeURIComponent(`to:"${to}"`)}&limit=10`)
     for (const m of (await res.json()).messages ?? []) {
       if (Date.parse(m.Created) < sinceMs - 2000) continue
       const msg = await (await fetch(`${MAILPIT}/api/v1/message/${m.ID}`)).json()
-      const hit = /(?<!\d)(\d{6})(?!\d)/.exec(msg.Text ?? '')
-      if (hit) return { code: hit[1], subject: m.Subject, id: m.ID }
+      const hit = pattern.exec(`${msg.Text ?? ''}
+${msg.HTML ?? ''}`)
+      if (hit) return { match: hit[1] ?? hit[0], subject: m.Subject, id: m.ID, view: `${MAILPIT}/view/${m.ID}.html` }
     }
     await new Promise((r) => setTimeout(r, 1500))
   }
-  throw new Error(`no code mailed to ${to} (is the backend's SMTP pointed at Mailpit?)`)
+  throw new Error(`nothing matching ${pattern} mailed to ${to} (is the backend's SMTP pointed at Mailpit?)`)
+}
+
+/** The newest 6-digit code mailed to `to` since `sinceMs`, read from Mailpit the way the guest reads their mailbox. */
+export async function mailedCode(to, sinceMs, timeoutMs = 45_000) {
+  const hit = await mailedMatch(to, sinceMs, /(?<!\d)(\d{6})(?!\d)/, timeoutMs)
+  return { code: hit.match, subject: hit.subject, id: hit.id }
 }
 
 /** The guest link of an invitation, read from the invitation email in the outbox (waits for the mail worker). */

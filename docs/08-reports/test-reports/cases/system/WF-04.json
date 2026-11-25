@@ -18,9 +18,9 @@
           "preconditions": [
             "SYS_WF03_TC07 passed; an audio file of the meeting; the speech worker is running."
           ],
-          "aiNote": "BF-04 · UC-52c, UC-54 · MSG290 · 5.2: REC_FT32, TRANS_FT01 · Run by hand by Nguyễn Trường Huy on the app server (app.trustcabinet.workspace-hub.space; Staging, app e7dc0e7a deployed 2026-11-23T04:12:20Z, Deployments 7990246591 - the build running during the 23/11 daytime hand run; 6baba24f was never deployed), the only environment with the speech worker, the local language model, Google Sign-In and real mail. · Expected corrected per review PR 507: an audio upload goes through the upload tray and shows no toast (UC-52c step 6, no MSG290 toast). · Evidence: Staging deployment 7990246591 (https://github.com/callmehai/FU-FA26-G116/commit/e7dc0e7a) + code-matched UI strings; screenshots to be attached on Round 2 re-run.",
+          "aiNote": "BF-04 · UC-52c, UC-54 · MSG290 · 5.2: REC_FT32, TRANS_FT01 · Expected corrected per review PR 507: an audio upload goes through the upload tray and shows no toast (UC-52c step 6, no MSG290 toast). · Run by hand by Nguyễn Trường Huy on the app server (app.trustcabinet.workspace-hub.space), 2026-11-25 16:03 ICT (09:03Z, upload time on the recording row), server build 3b11d2c9 (deployed 08:56Z) (GitHub Deployments, server-app). Evidence: upload dialog https://drive.google.com/file/d/1mjj_eSG9IeN0WhVIYSOBb4gwIx0DnJb5/view, recording \"Có bản gỡ băng\" with times and speaker labels https://drive.google.com/file/d/1mci6HPTBCkkCEZHQhH-KbjYYNxg_u-YL/view.",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-25",
           "tester1": "Nguyễn Trường Huy"
         }
       ]
@@ -42,9 +42,9 @@
           "preconditions": [
             "TC01 passed."
           ],
-          "aiNote": "BF-04 · UC-55a, UC-55b · MSG302, MSG316 · Run by hand by Nguyễn Trường Huy on the app server (app.trustcabinet.workspace-hub.space; Staging, app e7dc0e7a deployed 2026-11-23T04:12:20Z, Deployments 7990246591 - the build running during the 23/11 daytime hand run; 6baba24f was never deployed), the only environment with the speech worker, the local language model, Google Sign-In and real mail. · Evidence: Staging deployment 7990246591 (https://github.com/callmehai/FU-FA26-G116/commit/e7dc0e7a) + code-matched UI strings; screenshots to be attached on Round 2 re-run.",
+          "aiNote": "BF-04 · UC-55a, UC-55b · MSG302, MSG316 · Run by hand by Nguyễn Trường Huy on the app server (app.trustcabinet.workspace-hub.space), 2026-11-25 after 16:03 ICT, on the TC01 recording, server build 3b11d2c9 (GitHub Deployments, server-app). Evidence: edited sentence marked \"đã sửa\" https://drive.google.com/file/d/1UoAd--Ulhe9BlrqJLWLLhmI7LtsumlHf/view; the speaker assignment step has no screenshot yet.",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-25",
           "tester1": "Nguyễn Trường Huy"
         }
       ]
@@ -64,9 +64,9 @@
           "preconditions": [
             "TC02 passed; the local language model is running."
           ],
-          "aiNote": "BF-04 · UC-58, UC-59 · Run by hand by Nguyễn Trường Huy on the app server (app.trustcabinet.workspace-hub.space; Staging, app e7dc0e7a deployed 2026-11-23T04:12:20Z, Deployments 7990246591 - the build running during the 23/11 daytime hand run; 6baba24f was never deployed), the only environment with the speech worker, the local language model, Google Sign-In and real mail. · Evidence: Staging deployment 7990246591 (https://github.com/callmehai/FU-FA26-G116/commit/e7dc0e7a) + code-matched UI strings; screenshots to be attached on Round 2 re-run.",
+          "aiNote": "BF-04 · UC-58, UC-59 · Run by hand by Nguyễn Trường Huy on the app server (app.trustcabinet.workspace-hub.space), 2026-11-24 after the team meeting ended at 21:57 ICT (14:57Z); exact time not shown, server build 330468a4 from 13:30Z, 4c80747b from 16:12Z (GitHub Deployments, server-app). Evidence: AI draft \"Dự thảo nội dung · Đã duyệt\" https://drive.google.com/file/d/1Oc6wI2tkDqqySbOLb59BCvH48qHolDGd/view; on the team meeting of 24/11, not the WF-03 chain meeting.",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-24",
           "tester1": "Nguyễn Trường Huy"
         }
       ]
@@ -88,9 +88,9 @@
           "preconditions": [
             "TC03 passed."
           ],
-          "aiNote": "BF-04 · UC-60, UC-61, UC-70 · Run by hand by Nguyễn Trường Huy on the app server (app.trustcabinet.workspace-hub.space; Staging, app e7dc0e7a deployed 2026-11-23T04:12:20Z, Deployments 7990246591 - the build running during the 23/11 daytime hand run; 6baba24f was never deployed), the only environment with the speech worker, the local language model, Google Sign-In and real mail. · Expected corrected per review PR 507: the \"Đã tạo bản nháp biên bản.\" toast and the paper contents belong here, where the minutes are built from the approved AI draft. · Evidence: Staging deployment 7990246591 (https://github.com/callmehai/FU-FA26-G116/commit/e7dc0e7a) + code-matched UI strings; screenshots to be attached on Round 2 re-run.",
+          "aiNote": "BF-04 · UC-60, UC-61, UC-70 · Expected corrected per review PR 507: the \"Đã tạo bản nháp biên bản.\" toast and the paper contents belong here, where the minutes are built from the approved AI draft. · Run by hand by Nguyễn Trường Huy on the app server (app.trustcabinet.workspace-hub.space), 2026-11-24 after 21:57 ICT, right after TC03; exact time not shown, server build 330468a4 from 13:30Z, 4c80747b from 16:12Z (GitHub Deployments, server-app). Evidence: minutes built from the approved AI draft https://drive.google.com/file/d/1sUxZ0X1fv0NPv7oIOGHxyR9hpI5GxqpY/view; on the team meeting of 24/11.",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-24",
           "tester1": "Nguyễn Trường Huy"
         }
       ]
@@ -211,9 +211,9 @@
           "preconditions": [
             "TC08 passed (minutes Đã ban hành)."
           ],
-          "aiNote": "BF-04 · UC-75, UC-72, UC-73 · BR-137, BR-138 · MSG432, MSG424, MSG427 · 5.2: MIN_FT40, MIN_FT41, MIN_FT42 · Added on 2026-11-24 per review PR 507 (UC-75 correcting issued minutes was missing from WF-04). Run by hand by Nguyễn Trường Huy on the app server (app.trustcabinet.workspace-hub.space; Staging, app 1acb600a deployed 2026-11-24T09:00:16Z, Deployments 8023165204 — the build running during the 24/11 hand run) on 2026-11-24: \"Tạo bản đính chính\" dialog, MSG432, \"Đính chính · bản nháp / chờ duyệt\", version picker \"Bản gốc / Đính chính 1 / Đã thay thế\" matched the code. Evidence: code-matched UI strings + MSG codes; screenshots to be attached on Round 2 re-run.",
+          "aiNote": "BF-04 · UC-75, UC-72, UC-73 · BR-137, BR-138 · MSG432, MSG424, MSG427 · 5.2: MIN_FT40, MIN_FT41, MIN_FT42 · QA runner on a local build (f44dc1d6; Mailpit as the mailbox, nothing mailed out), 2026-11-25 08:47Z (15:47 ICT), run id SYS-WF04 20261125-084736-f44dc1d6. Evidence: screenshots https://drive.google.com/drive/folders/1-tvjUc1JS_J3uOcsuMyr3Z68Irq_g-Ml; on a meeting of its own with minutes issued from the fixed template. Added per review PR 507 (UC-75 was missing from WF-04).",
           "round1": "Passed",
-          "date1": "2026-11-24",
+          "date1": "2026-11-25",
           "tester1": "Nguyễn Trường Huy"
         }
       ]

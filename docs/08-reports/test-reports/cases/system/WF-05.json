@@ -45,9 +45,9 @@
           "preconditions": [
             "TC01 passed; the invitation and the code reach a mailbox the tester can read."
           ],
-          "aiNote": "BF-03 · UC-04, UC-43 · BR-049–BR-052 · 5.2: ROOM_FT17, ROOM_FT51 · Run by hand by Nguyễn Trường Huy on the app server (app.trustcabinet.workspace-hub.space; Staging, app e7dc0e7a deployed 2026-11-23T04:12:20Z, Deployments 7990246591 - the build running during the 23/11 daytime hand run; 6baba24f was never deployed), the only environment with the speech worker, the local language model, Google Sign-In and real mail. · Evidence: Staging deployment 7990246591 (https://github.com/callmehai/FU-FA26-G116/commit/e7dc0e7a) + code-matched UI strings; screenshots to be attached on Round 2 re-run.",
+          "aiNote": "BF-03 · UC-04, UC-43 · BR-049–BR-052 · 5.2: ROOM_FT17, ROOM_FT51 · QA runner on a local build (f44dc1d6; Mailpit as the mailbox, nothing mailed out), 2026-11-25 08:43Z (15:43 ICT), run id SYS-WF05 20261125-084327-f44dc1d6. Evidence: screenshots https://drive.google.com/drive/folders/1LuGCLAhpFAG0AguaBB9P5JYjEktOKvPz; code read from the mailbox, name declared, recording notice ticked, the Chair's \"Người dự\" lists the guest without an email.",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-25",
           "tester1": "Nguyễn Trường Huy"
         }
       ]
@@ -94,9 +94,9 @@
           "preconditions": [
             "TC01 passed; a person speaking into a real microphone."
           ],
-          "aiNote": "BF-03 · UC-52a · ADR-0040 · Run by hand by Nguyễn Trường Huy on the app server (app.trustcabinet.workspace-hub.space; Staging, app e7dc0e7a deployed 2026-11-23T04:12:20Z, Deployments 7990246591 - the build running during the 23/11 daytime hand run; 6baba24f was never deployed), the only environment with the speech worker, the local language model, Google Sign-In and real mail. · Evidence: Staging deployment 7990246591 (https://github.com/callmehai/FU-FA26-G116/commit/e7dc0e7a) + code-matched UI strings; screenshots to be attached on Round 2 re-run.",
+          "aiNote": "BF-03 · UC-52a · ADR-0040 · Run by hand by Nguyễn Trường Huy on the app server (app.trustcabinet.workspace-hub.space), 2026-11-24 21:20–21:23 ICT (14:20–14:23Z, sentence times), server build 330468a4 (GitHub Deployments, server-app). Evidence: sentences stored under the speaker's name with their clips https://drive.google.com/file/d/1NFNvsADW0aIf7gQCN_8QGQ5wtI0G3Pl7/view.",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-24",
           "tester1": "Nguyễn Trường Huy"
         }
       ]

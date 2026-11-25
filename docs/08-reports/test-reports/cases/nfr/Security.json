@@ -94,9 +94,9 @@
       "when": "Open the invitation link, verify the code, then try another meeting, the personal library and an expired code",
       "then": "The code expires within 15 minutes; the guest acts as a Member in the invited meeting only; everything else is not found; no internal account is created",
       "priority": "Critical",
-      "aiNote": "Report 3 §IV.2.3 fixed to 15 minutes to match the code (was 10 minutes). Measured 15-minute expiry: GuestAccessOptions CodeLifetimeMinutes = 15, no appsettings override; invitation mail and guest screen both show \"Mã có hiệu lực trong 15 phút.\" (guest code sender, mail templates, docs/03-api/16-truy-cap-khach-uc04.md). Run by hand by Nguyễn Trường Huy on the app server (Staging, app e7dc0e7a deployed 2026-11-23T04:12:20Z, Deployments 7990246591 — the build running during the 23/11 daytime hand run; not 6baba24f which was never deployed) with a real guest mailbox on 2026-11-23: verified code within 15 min reaches only the invited meeting; another meeting, the personal library and an expired code answer not found; no internal account created. Before that the QA runner on the local build checked only that the invited meeting answers 401 without a verified guest session (the one-time code is mailed straight to the guest and only its hash is stored; @trustcabinet.local is never mailed) · Evidence: QA run SYS-NFR 20261122-184055; code + mail template + guest screen text.",
+      "aiNote": "QA runner on a local build (f44dc1d6; Mailpit as the mailbox, nothing mailed out), 2026-11-25 08:45Z (15:45 ICT), against the 15-minute target set on 24/11, run id SYS-NFR 20261125-084539-f44dc1d6. Evidence: screenshots https://drive.google.com/drive/folders/1tnYZu2X3cgNRybtEFNq0eTsWNlAI0B2r. Measured: code lifetime 15 min; an expired code (expiry moved into the past in the local database, the clock cannot wait 15 minutes) → 400 MSG126; a fresh code verified in the browser; invited meeting agenda 200; other meeting agenda 404, detail 403 = unknown id 403; personal library 403; no internal account for the guest email.",
       "status": "Pass",
-      "date": "2026-11-23",
+      "date": "2026-11-25",
       "tester": "Nguyễn Trường Huy"
     },
     {

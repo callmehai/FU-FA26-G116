@@ -56,6 +56,17 @@ def integration_summary():
 def level_cases(level,tests,manual):
     return system_cases() if level=='SYS' else unit_cases() if level=='UNIT' else [c for c in tests+manual if c['level']==level]
 
+def intro(tests):
+    """The plan's opening: what the xUnit count is (methods CI runs on every PR, not imported here) and the Round 1 results."""
+    show=lambda counts:', '.join(f'{k}={v}' for k,v in counts.items())
+    unit=Counter(c['status'] for c in unit_cases());ui,ui_counts=integration_counts('ui');api,api_counts=integration_counts('api')
+    sys_counts=Counter(c['status'] for c in system_cases());nfr=nfr_cases();nfr_counts=Counter(c.get('status','Not Run') for c in nfr)
+    return ('This plan documents the current TrustCabinet implementation (SEP490-G116), its test designs and the Round 1 results. '
+            f'The source holds {len(tests)} xUnit test methods; CI runs them on every pull request, and their run results are not '
+            f'imported into this document. Round 1 results recorded in the workbooks: unit {sum(unit.values())} ({show(unit)}), '
+            f'UI integration {ui} ({show(ui_counts)}), API {api} ({show(api_counts)}), system FRs {sum(sys_counts.values())} '
+            f'({show(sys_counts)}), system NFRs {len(nfr)} ({show(nfr_counts)}).')
+
 def nfr_summary():
     cases=nfr_cases();counts=Counter(c.get('status','Not Run') for c in cases)
     return f' Non-functional requirements (Report 3 §IV.2): Report5.4_System_Test_NFRs.xlsx, {len(cases)} cases: '+', '.join(f'{k}={v}' for k,v in counts.items())+'.'
@@ -170,7 +181,7 @@ def make_document(reference,destination,tests,manual,meta,build):
         341:'Refer: Report5.5_Acceptance_Test.xlsx. Eight proposed acceptance criteria; zero customer responses; stakeholder sign-off is pending.',
     }
     for index,text in replacements.items():text_set(pp[index],text)
-    text_set(pp[29],f'This plan documents the current TrustCabinet implementation (SEP490-G116), test designs and evidence requirements. The inventory contains {len(tests)} xUnit definitions. Execution status: '+', '.join(f'{key}={value}' for key,value in meta['status'].items())+'. Verified evidence: '+('available.' if meta['evidenceVerified'] else 'not supplied.'))
+    text_set(pp[29],intro(tests))
     for idx,level,filename in [(331,'UNIT','Report5.1_Unit_Test.xlsx'),(337,'SYS','Report5.3_System_Test_FRs.xlsx'),(341,'UAT','Report5.5_Acceptance_Test.xlsx')]:
         cases=level_cases(level,tests,manual);counts=Counter(t['status'] for t in cases)
         text_set(pp[idx],'Refer: '+filename+'. '+str(len(cases))+' definitions / scenarios: '+', '.join(f'{k}={v}' for k,v in counts.items())+'. '+('Customer feedback and stakeholder sign-off are pending.' if level=='UAT' else 'Code coverage is not measured by these counts.'))

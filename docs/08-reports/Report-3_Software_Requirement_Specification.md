@@ -84,6 +84,7 @@ Table of Contents
 | 24/11/2026 | M | HuyNQ | [PR #531] UC diagrams follow strict UML: only 8 real <<extend>> kept, the rest connect to the actor; actors renamed Member/Approver, Cloudflare R2 → File Storage (ADR-0084); §1, §4.1 and §4.3 updated. |
 | 25/11/2026 | M | HuyNQ | [PR #537] File Storage is no longer an actor (SeaweedFS runs on the app server, ADR-0084): §1, §4.1, context and UC diagrams; §17.7 says SeaweedFS; UC-42 to the actor (7 <<extend>>); AI Drafting Service drawn on UC-58. |
 | 25/11/2026 | M, A, D | KhanhPG | [note 60, note 61] UC-52b and UC-54c removed: UC-52a renamed Turn Room Microphone On/Off, UC-54a gains AF-2/AF-3; system-run steps moved to Report 4 part IV, JOB-03–JOB-10 added; UC tables in one style; every figure captioned, overview UC diagram in §4.3. |
+| 25/11/2026 | M | KhanhPG | [PR #507] §IV.2.3 External Guest access scope: the one-time code expires within 15 minutes, as in the code (GuestAccessOptions.CodeLifetimeMinutes). |
 
 *A - Added M - Modified D - Deleted
 
