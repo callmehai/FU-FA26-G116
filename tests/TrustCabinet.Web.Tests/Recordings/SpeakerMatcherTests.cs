@@ -29,10 +29,48 @@ public sealed class SpeakerMatcherTests
     }
 
     [Fact]
-    public void A_near_tie_between_two_people_is_not_guessed()
+    public void A_near_tie_between_two_people_is_suggested_but_not_sure()
     {
-        var result = Suggest([new("SPEAKER_00", 1000, [1f, 1f])], C(Lan, [1f, 0.9f]), C(Minh, [0.9f, 1f]));
-        Assert.Empty(result);
+        // ADR-0087: the closer person leads the picker as "Khớp giọng nhất"; the machine names nobody.
+        var result = Suggest([new("SPEAKER_00", 1000, [1f, 0.95f])], C(Lan, [1f, 0.9f]), C(Minh, [0.9f, 1f]));
+        Assert.Equal(Lan, result["SPEAKER_00"].UserId);
+        Assert.False(result["SPEAKER_00"].Sure);
+    }
+
+    [Fact]
+    public void Two_near_ties_suggest_two_different_people_the_closer_first()
+    {
+        // The test server, 25/11/2026: two people, two voices, every score within 0.03 of the other person's. Each
+        // voice is suggested as its best match, not sure; one person is never suggested for both.
+        var lan = new float[] { 1f, 0f, 0f };
+        var minh = new float[] { 0f, 1f, 0f };
+        var a = new SpeechSpeaker("SPEAKER_00", 28000, [1f, 0.94f, 0.3f]);
+        var b = new SpeechSpeaker("SPEAKER_01", 51000, [0.97f, 1f, 0.3f]);
+        var result = Suggest([a, b], C(Lan, lan), C(Minh, minh));
+        Assert.Equal(Lan, result["SPEAKER_00"].UserId);
+        Assert.Equal(Minh, result["SPEAKER_01"].UserId);
+        Assert.All(result.Values, r => Assert.False(r.Sure));
+
+        // Both voices closest to Lan: only the closer one is suggested as her.
+        var c = new SpeechSpeaker("SPEAKER_01", 51000, [1f, 0.97f, 0.3f]);
+        var both = Suggest([a, c], C(Lan, lan), C(Minh, minh));
+        Assert.Single(both);
+        Assert.Equal(Lan, both.Values.Single().UserId);
+    }
+
+    [Fact]
+    public void A_near_tie_does_not_take_a_person_already_named_for_another_voice()
+    {
+        var lan = new float[] { 1f, 0f, 0f };
+        var minh = new float[] { 0f, 1f, 0f };
+        // Lan surely for SPEAKER_00; SPEAKER_01 is a near tie led by Lan (0.622 to 0.602) and does not sound like
+        // SPEAKER_00 (0.68 < 0.7)...
+        var result = Suggest([new("SPEAKER_00", 1000, [1f, 0.1f, 0f]), new("SPEAKER_01", 1000, [0.62f, 0.6f, 0.5f])],
+            C(Lan, lan), C(Minh, minh));
+        Assert.True(result["SPEAKER_00"].Sure);
+        // ...so Lan is out of the running there and Minh leads by the margin: named surely, not left as Lan's near tie.
+        Assert.Equal(Minh, result["SPEAKER_01"].UserId);
+        Assert.True(result["SPEAKER_01"].Sure);
     }
 
     [Fact]
@@ -135,7 +173,9 @@ public sealed class SpeakerMatcherTests
         Assert.Equal(Lan, result["SPEAKER_00"].UserId);
         Assert.Equal(Minh, result["SPEAKER_01"].UserId);
 
-        // Without Lan's own voice in the recording the near tie still stays unnamed.
-        Assert.Empty(Suggest([b], C(Lan, [1f, 0f, 0f]), C(Minh, [0f, 1f, 0f])));
+        // Without Lan's own voice in the recording it is a near tie: Minh is suggested, not sure.
+        var alone = Suggest([b], C(Lan, [1f, 0f, 0f]), C(Minh, [0f, 1f, 0f]));
+        Assert.Equal(Minh, alone["SPEAKER_01"].UserId);
+        Assert.False(alone["SPEAKER_01"].Sure);
     }
 }

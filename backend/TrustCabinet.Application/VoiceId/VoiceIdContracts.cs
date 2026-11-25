@@ -161,7 +161,11 @@ public interface IVoiceEmbedder
 public static class SpeakerMatcher
 {
     public sealed record Candidate(Guid UserId, float[] Embedding);
-    public sealed record Suggestion(Guid UserId, double Score);
+    /// <summary>
+    /// <c>Sure</c>: ahead of the runner-up by the margin. A voice whose best match is a near tie still gets that person
+    /// as a suggestion (ADR-0087), but never named by the machine: the Secretary confirms it.
+    /// </summary>
+    public sealed record Suggestion(Guid UserId, double Score, bool Sure = true);
 
     public static double Cosine(float[] a, float[] b)
     {
@@ -195,6 +199,10 @@ public static class SpeakerMatcher
         var result = new Dictionary<string, Suggestion>();
         // The voice each person was first suggested for: the surest, as pairs come best first.
         var first = new Dictionary<Guid, string>();
+        // A voice's best match held back only by the margin: two people's samples taken at one place sound alike, and in
+        // a short or far recording their scores come out within a few hundredths (Khánh 0.726 against Hải 0.697 on
+        // 25/11/2026). Kept to suggest, not to name.
+        var unsure = new Dictionary<string, (Guid UserId, double Score)>();
         foreach (var (label, userId, score) in scores
                      .SelectMany(kv => kv.Value.Select(x => (Label: kv.Key, x.UserId, x.Score)))
                      .OrderByDescending(x => x.Score))
@@ -208,7 +216,11 @@ public static class SpeakerMatcher
                 .Where(x => x.UserId != userId
                     && !(first.TryGetValue(x.UserId, out var own) && Cosine(voices[label], voices[own]) < sameVoice))
                 .Select(x => x.Score).DefaultIfEmpty(0).Max();
-            if (score - runnerUp < margin) continue;
+            if (score - runnerUp < margin)
+            {
+                if (scores[label][0].UserId == userId) unsure.TryAdd(label, (userId, score));
+                continue;
+            }
             if (first.TryGetValue(userId, out var lead) && (Cosine(voices[label], voices[lead]) < sameVoice || score < secondVoice))
                 continue;
             result[label] = new(userId, Math.Round(score, 4));
@@ -221,6 +233,11 @@ public static class SpeakerMatcher
             var closest = first.Values.MaxBy(lead => Cosine(voices[label], voices[lead]))!;
             if (Cosine(voices[label], voices[closest]) >= inherit) result[label] = result[closest];
         }
+        // Each near tie suggests its best match, once per person, the closer first, and never someone already named for
+        // another voice: that voice sounds like them more surely.
+        var taken = new HashSet<Guid>(result.Values.Select(r => r.UserId));
+        foreach (var (label, (userId, score)) in unsure.OrderByDescending(kv => kv.Value.Score))
+            if (!result.ContainsKey(label) && taken.Add(userId)) result[label] = new(userId, Math.Round(score, 4), Sure: false);
         return result;
     }
 

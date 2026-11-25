@@ -580,7 +580,7 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
                 var speakers = result.Speakers.Where(sp => labels.ContainsKey(sp.Label)).Select(sp =>
                 {
                     var guess = suggestions.GetValueOrDefault(sp.Label);
-                    var named = guess is not null && guess.Score >= sure && nameable.Contains(guess.UserId);
+                    var named = guess is not null && guess.Sure && guess.Score >= sure && nameable.Contains(guess.UserId);
                     return new TranscriptSpeaker
                     {
                         TranscriptId = transcriptId, Label = labels[sp.Label], SpeechMs = sp.SpeechMs,
@@ -778,7 +778,9 @@ public sealed class TranscriptionService(IMeetingRepository meetings, IRecording
         foreach (var (label, ranked) in SpeakerMatcher.Scores(speakers, candidates).OrderBy(kv => kv.Key, StringComparer.Ordinal))
         {
             var top = string.Join(", ", ranked.Take(2).Select(x => $"{x.UserId}={x.Score:0.000}"));
-            var named = suggestions.TryGetValue(label, out var suggestion) ? suggestion.UserId.ToString() : "none";
+            var named = suggestions.TryGetValue(label, out var suggestion)
+                ? suggestion.Sure ? suggestion.UserId.ToString() : $"{suggestion.UserId} (near tie)"
+                : "none";
             logger.LogInformation("Voice scores in meeting {MeetingId}: {Label} best {Top}; suggested {Suggested}",
                 meetingId, label, top, named);
         }

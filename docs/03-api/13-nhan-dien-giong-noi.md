@@ -185,8 +185,11 @@ họp; người khác nhận `null`. Tên hiển thị của một giọng: `ass
 *Người nói N*.
 
 **Cách gợi ý** (`SpeakerMatcher`): điểm của một người với một giọng là cosine cao nhất giữa vector giọng
-và các giọng mẫu của người đó. Chỉ gợi ý khi điểm ≥ `VoiceId:SuggestThreshold` (0,6) **và** hơn người
-xếp sau ít nhất `VoiceId:SuggestMargin` (0,05).
+và các giọng mẫu của người đó. Chỉ gợi ý khi điểm ≥ `VoiceId:SuggestThreshold` (0,6). Gợi ý là **chắc** khi còn hơn
+người xếp sau ít nhất `VoiceId:SuggestMargin` (0,05). Kém hơn mức đó là **sát điểm**: từ 25/11/2026
+([ADR-0087](../05-decisions/0087-sat-diem-van-goi-y-khong-tu-gan.md)) giọng vẫn được gợi ý người khớp nhất, nhưng máy
+không tự gán tên; mỗi người chỉ được gợi ý sát điểm cho một giọng, không gợi ý sát điểm người đã được gợi ý chắc cho giọng
+khác. Gợi ý chắc và sát điểm trả về giống nhau (`suggestedUserId`…); khác nhau ở `autoAssigned`.
 Người xếp sau đã được gợi ý chắc hơn cho một giọng khác, mà giọng đó nghe không giống giọng đang xét (cosine
 < `SameVoiceThreshold`), thì không tính là người xếp sau: một người không thể là hai giọng khác nhau. Ví dụ buổi thử
 23/11/2026: giọng của Hải được 0,670 với Hải và 0,635 với Khánh. Mẫu của hai người cùng cắt từ một bản ghi mic phòng
@@ -226,7 +229,7 @@ giống nhau 0,81–0,85, giọng hát lại khớp kém với giọng mẫu đ�
 nhau chưa từng giống nhau quá 0,745. Giọng đầu được máy tự gán thì các giọng nhận theo cũng được tự gán.
 
 **Máy tự gán** (ADR-0045, PO 01/11/2026): giọng có điểm ≥ `VoiceId:AutoAssignThreshold` (0,6 từ 22/11/2026, bằng
-`SuggestThreshold`, nên **mọi giọng được gợi ý** đều được tự gán) được gán luôn tên người được gợi ý lúc chuyển chữ xong: `assignedUserId` có giá trị, `autoAssigned: true`. Nhật ký ghi
+`SuggestThreshold`, nên **mọi giọng được gợi ý chắc** đều được tự gán; gợi ý sát điểm thì không, ADR-0087) được gán luôn tên người được gợi ý lúc chuyển chữ xong: `assignedUserId` có giá trị, `autoAssigned: true`. Nhật ký ghi
 `transcript.speaker_assigned` không có người làm, kèm `automatic: true` và điểm. Thư ký đổi hoặc bỏ tên bằng `PUT`
 như thường; sau đó `autoAssigned` là `false`. Người đó rút đồng ý Voice ID thì tên máy gán bị bỏ cùng gợi ý, còn tên
 Thư ký gán thì giữ. Máy không gán Khách. Máy chỉ tự gán người có đồng ý từ thông báo 1.2 trở lên (ADR-0048):
@@ -298,8 +301,8 @@ câu mất theo.
 |---|---|---|
 | `EncryptionKey` | rỗng | Base64 của 32 byte ngẫu nhiên. Rỗng (máy dev) thì dẫn xuất bằng HKDF từ `Authentication:SigningKey` với nhãn riêng. Server phải đặt khoá riêng. Đổi khoá thì giọng mẫu cũ không giải mã được — người dùng ghi lại |
 | `SuggestThreshold` | `0.6` | Xem phần *Cách gợi ý* |
-| `SuggestMargin` | `0.05` | |
+| `SuggestMargin` | `0.05` | Kém hơn người xếp sau dưới mức này thì chỉ gợi ý, không tự gán (ADR-0087) |
 | `SameVoiceThreshold` | `0.7` | Giọng thứ hai được gợi ý cùng một người phải giống giọng đầu tới mức này, xem *Một người bị tách làm hai* |
 | `SecondVoiceThreshold` | `0.7` | Điểm tối thiểu so với giọng mẫu của giọng thứ hai trở đi của cùng một người |
 | `InheritVoiceThreshold` | `0.8` | Giọng chưa có tên giống giọng đầu của một người từ mức này thì nhận người đó (ADR-0050) |
-| `AutoAssignThreshold` | `0.6` | Từ điểm này máy tự gán tên, xem *Máy tự gán*. Bằng `SuggestThreshold`: mọi giọng được gợi ý đều được tự gán |
+| `AutoAssignThreshold` | `0.6` | Từ điểm này máy tự gán tên, xem *Máy tự gán*. Bằng `SuggestThreshold`: mọi giọng được gợi ý chắc đều được tự gán |
