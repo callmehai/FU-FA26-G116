@@ -17,7 +17,7 @@
           <mxGeometry height="140" width="400" x="1250" y="140" as="geometry" />
         </mxCell>
         <mxCell id="E03" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#222222;strokeWidth=2.5;fontColor=#111111;fontFamily=Arial;fontSize=40;fontStyle=1;align=center;verticalAlign=middle;spacing=12;" value="Approver" vertex="1">
-          <mxGeometry height="140" width="400" x="90" y="1300" as="geometry" />
+          <mxGeometry height="140" width="400" x="90" y="1260" as="geometry" />
         </mxCell>
         <mxCell id="E04" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#222222;strokeWidth=2.5;fontColor=#111111;fontFamily=Arial;fontSize=40;fontStyle=1;align=center;verticalAlign=middle;spacing=12;" value="Chair" vertex="1">
           <mxGeometry height="140" width="400" x="-70" y="1900" as="geometry" />
@@ -49,8 +49,8 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="E01-in-label" parent="1" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=nowrap;overflow=visible;strokeColor=none;fillColor=none;spacing=0;fontFamily=Arial;fontSize=40;fontColor=#111111;" value="Account &amp;amp; personal workspace data&lt;br&gt;Meeting participation &amp;amp; search data&lt;br&gt;User, role &amp;amp; permission data&lt;br&gt;Audit search criteria" vertex="1">
-          <mxGeometry height="202" width="658" x="3470" y="760" as="geometry" />
+        <mxCell id="E01-in-label" parent="1" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=nowrap;overflow=visible;strokeColor=none;fillColor=none;spacing=0;fontFamily=Arial;fontSize=40;fontColor=#111111;" value="Account &amp;amp; personal workspace data&lt;br&gt;Meeting participation &amp;amp; search data&lt;br&gt;Meeting setup &amp;amp; approval data&lt;br&gt;User, role &amp;amp; permission data&lt;br&gt;Voice samples &amp;amp; consent data&lt;br&gt;Audit search criteria" vertex="1">
+          <mxGeometry height="300" width="658" x="3470" y="700" as="geometry" />
         </mxCell>
         <mxCell id="E01-out" data-flow-ids="A04 A05 C02 C04 K01" edge="1" parent="1" source="TC" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=40;align=left;verticalAlign=middle;labelBackgroundColor=none;exitX=0.6764705882;exitY=0.0322352941;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5000000000;entryY=1.0000000000;entryDx=0;entryDy=0;entryPerimeter=0;" target="E01" value="">
           <mxGeometry relative="1" as="geometry">
@@ -60,8 +60,8 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="E01-out-label" parent="1" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=nowrap;overflow=visible;strokeColor=none;fillColor=none;spacing=0;fontFamily=Arial;fontSize=40;fontColor=#111111;" value="Account &amp;amp; access information&lt;br&gt;Workspace, notifications &amp;amp; meeting information&lt;br&gt;Account &amp;amp; permission information&lt;br&gt;Audit logs" vertex="1">
-          <mxGeometry height="202" width="852" x="2430" y="484" as="geometry" />
+        <mxCell id="E01-out-label" parent="1" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=nowrap;overflow=visible;strokeColor=none;fillColor=none;spacing=0;fontFamily=Arial;fontSize=40;fontColor=#111111;" value="Account &amp;amp; access information&lt;br&gt;Workspace, notifications &amp;amp; meeting information&lt;br&gt;Meeting status &amp;amp; approval results&lt;br&gt;Account &amp;amp; permission information&lt;br&gt;Voice sample status&lt;br&gt;Audit logs" vertex="1">
+          <mxGeometry height="300" width="852" x="2430" y="386" as="geometry" />
         </mxCell>
         <mxCell id="E02-in" data-flow-ids="O01 O02 O03 C01 C03 K02" edge="1" parent="1" source="E02" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=40;align=left;verticalAlign=middle;labelBackgroundColor=none;exitX=0.2500000000;exitY=1.0000000000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.2058823529;entryY=0.0956470588;entryDx=0;entryDy=0;entryPerimeter=0;" target="TC" value="">
           <mxGeometry relative="1" as="geometry">
@@ -71,8 +71,8 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="E02-in-label" parent="1" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=nowrap;overflow=visible;strokeColor=none;fillColor=none;spacing=0;fontFamily=Arial;fontSize=40;fontColor=#111111;" value="Account &amp;amp; personal workspace data&lt;br&gt;Meeting participation &amp;amp; search data&lt;br&gt;Meeting setup &amp;amp; approval data&lt;br&gt;Meeting documents" vertex="1">
-          <mxGeometry height="202" width="658" x="700" y="770" as="geometry" />
+        <mxCell id="E02-in-label" parent="1" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=nowrap;overflow=visible;strokeColor=none;fillColor=none;spacing=0;fontFamily=Arial;fontSize=40;fontColor=#111111;" value="Account &amp;amp; personal workspace data&lt;br&gt;Meeting participation &amp;amp; search data&lt;br&gt;Meeting setup &amp;amp; approval data" vertex="1">
+          <mxGeometry height="153" width="658" x="700" y="819" as="geometry" />
         </mxCell>
         <mxCell id="E02-out" data-flow-ids="O04 C02 C04 K01" edge="1" parent="1" source="TC" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=40;align=left;verticalAlign=middle;labelBackgroundColor=none;exitX=0.3235294118;exitY=0.0322352941;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5000000000;entryY=1.0000000000;entryDx=0;entryDy=0;entryPerimeter=0;" target="E02" value="">
           <mxGeometry relative="1" as="geometry">
@@ -88,22 +88,22 @@
         <mxCell id="E03-in" data-flow-ids="P02 C01 C03 K02" edge="1" parent="1" source="E03" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=40;align=left;verticalAlign=middle;labelBackgroundColor=none;exitX=1.0000000000;exitY=0.7142857143;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.0882352941;entryY=0.2163529412;entryDx=0;entryDy=0;entryPerimeter=0;" target="TC" value="">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="2050" y="1400" />
+              <mxPoint x="2050" y="1360" />
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="E03-in-label" parent="1" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=nowrap;overflow=visible;strokeColor=none;fillColor=none;spacing=0;fontFamily=Arial;fontSize=40;fontColor=#111111;" value="Account &amp;amp; personal workspace data&lt;br&gt;Meeting participation &amp;amp; search data&lt;br&gt;Approval decision &amp;amp; rationale" vertex="1">
-          <mxGeometry height="153" width="658" x="730" y="1425" as="geometry" />
+        <mxCell id="E03-in-label" parent="1" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=nowrap;overflow=visible;strokeColor=none;fillColor=none;spacing=0;fontFamily=Arial;fontSize=40;fontColor=#111111;" value="Account &amp;amp; personal workspace data&lt;br&gt;Meeting participation &amp;amp; search data&lt;br&gt;Meeting setup &amp;amp; approval data&lt;br&gt;Approval decision &amp;amp; rationale" vertex="1">
+          <mxGeometry height="202" width="658" x="730" y="1385" as="geometry" />
         </mxCell>
         <mxCell id="E03-out" data-flow-ids="P01 C02 C04 K01" edge="1" parent="1" source="TC" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=40;align=left;verticalAlign=middle;labelBackgroundColor=none;exitX=0.1470588235;exitY=0.1458823529;exitDx=0;exitDy=0;exitPerimeter=0;entryX=1.0000000000;entryY=0.2857142857;entryDx=0;entryDy=0;entryPerimeter=0;" target="E03" value="">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="2100" y="1340" />
+              <mxPoint x="2100" y="1300" />
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="E03-out-label" parent="1" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=nowrap;overflow=visible;strokeColor=none;fillColor=none;spacing=0;fontFamily=Arial;fontSize=40;fontColor=#111111;" value="Account &amp;amp; access information&lt;br&gt;Workspace, notifications &amp;amp; meeting information&lt;br&gt;Meeting approval request &amp;amp; details" vertex="1">
-          <mxGeometry height="153" width="852" x="730" y="1170" as="geometry" />
+        <mxCell id="E03-out-label" parent="1" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=nowrap;overflow=visible;strokeColor=none;fillColor=none;spacing=0;fontFamily=Arial;fontSize=40;fontColor=#111111;" value="Account &amp;amp; access information&lt;br&gt;Workspace, notifications &amp;amp; meeting information&lt;br&gt;Meeting status &amp;amp; approval results&lt;br&gt;Meeting approval request &amp;amp; details" vertex="1">
+          <mxGeometry height="202" width="852" x="730" y="1081" as="geometry" />
         </mxCell>
         <mxCell id="E04-in" data-flow-ids="H01 H02 H03 C01 C03 R01 K02" edge="1" parent="1" source="E04" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=40;align=left;verticalAlign=middle;labelBackgroundColor=none;exitX=1.0000000000;exitY=0.5714285714;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.0240000000;entryY=0.6529411765;entryDx=0;entryDy=0;entryPerimeter=0;" target="TC" value="">
           <mxGeometry relative="1" as="geometry">

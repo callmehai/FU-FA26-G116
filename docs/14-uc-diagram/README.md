@@ -24,6 +24,8 @@ cũ theo baseline 05/10/2026 (94 UC, file `.drawio` + `.pdf` riêng từng actor
 Id của ô UC trong file `.drawio` vẫn là số cũ (`uc-45` là *Join Meeting Room*, tức UC-43); UC thêm từ 02/11/2026 dùng
 id có tên (`uc-handover-chair`, `uc-my-voice-id`…) để không trùng số cũ.
 
+Trang Chair (25/11/2026): nới các ô UC để chữ không chạm viền (cột trái giữ mép trái, cột phải giữ mép phải), đường nối *OAuth Provider* bẻ một góc để không cắt ô *Sign in with Email and Password* và không đè tên actor. Không đổi actor, UC hay quan hệ nào.
+
 ## Theo UML chặt (24/11/2026)
 
 Chỉ giữ `<<extend>>` khi UC mở rộng chèn hành vi vào lúc UC nền đang chạy và không phải mục tiêu riêng của actor
