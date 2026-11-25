@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.EntityFrameworkCore;
 using TrustCabinet.Application.Agenda;
 using static TrustCabinet.Web.Tests.Agenda.AgendaEndpointTests;
+using TrustCabinet.Domain.Enums;
 
 namespace TrustCabinet.Web.Tests.Agenda;
 
@@ -82,7 +83,7 @@ public sealed class AgendaHubTests(AgendaFixture fixture) : IClassFixture<Agenda
     [InlineData("inactive")]
     [InlineData("removed")]
     [InlineData("softRemoved")]
-    [InlineData("delegated")]
+    [InlineData("guestRole")]
     public async Task Stale_subscription_stops_receiving_after_loss_of_access(string reason)
     {
         var s = await fixture.Seed();
@@ -108,7 +109,7 @@ public sealed class AgendaHubTests(AgendaFixture fixture) : IClassFixture<Agenda
                         secretary, root + $"/participants/{row.Id}", HttpMethod.Delete,
                         etag: await Participants.ParticipantEndpointTests.Tag(secretary, root)), 200, "MSG103");
                 }
-                else row.Response = Domain.Enums.InvitationResponse.Delegated;
+                else row.Role = MeetingRole.Guest;
             }
             await db.SaveChangesAsync();
         }

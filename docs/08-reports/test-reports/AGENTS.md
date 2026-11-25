@@ -164,7 +164,7 @@ does everything mechanical; nobody opens the workbooks to edit them:
 | `scaffold` | creates the missing `FE-xx/ui.json` and `FE-xx/api.json` with the groups from `sheets.json` and no cases |
 | `check` | every route in exactly one sheet; JSON groups = `sheets.json`; IDs `<CODE>_FT01…` / `<CODE>_API_IT01…` in sequence; no empty field; no test-code wording; every `MSGnn` in the catalogue; every test method in a Note exists; lists groups still without cases |
 | `md` | writes `cases/preview/FE-xx/{ui,api}.md` |
-| `build` | `check`, then `md`, then Report 5.2.2 (add `--with-ui` for Report 5.2 too: it replaces the v1.2 workbook, see the README) from `scripts/test_reports/templates/integration-template.xlsx` (Cover, Test Cases, Test Statistics with formulas, one sheet per FE). Close the workbooks in Excel first |
+| `build` | `check`, then `md`, then Reports 5.2 and 5.2.2 from `scripts/test_reports/templates/integration-template.xlsx` (Cover, Test Cases, Test Statistics with formulas, one sheet per FE). Close the workbooks in Excel first |
 
 Never copy the course's sample workbooks (`docs/08-reports/sample/`, gitignored) into the repo; the
 template is derived from our own Report 5.2.

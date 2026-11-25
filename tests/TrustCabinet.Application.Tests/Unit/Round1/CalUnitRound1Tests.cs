@@ -243,8 +243,7 @@ public sealed class CalUnitRound1Tests
         // (Monday to Sunday) and the whole day (00:00-24:00).
         _shares.Share(_owner, _organizer, CalendarShareStatus.Effective, Today, Today.AddDays(10));
         var start = new DateTimeOffset(2026, 11, 16, 9, 0, 0, Vietnam);
-        _busy.Rows.Add(new BusyAssignment(_owner, AssignmentStatus.Current, MeetingRole.Member, InvitationResponse.Accepted,
-            null, MeetingStatus.Published, Sensitivity.Normal, start, start.AddHours(1), null, null));
+        _busy.Rows.Add(new BusyAssignment(_owner, AssignmentStatus.Current, MeetingRole.Member, InvitationResponse.Accepted, MeetingStatus.Published, Sensitivity.Normal, start, start.AddHours(1), null, null));
 
         var week = (await WeekService().ReadWeekAsync(_organizer, null)).Value!;
 

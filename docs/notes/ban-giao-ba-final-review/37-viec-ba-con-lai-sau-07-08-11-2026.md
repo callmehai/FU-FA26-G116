@@ -66,9 +66,9 @@ và `06-business-rules.md` tự cập nhật khi sync Report 3 (không sửa tay
 
 | File | Việc |
 |---|---|
-| [UC32c_PreviewMeetingDocument.txt](../../06-sequencediagram/document-management/UC32c_PreviewMeetingDocument.txt) dòng 72 | Khối `opt Meeting is Confidential or Secret` thành `opt Meeting is Secret`; bỏ nhánh ghi nhật ký tải xuống nếu có |
-| [UC34b_ViewLockedAccountLibrary.txt](../../06-sequencediagram/document-management/UC34b_ViewLockedAccountLibrary.txt) dòng 53 | "without the files of Secret Meetings" |
-| [UC28a_AddMeetingParticipant.txt](../../06-sequencediagram/meeting-participant-management/UC28a_AddMeetingParticipant.txt) dòng 54 | "Secret form displays inline warning only" |
+| [UC32c_PreviewMeetingDocument.txt](../../06-sequencediagram/document-management/UC35b_PreviewMeetingDocument.txt) dòng 72 | Khối `opt Meeting is Confidential or Secret` thành `opt Meeting is Secret`; bỏ nhánh ghi nhật ký tải xuống nếu có |
+| [UC34b_ViewLockedAccountLibrary.txt](../../06-sequencediagram/document-management/UC37a_ViewLockedAccountLibrary.txt) dòng 53 | "without the files of Secret Meetings" |
+| [UC28a_AddMeetingParticipant.txt](../../06-sequencediagram/meeting-participant-management/UC30a_AddMeetingParticipant.txt) dòng 54 | "Secret form displays inline warning only" |
 | `UC16_ViewMeetingDetails.txt` dòng 51 | Chỉ nói "Confidentiality Level": giữ nguyên, không đổi |
 | `document-management/README.md` | Rà dòng nhắc Confidential |
 | [feature-07-document-management-class-diagram.drawio](../../07-classdiagram/feature-07-document-management-class-diagram.drawio) | Bỏ `Confidential` khỏi enum; làm theo [DRAWIO_EDITING_RULES.md](../../../DRAWIO_EDITING_RULES.md): sửa đúng ô, giữ ID, render lại và kiểm |

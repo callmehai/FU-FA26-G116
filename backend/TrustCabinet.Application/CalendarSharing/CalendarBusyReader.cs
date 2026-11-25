@@ -28,7 +28,7 @@ public sealed class CalendarBusyReader(ICalendarBusyQuery query, TimeProvider cl
         {
             var level = people[person.Key];
             var intervals = person
-                .Where(r => CalendarBusyRules.IsBusyAssignment(r.AssignmentStatus, r.Role, r.Response, r.DelegatedToUserId)
+                .Where(r => CalendarBusyRules.IsBusyAssignment(r.AssignmentStatus, r.Role, r.Response)
                     && CalendarShareRules.Covers(level, r.Sensitivity))
                 .Select(r => CalendarBusyRules.Interval(r.Status, r.PlannedStartTime, r.PlannedEndTime, r.ActualStartedAt,
                     r.ActualEndedAt, now))

@@ -1563,10 +1563,6 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
 
-                    b.Property<Guid?>("DelegatedToUserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("delegated_to_user_id");
-
                     b.Property<string>("InitialInvitationDeliveryKey")
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)")
@@ -1613,9 +1609,6 @@ namespace TrustCabinet.Infrastructure.Migrations
 
                     b.HasIndex("AttendanceRecordedById")
                         .HasDatabaseName("ix_meeting_participants_attendance_recorded_by_id");
-
-                    b.HasIndex("DelegatedToUserId")
-                        .HasDatabaseName("ix_meeting_participants_delegated_to_user_id");
 
                     b.HasIndex("MeetingId")
                         .IsUnique()
@@ -3646,12 +3639,6 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .HasConstraintName("fk_meeting_participants_users_attendance_recorded_by_id");
 
-                    b.HasOne("TrustCabinet.Domain.Entities.User", "DelegatedToUser")
-                        .WithMany()
-                        .HasForeignKey("DelegatedToUserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .HasConstraintName("fk_meeting_participants_users_delegated_to_user_id");
-
                     b.HasOne("TrustCabinet.Domain.Entities.Meeting", "Meeting")
                         .WithMany("Participants")
                         .HasForeignKey("MeetingId")
@@ -3673,8 +3660,6 @@ namespace TrustCabinet.Infrastructure.Migrations
                         .HasConstraintName("fk_meeting_participants_users_user_id");
 
                     b.Navigation("AttendanceRecordedBy");
-
-                    b.Navigation("DelegatedToUser");
 
                     b.Navigation("Meeting");
 

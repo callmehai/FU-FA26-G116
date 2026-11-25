@@ -15,7 +15,7 @@ Phòng họp **không có hub SignalR**.
 Tất cả điều kiện sau phải đúng:
 
 - đã đăng nhập, tài khoản đang hoạt động;
-- có assignment nội bộ `Current` trong `meeting_participants` của cuộc họp (không dùng dòng `Removed` hoặc role Guest), chưa uỷ quyền cho ai (`response` khác `Delegated` và `delegated_to_user_id` rỗng) — cùng quy tắc "người dự hiện tại" với agenda;
+- có assignment nội bộ `Current` trong `meeting_participants` của cuộc họp (không dùng dòng `Removed` hoặc role Guest) — cùng quy tắc "người dự hiện tại" với agenda;
 - cuộc họp `InProgress`;
 - hình thức `Online` hoặc `Hybrid`.
 

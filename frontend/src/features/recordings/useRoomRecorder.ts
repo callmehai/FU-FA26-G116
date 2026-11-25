@@ -22,6 +22,20 @@ export type RoomMicPhase = 'off' | 'starting' | 'on' | 'saving'
 /** One tab of this browser records the room at a time: two would open two takes of the same voices. */
 const lockName = (meetingId: string) => `trustcabinet-room-mic:${meetingId}`
 
+/**
+ * ADR-0085 — how long a call room taking the room mic over waits for the tab holding it to save its take and let go.
+ * Saving sends what is left of the take first, so it is a few seconds on a slow network.
+ */
+const TAKE_OVER_MS = 20_000
+
+/** The call room asks the other tabs of this browser for the room mic: the one holding it switches it off. */
+function askToRelease(meetingId: string) {
+  if (typeof BroadcastChannel === 'undefined') return
+  const channel = new BroadcastChannel(lockName(meetingId))
+  channel.postMessage('release')
+  channel.close()
+}
+
 async function heldByAnotherTab(meetingId: string) {
   const locks = typeof navigator !== 'undefined' ? navigator.locks : undefined
   if (!locks) return false
@@ -76,7 +90,7 @@ export function useRoomRecorder(meetingId: string, running: boolean, onChanged: 
   )
 
   const run = useCallback(
-    async (consent: boolean, saved?: SavedTape, deviceId?: string) => {
+    async (consent: boolean, saved?: SavedTape, deviceId?: string, takeOver = false) => {
       setError(null)
       setNotice(null)
       setPhase('starting')
@@ -84,16 +98,25 @@ export function useRoomRecorder(meetingId: string, running: boolean, onChanged: 
       await saving.current
       const locks = typeof navigator !== 'undefined' ? navigator.locks : undefined
       if (locks) {
-        const got = await new Promise<boolean>((resolve) => {
-          void locks
-            .request(lockName(meetingId), { ifAvailable: true }, (lock) => {
-              resolve(lock !== null)
-              if (!lock) return
-              // Held for as long as this tab records.
-              return new Promise<void>((done) => (release.current = done))
-            })
-            .catch(() => resolve(false))
-        })
+        const take = (options: LockOptions) =>
+          new Promise<boolean>((resolve) => {
+            void locks
+              .request(lockName(meetingId), options, (lock) => {
+                resolve(lock !== null)
+                if (!lock) return
+                // Held for as long as this tab records.
+                return new Promise<void>((done) => (release.current = done))
+              })
+              .catch(() => resolve(false))
+          })
+        let got = await take({ ifAvailable: true })
+        // ADR-0085: the call room is where a hybrid meeting's room mic lives. Another tab of this browser holding it (a
+        // call room the call moved away from, a meeting page that recorded while the call could not be joined) is asked
+        // to switch it off, and the mic opens here once that tab has saved its take.
+        if (!got && takeOver) {
+          askToRelease(meetingId)
+          got = await take({ signal: AbortSignal.timeout(TAKE_OVER_MS) })
+        }
         if (!got) {
           setError('Mic phòng đang bật ở một tab khác của trình duyệt này.')
           setPhase('off')
@@ -216,6 +239,16 @@ export function useRoomRecorder(meetingId: string, running: boolean, onChanged: 
     [],
   )
 
+  // ADR-0085: a call room of this browser takes the room mic over; this tab lets it go, saving its take.
+  useEffect(() => {
+    if (typeof BroadcastChannel === 'undefined') return
+    const channel = new BroadcastChannel(lockName(meetingId))
+    channel.onmessage = (event: MessageEvent) => {
+      if (event.data === 'release') stop()
+    }
+    return () => channel.close()
+  }, [meetingId, stop])
+
   // The meeting ended while the mic was on: the take is saved.
   useEffect(() => {
     if (phase === 'on' && !running) stop()
@@ -267,13 +300,14 @@ export function useRoomRecorder(meetingId: string, running: boolean, onChanged: 
     setPurpose,
     /**
      * `consent`: the participants were told just now; asked before the meeting's first take only. `deviceId`: the mic
-     * picked in the call room.
+     * picked in the call room. `takeOver`: the call room's switch, which has another tab of this browser holding the
+     * mic let it go rather than refusing (ADR-0085).
      */
-    start: (consent: boolean, deviceId?: string) => void run(consent, undefined, deviceId),
+    start: (consent: boolean, deviceId?: string, takeOver?: boolean) => void run(consent, undefined, deviceId, takeOver),
     switchDevice: (deviceId: string) => void switchDevice(deviceId),
     stop,
-    resumeUnfinished: (deviceId?: string) => {
-      if (unfinished) void run(false, unfinished, deviceId)
+    resumeUnfinished: (deviceId?: string, takeOver?: boolean) => {
+      if (unfinished) void run(false, unfinished, deviceId, takeOver)
     },
     finishUnfinished: () => void finishUnfinished(),
   }

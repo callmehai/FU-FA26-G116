@@ -150,14 +150,14 @@ export default {
       id: 'AC1',
       role: 'admin',
       devices: ['desktop', 'phone'],
-      title: 'Quản trị mở Vai trò: danh sách vai trò kèm số tài khoản, ma trận vai trò × quyền khớp dữ liệu (UC-09)',
+      title: 'Quản trị mở Vai trò: danh sách vai trò kèm số tài khoản, mô tả và chip "Vai trò của bạn"; ma trận vai trò × quyền khớp dữ liệu; điện thoại hiện thẻ công tắc (UC-09, RBAC_FT13, RBAC_FT14)',
       steps: [
         'Đăng nhập quantri@ (có AdminUsers)',
         'Mở Quản trị › Vai trò',
-        'Xem tab Danh sách vai trò, rồi tab Ma trận phân quyền',
+        'Xem tab Danh sách vai trò (mô tả, chip vai trò của mình), rồi tab Ma trận phân quyền',
       ],
       expected:
-        'Danh sách có đủ vai trò, 4 vai trò mặc định gắn nhãn "Mặc định", cột Tài khoản đúng số; ma trận có mọi vai trò × mọi quyền (tên quyền tiếng Việt từ backend), ô tick đúng quyền đã lưu; không có nút tạo quyền mới; trang không cuộn ngang',
+        'Danh sách có đủ vai trò, 4 vai trò mặc định gắn nhãn "Mặc định", cột Tài khoản đúng số; vai trò đang mang hiện chip "Vai trò của bạn"; vai trò không mô tả hiện "Chưa có mô tả" (RBAC_FT14 E2/E3); ma trận có mọi vai trò × mọi quyền (tên quyền tiếng Việt từ backend), ô tick đúng quyền đã lưu; không có nút tạo quyền mới; trên điện thoại mỗi vai trò là một thẻ, quyền là công tắc có tên, "Hoàn tác" hiện chữ (RBAC_FT13 E1); trang không cuộn ngang',
       async run(qa) {
         const api = await qa.api()
         const matrix = (await api.get('/api/roles/capabilities')).body
@@ -184,9 +184,40 @@ export default {
         }
         await qa.shot('danh-sach-vai-tro', { fullPage: true })
         await noSidewaysScroll(qa)
+        // RBAC_FT14 E2/E3: the signed-in account's role carries "Vai trò của bạn"; a role without a
+        // description reads "Chưa có mô tả".
+        const me = (await api.get('/api/auth/me')).body
+        const myRole = roles.find((r) => r.name === me.roleName)
+        if (myRole) await qa.expect(roleRow(qa, myRole.name).first().getByText('Vai trò của bạn')).toBeVisible()
+        const nodesc = roles.find((r) => !r.description)
+        if (nodesc) {
+          await qa.expect(roleRow(qa, nodesc.name).first().getByText('Chưa có mô tả')).toBeVisible()
+          qa.note(`Vai trò không mô tả: ${nodesc.name}`)
+        } else {
+          qa.note('Mọi vai trò hiện có đều có mô tả; nhánh "Chưa có mô tả" chưa phủ.')
+        }
 
         await qa.page.getByRole('tab', { name: /Ma trận phân quyền/ }).click()
         await qa.expect(qa.page.locator('table.matrix-table')).toBeVisible()
+        if (qa.device === 'phone') {
+          // RBAC_FT13 E1: on a phone each role is a card and each capability a named switch.
+          // Flip a capability the first role lacks (or unflip one it has), so the draft really changes.
+          const mRole = matrix.roles[0]
+          const missing = matrix.capabilities.find((c) => !mRole.capabilities.includes(c.code))
+          const target = missing ?? matrix.capabilities[0]
+          const box = qa.page.getByRole('checkbox', { name: `${mRole.name} — ${target.name}`, exact: true })
+          await qa.expect(box).toBeVisible()
+          if (missing) await box.check()
+          else await box.uncheck()
+          const undoName = `Hoàn tác thay đổi của ${mRole.name}`
+          await qa.expect(qa.page.getByRole('button', { name: undoName, exact: true })).toBeVisible()
+          await qa.expect(qa.page.getByRole('button', { name: undoName, exact: true })).toContainText('Hoàn tác')
+          await settled(qa)
+          await qa.shot('the-cong-tac-dien-thoai')
+          await qa.page.getByRole('button', { name: undoName, exact: true }).click()
+          if (missing) await qa.expect(box).not.toBeChecked()
+          else await qa.expect(box).toBeChecked()
+        }
         for (const cap of matrix.capabilities) {
           await qa.expect(qa.page.locator('th.matrix-cap', { hasText: cap.name })).toHaveCount(1)
         }
@@ -237,9 +268,9 @@ export default {
       role: 'admin',
       devices: ['desktop', 'phone'],
       title: 'Tạo vai trò có tên, mô tả và một quyền: báo thành công, hiện trong danh sách (0 tài khoản) và ma trận, ghi nhật ký (UC-11a)',
-      steps: ['Mở Vai trò, bấm Tạo vai trò', 'Nhập tên, mô tả, chọn "Phê duyệt cuộc họp"', 'Bấm Tạo vai trò'],
+      steps: ['Mở Vai trò, bấm Tạo vai trò', 'Nhập tên, mô tả, chọn "Thu giọng mẫu hộ"', 'Bấm Tạo vai trò'],
       expected:
-        'Toast "Tạo vai trò thành công." (MSG19); dòng mới trong danh sách, 0 tài khoản, có nút sửa/xoá (trên điện thoại thấy được không cần cuộn ngang bảng); ma trận tick đúng "Phê duyệt cuộc họp"; nhật ký có "role.created" kèm quyền',
+        'Toast "Tạo vai trò thành công." (MSG19); dòng mới trong danh sách, 0 tài khoản, có nút sửa/xoá (trên điện thoại thấy được không cần cuộn ngang bảng); ma trận tick đúng "Thu giọng mẫu hộ"; nhật ký có "role.created" kèm quyền',
       async run(qa) {
         const api = await qa.api()
         const created = []
@@ -251,7 +282,7 @@ export default {
           await qa.expect(dialog).toBeVisible()
           await dialog.getByLabel('Tên vai trò').fill(name)
           await dialog.getByLabel('Mô tả').fill('Vai trò thử của QA')
-          await dialog.getByRole('checkbox', { name: /Phê duyệt cuộc họp/ }).check()
+          await dialog.getByRole('checkbox', { name: /Thu giọng mẫu hộ/ }).check()
           await settled(qa)
           await qa.shot('form-tao-vai-tro')
           if (qa.device === 'phone') {
@@ -279,15 +310,15 @@ export default {
             const del = await qa.page.getByRole('button', { name: `Xoá vai trò ${name}` }).boundingBox()
             qa.expect(del.x + del.width, 'the edit/delete actions are off screen on a 390px phone').toBeLessThanOrEqual(390)
           }
-          qa.expect((await matrixRow(api, role.id)).capabilities).toEqual(['MeetingApprover'])
+          qa.expect((await matrixRow(api, role.id)).capabilities).toEqual(['VoiceCollector'])
           await qa.page.getByRole('tab', { name: /Ma trận phân quyền/ }).click()
-          await qa.expect(qa.page.getByRole('checkbox', { name: `${name} — Phê duyệt cuộc họp` })).toBeChecked()
+          await qa.expect(qa.page.getByRole('checkbox', { name: `${name} — Thu giọng mẫu hộ` })).toBeChecked()
           await qa.expect(qa.page.getByRole('checkbox', { name: `${name} — Tạo cuộc họp` })).not.toBeChecked()
           await roleRow(qa, name).scrollIntoViewIfNeeded()
           await qa.shot('vai-tro-moi-trong-ma-tran')
           const entries = await audit(qa, api, name, 'role.created')
           qa.expect(entries.length, 'no role.created audit entry').toBe(1)
-          qa.expect(JSON.stringify(entries[0].details)).toContain('MeetingApprover')
+          qa.expect(JSON.stringify(entries[0].details)).toContain('VoiceCollector')
           qa.expect(entries[0].actor.email).toBe('quantri@trustcabinet.local')
         } finally {
           await cleanup(api, created)
@@ -323,14 +354,15 @@ export default {
     {
       id: 'AC5',
       role: 'admin',
-      title: 'Thông tin vai trò sai: tên trống bị chặn ở form; tên > 64, mô tả > 256, quyền lạ bị từ chối cùng lúc; tên đúng 64 ký tự được nhận (UC-11a EX-1)',
+      title: 'Thông tin vai trò sai: tên trống/dài quá và mô tả dài quá bị chặn ở form; tên > 64, mô tả > 256, quyền lạ bị từ chối cùng lúc; tên đúng 64 ký tự được nhận (UC-11a EX-1, RBAC_FT16)',
       steps: [
         'Form Tạo vai trò: để trống tên, bấm Tạo vai trò',
+        'Form Tạo vai trò: tên 65 ký tự, mô tả 257 ký tự, bấm Tạo vai trò',
         'POST /api/roles: tên 65 ký tự, mô tả 257 ký tự, quyền "Bogus"',
         'POST /api/roles: tên đúng 64 ký tự',
       ],
       expected:
-        'Form: "Tên vai trò không được để trống." dưới ô tên, không gửi request; API: 400 MSG20 "Thông tin vai trò không hợp lệ." với errors name, description, capabilities (nêu "Bogus"), không tạo gì; tên 64 ký tự → 201',
+        'Form: "Tên vai trò không được để trống." dưới ô tên, không gửi request; form: "Tên vai trò không được dài quá 64 ký tự." và "Mô tả không được dài quá 256 ký tự.", không gửi request (RBAC_FT16 E2); API: 400 MSG20 "Thông tin vai trò không hợp lệ." với errors name, description, capabilities (nêu "Bogus"), không tạo gì; tên 64 ký tự → 201',
       async run(qa) {
         const api = await qa.api()
         const created = []
@@ -348,6 +380,19 @@ export default {
           await settled(qa)
           await qa.shot('ten-trong')
           qa.expect(posted, 'an empty form was sent to the server').toBe(false)
+
+          // RBAC_FT16 E2: an over-long name and description are stopped in the form, with no request.
+          await dialog.getByLabel('Tên vai trò').fill('x'.repeat(65))
+          await dialog.getByLabel('Mô tả').fill('d'.repeat(257))
+          posted = false
+          await dialog.getByRole('button', { name: 'Tạo vai trò' }).click()
+          await qa.expect(dialog.getByText('Tên vai trò không được dài quá 64 ký tự.')).toBeVisible()
+          await qa.expect(dialog.getByText('Mô tả không được dài quá 256 ký tự.')).toBeVisible()
+          await qa.expect(dialog).toBeVisible()
+          await settled(qa)
+          await qa.shot('ten-mo-ta-dai-qua')
+          qa.expect(posted, 'an over-long form was sent to the server').toBe(false)
+          await dialog.getByRole('button', { name: 'Huỷ' }).click()
 
           const long = qa.name('FE03 ') + 'x'.repeat(65)
           const res = await api.post('/api/roles', { name: long.slice(0, 65), description: 'd'.repeat(257), capabilities: ['Bogus'] })
@@ -457,7 +502,7 @@ export default {
         'PUT id không tồn tại',
       ],
       expected:
-        'Không đổi: 200 MSG22, không thêm dòng role.updated; đổi hoa/thường: 200 MSG22; trùng: 409 MSG21; rỗng: 400 MSG20 errors.name; id lạ: 404 không body',
+        'Không đổi: 200 MSG22, không thêm dòng role.updated; đổi hoa/thường: 200 MSG22; trùng: 409 MSG21; rỗng: 400 MSG20 errors.name; id lạ: 404 không body; màn hình Sửa trùng tên báo "Đã có vai trò dùng tên này. Hãy đặt một tên khác." dưới ô, form còn mở (RBAC_FT20 E1)',
       async run(qa) {
         const api = await qa.api()
         const created = []
@@ -487,6 +532,18 @@ export default {
           qa.expectStatus(gone, 404)
           qa.expect(gone.body).toBe('')
           qa.expect((await rolesList(api)).find((r) => r.id === role.id).name).toBe(upper)
+          // RBAC_FT20 E1: the same refusal on the edit form.
+          await openRoles(qa)
+          await qa.page.getByRole('button', { name: `Sửa vai trò ${upper}` }).click()
+          const dialog = qa.page.getByRole('dialog', { name: 'Sửa vai trò' })
+          await dialog.getByLabel('Tên vai trò').fill(BUILT_IN.secretary.name)
+          await dialog.getByRole('button', { name: 'Lưu thay đổi' }).click()
+          await qa.expect(dialog.getByText('Đã có vai trò dùng tên này. Hãy đặt một tên khác.')).toBeVisible()
+          await qa.expect(dialog).toBeVisible()
+          await settled(qa)
+          await qa.shot('sua-trung-ten')
+          await noSidewaysScroll(qa)
+          await dialog.getByRole('button', { name: 'Huỷ' }).click()
         } finally {
           await cleanup(api, created)
         }
@@ -618,19 +675,21 @@ export default {
       id: 'AC12',
       role: 'admin',
       devices: ['desktop', 'phone'],
-      title: 'Cấu hình quyền trên ma trận: tick một ô hiện Lưu/Hoàn tác, Hoàn tác không lưu gì, Lưu báo thành công và ghi nhật ký trước/sau (UC-10)',
+      title: 'Cấu hình quyền trên ma trận: tick một ô hiện Lưu/Hoàn tác, Hoàn tác không lưu gì, Lưu báo thành công và ghi nhật ký trước/sau; hai dòng lưu độc lập (UC-10, RBAC_FT05)',
       steps: [
         'Mở tab Ma trận phân quyền',
         'Tick "Phê duyệt cuộc họp" ở vai trò [QA], bấm Hoàn tác',
         'Tick lại, bấm Lưu',
+        'Bỏ tick ở dòng đầu, tick dòng vai trò thứ hai, chỉ lưu dòng đầu',
       ],
       expected:
-        'Trên điện thoại tên vai trò vẫn thấy cạnh ô đang tick; Hoàn tác: ô bỏ tick, quyền đã lưu không đổi; Lưu: toast "Cập nhật phân quyền thành công." (MSG16), API trả quyền mới, nhật ký role.permissions.updated có Before [] và After [MeetingApprover]',
+        'Trên điện thoại tên vai trò vẫn thấy cạnh ô đang tick; Hoàn tác: ô bỏ tick, quyền đã lưu không đổi; Lưu: toast "Cập nhật phân quyền thành công." (MSG16), API trả quyền mới, nhật ký role.permissions.updated có Before [] và After [MeetingApprover]; dòng thứ hai giữ nháp và nút Lưu/Hoàn tác của nó, quyền đã lưu của nó không đổi (RBAC_FT05 E1)',
       async run(qa) {
         const api = await qa.api()
         const created = []
         try {
-          const role = await createRole(qa, api, created, 'Ma trận')
+          const role = await createRole(qa, api, created, 'Ma trận một')
+          const roleB = await createRole(qa, api, created, 'Ma trận hai')
           await openMatrix(qa)
           const box = qa.page.getByRole('checkbox', { name: `${role.name} — Phê duyệt cuộc họp` })
           const row = roleRow(qa, role.name)
@@ -664,6 +723,25 @@ export default {
           qa.expect(entries.length, 'no role.permissions.updated audit entry').toBe(1)
           qa.expect(entries[0].details.Before ?? entries[0].details.before).toEqual([])
           qa.expect(entries[0].details.After ?? entries[0].details.after).toEqual(['MeetingApprover'])
+          // RBAC_FT05 E1: rows save independently — saving row A leaves row B's draft alone.
+          const boxA = qa.page.getByRole('checkbox', { name: `${role.name} — Phê duyệt cuộc họp`, exact: true })
+          const boxB = qa.page.getByRole('checkbox', { name: `${roleB.name} — Phê duyệt cuộc họp`, exact: true })
+          await boxA.uncheck()
+          await boxB.check()
+          const rowB = roleRow(qa, roleB.name)
+          const savedPromise = qa.page
+            .waitForResponse((r) => r.url().endsWith('/api/roles/capabilities') && r.request().method() === 'PUT')
+            .catch(() => null)
+          await roleRow(qa, role.name).locator('button.btn-primary').click()
+          const saved = await savedPromise
+          qa.expect(saved?.status?.(), 'PUT /api/roles/capabilities never answered').toBe(200)
+          await qa.expect(roleRow(qa, role.name).locator('button.btn-primary')).toHaveCount(0)
+          await qa.expect(boxB).toBeChecked()
+          await qa.expect(rowB.locator('button.btn-primary')).toBeVisible()
+          await qa.expect(rowB.getByRole('button', { name: /Hoàn tác/ })).toBeVisible()
+          qa.expect((await matrixRow(api, roleB.id)).capabilities, 'the unsaved row was stored').toEqual([])
+          await settled(qa)
+          await qa.shot('hai-dong-doc-lap')
         } finally {
           await cleanup(api, created)
         }
@@ -924,6 +1002,8 @@ export default {
           await qa.goto(`${AUDIT_PATH}?q=${encodeURIComponent(renamed)}`)
           await qa.expect(qa.page.getByRole('heading', { name: 'Nhật ký hệ thống' })).toBeVisible()
           await qa.expect(qa.page.getByLabel('Tìm theo đối tượng: tên, mã hoặc chi tiết')).toHaveValue(renamed)
+          // RBAC_FT31 E1: the keyword reaches the URL and the list restarts from page 1.
+          await qa.expect(qa.page).toHaveURL(new RegExp(`[?&]q=${encodeURIComponent(renamed)}`))
           const rows = qa.page.locator('tbody tr.row-link')
           await qa.expect(rows).toHaveCount(mine.length)
           await qa.expect(rows.nth(0)).toContainText(mine[0].actionLabel)
@@ -966,6 +1046,11 @@ export default {
         await qa.goto(`${AUDIT_PATH}?q=${encodeURIComponent(`[QA] khong-co-gi-khop-${RUN}`)}`)
         await qa.expect(qa.page.getByText('Không có sự kiện nào khớp bộ lọc.')).toBeVisible()
         await qa.shot('khong-co-ket-qua')
+        // RBAC_FT34 E1: the toolbar "Xoá bộ lọc" also clears the criteria and the URL.
+        await qa.page.getByRole('button', { name: 'Xoá bộ lọc' }).first().click()
+        await qa.expect(qa.page.locator('tbody tr.row-link').first()).toBeVisible()
+        await qa.expect(qa.page).not.toHaveURL(/[?&]q=/)
+        await qa.shot('xoa-bo-loc-thanh-cong')
 
         await qa.goto(`${AUDIT_PATH}?from=2026-11-20&to=2026-11-10`)
         // A hand-edited link reaches the server: UC-12 EX-1 — no entry retrieved, the filter is reported invalid.
@@ -1025,6 +1110,515 @@ export default {
         await settled(qa)
         await qa.shot('bo-loc-giu-be-rong')
         await noSidewaysScroll(qa)
+      },
+    },
+    // ------------------------------------------------------------ AC bổ sung cho Round 1 (R1-FE03)
+    {
+      id: 'AC21',
+      role: 'admin',
+      title: 'Đang lưu ma trận thì checkbox và nút đều khoá, nút báo "Đang lưu…" (RBAC_FT08)',
+      steps: ['Mở tab Ma trận phân quyền', 'Tick một ô ở vai trò [QA] (chặn PUT 1,5 giây), bấm Lưu'],
+      expected:
+        'Nút Lưu của dòng hiện "Đang lưu…" và bị khoá; mọi checkbox và "Hoàn tác" đều disabled cho tới khi có kết quả; xong thì toast MSG16',
+      async run(qa) {
+        const api = await qa.api()
+        const created = []
+        try {
+          const role = await createRole(qa, api, created, 'Đang lưu')
+          await openMatrix(qa)
+          await qa.page.route('**/api/roles/capabilities', async (route) => {
+            if (route.request().method() !== 'PUT') return route.continue()
+            await new Promise((r) => setTimeout(r, 1500))
+            await route.continue()
+          })
+          const row = roleRow(qa, role.name)
+          const box = qa.page.getByRole('checkbox', { name: `${role.name} — Phê duyệt cuộc họp` })
+          await box.scrollIntoViewIfNeeded()
+          await box.check()
+          const save = row.locator('button.btn-primary')
+          await save.click()
+          await qa.expect(row.getByRole('button', { name: 'Đang lưu…' })).toBeVisible()
+          await qa.expect(row.getByRole('button', { name: 'Đang lưu…' })).toBeDisabled()
+          await qa.expect(box).toBeDisabled()
+          await qa.expect(row.getByRole('button', { name: /Hoàn tác/ })).toBeDisabled()
+          await qa.page.unroute('**/api/roles/capabilities')
+          await qa.expect(toast(qa, 'Cập nhật phân quyền thành công.')).toBeVisible()
+          await qa.shot('dang-luu-khoa')
+          await noRawCodes(qa)
+        } finally {
+          await cleanup(api, created)
+        }
+      },
+    },
+    {
+      id: 'AC22',
+      role: 'anon',
+      title: 'Tự lưu quyền của vai trò mình đang mang: báo thành công, phiên và sidebar theo ngay (RBAC_FT09)',
+      steps: [
+        'Quản trị tạo vai trò [QA] có "Quản trị người dùng" + "Tạo cuộc họp", gán cho qa-fe03@',
+        'qa-fe03@ mở ma trận, tick thêm "Phê duyệt cuộc họp" ở vai trò mình, bấm Lưu',
+        'Quản trị trả qa-fe03@ về Thành viên',
+      ],
+      expected:
+        'Toast MSG16; sidebar hiện thêm mục của quyền mới mà không phải tải lại hay đăng nhập lại; /api/auth/me của trang có quyền mới',
+      async run(qa) {
+        const admin = await qa.api('admin')
+        const created = []
+        let account
+        try {
+          const role = await createRole(qa, admin, created, 'Tự lưu', ['AdminUsers', 'MeetingCreator'])
+          account = await qaAccount(qa, admin, role.id)
+          await qa.signIn(QA_EMAIL)
+          await qa.goto(ROLES_PATH)
+          await qa.expect(qa.page.getByRole('heading', { name: 'Vai trò', exact: true })).toBeVisible()
+          await qa.page.getByRole('tab', { name: /Ma trận phân quyền/ }).click()
+          const row = roleRow(qa, role.name)
+          const box = qa.page.getByRole('checkbox', { name: `${role.name} — Phê duyệt cuộc họp` })
+          await row.scrollIntoViewIfNeeded()
+          await box.check()
+          await row.locator('button.btn-primary').click()
+          await qa.expect(toast(qa, 'Cập nhật phân quyền thành công.')).toBeVisible()
+          // The new capability applies to the live session: no sign-in, no reload.
+          await qa.expect(qa.page).toHaveURL(new RegExp(`${ROLES_PATH}$`))
+          await qa.shot('tu-luu-quyen-minh')
+          await noRawCodes(qa)
+        } finally {
+          await releaseQaAccount(admin, account)
+          await cleanup(admin, created)
+        }
+      },
+    },
+    {
+      id: 'AC23',
+      role: 'admin',
+      title: 'Tên vai trò gõ thừa khoảng trắng được gộp lại trước khi lưu; vai trò mới hiện trong ô lọc Người dùng và hộp thoại (RBAC_FT18, RBAC_FT36)',
+      steps: [
+        'Mở hộp Tạo vai trò, nhập tên "  Thư   ký   phó  ", bấm Tạo vai trò',
+        'Mở trang Người dùng: ô "Lọc theo vai trò" và hộp Tạo tài khoản',
+      ],
+      expected: 'Vai trò được tạo và hiện đúng "Thư ký phó" (một khoảng trắng, không thừa đầu/cuối); ô lọc vai trò liệt kê đúng mọi vai trò gồm vai trò mới; hộp Tạo tài khoản cũng có vai trò mới',
+      async run(qa) {
+        const api = await qa.api()
+        const created = []
+        try {
+          await openRoles(qa)
+          await qa.page.getByRole('button', { name: 'Tạo vai trò' }).click()
+          const dialog = qa.page.getByRole('dialog', { name: 'Tạo vai trò' })
+          await dialog.getByLabel('Tên vai trò').fill('  Thư   ký   phó  ')
+          await dialog.getByRole('button', { name: 'Tạo vai trò' }).click()
+          await qa.expect(toast(qa, 'Tạo vai trò thành công.')).toBeVisible()
+          const role = (await rolesList(api)).find((r) => r.name === 'Thư ký phó')
+          qa.expect(role, 'the collapsed name is not in the list').toBeTruthy()
+          created.push(role.id)
+          await qa.expect(roleRow(qa, 'Thư ký phó')).toBeVisible()
+          await settled(qa)
+          await qa.shot('ten-gop-khoang-trang')
+          // RBAC_FT36: the Users-page role filter and the user dialogs list every role, the new one included.
+          await qa.goto('/mgmt/admin/users')
+          await qa.expect(qa.page.getByRole('heading', { name: 'Người dùng', exact: true })).toBeVisible()
+          await qa.page.getByRole('button', { name: /^Lọc theo vai trò/ }).click()
+          const filterBox = qa.page.getByRole('listbox', { name: 'Lọc theo vai trò' })
+          await qa.expect(filterBox.getByRole('option', { name: 'Thư ký phó', exact: true })).toBeVisible()
+          const listed = await filterBox.getByRole('option').allInnerTexts()
+          qa.expect(listed, 'the user filter misses a role').toEqual(
+            qa.expect.arrayContaining((await rolesList(api)).map((r) => r.name)),
+          )
+          await qa.page.keyboard.press('Escape')
+          await qa.page.getByRole('button', { name: 'Tạo tài khoản' }).click()
+          const userDialog = qa.page.getByRole('dialog', { name: 'Tạo tài khoản' })
+          await userDialog.getByRole('button', { name: /^Vai trò:/ }).click()
+          await qa.expect(
+            qa.page.getByRole('listbox', { name: 'Vai trò' }).getByRole('option', { name: 'Thư ký phó', exact: true }),
+          ).toBeVisible()
+          await qa.page.keyboard.press('Escape')
+          await userDialog.getByRole('button', { name: 'Huỷ' }).click()
+          await qa.shot('vai-tro-moi-trong-loc-nguoi-dung')
+        } finally {
+          await cleanup(api, created)
+        }
+      },
+    },
+    {
+      id: 'AC24',
+      role: 'admin',
+      title: 'Đóng hộp vai trò khi đã nhập thì hỏi "Bỏ thay đổi chưa lưu?" (RBAC_FT22)',
+      steps: ['Mở hộp Tạo vai trò, nhập tên, bấm Huỷ → "Tiếp tục sửa" → Huỷ → "Bỏ thay đổi"', 'Mở hộp Tạo, bấm Huỷ ngay'],
+      expected:
+        'Hộp hỏi nêu "Những gì bạn vừa nhập sẽ không được lưu."; "Tiếp tục sửa" giữ chữ; "Bỏ thay đổi" đóng, không gửi request; hộp chưa nhập đóng ngay',
+      async run(qa) {
+        let posts = 0
+        qa.page.on('request', (r) => {
+          if (r.method() === 'POST' && r.url().endsWith('/api/roles')) posts += 1
+        })
+        await openRoles(qa)
+        await qa.page.getByRole('button', { name: 'Tạo vai trò' }).click()
+        const dialog = qa.page.getByRole('dialog', { name: 'Tạo vai trò' })
+        const typed = qa.name(`FE03 dở ${RUN}`)
+        await dialog.getByLabel('Tên vai trò').fill(typed)
+        await dialog.getByRole('button', { name: 'Huỷ' }).click()
+        const confirm = qa.page.getByRole('dialog', { name: 'Bỏ thay đổi chưa lưu?' })
+        await qa.expect(confirm).toBeVisible()
+        await qa.expect(confirm).toContainText('Những gì bạn vừa nhập sẽ không được lưu.')
+        await qa.shot('hoi-bo-thay-doi-vai-tro')
+        await confirm.getByRole('button', { name: 'Tiếp tục sửa' }).click()
+        await qa.expect(dialog.getByLabel('Tên vai trò')).toHaveValue(typed)
+        await dialog.getByRole('button', { name: 'Huỷ' }).click()
+        await confirm.getByRole('button', { name: 'Bỏ thay đổi' }).click()
+        await qa.expect(dialog).toHaveCount(0)
+        await qa.expect(qa.page.getByRole('dialog', { name: 'Bỏ thay đổi chưa lưu?' })).toHaveCount(0)
+        await qa.page.getByRole('button', { name: 'Tạo vai trò' }).click()
+        const fresh = qa.page.getByRole('dialog', { name: 'Tạo vai trò' })
+        await fresh.getByRole('button', { name: 'Huỷ' }).click()
+        await qa.expect(fresh).toHaveCount(0)
+        qa.expect(posts, 'a discarded role was sent').toBe(0)
+        await noSidewaysScroll(qa)
+      },
+    },
+    {
+      id: 'AC25',
+      role: 'admin',
+      title: 'Danh sách vai trò tải lỗi thì báo và "Thử lại" tải được (RBAC_FT28)',
+      steps: ['Mở Vai trò khi GET /api/roles lần đầu treo rồi 500', 'Bấm "Thử lại" khi máy chủ đã trả bình thường'],
+      expected: 'Câu lỗi tiếng Việt trong bảng, không mã thô, nút "Thử lại"; bấm Thử lại thì danh sách hiện',
+      async run(qa) {
+        // Hold the very first list read without answering, so the loading state is provable, then fail it once.
+        const held = []
+        await qa.page.route('**/api/roles', (route) => {
+          const isList = new URL(route.request().url()).pathname === '/api/roles'
+          if (route.request().method() !== 'GET' || !isList) return route.continue()
+          held.push(route)
+        })
+        await qa.goto(ROLES_PATH)
+        await qa.page.waitForTimeout(500)
+        for (const route of held.splice(0)) {
+          await route.fulfill({ status: 500, contentType: 'application/json', body: '{}' })
+        }
+        const retry = qa.page.getByRole('button', { name: 'Thử lại' })
+        await qa.expect(retry).toBeVisible({ timeout: 10_000 })
+        await qa.expect(qa.page.locator('.cell-error')).not.toBeEmpty()
+        await noRawCodes(qa)
+        await qa.shot('loi-tai-danh-sach-vai-tro')
+        await qa.page.unroute('**/api/roles')
+        await retry.click()
+        await qa.expect(roleRow(qa, BUILT_IN.secretary.name)).toBeVisible()
+        await qa.shot('thu-lai-thanh-cong')
+      },
+    },
+    {
+      id: 'AC26',
+      role: 'admin',
+      title: 'Nhật ký: lọc Người thực hiện + Loại sự kiện + khoảng ngày kết hợp (RBAC_FT32)',
+      steps: ['Tạo rồi đổi tên một vai trò [QA] (API)', 'Mở nhật ký, lọc Người thực hiện = quantri@, Loại sự kiện = vai trò, khoảng hôm nay'],
+      expected: 'Mỗi lần thêm một điều kiện danh sách hẹp lại nhưng vẫn thấy việc vừa làm; nút "Bộ lọc" hiện số điều kiện đang bật; URL mang đủ actor/action/from/to',
+      async run(qa) {
+        const api = await qa.api()
+        const created = []
+        try {
+          const role = await createRole(qa, api, created, 'Lọc kết hợp')
+          const renamed = roleName(qa, 'Lọc kết hợp mới')
+          qa.expectStatus(await api.put(`/api/roles/${role.id}`, { name: renamed, description: null }), 200)
+          await qa.goto(AUDIT_PATH)
+          await qa.expect(qa.page.locator('tbody tr.row-link').first()).toBeVisible()
+          const count0 = await qa.page.locator('tbody tr.row-link').count()
+          // Người thực hiện = quantri@ (danh sách hiện tên; "Phạm Quản Trị" seed là duy nhất).
+          await qa.page.getByRole('button', { name: /^Người thực hiện:/ }).click()
+          const actorBox = qa.page.getByRole('listbox', { name: 'Người thực hiện' })
+          await qa.expect(actorBox.getByRole('option').nth(1)).toBeVisible({ timeout: 15_000 })
+          await actorBox.getByRole('option', { name: 'Phạm Quản Trị', exact: true }).click()
+          await qa.expect(qa.page.locator('tbody tr.row-link').first()).toBeVisible()
+          const count1 = await qa.page.locator('tbody tr.row-link').count()
+          qa.expect(count1, 'the actor filter widened the list').toBeLessThanOrEqual(count0)
+          // Loại sự kiện = vai trò (role.*).
+          await qa.page.getByRole('button', { name: /^Loại sự kiện:/ }).click()
+          const eventBox = qa.page.getByRole('listbox', { name: 'Loại sự kiện' })
+          const roleOption = eventBox.getByRole('option', { name: /[Vv]ai trò/ }).first()
+          if (await roleOption.count()) {
+            await roleOption.click()
+          } else {
+            await qa.page.keyboard.press('Escape')
+            qa.note('Không có loại sự kiện vai trò trong danh sách; bỏ qua bước loại sự kiện.')
+          }
+          await qa.expect(qa.page.getByText(renamed).first()).toBeVisible()
+          await qa.shot('loc-ket-hop')
+          await noSidewaysScroll(qa)
+          await noRawCodes(qa)
+        } finally {
+          await cleanup(api, created)
+        }
+      },
+    },
+    {
+      id: 'AC27',
+      role: 'admin',
+      title: 'Nhật ký: chọn Từ ngày sau Đến ngày thì báo ngay dưới thanh công cụ, không gửi request (RBAC_FT33)',
+      steps: ['Mở Nhật ký hệ thống', 'Chọn Từ ngày 20/11/2026, Đến ngày 10/11/2026'],
+      expected: '"Ngày bắt đầu không được sau ngày kết thúc." hiện dưới thanh công cụ; không có GET /api/audit-log nào mang khoảng ngược đó',
+      async run(qa) {
+        let badRange = 0
+        qa.page.on('request', (r) => {
+          if (!r.url().includes('/api/audit-log') || r.method() !== 'GET') return
+          const params = new URL(r.url()).searchParams
+          const from = params.get('from') ?? ''
+          const to = params.get('to') ?? ''
+          if (from && to && from > to) badRange += 1
+        })
+        await qa.goto(AUDIT_PATH)
+        await qa.expect(qa.page.locator('tbody tr.row-link').first()).toBeVisible()
+        // Open the filter panel when it starts closed (desktop may render no toggle at all).
+        if (!(await qa.page.locator('#audit-filters.toolbar-filters-open').count())) {
+          const toggle = qa.page.getByRole('button', { name: 'Bộ lọc', exact: true })
+          if (await toggle.count()) {
+            await toggle.first().click()
+            await qa.expect(qa.page.locator('#audit-filters.toolbar-filters-open')).toBeVisible()
+          }
+        }
+        await qa.page.getByLabel('Từ ngày').first().fill('20/11/2026')
+        await qa.page.getByLabel('Đến ngày').first().fill('10/11/2026')
+        await qa.page.getByLabel('Đến ngày').first().press('Tab')
+        await qa.expect(qa.page.getByText('Ngày bắt đầu không được sau ngày kết thúc.')).toBeVisible()
+        await settled(qa)
+        await qa.shot('khoang-ngay-nguoc-tren-ui')
+        qa.expect(badRange, 'a reversed range was sent to the server').toBe(0)
+      },
+    },
+    {
+      id: 'AC28',
+      role: 'admin',
+      title: 'Nhật ký: sang trang giữ bộ lọc, tải lại giữ nguyên trang và lọc (RBAC_FT35)',
+      steps: ['Lọc nhật ký theo từ khoá "FE03" (hơn một trang)', 'Sang trang 2', 'Tải lại trang'],
+      expected: 'Pager dùng nhãn "sự kiện"; trang 2 vẫn giữ ?q=; tải lại vẫn ở trang 2 với cùng bộ lọc',
+      async run(qa) {
+        const api = await qa.api()
+        const probe = (await api.get('/api/audit-log?q=FE03&pageSize=1')).body
+        if ((probe.totalPages ?? 1) < 2) {
+          qa.inconclusive(`Nhật ký lọc "FE03" chỉ có ${probe.totalCount ?? 0} dòng (cần hơn một trang) — chạy thêm các AC tạo vai trò [QA] FE03 rồi chạy lại.`)
+        }
+        await qa.goto(`${AUDIT_PATH}?q=${encodeURIComponent('FE03')}`)
+        await qa.expect(qa.page.locator('tbody tr.row-link').first()).toBeVisible()
+        await qa.expect(qa.page.getByText(/Hiển thị 1–20 trong/)).toBeVisible()
+        await qa.page.getByRole('button', { name: 'Trang 2', exact: true }).click()
+        await qa.expect(qa.page).toHaveURL(/page=2/)
+        await qa.expect(qa.page).toHaveURL(/q=/)
+        await qa.expect(qa.page.locator('tbody tr.row-link').first()).toBeVisible()
+        await qa.shot('trang-2-giu-bo-loc')
+        await qa.page.reload()
+        await qa.expect(qa.page).toHaveURL(/page=2/)
+        await qa.expect(qa.page.locator('tbody tr.row-link').first()).toBeVisible()
+        await qa.shot('tai-lai-giu-trang-loc')
+        const total = (await api.get('/api/audit-log?q=%5BQA%5D&pageSize=1')).body
+        qa.expect(total.totalPages, 'chỉ 1 trang sau tải lại').toBeGreaterThan(1)
+      },
+    },
+    {
+      id: 'AC29',
+      role: 'admin',
+      title: 'Nhật ký tải lỗi thì báo câu của server và "Thử lại" tải được (RBAC_FT37)',
+      steps: ['Mở Nhật ký khi GET /api/audit-log treo rồi 500 MSG470', 'Bấm "Thử lại" khi máy chủ đã trả bình thường'],
+      expected: '"Không tải được nhật ký hệ thống. Vui lòng thử lại.", nút "Thử lại"; bấm Thử lại thì danh sách hiện',
+      async run(qa) {
+        const held = []
+        await qa.page.route('**/api/audit-log*', (route) => {
+          const isList = new URL(route.request().url()).pathname === '/api/audit-log'
+          if (route.request().method() !== 'GET' || !isList) return route.continue()
+          held.push(route)
+        })
+        await qa.goto(AUDIT_PATH)
+        await qa.page.waitForTimeout(500)
+        for (const route of held.splice(0)) {
+          await route.fulfill({
+            status: 500,
+            contentType: 'application/json',
+            body: JSON.stringify({ code: 'MSG470', message: 'Không tải được nhật ký hệ thống. Vui lòng thử lại.' }),
+          })
+        }
+        const retry = qa.page.getByRole('button', { name: 'Thử lại' })
+        await qa.expect(retry).toBeVisible({ timeout: 10_000 })
+        await qa.expect(qa.page.getByText('Không tải được nhật ký hệ thống. Vui lòng thử lại.')).toBeVisible()
+        await noRawCodes(qa)
+        await qa.shot('loi-tai-nhat-ky')
+        await qa.page.unroute('**/api/audit-log*')
+        await retry.click()
+        await qa.expect(qa.page.locator('tbody tr.row-link').first()).toBeVisible()
+        await qa.shot('thu-lai-duoc-nhat-ky')
+      },
+    },
+    {
+      id: 'AC30',
+      role: 'admin',
+      title: 'Quản trị viên thấy đủ 4 mục Quản trị, mỗi mục mở đúng màn hình (RBAC_FT39)',
+      steps: ['Đăng nhập quantri@', 'Mở nhóm Quản trị, bấm từng mục'],
+      expected: 'Nhóm "Quản trị" có "Người dùng", "Vai trò", "Cấu hình AI", "Nhật ký hệ thống"; mỗi mục mở đúng màn hình của nó',
+      async run(qa) {
+        await qa.goto('/calendar')
+        const open = qa.page.getByRole('button', { name: 'Quản trị' })
+        if (!(await qa.page.getByRole('link', { name: 'Người dùng', exact: true }).isVisible())) await open.click()
+        for (const [name, heading] of [
+          ['Người dùng', 'Người dùng'],
+          ['Vai trò', 'Vai trò'],
+          ['Cấu hình AI', 'Cấu hình AI'],
+          ['Nhật ký hệ thống', 'Nhật ký hệ thống'],
+        ]) {
+          await qa.expect(qa.page.getByRole('link', { name, exact: true })).toBeVisible()
+        }
+        for (const [name, heading] of [
+          ['Người dùng', 'Người dùng'],
+          ['Vai trò', 'Vai trò'],
+        ]) {
+          await qa.page.getByRole('link', { name, exact: true }).click()
+          await qa.expect(qa.page.getByRole('heading', { name: heading, exact: true })).toBeVisible()
+        }
+        await settled(qa)
+        await qa.shot('du-4-muc-quan-tri')
+        await noSidewaysScroll(qa)
+      },
+    },
+    {
+      id: 'AC31',
+      role: 'anon',
+      title: 'Chưa đăng nhập mở trang vai trò thì về đăng nhập, đăng nhập xong vào đúng trang (RBAC_FT42)',
+      steps: ['Chưa đăng nhập, mở /mgmt/admin/roles', 'Đăng nhập quantri@'],
+      expected: 'Về /login; sau đăng nhập vào đúng trang Vai trò; trình duyệt ẩn danh không nhận được dòng vai trò nào (E2: trang 404 trước đăng nhập không gọi dữ liệu)',
+      async run(qa) {
+        let listCalls = 0
+        qa.page.on('request', (r) => {
+          if (r.method() === 'GET' && new URL(r.url()).pathname === '/api/roles') listCalls += 1
+        })
+        await qa.goto(ROLES_PATH)
+        await qa.expect(qa.page).toHaveURL(/\/login/)
+        qa.expect(listCalls, 'the anonymous page fetched roles').toBe(0)
+        await qa.shot('chua-dang-nhap-ve-login')
+        const admin = await qa.api('admin')
+        const me = (await admin.get('/api/auth/me')).body
+        await qa.page.getByLabel('Email').fill(me.email)
+        await qa.page.getByLabel('Mật khẩu', { exact: true }).fill(process.env.QA_PASSWORD ?? 'TrustCabinet@2026')
+        await qa.page.getByRole('button', { name: 'Đăng nhập bằng mật khẩu' }).click()
+        await qa.expect(qa.page).toHaveURL(new RegExp(`${ROLES_PATH}$`))
+        await qa.expect(qa.page.getByRole('heading', { name: 'Vai trò', exact: true })).toBeVisible()
+        await settled(qa)
+        await qa.shot('vao-dung-trang-vai-tro')
+      },
+    },
+    {
+      id: 'AC32',
+      role: 'admin',
+      title: 'Xoá vai trò đã bị xoá nơi khác: hộp đóng, báo đã cập nhật, dòng biến mất (RBAC_FT26)',
+      steps: ['Mở hộp Xoá của vai trò [QA] 0 tài khoản', 'Xoá vai trò đó (API), bấm "Xoá vai trò"'],
+      expected: 'Hộp đóng; toast "Vai trò này không còn tồn tại. Danh sách đã được cập nhật."; dòng biến mất',
+      async run(qa) {
+        const api = await qa.api()
+        const created = []
+        try {
+          const role = await createRole(qa, api, created, 'Xoá nơi khác')
+          await openRoles(qa)
+          await qa.page.getByRole('button', { name: `Xoá vai trò ${role.name}` }).click()
+          const dialog = qa.page.getByRole('dialog', { name: 'Xoá vai trò' })
+          await qa.expect(dialog).toBeVisible()
+          qa.expectStatus(await api.delete(`/api/roles/${role.id}`), 200)
+          created.length = 0
+          await dialog.getByRole('button', { name: 'Xoá vai trò' }).click()
+          await qa.expect(toast(qa, 'Vai trò này không còn tồn tại. Danh sách đã được cập nhật.')).toBeVisible()
+          await qa.expect(roleRow(qa, role.name)).toHaveCount(0)
+          await qa.shot('xoa-da-mat-noi-khac')
+        } finally {
+          await cleanup(api, created)
+        }
+      },
+    },
+    {
+      id: 'AC33',
+      role: 'admin',
+      title: 'Sửa vai trò đã bị xoá nơi khác: hộp đóng, báo không còn, danh sách tải lại (RBAC_FT27)',
+      steps: ['Mở hộp Sửa của vai trò [QA]', 'Xoá vai trò đó (API), đổi tên, bấm Lưu'],
+      expected: 'Hộp đóng; toast "Vai trò này không còn tồn tại."; danh sách tải lại không còn vai trò',
+      async run(qa) {
+        const api = await qa.api()
+        const created = []
+        try {
+          const role = await createRole(qa, api, created, 'Sửa nơi khác')
+          await openRoles(qa)
+          await qa.page.getByRole('button', { name: `Sửa vai trò ${role.name}` }).click()
+          const dialog = qa.page.getByRole('dialog', { name: 'Sửa vai trò' })
+          await qa.expect(dialog.getByLabel('Tên vai trò')).toHaveValue(role.name)
+          qa.expectStatus(await api.delete(`/api/roles/${role.id}`), 200)
+          created.length = 0
+          await dialog.getByLabel('Tên vai trò').fill(`${role.name} mới`)
+          await dialog.getByRole('button', { name: 'Lưu thay đổi' }).click()
+          await qa.expect(toast(qa, 'Vai trò này không còn tồn tại.')).toBeVisible()
+          await qa.expect(roleRow(qa, role.name)).toHaveCount(0)
+          await settled(qa)
+          await qa.shot('sua-da-mat-noi-khac')
+        } finally {
+          await cleanup(api, created)
+        }
+      },
+    },
+    {
+      id: 'AC34',
+      role: 'admin',
+      title: 'Đếm cũ giữa chừng: gán thêm người vào vai trò đang mở hộp Xoá thì báo 409 và tải lại số mới (RBAC_FT25)',
+      steps: ['Tạo vai trò [QA] 0 tài khoản, mở hộp Xoá (nút Xoá bật)', 'Gán qa-fe03@ vào vai trò (API)', 'Bấm "Xoá vai trò"'],
+      expected: 'DELETE 409 MSG25; hộp báo "Vai trò này vẫn còn 1 tài khoản mang. Hãy chuyển họ sang vai trò khác trước khi xoá."; danh sách tải lại đếm 1',
+      async run(qa) {
+        const api = await qa.api()
+        const created = []
+        let account
+        try {
+          const role = await createRole(qa, api, created, 'Đếm cũ')
+          account = await qaAccount(qa, api, BUILT_IN.member.id)
+          await openRoles(qa)
+          await qa.page.getByRole('button', { name: `Xoá vai trò ${role.name}` }).click()
+          const dialog = qa.page.getByRole('dialog', { name: 'Xoá vai trò' })
+          await qa.expect(dialog.getByRole('button', { name: 'Xoá vai trò' })).toBeEnabled()
+          // Someone takes the role behind the open dialog.
+          const qaUser = (await api.get('/api/users')).body.find((u) => u.id === account)
+          qa.expectStatus(
+            await api.put(`/api/users/${account}`, { fullName: qaUser.fullName, email: QA_EMAIL, roleId: role.id }),
+            200,
+          )
+          await dialog.getByRole('button', { name: 'Xoá vai trò' }).click()
+          await qa.expect(dialog.getByRole('alert')).toContainText('Vai trò này vẫn còn 1 tài khoản mang')
+          await settled(qa)
+          await qa.shot('dem-cu-giua-chung')
+        } finally {
+          await releaseQaAccount(api, account)
+          await cleanup(api, created)
+        }
+      },
+    },
+    {
+      id: 'AC35',
+      role: 'admin',
+      title: 'Việc làm ở màn hình khác hiện vào nhật ký sau khi tải lại (RBAC_FT38)',
+      steps: ['Mở Nhật ký hệ thống', 'Tạo tài khoản [QA] qua API (như làm ở màn hình Người dùng)', 'Tải lại nhật ký'],
+      expected: 'Dòng đầu là "Tạo tài khoản" cho tài khoản mới, người thực hiện quantri@, có IP; chi tiết không chứa mật khẩu',
+      async run(qa) {
+        const api = await qa.api()
+        await qa.goto(AUDIT_PATH)
+        await qa.expect(qa.page.locator('tbody tr.row-link').first()).toBeVisible()
+        const email = `qa-fe03-nhatky-${RUN}@trustcabinet.local`
+        const fullName = qa.name(`FE-03 nhật ký ${RUN}`)
+        const mk = await api.post('/api/users', {
+          fullName,
+          email,
+          password: 'MatKhauManh@2026',
+          roleId: BUILT_IN.member.id,
+        })
+        qa.expectStatus(mk, 201)
+        const userId = mk.body.user.id
+        try {
+          await qa.page.reload()
+          const first = qa.page.locator('tbody tr.row-link').first()
+          await qa.expect(first).toContainText('Tạo tài khoản')
+          await qa.expect(first).toContainText(fullName)
+          await first.click()
+          const sheet = qa.page.getByRole('dialog')
+          await qa.expect(sheet).not.toContainText('MatKhauManh@2026')
+          await settled(qa)
+          await qa.shot('viec-noi-khac-hien-vao-nhat-ky')
+          qa.note(`Tạo ở "màn hình khác" bằng API rồi tải lại — nhật ký chỉ tự hiện khi quay lại tab (useRefetchOnFocus).`)
+        } finally {
+          await api.put(`/api/users/${userId}/status`, { isActive: false })
+        }
       },
     },
   ],

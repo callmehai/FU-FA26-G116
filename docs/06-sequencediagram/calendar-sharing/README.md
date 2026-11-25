@@ -8,7 +8,7 @@ SCRUM-137 tìm giờ họp), quyết định phạm vi ở [ADR-0058](../../05-d
   chỉ giữ "meetings at shared levels", không nhắc gì khác.
 - Khung trùng họp Mật vẫn cho tạo nháp; kiểm lại khi tạo dùng đúng dữ liệu đã chia sẻ (BR-148, D12).
 - UC-80a, UC-80b, UC-80d kết thúc ở bước gửi; câu trả lời (chấp nhận/từ chối, duyệt/từ chối thay đổi) là UC-80c.
-  UC-81b `<<extend>>` UC-81a (từ một khung đã tìm mới tạo nháp).
+  UC-81b bắt đầu từ một khung đã tìm ở UC-81a (không vẽ `extend`: tạo nháp là mục tiêu riêng, xem inventory §1).
 - Số hiệu dựa trên PR #279 merge trước (UC-75, BR-135–BR-139, `MSG424`–`MSG434`); nếu nhánh này merge
   trước thì #279 dời số. Số UC-57..UC-57d trả lại, không dùng.
 - Danh sách sequence (9): UC-80a → UC-80f, UC-81a → UC-81c. Job `SYS_ExpireCalendarShares` đã bỏ theo PO

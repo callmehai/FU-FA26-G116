@@ -27,7 +27,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending)."
           ],
-          "note": "UC-26 | BR-29, BR-64 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Empty_snapshot_errors_visibility_and_current_role_are_authoritative)"
+          "note": "UC-26 | BR-29, BR-64 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Empty_snapshot_errors_visibility_and_current_role_are_authoritative)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT02",
@@ -43,7 +46,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Published meeting with a Secretary and no agenda item."
           ],
-          "note": "UC-26 | AF-1 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Empty_snapshot_errors_visibility_and_current_role_are_authoritative)"
+          "note": "UC-26 | AF-1 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Empty_snapshot_errors_visibility_and_current_role_are_authoritative)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT03",
@@ -62,7 +68,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting InProgress with a Chair and a Member, one item InProgress and one Pending."
           ],
-          "note": "UC-26 | BR-69 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Execution_and_locked_fields_obey_role_state_and_server_clock)"
+          "note": "UC-26 | BR-69 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Execution_and_locked_fields_obey_role_state_and_server_clock)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT04",
@@ -79,7 +88,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Published meeting with items: one with an internal presenter, one with a Guest presenter, one with a legacy typed presenter name (prepared by QA lead)."
           ],
-          "note": "UC-26 | BR-306 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Any_pending_can_start_and_legacy_names_are_not_assignments)"
+          "note": "UC-26 | BR-306 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Any_pending_can_start_and_legacy_names_are_not_assignments)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT05",
@@ -98,7 +110,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A Published and a Draft meeting, each with the Member on the roster."
           ],
-          "note": "UC-26 | BR-29 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Empty_snapshot_errors_visibility_and_current_role_are_authoritative)"
+          "note": "UC-26 | BR-29 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Empty_snapshot_errors_visibility_and_current_role_are_authoritative)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT06",
@@ -115,25 +130,13 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An existing meeting; an unrelated active account."
           ],
-          "note": "UC-26 | EX-1 | BR-29 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Empty_snapshot_errors_visibility_and_current_role_are_authoritative)"
+          "note": "UC-26 | EX-1 | BR-29 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Empty_snapshot_errors_visibility_and_current_role_are_authoritative)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "AGENDA_API_IT07",
-          "description": "Verify GET agenda requires a token.",
-          "procedure": [
-            "Send GET /api/meetings/<meetingId>/agenda without an Authorization header."
-          ],
-          "expected": [
-            "HTTP 401 Unauthorized."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Existing meeting."
-          ],
-          "note": "UC-26 | Manual only"
-        },
-        {
-          "id": "AGENDA_API_IT08",
           "description": "Verify a Guest with a valid invitation reads the agenda read-only while the meeting is open.",
           "procedure": [
             "Open the Guest invitation link and verify the session as in UC-04; keep the Guest token.",
@@ -150,24 +153,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Published meeting with a Guest invitation (email in a controlled inbox)."
           ],
-          "note": "UC-26 | BR-181 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaGuestTests.cs (Guest_snapshot_has_member_document_metadata_but_no_write_permissions_or_user_identity; Guest_sees_the_agenda_only_while_the_meeting_is_open)"
-        },
-        {
-          "id": "AGENDA_API_IT09",
-          "description": "Verify GET agenda answers 500 MSG128 when it cannot be read.",
-          "procedure": [
-            "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
-            "Make the database unavailable, then send GET /api/meetings/<meetingId>/agenda."
-          ],
-          "expected": [
-            "HTTP 500 Internal Server Error: { \"code\": \"MSG128\", \"message\": \"Không tải được chương trình nghị sự.\" }; an error is never returned as an empty list."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending).",
-            "QA lead can make the database fail for the request."
-          ],
-          "note": "UC-26 | EX-2 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaAdditionalTests.cs (Cancellation_propagates_instead_of_becoming_business_failure) ; Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Read_failure_and_push_failure_have_different_commit_semantics)"
+          "note": "UC-26 | BR-181 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaGuestTests.cs (Guest_snapshot_has_member_document_metadata_but_no_write_permissions_or_user_identity; Guest_sees_the_agenda_only_while_the_meeting_is_open) · Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaGuestTests.cs (Guest_cannot_use_options_or_any_mutation_even_with_colliding_user_subject)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -178,7 +167,7 @@
       ],
       "cases": [
         {
-          "id": "AGENDA_API_IT10",
+          "id": "AGENDA_API_IT08",
           "description": "Verify GET editor-options returns the presenters and documents the Secretary can pick.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -194,10 +183,13 @@
             "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending).",
             "The meeting has a Guest invitation and two meeting documents, one attached to an item."
           ],
-          "note": "UC-23 | BR-306 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Limits_duplicate_ids_presenter_and_document_validation)"
+          "note": "UC-23 | BR-306 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Every_item_status_accepts_presenter_and_shared_document_changes)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT11",
+          "id": "AGENDA_API_IT09",
           "description": "Verify the Chair may read editor-options like the Secretary.",
           "procedure": [
             "Sign in as the Chair of the meeting (POST /api/auth/login) and keep the access token.",
@@ -210,10 +202,13 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending)."
           ],
-          "note": "UC-23 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Chair_plans_like_the_secretary_in_all_six_states)"
+          "note": "UC-23 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Chair_plans_like_the_secretary_in_all_six_states)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT12",
+          "id": "AGENDA_API_IT10",
           "description": "Verify editor-options refuses a reader who is neither Chair nor Secretary.",
           "procedure": [
             "Sign in as a Member of the meeting (POST /api/auth/login) and keep the access token.",
@@ -230,59 +225,10 @@
             "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending).",
             "The Organizer of the meeting can read it but holds no Chair or Secretary role in it."
           ],
-          "note": "UC-23 | BR-65 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Chair_planning_locks_once_ended_and_a_member_is_still_refused)"
-        },
-        {
-          "id": "AGENDA_API_IT13",
-          "description": "Verify editor-options is refused once the meeting has ended.",
-          "procedure": [
-            "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send GET /api/meetings/<meetingId>/agenda/editor-options"
-          ],
-          "expected": [
-            "HTTP 409 Conflict: { \"code\": \"MSG67\", \"message\": \"Trạng thái cuộc họp không cho phép thao tác này.\" }."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Meeting in status Ended with a Secretary."
-          ],
-          "note": "UC-23 | BR-74 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Ended_is_readonly_and_non_running_meeting_cannot_execute)"
-        },
-        {
-          "id": "AGENDA_API_IT14",
-          "description": "Verify editor-options answers 404 for a stranger and 401 without a token.",
-          "procedure": [
-            "Send GET /api/meetings/<meetingId>/agenda/editor-options without a token.",
-            "Sign in as an unrelated account (POST /api/auth/login) and keep the access token.",
-            "Send GET /api/meetings/<meetingId>/agenda/editor-options"
-          ],
-          "expected": [
-            "Step 1: HTTP 401 Unauthorized.",
-            "Step 3: HTTP 404 Not Found with an empty body."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending).",
-            "An unrelated active account."
-          ],
-          "note": "UC-23 | Manual only"
-        },
-        {
-          "id": "AGENDA_API_IT15",
-          "description": "Verify editor-options answers 500 MSG128 when it cannot be read.",
-          "procedure": [
-            "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
-            "Make the database unavailable, then send GET /api/meetings/<meetingId>/agenda/editor-options."
-          ],
-          "expected": [
-            "HTTP 500: { \"code\": \"MSG128\", \"message\": \"Không tải được chương trình nghị sự.\" }."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending).",
-            "QA lead can make the database fail for the request."
-          ],
-          "note": "UC-23 | EX | Manual only"
+          "note": "UC-23 | BR-65 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Chair_planning_locks_once_ended_and_a_member_is_still_refused)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -293,7 +239,7 @@
       ],
       "cases": [
         {
-          "id": "AGENDA_API_IT16",
+          "id": "AGENDA_API_IT11",
           "description": "Verify POST agenda creates a Pending item at the end of the list.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -310,10 +256,13 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending)."
           ],
-          "note": "UC-23a | BR-64, BR-65 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Secretary_can_plan_in_all_six_states)"
+          "note": "UC-23a | BR-64, BR-65 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Secretary_can_plan_in_all_six_states)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT17",
+          "id": "AGENDA_API_IT12",
           "description": "Verify POST agenda is allowed to the Chair as well, in every planning status.",
           "procedure": [
             "Sign in as the Chair of the meeting (POST /api/auth/login) and keep the access token.",
@@ -326,10 +275,13 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Six meetings, one in each planning status, each with the Chair on the roster."
           ],
-          "note": "UC-23a | BR-74 | PO decision 02/11/2026 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Chair_plans_like_the_secretary_in_all_six_states)"
+          "note": "UC-23a | BR-74 | PO decision 02/11/2026 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Chair_plans_like_the_secretary_in_all_six_states)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT18",
+          "id": "AGENDA_API_IT13",
           "description": "Verify POST agenda accepts an internal presenter from the roster.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -347,30 +299,13 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending)."
           ],
-          "note": "UC-23a | BR-306 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Presenter_assignment_uses_correct_channel_and_only_identity_changes_notify; A_secretary_who_assigns_themselves_is_not_notified)"
+          "note": "UC-23a | BR-306 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Presenter_assignment_uses_correct_channel_and_only_identity_changes_notify; A_secretary_who_assigns_themselves_is_not_notified) · Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Secretary_can_plan_in_all_six_states)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT19",
-          "description": "Verify POST agenda accepts a Guest presenter by invitation id.",
-          "procedure": [
-            "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/meetings/<meetingId>/agenda",
-            "Headers: Authorization: Bearer <access_token>; Content-Type: application/json",
-            "Body: { \"title\": \"Phát biểu khách mời\", \"presenterGuestInvitationId\": \"<Guest invitation id>\" }"
-          ],
-          "expected": [
-            "HTTP 201, code \"MSG60\".",
-            "The item shows \"presenterGuestInvitationId\" and the invited name; the Guest receives an email through the worker (queued when SMTP is off) naming the item, the meeting and the start time in Vietnam time."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending).",
-            "A Guest invitation of the meeting that is not revoked (a Guest who declined is allowed)."
-          ],
-          "note": "UC-23a | BR-306 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Presenter_assignment_uses_correct_channel_and_only_identity_changes_notify)"
-        },
-        {
-          "id": "AGENDA_API_IT20",
+          "id": "AGENDA_API_IT14",
           "description": "Verify POST agenda rejects an empty title with MSG66.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -386,29 +321,13 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending)."
           ],
-          "note": "UC-23a | EX-1 | BR-66 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Limits_duplicate_ids_presenter_and_document_validation)"
+          "note": "UC-23a | EX-1 | BR-66 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Limits_duplicate_ids_presenter_and_document_validation)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT21",
-          "description": "Verify POST agenda accepts a title of 300 characters and a description of 4,000, and refuses one more.",
-          "procedure": [
-            "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/meetings/<meetingId>/agenda with a title of 300 characters and a description of 4,000 characters.",
-            "Send it again with a title of 301 characters.",
-            "Send it again with a description of 4,001 characters."
-          ],
-          "expected": [
-            "Step 2: HTTP 201, code \"MSG60\".",
-            "Steps 3 and 4: HTTP 400, code \"MSG66\" with \"errors\" naming \"title\" and \"description\"."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending)."
-          ],
-          "note": "UC-23a | Boundary | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaRulesTests.cs (Normalization_preserves_newlines_and_validates_boundaries)"
-        },
-        {
-          "id": "AGENDA_API_IT22",
+          "id": "AGENDA_API_IT15",
           "description": "Verify POST agenda rejects a presenter who is not part of the meeting.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -425,10 +344,13 @@
             "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending).",
             "An active user who is not on the roster."
           ],
-          "note": "UC-23a | BR-306 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Limits_duplicate_ids_presenter_and_document_validation)"
+          "note": "UC-23a | BR-306 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Limits_duplicate_ids_presenter_and_document_validation)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT23",
+          "id": "AGENDA_API_IT16",
           "description": "Verify POST agenda rejects an internal and a Guest presenter together and a Guid.Empty id.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -442,29 +364,13 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending)."
           ],
-          "note": "UC-23a | BR-306 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Limits_duplicate_ids_presenter_and_document_validation)"
+          "note": "UC-23a | BR-306 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Limits_duplicate_ids_presenter_and_document_validation)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT24",
-          "description": "Verify POST agenda rejects a Guest invitation of another meeting or a revoked one.",
-          "procedure": [
-            "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/meetings/<meetingId>/agenda",
-            "Headers: Authorization: Bearer <access_token>; Content-Type: application/json",
-            "Body: { \"title\": \"Báo cáo\", \"presenterGuestInvitationId\": \"<revoked invitation id>\" }"
-          ],
-          "expected": [
-            "HTTP 400, code \"MSG66\", \"errors.presenterGuestInvitationId\": \"Khách mời không còn thuộc cuộc họp.\""
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending).",
-            "A revoked Guest invitation of the meeting."
-          ],
-          "note": "UC-23a | BR-306 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Limits_duplicate_ids_presenter_and_document_validation)"
-        },
-        {
-          "id": "AGENDA_API_IT25",
+          "id": "AGENDA_API_IT17",
           "description": "Verify POST agenda rejects documentIds that are not documents of this meeting.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -481,10 +387,13 @@
             "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending).",
             "A document that belongs to a different meeting."
           ],
-          "note": "UC-23a | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Invalid_guest_reference_rolls_back_information_and_links)"
+          "note": "UC-23a | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Invalid_guest_reference_rolls_back_information_and_links)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT26",
+          "id": "AGENDA_API_IT18",
           "description": "Verify POST agenda rejects the retired request fields.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -500,28 +409,13 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending)."
           ],
-          "note": "UC-23a | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Invalid_json_never_writes_partial_data)"
+          "note": "UC-23a | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Invalid_json_never_writes_partial_data)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT27",
-          "description": "Verify POST agenda rejects unknown fields, duplicate properties and wrong types.",
-          "procedure": [
-            "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/meetings/<meetingId>/agenda with an extra field \"foo\": 1.",
-            "Send POST /api/meetings/<meetingId>/agenda with the property \"title\" twice.",
-            "Send POST /api/meetings/<meetingId>/agenda with \"title\": 5 and with a property written \"Title\"."
-          ],
-          "expected": [
-            "Each answers HTTP 400, code \"MSG66\"; nothing is created and no partial data is written."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending)."
-          ],
-          "note": "UC-23a | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Invalid_json_never_writes_partial_data; Malformed_unicode_property_names_return_validation_without_mutation)"
-        },
-        {
-          "id": "AGENDA_API_IT28",
+          "id": "AGENDA_API_IT19",
           "description": "Verify POST agenda is refused for a Member with MSG67.",
           "procedure": [
             "Sign in as a Member of the meeting (POST /api/auth/login) and keep the access token.",
@@ -537,10 +431,13 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending)."
           ],
-          "note": "UC-23a | EX-2 | BR-65 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Chair_planning_locks_once_ended_and_a_member_is_still_refused)"
+          "note": "UC-23a | EX-2 | BR-65 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Chair_planning_locks_once_ended_and_a_member_is_still_refused)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT29",
+          "id": "AGENDA_API_IT20",
           "description": "Verify POST agenda is refused once the meeting has ended or was cancelled.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -554,81 +451,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting in status Ended (repeat for Cancelled) with a Secretary."
           ],
-          "note": "UC-23a | EX-2 | BR-74 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Ended_is_readonly_and_non_running_meeting_cannot_execute)"
-        },
-        {
-          "id": "AGENDA_API_IT30",
-          "description": "Verify POST agenda requires JSON and a body under 64 KiB.",
-          "procedure": [
-            "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/meetings/<meetingId>/agenda with Content-Type: text/plain.",
-            "Send POST /api/meetings/<meetingId>/agenda with a JSON body larger than 64 KiB (description of 70,000 characters)."
-          ],
-          "expected": [
-            "Step 2: HTTP 415 Unsupported Media Type: { \"code\": \"MSG34\", \"message\": \"Yêu cầu phải dùng Content-Type application/json.\" }.",
-            "Step 3: HTTP 413 Payload Too Large: { \"code\": \"MSG87\", \"message\": \"Nội dung yêu cầu vượt quá 64 KiB.\" }."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending)."
-          ],
-          "note": "UC-23a | Boundary | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Invalid_json_never_writes_partial_data)"
-        },
-        {
-          "id": "AGENDA_API_IT31",
-          "description": "Verify POST agenda hides the meeting from a stranger and needs a token; a Guest cannot write.",
-          "procedure": [
-            "Send POST /api/meetings/<meetingId>/agenda without a token.",
-            "Sign in as an unrelated account (POST /api/auth/login) and keep the access token. Then send the request.",
-            "Send it with a verified Guest token."
-          ],
-          "expected": [
-            "Step 1: HTTP 401.",
-            "Step 2: HTTP 404 Not Found with an empty body.",
-            "Step 3: HTTP 403 Forbidden."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending).",
-            "An unrelated account; a Guest invitation."
-          ],
-          "note": "UC-23a | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaGuestTests.cs (Guest_cannot_use_options_or_any_mutation_even_with_colliding_user_subject)"
-        },
-        {
-          "id": "AGENDA_API_IT32",
-          "description": "Verify POST agenda answers 503 MSG68 and writes nothing when it cannot be saved.",
-          "procedure": [
-            "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
-            "Make the database fail, then send POST /api/meetings/<meetingId>/agenda with a valid body."
-          ],
-          "expected": [
-            "HTTP 503 Service Unavailable: { \"code\": \"MSG68\", \"message\": \"Không lưu được thao tác nghị sự. Vui lòng thử lại.\" }.",
-            "No item exists afterwards and no event is pushed."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending).",
-            "QA lead can make the database fail for the request."
-          ],
-          "note": "UC-23a | EX-3 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Persistence_failures_rollback_and_emit_no_event)"
-        },
-        {
-          "id": "AGENDA_API_IT33",
-          "description": "Verify two simultaneous creates both succeed with distinct positions.",
-          "procedure": [
-            "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send two POST /api/meetings/<meetingId>/agenda requests at the same moment with different titles.",
-            "Send GET /api/meetings/<meetingId>/agenda."
-          ],
-          "expected": [
-            "Both answer 201/MSG60 and the items have different \"position\" values with no gap lost or duplicated.",
-            "The requests may be handled in any order: the result above holds whichever one runs first."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending)."
-          ],
-          "note": "UC-23a | BR-72 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaConcurrencyTests.cs (Concurrent_creates_append_distinct_positions)"
+          "note": "UC-23a | EX-2 | BR-74 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Ended_is_readonly_and_non_running_meeting_cannot_execute)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -639,7 +465,7 @@
       ],
       "cases": [
         {
-          "id": "AGENDA_API_IT34",
+          "id": "AGENDA_API_IT21",
           "description": "Verify PUT item replaces the title, description and presenter.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -656,82 +482,13 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending)."
           ],
-          "note": "UC-23b | BR-68 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Every_item_status_accepts_presenter_and_shared_document_changes)"
+          "note": "UC-23b | BR-68 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Every_item_status_accepts_presenter_and_shared_document_changes)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT35",
-          "description": "Verify PUT item works on an InProgress and a Done item too.",
-          "procedure": [
-            "Sign in as the Chair of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send PUT /api/meetings/<meetingId>/agenda/<inProgressItemId> and PUT /api/meetings/<meetingId>/agenda/<doneItemId> with a new title."
-          ],
-          "expected": [
-            "Both answer 200/MSG61; the status and the actual times of the items are unchanged."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Meeting InProgress with one item InProgress and one Done."
-          ],
-          "note": "UC-23b | BR-68 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Every_item_status_accepts_presenter_and_shared_document_changes)"
-        },
-        {
-          "id": "AGENDA_API_IT36",
-          "description": "Verify an optional field that is left out is cleared, but documentIds left out keeps the documents.",
-          "procedure": [
-            "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send PUT /api/meetings/<meetingId>/agenda/<itemId> with only { \"title\": \"Báo cáo\" } on an item that has a presenter, a description and two documents.",
-            "Send PUT /api/meetings/<meetingId>/agenda/<itemId> with { \"title\": \"Báo cáo\", \"documentIds\": [] }."
-          ],
-          "expected": [
-            "Step 2: 200/MSG61; the presenter and the description are cleared, the two documents stay attached.",
-            "Step 3: 200/MSG61; the documents are detached but remain in the meeting's document list."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending).",
-            "An item with a presenter, a description and two attached documents."
-          ],
-          "note": "UC-23b | BR-283 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Update_without_document_ids_keeps_links_and_an_empty_list_clears_them)"
-        },
-        {
-          "id": "AGENDA_API_IT37",
-          "description": "Verify an update that changes nothing does not touch the item.",
-          "procedure": [
-            "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send PUT /api/meetings/<meetingId>/agenda/<itemId> with exactly the values GET returns now.",
-            "Send GET /api/meetings/<meetingId>/agenda."
-          ],
-          "expected": [
-            "HTTP 200 OK, code \"MSG61\".",
-            "\"updatedAt\" of the item is unchanged and no agenda event is pushed to viewers."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending)."
-          ],
-          "note": "UC-23b | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaAdditionalTests.cs (Reorder_moves_done_and_current_positions_noop_keeps_updated_at)"
-        },
-        {
-          "id": "AGENDA_API_IT38",
-          "description": "Verify changing the presenter notifies the new presenter and clearing it notifies nobody.",
-          "procedure": [
-            "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send PUT /api/meetings/<meetingId>/agenda/<itemId> with \"presenterId\" of Member A, then Member B, then back to A, then null.",
-            "Read GET /api/notifications as A and B."
-          ],
-          "expected": [
-            "Every step answers 200/MSG61.",
-            "A has two \"AgendaPresenterAssigned\" notifications (A to B to A is three separate assignments); B has one; setting null sends nothing.",
-            "On a Draft meeting no presenter notification is sent."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Published meeting with items; Members A and B on the roster."
-          ],
-          "note": "UC-23b | BR-306 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Presenter_assignment_uses_correct_channel_and_only_identity_changes_notify; Notifier_deduplicates_rechecks_recipient_and_failure_does_not_undo_commit)"
-        },
-        {
-          "id": "AGENDA_API_IT39",
+          "id": "AGENDA_API_IT22",
           "description": "Verify PUT item rejects invalid values with MSG66 and leaves the item as it was.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -746,10 +503,13 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending)."
           ],
-          "note": "UC-23b | EX-1 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Limits_duplicate_ids_presenter_and_document_validation)"
+          "note": "UC-23b | EX-1 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Limits_duplicate_ids_presenter_and_document_validation)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT40",
+          "id": "AGENDA_API_IT23",
           "description": "Verify an inactive presenter must be replaced on the next save.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -765,10 +525,13 @@
             "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending).",
             "An item whose internal presenter was deactivated afterwards."
           ],
-          "note": "UC-23b | BR-306 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaAdditionalTests.cs (Removing_selection_does_not_delete_documents_and_inactive_presenter_must_be_replaced)"
+          "note": "UC-23b | BR-306 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaAdditionalTests.cs (Removing_selection_does_not_delete_documents_and_inactive_presenter_must_be_replaced)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT41",
+          "id": "AGENDA_API_IT24",
           "description": "Verify PUT item is refused for a Member and after the meeting ended.",
           "procedure": [
             "Sign in as a Member of the meeting (POST /api/auth/login) and keep the access token.",
@@ -786,61 +549,10 @@
             "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending).",
             "A second meeting in status Ended."
           ],
-          "note": "UC-23b | EX-2 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Chair_planning_locks_once_ended_and_a_member_is_still_refused)"
-        },
-        {
-          "id": "AGENDA_API_IT42",
-          "description": "Verify PUT item answers 404 for an item that is not in the meeting.",
-          "procedure": [
-            "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send PUT /api/meetings/<meetingId>/agenda/<item id of another meeting> and PUT /api/meetings/<meetingId>/agenda/00000000-0000-7000-8000-000000000000 with valid bodies."
-          ],
-          "expected": [
-            "Both answer HTTP 404 Not Found with an empty body."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending).",
-            "An item of a different meeting."
-          ],
-          "note": "UC-23b | Manual only"
-        },
-        {
-          "id": "AGENDA_API_IT43",
-          "description": "Verify PUT item answers 503 MSG69 when it cannot be saved.",
-          "procedure": [
-            "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
-            "Make the database fail, then send PUT /api/meetings/<meetingId>/agenda/<itemId> with a changed title."
-          ],
-          "expected": [
-            "HTTP 503: { \"code\": \"MSG69\", \"message\": \"Không lưu được thao tác nghị sự. Vui lòng thử lại.\" }; the item is unchanged."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending).",
-            "QA lead can make the database fail for the request."
-          ],
-          "note": "UC-23b | EX-3 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Persistence_failures_rollback_and_emit_no_event)"
-        },
-        {
-          "id": "AGENDA_API_IT44",
-          "description": "Verify PUT item answers 401 without a token and 415 / 413 for a bad body.",
-          "procedure": [
-            "Send PUT /api/meetings/<meetingId>/agenda/<itemId> without a token.",
-            "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send it with Content-Type: text/plain.",
-            "Send it with a body larger than 64 KiB."
-          ],
-          "expected": [
-            "Step 1: HTTP 401.",
-            "Step 3: HTTP 415, code \"MSG34\".",
-            "Step 4: HTTP 413, code \"MSG87\"."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending)."
-          ],
-          "note": "UC-23b | Boundary | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Invalid_json_never_writes_partial_data)"
+          "note": "UC-23b | EX-2 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Chair_planning_locks_once_ended_and_a_member_is_still_refused)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -851,7 +563,7 @@
       ],
       "cases": [
         {
-          "id": "AGENDA_API_IT45",
+          "id": "AGENDA_API_IT25",
           "description": "Verify DELETE item removes a Pending item and keeps its documents.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -867,10 +579,13 @@
             "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending).",
             "A Pending item with two attached documents, one of them also attached to another item."
           ],
-          "note": "UC-23c | BR-237, BR-283 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Every_item_status_accepts_presenter_and_shared_document_changes); Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaAdditionalTests.cs (Removing_selection_does_not_delete_documents_and_inactive_presenter_must_be_replaced)"
+          "note": "UC-23c | BR-237, BR-283 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Every_item_status_accepts_presenter_and_shared_document_changes); Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaAdditionalTests.cs (Removing_selection_does_not_delete_documents_and_inactive_presenter_must_be_replaced)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT46",
+          "id": "AGENDA_API_IT26",
           "description": "Verify DELETE item refuses an item that has started.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -883,28 +598,13 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting InProgress with one InProgress and one Done item."
           ],
-          "note": "UC-23c | EX-2 | BR-237 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Planning_update_delete_reorder_preserve_fixed_positions_and_documents)"
+          "note": "UC-23c | EX-2 | BR-237 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Planning_update_delete_reorder_preserve_fixed_positions_and_documents) · Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Execution_and_locked_fields_obey_role_state_and_server_clock)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT47",
-          "description": "Verify deleting an item keeps the notes written on it.",
-          "procedure": [
-            "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
-            "Delete an item on which a Member wrote a meeting note.",
-            "Read the note as that Member."
-          ],
-          "expected": [
-            "The item is deleted (200/MSG62) and the one meeting-wide note per author is still there."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending).",
-            "A Member wrote a note while an item was current."
-          ],
-          "note": "UC-23c | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaAdditionalTests.cs (Deleting_an_item_with_notes_keeps_the_one_meeting_wide_note_per_author)"
-        },
-        {
-          "id": "AGENDA_API_IT48",
+          "id": "AGENDA_API_IT27",
           "description": "Verify DELETE item is refused for a Member and after the meeting ended.",
           "procedure": [
             "Sign in as a Member of the meeting (POST /api/auth/login) and keep the access token.",
@@ -922,42 +622,10 @@
             "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending).",
             "A meeting in status Ended with a Pending item."
           ],
-          "note": "UC-23c | EX-1 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Chair_planning_locks_once_ended_and_a_member_is_still_refused)"
-        },
-        {
-          "id": "AGENDA_API_IT49",
-          "description": "Verify DELETE item answers 404 for an item that is not in the meeting and 401 without a token.",
-          "procedure": [
-            "Send DELETE /api/meetings/<meetingId>/agenda/<itemId> without a token.",
-            "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send DELETE /api/meetings/<meetingId>/agenda/00000000-0000-7000-8000-000000000000."
-          ],
-          "expected": [
-            "Step 1: HTTP 401.",
-            "Step 3: HTTP 404 Not Found with an empty body."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending)."
-          ],
-          "note": "UC-23c | Manual only"
-        },
-        {
-          "id": "AGENDA_API_IT50",
-          "description": "Verify DELETE item answers 503 MSG70 when it cannot be saved.",
-          "procedure": [
-            "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
-            "Make the database fail, then send DELETE /api/meetings/<meetingId>/agenda/<pendingItemId>."
-          ],
-          "expected": [
-            "HTTP 503: { \"code\": \"MSG70\", \"message\": \"Không lưu được thao tác nghị sự. Vui lòng thử lại.\" }; the item and the saved order are unchanged."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending).",
-            "QA lead can make the database fail for the request."
-          ],
-          "note": "UC-23c | EX-3 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Persistence_failures_rollback_and_emit_no_event)"
+          "note": "UC-23c | EX-1 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Chair_planning_locks_once_ended_and_a_member_is_still_refused)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -968,7 +636,7 @@
       ],
       "cases": [
         {
-          "id": "AGENDA_API_IT51",
+          "id": "AGENDA_API_IT28",
           "description": "Verify PUT order saves the new order using the latest orderVersion.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -986,10 +654,13 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending)."
           ],
-          "note": "UC-23d | BR-238 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Planning_update_delete_reorder_preserve_fixed_positions_and_documents)"
+          "note": "UC-23d | BR-238 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Planning_update_delete_reorder_preserve_fixed_positions_and_documents)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT52",
+          "id": "AGENDA_API_IT29",
           "description": "Verify PUT order also moves InProgress and Done items.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1002,26 +673,13 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting InProgress with a Done, an InProgress and a Pending item."
           ],
-          "note": "UC-23d | BR-238 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaAdditionalTests.cs (Reorder_moves_done_and_current_positions_noop_keeps_updated_at)"
+          "note": "UC-23d | BR-238 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaAdditionalTests.cs (Reorder_moves_done_and_current_positions_noop_keeps_updated_at)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT53",
-          "description": "Verify PUT order with the unchanged order succeeds without writing.",
-          "procedure": [
-            "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send PUT /api/meetings/<meetingId>/agenda/order with the current order and the current \"orderVersion\"."
-          ],
-          "expected": [
-            "HTTP 200, code \"MSG63\"; \"updatedAt\" of the items is unchanged and no event is pushed to viewers."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending)."
-          ],
-          "note": "UC-23d | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaAdditionalTests.cs (Reorder_moves_done_and_current_positions_noop_keeps_updated_at)"
-        },
-        {
-          "id": "AGENDA_API_IT54",
+          "id": "AGENDA_API_IT30",
           "description": "Verify PUT order rejects an out-of-date orderVersion.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1034,10 +692,13 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending)."
           ],
-          "note": "UC-23d | EX-2 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaConcurrencyTests.cs (Two_reorders_from_one_snapshot_do_not_silently_overwrite; Reorder_waiting_behind_a_changed_set_detects_stale_snapshot)"
+          "note": "UC-23d | EX-2 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaConcurrencyTests.cs (Two_reorders_from_one_snapshot_do_not_silently_overwrite; Reorder_waiting_behind_a_changed_set_detects_stale_snapshot)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT55",
+          "id": "AGENDA_API_IT31",
           "description": "Verify PUT order rejects a set of ids that omits, repeats or adds an item.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1053,10 +714,13 @@
             "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending).",
             "An item of another meeting."
           ],
-          "note": "UC-23d | EX-2 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Limits_duplicate_ids_presenter_and_document_validation)"
+          "note": "UC-23d | EX-2 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Limits_duplicate_ids_presenter_and_document_validation) · Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Planning_update_delete_reorder_preserve_fixed_positions_and_documents)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT56",
+          "id": "AGENDA_API_IT32",
           "description": "Verify PUT order needs at least two items and refuses the retired body.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1070,10 +734,13 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A meeting with one item and a meeting with two items."
           ],
-          "note": "UC-23d | Boundary | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Reorder_requires_two_items_and_rejects_legacy_body)"
+          "note": "UC-23d | Boundary | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Reorder_requires_two_items_and_rejects_legacy_body)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT57",
+          "id": "AGENDA_API_IT33",
           "description": "Verify PUT order is refused for a Member and after the meeting ended.",
           "procedure": [
             "Sign in as a Member of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1090,26 +757,10 @@
             "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending).",
             "A meeting in status Ended with two items."
           ],
-          "note": "UC-23d | EX-1 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Chair_planning_locks_once_ended_and_a_member_is_still_refused)"
-        },
-        {
-          "id": "AGENDA_API_IT58",
-          "description": "Verify PUT order answers 503 MSG71 when it cannot be saved, and 401 without a token.",
-          "procedure": [
-            "Send PUT /api/meetings/<meetingId>/agenda/order without a token.",
-            "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
-            "Make the database fail and send a valid PUT order."
-          ],
-          "expected": [
-            "Step 1: HTTP 401.",
-            "Step 3: HTTP 503: { \"code\": \"MSG71\", \"message\": \"Không lưu được thao tác nghị sự. Vui lòng thử lại.\" }; the saved order is unchanged."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending).",
-            "QA lead can make the database fail for the request."
-          ],
-          "note": "UC-23d | EX-3 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Persistence_failures_rollback_and_emit_no_event)"
+          "note": "UC-23d | EX-1 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Chair_planning_locks_once_ended_and_a_member_is_still_refused)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -1120,7 +771,7 @@
       ],
       "cases": [
         {
-          "id": "AGENDA_API_IT59",
+          "id": "AGENDA_API_IT34",
           "description": "Verify the Chair starts any Pending item of a meeting in progress.",
           "procedure": [
             "Sign in as the Chair of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1135,10 +786,13 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting InProgress with one Chair, one Secretary and a Member on its roster, and three Pending agenda items."
           ],
-          "note": "UC-24 | BR-69, BR-70 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Any_pending_can_start_and_legacy_names_are_not_assignments)"
+          "note": "UC-24 | BR-69, BR-70 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Any_pending_can_start_and_legacy_names_are_not_assignments)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT60",
+          "id": "AGENDA_API_IT35",
           "description": "Verify a second item cannot start while one is in progress.",
           "procedure": [
             "Sign in as the Chair of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1153,10 +807,13 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting InProgress with one Chair, one Secretary and a Member on its roster, and three Pending agenda items."
           ],
-          "note": "UC-24 | EX-2 | BR-71 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaConcurrencyTests.cs (Concurrent_start_has_one_winner_and_one_current)"
+          "note": "UC-24 | EX-2 | BR-71 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaConcurrencyTests.cs (Concurrent_start_has_one_winner_and_one_current) · Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Execution_and_locked_fields_obey_role_state_and_server_clock)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT61",
+          "id": "AGENDA_API_IT36",
           "description": "Verify Start is refused when the item is not Pending.",
           "procedure": [
             "Sign in as the Chair of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1169,26 +826,13 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting InProgress with a Done item and no current item."
           ],
-          "note": "UC-24 | EX-1 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Execution_and_locked_fields_obey_role_state_and_server_clock)"
+          "note": "UC-24 | EX-1 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Execution_and_locked_fields_obey_role_state_and_server_clock)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT62",
-          "description": "Verify Start is refused when the meeting is not InProgress.",
-          "procedure": [
-            "Sign in as the Chair of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/meetings/<meetingId>/agenda/<itemId>/current on a Published meeting."
-          ],
-          "expected": [
-            "HTTP 409 Conflict: { \"code\": \"MSG73\", \"message\": \"Trạng thái cuộc họp không cho phép thao tác này.\" }; the item stays Pending."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Meeting in status Published with one Chair, one Secretary and a Member on its roster, and three agenda items (Pending)."
-          ],
-          "note": "UC-24 | EX-1 | BR-69 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Ended_is_readonly_and_non_running_meeting_cannot_execute)"
-        },
-        {
-          "id": "AGENDA_API_IT63",
+          "id": "AGENDA_API_IT37",
           "description": "Verify Start is refused for the Secretary, the Organizer and a Member.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1202,42 +846,10 @@
             "Meeting InProgress with one Chair, one Secretary and a Member on its roster, and three Pending agenda items.",
             "The Organizer is not the Chair."
           ],
-          "note": "UC-24 | EX-1 | BR-69 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Execution_and_locked_fields_obey_role_state_and_server_clock)"
-        },
-        {
-          "id": "AGENDA_API_IT64",
-          "description": "Verify Start answers 404 for an item that is not in the meeting and 401 without a token.",
-          "procedure": [
-            "Send POST /api/meetings/<meetingId>/agenda/<itemId>/current without a token.",
-            "Sign in as the Chair of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/meetings/<meetingId>/agenda/00000000-0000-7000-8000-000000000000/current."
-          ],
-          "expected": [
-            "Step 1: HTTP 401.",
-            "Step 3: HTTP 404 Not Found with an empty body."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Meeting InProgress with one Chair, one Secretary and a Member on its roster, and three Pending agenda items."
-          ],
-          "note": "UC-24 | Manual only"
-        },
-        {
-          "id": "AGENDA_API_IT65",
-          "description": "Verify Start answers 503 MSG75 when it cannot be saved.",
-          "procedure": [
-            "Sign in as the Chair of the meeting (POST /api/auth/login) and keep the access token.",
-            "Make the database fail, then send POST /api/meetings/<meetingId>/agenda/<itemId>/current."
-          ],
-          "expected": [
-            "HTTP 503: { \"code\": \"MSG75\", \"message\": \"Không lưu được thao tác nghị sự. Vui lòng thử lại.\" }; the item stays Pending and no event is pushed."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Meeting InProgress with one Chair, one Secretary and a Member on its roster, and three Pending agenda items.",
-            "QA lead can make the database fail for the request."
-          ],
-          "note": "UC-24 | EX-3 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Persistence_failures_rollback_and_emit_no_event)"
+          "note": "UC-24 | EX-1 | BR-69 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Execution_and_locked_fields_obey_role_state_and_server_clock)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -1248,7 +860,7 @@
       ],
       "cases": [
         {
-          "id": "AGENDA_API_IT66",
+          "id": "AGENDA_API_IT38",
           "description": "Verify the Chair completes the current item and nothing else starts.",
           "procedure": [
             "Sign in as the Chair of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1263,10 +875,13 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting InProgress with one item InProgress and two Pending."
           ],
-          "note": "UC-25 | BR-72 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Execution_and_locked_fields_obey_role_state_and_server_clock); Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaRulesTests.cs (Completion_records_timestamp_even_immediately_after_start)"
+          "note": "UC-25 | BR-72 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Execution_and_locked_fields_obey_role_state_and_server_clock); Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaRulesTests.cs (Completion_records_timestamp_even_immediately_after_start)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT67",
+          "id": "AGENDA_API_IT39",
           "description": "Verify Complete is refused for an item that is not in progress.",
           "procedure": [
             "Sign in as the Chair of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1279,26 +894,13 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting InProgress with a Pending item and a Done item."
           ],
-          "note": "UC-25 | EX-1 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Execution_and_locked_fields_obey_role_state_and_server_clock)"
+          "note": "UC-25 | EX-1 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Execution_and_locked_fields_obey_role_state_and_server_clock)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT68",
-          "description": "Verify Complete is refused when the meeting is not InProgress.",
-          "procedure": [
-            "Sign in as the Chair of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/meetings/<meetingId>/agenda/<itemId>/complete on a meeting in status Ended."
-          ],
-          "expected": [
-            "HTTP 409 Conflict: { \"code\": \"MSG74\", \"message\": \"Trạng thái cuộc họp không cho phép thao tác này.\" }."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Meeting in status Ended with a Done item."
-          ],
-          "note": "UC-25 | EX-1 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Ended_is_readonly_and_non_running_meeting_cannot_execute)"
-        },
-        {
-          "id": "AGENDA_API_IT69",
+          "id": "AGENDA_API_IT40",
           "description": "Verify Complete is refused for anyone but the Chair.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1311,10 +913,13 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting InProgress with an item InProgress."
           ],
-          "note": "UC-25 | EX-1 | BR-69 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Execution_and_locked_fields_obey_role_state_and_server_clock)"
+          "note": "UC-25 | EX-1 | BR-69 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Execution_and_locked_fields_obey_role_state_and_server_clock)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT70",
+          "id": "AGENDA_API_IT41",
           "description": "Verify ending the meeting completes the current item and keeps the Pending ones.",
           "procedure": [
             "Sign in as the Chair of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1329,27 +934,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting InProgress with an item InProgress and one Pending."
           ],
-          "note": "UC-25 | UC-22 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingLifecycleTests.cs (End_completes_only_current_agenda_and_preserves_open_votes_and_attendance)"
-        },
-        {
-          "id": "AGENDA_API_IT71",
-          "description": "Verify Complete answers 404 for an unknown item, 401 without a token and 503 MSG76 on a failed save.",
-          "procedure": [
-            "Send POST /api/meetings/<meetingId>/agenda/<itemId>/complete without a token.",
-            "Sign in as the Chair of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send POST /api/meetings/<meetingId>/agenda/00000000-0000-7000-8000-000000000000/complete.",
-            "Make the database fail and complete the current item."
-          ],
-          "expected": [
-            "Step 1: HTTP 401.",
-            "Step 3: HTTP 404 Not Found with an empty body.",
-            "Step 4: HTTP 503: { \"code\": \"MSG76\", \"message\": \"Không lưu được thao tác nghị sự. Vui lòng thử lại.\" }; the item stays InProgress."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Meeting InProgress with an item InProgress; QA lead can make the database fail."
-          ],
-          "note": "UC-25 | EX-2 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Persistence_failures_rollback_and_emit_no_event)"
+          "note": "UC-25 | UC-22 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingLifecycleTests.cs (End_completes_only_current_agenda_and_preserves_open_votes_and_attendance)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -1360,7 +948,7 @@
       ],
       "cases": [
         {
-          "id": "AGENDA_API_IT72",
+          "id": "AGENDA_API_IT42",
           "description": "Verify the Chair records the conclusion of an InProgress item.",
           "procedure": [
             "Sign in as the Chair of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1377,10 +965,13 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting InProgress with an item InProgress and no minutes."
           ],
-          "note": "UC-77 | BR-309, BR-311 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Conclusion_gate_and_metadata_are_server_authoritative)"
+          "note": "UC-77 | BR-309, BR-311 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Conclusion_gate_and_metadata_are_server_authoritative)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT73",
+          "id": "AGENDA_API_IT43",
           "description": "Verify the Secretary records a conclusion on a Done item after the meeting ended.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1393,26 +984,13 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting in status Ended with a Done item and no minutes document at all."
           ],
-          "note": "UC-77 | BR-310 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Conclusion_gate_and_metadata_are_server_authoritative)"
+          "note": "UC-77 | BR-310 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Conclusion_gate_and_metadata_are_server_authoritative)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT74",
-          "description": "Verify every valid save rewrites the conclusion, the actor and the time.",
-          "procedure": [
-            "Sign in as the Chair of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send PUT /api/meetings/<meetingId>/agenda/<itemId>/conclusion with the same text twice; then, as the Secretary, with a new text."
-          ],
-          "expected": [
-            "Every request answers 200/MSG271; each save sets \"conclusionUpdatedAt\" to the new time, even with identical text; the last save by the Secretary shows the Secretary as \"conclusionUpdatedByName\". The last successful save wins."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Meeting InProgress with an item InProgress."
-          ],
-          "note": "UC-77 | BR-311 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Conclusion_gate_and_metadata_are_server_authoritative)"
-        },
-        {
-          "id": "AGENDA_API_IT75",
+          "id": "AGENDA_API_IT44",
           "description": "Verify a blank or missing conclusion is refused and an old one cannot be cleared.",
           "procedure": [
             "Sign in as the Chair of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1425,61 +1003,13 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting InProgress with an item that already has a conclusion."
           ],
-          "note": "UC-77 | EX-1 | BR-309 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Conclusion_lengths_failures_permissions_and_not_found_contract)"
+          "note": "UC-77 | EX-1 | BR-309 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Conclusion_lengths_failures_permissions_and_not_found_contract)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT76",
-          "description": "Verify a conclusion of 2,000 characters is accepted and 2,001 is refused.",
-          "procedure": [
-            "Sign in as the Chair of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send PUT /api/meetings/<meetingId>/agenda/<itemId>/conclusion with exactly 2,000 characters (line breaks inside count).",
-            "Send it with 2,001 characters."
-          ],
-          "expected": [
-            "Step 2: 200/MSG271 and the line breaks inside the text are kept.",
-            "Step 3: HTTP 400, code \"MSG272\"; the saved conclusion is the 2,000-character one."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Meeting InProgress with an item InProgress."
-          ],
-          "note": "UC-77 | Boundary | BR-309 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Conclusion_lengths_failures_permissions_and_not_found_contract)"
-        },
-        {
-          "id": "AGENDA_API_IT77",
-          "description": "Verify the conclusion body is strict.",
-          "procedure": [
-            "Sign in as the Chair of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send PUT /api/meetings/<meetingId>/agenda/<itemId>/conclusion with { \"conclusion\": \"x\", \"conclusionUpdatedById\": \"<any id>\" }.",
-            "Send it with a number as \"conclusion\"."
-          ],
-          "expected": [
-            "Both answer HTTP 400, code \"MSG272\": the actor and time never come from the body; nothing is saved."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Meeting InProgress with an item InProgress."
-          ],
-          "note": "UC-77 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Conclusion_parser_rejects_invalid_or_forged_fields)"
-        },
-        {
-          "id": "AGENDA_API_IT78",
-          "description": "Verify a Pending item takes no conclusion.",
-          "procedure": [
-            "Sign in as the Chair of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send PUT /api/meetings/<meetingId>/agenda/<pendingItemId>/conclusion with a valid text."
-          ],
-          "expected": [
-            "HTTP 409 Conflict: { \"code\": \"MSG273\", \"message\": \"Không thể sửa kết luận của mục nghị sự này nữa.\" }; nothing is saved."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Meeting InProgress with one Chair, one Secretary and a Member on its roster, and three Pending agenda items."
-          ],
-          "note": "UC-77 | EX-2 | BR-310 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Conclusion_gate_and_metadata_are_server_authoritative)"
-        },
-        {
-          "id": "AGENDA_API_IT79",
+          "id": "AGENDA_API_IT45",
           "description": "Verify any minutes document locks the conclusion.",
           "procedure": [
             "Sign in as the Secretary of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1492,10 +1022,13 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting with an item Done and a minutes document, prepared in each status by QA lead."
           ],
-          "note": "UC-77 | EX-2 | BR-310 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Every_minutes_status_keeps_conclusion_locked_even_with_empty_content)"
+          "note": "UC-77 | EX-2 | BR-310 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Every_minutes_status_keeps_conclusion_locked_even_with_empty_content)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "AGENDA_API_IT80",
+          "id": "AGENDA_API_IT46",
           "description": "Verify a conclusion is refused for a Member and while the meeting is not InProgress or Ended.",
           "procedure": [
             "Sign in as a Member of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1511,63 +1044,10 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Meeting InProgress; and a Published meeting."
           ],
-          "note": "UC-77 | EX-2 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Conclusion_lengths_failures_permissions_and_not_found_contract)"
-        },
-        {
-          "id": "AGENDA_API_IT81",
-          "description": "Verify a conclusion on a meeting or item the caller cannot see answers MSG174.",
-          "procedure": [
-            "Sign in as an unrelated account (POST /api/auth/login) and keep the access token.",
-            "Send PUT /api/meetings/<meetingId>/agenda/<itemId>/conclusion.",
-            "Sign in as the Chair of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send PUT /api/meetings/<meetingId>/agenda/00000000-0000-7000-8000-000000000000/conclusion."
-          ],
-          "expected": [
-            "Both answer HTTP 404 Not Found: { \"code\": \"MSG174\", \"message\": \"Không truy cập được cuộc họp này.\" } with the same body for a missing and an unreadable meeting."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Meeting InProgress; an unrelated active account."
-          ],
-          "note": "UC-77 | EX-4 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Conclusion_lengths_failures_permissions_and_not_found_contract)"
-        },
-        {
-          "id": "AGENDA_API_IT82",
-          "description": "Verify a conclusion requires a token, JSON and a body under 64 KiB; a Guest is refused.",
-          "procedure": [
-            "Send PUT /api/meetings/<meetingId>/agenda/<itemId>/conclusion without a token.",
-            "Sign in as the Chair of the meeting (POST /api/auth/login) and keep the access token.",
-            "Send it with Content-Type: text/plain.",
-            "Send it with a body larger than 64 KiB.",
-            "Send it with a verified Guest token."
-          ],
-          "expected": [
-            "Step 1: HTTP 401.",
-            "Step 3: HTTP 415, code \"MSG34\".",
-            "Step 4: HTTP 413, code \"MSG87\".",
-            "Step 5: HTTP 403."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Meeting InProgress with an item InProgress and a Guest invitation."
-          ],
-          "note": "UC-77 | Boundary | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Conclusion_lengths_failures_permissions_and_not_found_contract)"
-        },
-        {
-          "id": "AGENDA_API_IT83",
-          "description": "Verify a conclusion that cannot be saved answers 503 MSG274.",
-          "procedure": [
-            "Sign in as the Chair of the meeting (POST /api/auth/login) and keep the access token.",
-            "Make the database fail, then send PUT /api/meetings/<meetingId>/agenda/<itemId>/conclusion with a valid text."
-          ],
-          "expected": [
-            "HTTP 503: { \"code\": \"MSG274\", \"message\": \"Không lưu được thao tác nghị sự. Vui lòng thử lại.\" }; the earlier conclusion is kept."
-          ],
-          "preconditions": [
-            "Backend running on the test build (GET /api/health answers 200).",
-            "Meeting InProgress with an item InProgress; QA lead can make the database fail."
-          ],
-          "note": "UC-77 | EX-3 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Conclusion_lengths_failures_permissions_and_not_found_contract)"
+          "note": "UC-77 | EX-2 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Conclusion_lengths_failures_permissions_and_not_found_contract) · Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Every_minutes_status_keeps_conclusion_locked_even_with_empty_content)",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

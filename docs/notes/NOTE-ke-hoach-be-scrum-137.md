@@ -14,8 +14,8 @@ Nguồn chuẩn, đọc trước khi code:
 
 - Report 3 (bản sinh, không sửa tay): [05-use-case-specifications.md](../01-requirements/05-use-case-specifications.md) mục UC-85a,
   UC-85b và UC-14 AF-1; [06-business-rules.md](../01-requirements/06-business-rules.md) BR-414 → BR-422, BR-427 → BR-430.
-- Sequence: [UC85a_FindMeetingTimeSlots.txt](../06-sequencediagram/calendar-sharing/UC85a_FindMeetingTimeSlots.txt),
-  [UC85b_CreateDraftMeetingFromSlot.txt](../06-sequencediagram/calendar-sharing/UC85b_CreateDraftMeetingFromSlot.txt).
+- Sequence: [UC85a_FindMeetingTimeSlots.txt](../06-sequencediagram/calendar-sharing/UC81a_FindMeetingTimeSlots.txt),
+  [UC85b_CreateDraftMeetingFromSlot.txt](../06-sequencediagram/calendar-sharing/UC81b_CreateDraftMeetingFromSlot.txt).
 - Đặc tả sơ bộ: [NOTE-dac-ta-so-bo-scrum-137-142.md](NOTE-dac-ta-so-bo-scrum-137-142.md) (D12, D14, D15, D17; §5 mã; §6 API dự kiến).
 - [ADR-0058](../05-decisions/0058-chia-se-lich-va-tim-gio-hop.md) (số eCab, chỉ bận/rảnh, Mật không bao giờ chia sẻ).
 - Kế hoạch SCRUM-142: [NOTE-ke-hoach-be-scrum-142.md](NOTE-ke-hoach-be-scrum-142.md) §7 (giờ bận) — phần này đã có code.

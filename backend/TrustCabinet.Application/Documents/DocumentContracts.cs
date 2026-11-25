@@ -5,8 +5,8 @@ using TrustCabinet.Domain.Entities;
 namespace TrustCabinet.Application.Documents;
 
 /// <summary>
-/// The object store behind <see cref="Domain.Entities.StoredFile"/>: Cloudflare R2 on the test server,
-/// SeaweedFS in development, an in-memory double in tests (ADR-0024). Bytes always pass through
+/// The object store behind <see cref="Domain.Entities.StoredFile"/>: SeaweedFS (S3 API) on the app server and
+/// in development, an in-memory double in tests (ADR-0024, ADR-0084). Bytes always pass through
 /// the backend; nothing here hands the browser a URL.
 /// </summary>
 public interface IFileStorage

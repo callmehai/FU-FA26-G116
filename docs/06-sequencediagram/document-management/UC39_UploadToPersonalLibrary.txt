@@ -6,7 +6,7 @@ control ":Document Controller" as DocumentController
 control ":Document Service" as DocumentService
 participant ":Folder Repository" as FolderRepository
 participant ":Document Repository" as DocumentRepository
-participant ":Object Storage (R2)" as FileStorage
+participant ":File Storage" as FileStorage
 database ":Database" as Database
 
 Actor->LibraryScreen: Submit the selected files

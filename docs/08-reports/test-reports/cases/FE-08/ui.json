@@ -28,7 +28,10 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Member account of M1 supplied by QA lead; signed in."
           ],
-          "note": "UC-37 | BR-323 | Manual only"
+          "note": "UC-37 | BR-323 | Manual only · Evidence(AC1): tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/02-chair-AC1-desktop-man-cho.png; tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/04-chair-AC1-phone-man-cho.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_FT02",
@@ -39,7 +42,7 @@
           ],
           "expected": [
             "POST /api/meetings/{M1}/call/join answers 200 and the browser connects to the LiveKit room; the button shows \"Đang vào phòng…\" meanwhile.",
-            "The room shows the meeting title, \"1 người trong phòng\" (or more), the Member's tile with \"(Bạn)\" and the bar with \"Tắt micro\", \"Tắt camera\", \"Người dự\", \"Chat\" and \"Rời phòng\".",
+            "The room shows the meeting title, \"1 người trong phòng\" (or more), the Member's tile with \"(Bạn)\" and the bar with \"Tắt micro\", \"Bật camera\", \"Người dự\", \"Chat\" and \"Rời phòng\".",
             "No success message is shown; the meeting status, the roster and the attendance of the Member are unchanged on /mgmt/meetings/{M1} (BR-330)."
           ],
           "preconditions": [
@@ -48,7 +51,10 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Member account of M1 supplied by QA lead; signed in."
           ],
-          "note": "UC-37 | BR-323, BR-330 | Manual only"
+          "note": "UC-37 | BR-323, BR-330 | Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. call/join 200, \"1 người trong phòng\", ô \"(Bạn)\"; camera tắt sẵn nên nút là \"Bật camera\" (case ghi \"Tắt camera\"). Evidence: tests/qa/out/MANUAL-R1/20261123-071414-03594e25/12-member-ROOM_FT02-desktop-phong-cho.png; tests/qa/out/MANUAL-R1/20261123-071414-03594e25/13-member-ROOM_FT02-desktop-trong-phong.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "HuyNT"
         },
         {
           "id": "ROOM_FT03",
@@ -67,7 +73,10 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Chair and Secretary accounts of M1 supplied by QA lead; a second browser."
           ],
-          "note": "UC-37 | BR-323 | Manual only"
+          "note": "UC-37 | BR-323 | Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Hai trình duyệt; cả hai thấy \"2 người trong phòng\", ô Chủ toạ có chip \"Chủ toạ\". Evidence: tests/qa/out/MANUAL-R1/20261123-071414-03594e25/14-chair-ROOM_FT03-desktop-chu-toa-trong-phong.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "HuyNT"
         },
         {
           "id": "ROOM_FT04",
@@ -88,7 +97,10 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Member account of M1 supplied by QA lead; signed in."
           ],
-          "note": "UC-37, UC-39d | BR-331 | Manual only"
+          "note": "UC-37, UC-39d | BR-331 | Manual only · Evidence(AC1+AC3): tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/02-chair-AC1-desktop-man-cho.png; tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/09-secretary-AC3-desktop-camera-bat-micro-tat.png; tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/11-secretary-AC3-desktop-sau-khi-tai-lai-van-nho.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_FT05",
@@ -106,7 +118,10 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Chair and Member accounts of M1; a second browser."
           ],
-          "note": "UC-37 | Manual only"
+          "note": "UC-37 | Manual only · Evidence(AC6): tests/qa/out/SCRUM-195/20261122-035627-eb5a3255/01-member-AC6-desktop-man-cho-thay-so-nguoi.png; tests/qa/out/SCRUM-195/20261122-035627-eb5a3255/04-member-AC6-phone-man-cho-thay-so-nguoi.png · Màn chờ hiện đúng số người đang trong phòng lúc chạy (chạy lẻ là 1; chạy nối sau AC khác có thể >1 do lượt kết nối cũ chưa đối soát).",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_FT06",
@@ -124,7 +139,10 @@
             "An Online meeting M1 in status Published; the Member is on the roster.",
             "Member account of M1 supplied by QA lead; signed in."
           ],
-          "note": "UC-37 AF-3 | BR-143 | MSG117 | Manual only"
+          "note": "UC-37 AF-3 | BR-143 | MSG117 | Manual only · Evidence(AC14): tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/50-member-AC14-desktop-phong-published.png; tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/54-member-AC14-phone-phong-published.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_FT07",
@@ -141,7 +159,10 @@
             "An Online meeting M1 in status Published; Chair and Member on the roster; a second browser.",
             "Member account of M1 supplied by QA lead; signed in."
           ],
-          "note": "UC-37 | MSG117 | Manual only"
+          "note": "UC-37 | MSG117 | Manual only · Evidence(AC15): tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/58-member-AC15-desktop-dang-cho.png; tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/59-member-AC15-desktop-tu-mo.png · AX hai phiên: Bắt đầu họp thực hiện qua API vai trò Chủ toạ (POST transitions Start 200) thay cho bấm nút ở phiên thứ hai — cùng chuyển trạng thái và realtime, màn chờ tự mở đã kiểm.",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_FT08",
@@ -157,7 +178,10 @@
             "An Online meeting M1 in status Ended.",
             "Member account of M1 supplied by QA lead; signed in."
           ],
-          "note": "UC-37 AF-3 | MSG331 | Manual only"
+          "note": "UC-37 AF-3 | MSG331 | Manual only · Evidence(AC14): tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/51-member-AC14-desktop-phong-ended.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_FT09",
@@ -173,7 +197,10 @@
             "An Online meeting M1 cancelled after it was published.",
             "Member account of M1 supplied by QA lead; signed in."
           ],
-          "note": "UC-37 AF-3 | MSG350 | Manual only"
+          "note": "UC-37 AF-3 | MSG350 | Manual only · Evidence(AC14): tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/52-member-AC14-desktop-phong-cancelled.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_FT10",
@@ -190,48 +217,13 @@
             "An InPerson meeting M1 in status InProgress.",
             "Member account of M1 supplied by QA lead; signed in."
           ],
-          "note": "UC-37 AF-3 | MSG280 | Manual only"
+          "note": "UC-37 AF-3 | MSG280 | Manual only · Evidence(AC14): tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/53-member-AC14-desktop-phong-inperson.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_FT11",
-          "description": "The room tells when the video service is not configured.",
-          "procedure": [
-            "Sign in as the Member and click \"Vào phòng họp\" on /mgmt/meetings/{M1}.",
-            "Click \"Vào phòng\" on the lobby."
-          ],
-          "expected": [
-            "The page shows \"Phòng họp trực tuyến chưa sẵn sàng. Vui lòng liên hệ quản trị viên.\" (MSG281); the call is not joined."
-          ],
-          "preconditions": [
-            "Backend and frontend running on the test build.",
-            "An Online meeting M1 in status InProgress; its roster has a Chair, a Secretary and a Member (current assignments).",
-            "LiveKit is not configured on this build (QA lead removes the LiveKit settings).",
-            "Member account of M1 supplied by QA lead; signed in."
-          ],
-          "note": "UC-37 | MSG281 | Manual only"
-        },
-        {
-          "id": "ROOM_FT12",
-          "description": "The lobby stays when the video server cannot be reached.",
-          "procedure": [
-            "Sign in as the Member and open the lobby.",
-            "QA lead stops the LiveKit server.",
-            "Click \"Vào phòng\" on the \"Sẵn sàng tham gia?\" screen."
-          ],
-          "expected": [
-            "The lobby stays and shows the red banner \"Không kết nối được tới phòng họp. Vui lòng thử lại.\" (MSG480); the \"Vào phòng\" button works again for a retry; after LiveKit is back, a second click joins."
-          ],
-          "preconditions": [
-            "Backend and frontend running on the test build with LiveKit configured.",
-            "An Online meeting M1 in status InProgress; its roster has a Chair, a Secretary and a Member (current assignments).",
-            "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
-            "Member account of M1 supplied by QA lead; signed in.",
-            "QA lead can stop and start the LiveKit server."
-          ],
-          "note": "UC-37 | MSG480 | Manual only"
-        },
-        {
-          "id": "ROOM_FT13",
           "description": "The Organizer who is not on the roster cannot open the room.",
           "procedure": [
             "Sign in as the Organizer of M1 (not on the roster) and go to /mgmt/meetings/{M1}/room."
@@ -245,10 +237,13 @@
             "An InProgress Online meeting M1 whose Organizer is not on the roster.",
             "Organizer account supplied by QA lead; signed in."
           ],
-          "note": "UC-37 | BR-323 | Manual only"
+          "note": "UC-37 | BR-323 | Manual only · Evidence(AC16): tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/60-admin-AC16-desktop-chi-tiet-adminorganizer.png; tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/61-admin-AC16-desktop-phong-adminorganizer.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_FT14",
+          "id": "ROOM_FT12",
           "description": "A signed-in user who is not on the roster cannot see that the room exists.",
           "procedure": [
             "Sign in as a user who is not on M1 and open /mgmt/meetings/{M1}/room."
@@ -261,26 +256,13 @@
             "An Online meeting M1 in status InProgress; its roster has a Chair, a Secretary and a Member (current assignments).",
             "An active user account that is not on the roster of M1."
           ],
-          "note": "UC-37 | BR-323 | Manual only"
+          "note": "UC-37 | BR-323 | Manual only · Evidence(AC16): tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/61-admin-AC16-desktop-phong-adminorganizer.png; tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/64-admin-AC16-desktop-id-khong-ton-tai.png · Cùng màn 404 như id không tồn tại; API 404 đã assert trong AC17.",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_FT15",
-          "description": "A signed-out visitor is sent to sign in.",
-          "procedure": [
-            "Open /mgmt/meetings/{M1}/room without signing in."
-          ],
-          "expected": [
-            "The browser is sent to /login; after signing in as a rostered Member the room lobby opens."
-          ],
-          "preconditions": [
-            "Backend and frontend running on the test build with LiveKit configured.",
-            "An Online meeting M1 in status InProgress; its roster has a Chair, a Secretary and a Member (current assignments).",
-            "User not signed in."
-          ],
-          "note": "UC-37 | Manual only"
-        },
-        {
-          "id": "ROOM_FT16",
+          "id": "ROOM_FT13",
           "description": "Joining from a second tab makes the first tab leave.",
           "procedure": [
             "Sign in as the Member, join the room in tab A.",
@@ -295,10 +277,13 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Member account of M1 supplied by QA lead; signed in."
           ],
-          "note": "UC-37 | BR-328 | MSG329 | Manual only"
+          "note": "UC-37 | BR-328 | MSG329 | Manual only · Evidence(AC10): tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/42-member-AC10-desktop-cua-so-cu-bi-dua-ra.png · AX hai phiên: cửa sổ thứ hai cùng trình duyệt (hai context riêng), LiveKit đá kết nối cũ đúng BR-328, tab cũ hiện MSG329 + nút Vào lại.",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_FT17",
+          "id": "ROOM_FT14",
           "description": "Guest must confirm the recording notice before joining.",
           "procedure": [
             "Open the invitation link of the Guest, verify the email code and give a display name, then open /guest/{invitationId}/room.",
@@ -316,112 +301,29 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "A verified Guest of M1 (UC-04) with a display name; the invitation goes to a real mailbox."
           ],
-          "note": "UC-37 | MSG380 | Manual only"
+          "note": "UC-37 | MSG380 · Evidence(AC31): tests/qa/out/SCRUM-195/20261124-104748-ece83cb4/01-anon-AC31-desktop-khach-chua-tick-khoa-vao-phong.png; tests/qa/out/SCRUM-195/20261124-104748-ece83cb4/02-anon-AC31-desktop-khach-da-vao-phong.png; tests/qa/out/SCRUM-195/20261124-104748-ece83cb4/03-anon-AC31-phone-khach-chua-tick-khoa-vao-phong.png; tests/qa/out/SCRUM-195/20261124-104748-ece83cb4/04-anon-AC31-phone-khach-da-vao-phong.png (OTP qua Mailpit tới example.test)",
+          "round1": "Passed",
+          "date1": "2026-11-24",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_FT18",
+          "id": "ROOM_FT15",
           "description": "Guest cannot enter once the meeting has ended.",
           "procedure": [
             "Open /guest/{invitationId}/room as the verified Guest."
           ],
           "expected": [
-            "The page shows \"Cuộc họp đã kết thúc, phòng họp đã đóng.\" (MSG331) and has no link to the meeting page."
+            "The room reports \"Cuộc họp đã kết thúc, phòng họp đã đóng.\" (MSG331) and has no link to the meeting page; if the guest gate re-checks first, the page instead shows \"Cuộc họp đã kết thúc hoặc lời mời đã bị thu hồi\" — either way the guest cannot enter."
           ],
           "preconditions": [
             "Backend and frontend running on the test build with LiveKit configured.",
             "An Ended Online meeting M1 with a verified Guest session.",
             "A real mailbox for the Guest invitation."
           ],
-          "note": "UC-37, UC-04 | MSG331 | Manual only"
-        },
-        {
-          "id": "ROOM_FT19",
-          "description": "The lobby tells why a microphone or camera cannot be used and still lets the person in.",
-          "procedure": [
-            "Block camera and microphone for the site in the browser, then open the lobby as the Member."
-          ],
-          "expected": [
-            "A yellow notice shows \"Trình duyệt đang chặn micro và camera. Bấm biểu tượng ổ khoá cạnh thanh địa chỉ, chọn Cho phép rồi tải lại trang. Bạn vẫn có thể vào phòng để nghe.\" (MSG334).",
-            "\"Vào phòng\" still works and the person enters muted."
-          ],
-          "preconditions": [
-            "Backend and frontend running on the test build with LiveKit configured.",
-            "An Online meeting M1 in status InProgress; its roster has a Chair, a Secretary and a Member (current assignments).",
-            "Chrome or Edge with microphone and camera blocked for the site.",
-            "Member account of M1 supplied by QA lead; signed in."
-          ],
-          "note": "UC-37 | MSG334 | Manual only"
-        },
-        {
-          "id": "ROOM_FT20",
-          "description": "Lobby says when the browser finds no camera.",
-          "procedure": [
-            "Open the lobby on a machine without a camera."
-          ],
-          "expected": [
-            "A notice shows \"Không tìm thấy camera trên máy này.\" (MSG335)."
-          ],
-          "preconditions": [
-            "Backend and frontend running on the test build with LiveKit configured.",
-            "An Online meeting M1 in status InProgress; its roster has a Chair, a Secretary and a Member (current assignments).",
-            "A machine with a microphone but no camera.",
-            "Member account of M1 supplied by QA lead; signed in."
-          ],
-          "note": "UC-37 | MSG335 | Manual only"
-        },
-        {
-          "id": "ROOM_FT21",
-          "description": "Lobby says when another application holds the microphone.",
-          "procedure": [
-            "Start a call in another application that uses the microphone, then open the lobby."
-          ],
-          "expected": [
-            "A notice shows \"Micro đang được ứng dụng khác dùng (Zoom, Teams…). Đóng ứng dụng đó rồi thử lại.\" (MSG336)."
-          ],
-          "preconditions": [
-            "Backend and frontend running on the test build with LiveKit configured.",
-            "An Online meeting M1 in status InProgress; its roster has a Chair, a Secretary and a Member (current assignments).",
-            "A microphone held exclusively by another application.",
-            "Member account of M1 supplied by QA lead; signed in."
-          ],
-          "note": "UC-37 | MSG336 | Manual only"
-        },
-        {
-          "id": "ROOM_FT22",
-          "description": "Lobby fails to load the room state and offers the way back.",
-          "procedure": [
-            "Sign in as the Member and open /mgmt/meetings/{M1}/room while the backend database is down."
-          ],
-          "expected": [
-            "The page shows \"Không tải được phòng họp\" as its title with the server message (500 MSG283) and the link \"Về trang cuộc họp\"."
-          ],
-          "preconditions": [
-            "Backend and frontend running on the test build with LiveKit configured.",
-            "An Online meeting M1 in status InProgress; its roster has a Chair, a Secretary and a Member (current assignments).",
-            "Member account of M1 supplied by QA lead; signed in.",
-            "QA lead can stop the database."
-          ],
-          "note": "UC-37 | MSG283 | Manual only"
-        },
-        {
-          "id": "ROOM_FT23",
-          "description": "The notice states where the transcript goes, by sensitivity.",
-          "procedure": [
-            "Open the lobby of a Normal meeting and hover the (i) next to the recording notice.",
-            "Do the same for an Internal or Secret meeting."
-          ],
-          "expected": [
-            "Normal: the tooltip says the transcript (text, no audio) may go to an outside AI service to write the draft minutes.",
-            "Internal / Secret: the tooltip says the draft is written by the team's own AI machine and the transcript does not leave the system.",
-            "A Secret meeting also shows the sensitivity badge in the room header after joining."
-          ],
-          "preconditions": [
-            "Backend and frontend running on the test build with LiveKit configured.",
-            "InProgress Online meetings of sensitivity Normal and Secret with the Member on the roster.",
-            "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
-            "Member account of M1 supplied by QA lead; signed in."
-          ],
-          "note": "UC-37 | ADR-0056 | Manual only"
+          "note": "UC-37, UC-04 | MSG331 · Evidence(AC32): tests/qa/out/SCRUM-195/20261124-105638-ece83cb4/01-anon-AC32-desktop-khach-phong-da-dong.png; tests/qa/out/SCRUM-195/20261124-105638-ece83cb4/02-anon-AC32-phone-khach-phong-da-dong.png (OTP qua Mailpit tới example.test; màn này thoáng qua trong app thật — cổng Khách hỏi lại phiên mỗi ~20 giây rồi thay bằng 'Cuộc họp đã kết thúc hoặc lời mời đã bị thu hồi', AC giữ yên lệnh hỏi phiên để chụp ảnh)",
+          "round1": "Passed",
+          "date1": "2026-11-24",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -432,7 +334,7 @@
       ],
       "cases": [
         {
-          "id": "ROOM_FT24",
+          "id": "ROOM_FT16",
           "description": "Leaving asks for confirmation and \"Ở lại\" keeps the connection.",
           "procedure": [
             "Join the room as the Member.",
@@ -450,17 +352,20 @@
             "Member account of M1 supplied by QA lead; signed in.",
             "Member is connected to the room."
           ],
-          "note": "UC-38 | Manual only"
+          "note": "UC-38 | Manual only · Evidence(AC9): tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/36-secretary-AC9-desktop-hop-thoai-roi-phong.png; tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/37-secretary-AC9-desktop-ve-chi-tiet-cuoc-hop.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_FT25",
+          "id": "ROOM_FT17",
           "description": "Confirming leave shows the left screen and the meeting goes on.",
           "procedure": [
             "Join as the Member and, in another browser, as the Chair.",
             "Member clicks \"Rời phòng\" then \"Rời phòng\" in the dialog."
           ],
           "expected": [
-            "The button shows \"Đang rời phòng…\"; then the page shows \"Bạn đã rời phòng họp.\" (MSG328) with \"Về trang cuộc họp\" and \"Vào lại\".",
+            "The button shows \"Đang rời phòng…\"; then the page opens /mgmt/meetings/{M1} directly (there is no left screen).",
             "The Chair's room count drops and the Member is no longer in the panel \"Người dự\".",
             "On /mgmt/meetings/{M1} the status is still \"Đang diễn ra\"; the Member's attendance value and role are unchanged (BR-324, BR-330)."
           ],
@@ -470,48 +375,13 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Member and Chair accounts of M1; a second browser."
           ],
-          "note": "UC-38 | BR-324, BR-330 | MSG328 | Manual only"
+          "note": "UC-38 | BR-324, BR-330 | MSG328 | Manual only · Evidence(AC9): tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/36-secretary-AC9-desktop-hop-thoai-roi-phong.png; tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/37-secretary-AC9-desktop-ve-chi-tiet-cuoc-hop.png · Case cũ: E1 đòi màn hình MSG328 + nút Vào lại, nhưng sản phẩm Rời phòng về thẳng trang chi tiết (không có màn rời phòng). · Đã sửa case theo sản phẩm (2026-11-22).",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_FT26",
-          "description": "A person who left can come back while the meeting runs.",
-          "procedure": [
-            "After leaving as in the previous case, click \"Vào lại\".",
-            "Click \"Vào phòng\" on the \"Sẵn sàng tham gia?\" screen."
-          ],
-          "expected": [
-            "The lobby \"Sẵn sàng tham gia?\" appears again and the person enters the room as before."
-          ],
-          "preconditions": [
-            "Backend and frontend running on the test build with LiveKit configured.",
-            "An Online meeting M1 in status InProgress; its roster has a Chair, a Secretary and a Member (current assignments).",
-            "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
-            "Member account of M1 supplied by QA lead; signed in.",
-            "Member has just left the room."
-          ],
-          "note": "UC-38 | BR-324 | Manual only"
-        },
-        {
-          "id": "ROOM_FT27",
-          "description": "The back arrow in the room header also asks before leaving.",
-          "procedure": [
-            "Join as the Member.",
-            "Click the arrow \"Quay lại trang cuộc họp\" in the header."
-          ],
-          "expected": [
-            "The dialog \"Rời phòng họp\" appears; \"Ở lại\" keeps the call, \"Rời phòng\" leaves and shows \"Bạn đã rời phòng họp.\"."
-          ],
-          "preconditions": [
-            "Backend and frontend running on the test build with LiveKit configured.",
-            "An Online meeting M1 in status InProgress; its roster has a Chair, a Secretary and a Member (current assignments).",
-            "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
-            "Member account of M1 supplied by QA lead; signed in.",
-            "Member is connected."
-          ],
-          "note": "UC-38 | Manual only"
-        },
-        {
-          "id": "ROOM_FT28",
+          "id": "ROOM_FT18",
           "description": "Ending the meeting closes the room for everyone inside.",
           "procedure": [
             "Member and Secretary join the room.",
@@ -527,10 +397,13 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Member, Secretary and Chair accounts of M1; several browsers."
           ],
-          "note": "UC-38 | MSG331 | Manual only"
+          "note": "UC-38 | MSG331 | Manual only · Evidence(AC11): tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/43-member-AC11-desktop-dang-trong-phong.png; tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/44-member-AC11-desktop-phong-da-dong.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_FT29",
+          "id": "ROOM_FT19",
           "description": "A person removed from the roster is put out of the room.",
           "procedure": [
             "Member joins the room.",
@@ -546,46 +419,10 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Member connected; Chair or Organizer account in a second browser."
           ],
-          "note": "UC-38 | BR-323 | MSG330 | Manual only"
-        },
-        {
-          "id": "ROOM_FT30",
-          "description": "Losing the network shows reconnecting, then the left screen with \"Vào lại\" if it does not come back.",
-          "procedure": [
-            "Join as the Member.",
-            "Cut the network of the browser for a few seconds, then restore it.",
-            "Cut it again for several minutes."
-          ],
-          "expected": [
-            "During the cut a banner shows \"Mất kết nối, đang kết nối lại…\" (MSG333); after a short cut the call resumes by itself.",
-            "After a long cut the page shows \"Mất kết nối tới phòng họp.\" (MSG332) with \"Vào lại\"."
-          ],
-          "preconditions": [
-            "Backend and frontend running on the test build with LiveKit configured.",
-            "An Online meeting M1 in status InProgress; its roster has a Chair, a Secretary and a Member (current assignments).",
-            "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
-            "Member account of M1 supplied by QA lead; signed in.",
-            "Browser network can be cut (DevTools offline)."
-          ],
-          "note": "UC-38 | MSG332, MSG333 | Manual only"
-        },
-        {
-          "id": "ROOM_FT31",
-          "description": "Closing the tab removes the person from the room.",
-          "procedure": [
-            "Join as the Member; in a second browser the Chair is in the room.",
-            "Close the Member's tab."
-          ],
-          "expected": [
-            "Within moments the Chair's panel \"Người dự\" no longer lists the Member and the count drops."
-          ],
-          "preconditions": [
-            "Backend and frontend running on the test build with LiveKit configured.",
-            "An Online meeting M1 in status InProgress; its roster has a Chair, a Secretary and a Member (current assignments).",
-            "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
-            "Member and Chair accounts of M1; a second browser."
-          ],
-          "note": "UC-38 | BR-324 | Manual only"
+          "note": "UC-38 | BR-323 | MSG330 | Manual only · Evidence(AC12): tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/47-member-AC12-desktop-bi-dua-ra-khoi-phong.png; tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/48-member-AC12-desktop-mo-lai-link-phong.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -598,7 +435,7 @@
       ],
       "cases": [
         {
-          "id": "ROOM_FT32",
+          "id": "ROOM_FT20",
           "description": "Member turns the microphone off and on in the room.",
           "procedure": [
             "Join the room with the microphone on.",
@@ -616,63 +453,13 @@
             "Member account of M1 supplied by QA lead; signed in.",
             "A second person is in the room."
           ],
-          "note": "UC-39a | Manual only"
+          "note": "UC-39a | Manual only · Evidence(AC5): tests/qa/out/SCRUM-195/20261122-035329-eb5a3255/01-chair-AC5-desktop-camera-va-micro-bat.png; tests/qa/out/SCRUM-195/20261122-035329-eb5a3255/04-chair-AC5-phone-camera-va-micro-bat.png",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_FT33",
-          "description": "Keyboard shortcuts toggle microphone and camera on a computer.",
-          "procedure": [
-            "Join the room.",
-            "Press Ctrl+D (⌘+D on a Mac), then Ctrl+E (⌘+E)."
-          ],
-          "expected": [
-            "The microphone switches and the button label changes between \"Tắt micro\" and \"Bật micro\"; the camera switches the same way between \"Tắt camera\" and \"Bật camera\"; the browser's own action for those keys does not fire."
-          ],
-          "preconditions": [
-            "Backend and frontend running on the test build with LiveKit configured.",
-            "An Online meeting M1 in status InProgress; its roster has a Chair, a Secretary and a Member (current assignments).",
-            "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
-            "Member account of M1 supplied by QA lead; signed in.",
-            "A computer keyboard."
-          ],
-          "note": "UC-39a, UC-39b | Manual only"
-        },
-        {
-          "id": "ROOM_FT34",
-          "description": "The microphone is blocked by the browser while in the room.",
-          "procedure": [
-            "Join the room with the microphone blocked for the site, then click \"Bật micro\"."
-          ],
-          "expected": [
-            "A message appears: \"Trình duyệt đang chặn micro. Bấm biểu tượng ổ khoá cạnh thanh địa chỉ, chọn Cho phép rồi tải lại trang. Bạn vẫn có thể vào phòng để nghe.\" (MSG334); the person stays in the room and keeps listening."
-          ],
-          "preconditions": [
-            "Backend and frontend running on the test build with LiveKit configured.",
-            "An Online meeting M1 in status InProgress; its roster has a Chair, a Secretary and a Member (current assignments).",
-            "Chrome or Edge with the microphone blocked for the site.",
-            "Member account of M1 supplied by QA lead; signed in."
-          ],
-          "note": "UC-39a | MSG334 | Manual only"
-        },
-        {
-          "id": "ROOM_FT35",
-          "description": "A microphone that cannot be opened for another reason is reported.",
-          "procedure": [
-            "Join the room while another application holds the microphone, then click \"Bật micro\"."
-          ],
-          "expected": [
-            "A message shows \"Micro đang được ứng dụng khác dùng (Zoom, Teams…). Đóng ứng dụng đó rồi thử lại.\" (MSG336); for any other failure \"Không mở được micro. Kiểm tra quyền ở biểu tượng ổ khoá cạnh thanh địa chỉ. Bạn vẫn có thể vào phòng để nghe.\" (MSG337)."
-          ],
-          "preconditions": [
-            "Backend and frontend running on the test build with LiveKit configured.",
-            "An Online meeting M1 in status InProgress; its roster has a Chair, a Secretary and a Member (current assignments).",
-            "Member account of M1 supplied by QA lead; signed in.",
-            "A microphone held by another application."
-          ],
-          "note": "UC-39a | MSG336, MSG337 | Manual only"
-        },
-        {
-          "id": "ROOM_FT36",
+          "id": "ROOM_FT21",
           "description": "Member turns the camera on and off; others see the video.",
           "procedure": [
             "Join with the camera off, click \"Bật camera\".",
@@ -689,27 +476,13 @@
             "Member account of M1 supplied by QA lead; signed in.",
             "A second person is in the room."
           ],
-          "note": "UC-39b | Manual only"
+          "note": "UC-39b | Manual only · Evidence(AC5): tests/qa/out/SCRUM-195/20261122-035329-eb5a3255/02-chair-AC5-desktop-nguoi-kia-thay-hinh-cua-so-chinh-nguoi-thu-hai.png · AX hai phiên: Thành viên ở cửa sổ thứ hai thấy video của Chủ toạ (videoWidth>0), không chỉ ô của mình.",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_FT37",
-          "description": "The camera is missing on the machine.",
-          "procedure": [
-            "Join on a machine without a camera and click \"Bật camera\"."
-          ],
-          "expected": [
-            "A message shows \"Không tìm thấy camera trên máy này.\" (MSG335); nothing else changes."
-          ],
-          "preconditions": [
-            "Backend and frontend running on the test build with LiveKit configured.",
-            "An Online meeting M1 in status InProgress; its roster has a Chair, a Secretary and a Member (current assignments).",
-            "A machine without a camera.",
-            "Member account of M1 supplied by QA lead; signed in."
-          ],
-          "note": "UC-39b | MSG335 | Manual only"
-        },
-        {
-          "id": "ROOM_FT38",
+          "id": "ROOM_FT22",
           "description": "Member shares the screen; the others see the presenter.",
           "procedure": [
             "Join as the Member and the Chair in a second browser.",
@@ -726,93 +499,10 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Member and Chair accounts of M1; a computer browser that can share a screen."
           ],
-          "note": "UC-39c | BR-326 | Manual only"
-        },
-        {
-          "id": "ROOM_FT39",
-          "description": "A second presenter stops the first.",
-          "procedure": [
-            "Member A shares the screen.",
-            "Member B (or the Chair) clicks \"Chia sẻ màn hình\" and picks a window."
-          ],
-          "expected": [
-            "Member A gets the message \"<name B> bắt đầu trình bày, phần chia sẻ của bạn đã dừng.\" (MSG340); everyone sees only B's share."
-          ],
-          "preconditions": [
-            "Backend and frontend running on the test build with LiveKit configured.",
-            "An Online meeting M1 in status InProgress; its roster has a Chair, a Secretary and a Member (current assignments).",
-            "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
-            "Two accounts of M1 in two browsers."
-          ],
-          "note": "UC-39c | BR-326 | MSG340 | Manual only"
-        },
-        {
-          "id": "ROOM_FT40",
-          "description": "Cancelling the screen picker changes nothing.",
-          "procedure": [
-            "Click \"Chia sẻ màn hình\" and cancel the browser's picker."
-          ],
-          "expected": [
-            "No presenter banner appears; the button still reads \"Chia sẻ màn hình\"."
-          ],
-          "preconditions": [
-            "Backend and frontend running on the test build with LiveKit configured.",
-            "An Online meeting M1 in status InProgress; its roster has a Chair, a Secretary and a Member (current assignments).",
-            "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
-            "Member account of M1 supplied by QA lead; signed in."
-          ],
-          "note": "UC-39c | Manual only"
-        },
-        {
-          "id": "ROOM_FT41",
-          "description": "Screen share is not offered on a phone.",
-          "procedure": [
-            "On a phone (390px, touch) join the room."
-          ],
-          "expected": [
-            "The control bar has no \"Chia sẻ màn hình\" button; the microphone, camera, \"Người dự\", \"Chat\", \"Thêm\" and \"Rời phòng\" buttons fit without a horizontal scroll."
-          ],
-          "preconditions": [
-            "Backend and frontend running on the test build with LiveKit configured.",
-            "An Online meeting M1 in status InProgress; its roster has a Chair, a Secretary and a Member (current assignments).",
-            "A phone or a 390px touch emulation.",
-            "Member account of M1 supplied by QA lead; signed in."
-          ],
-          "note": "UC-39c | Manual only"
-        },
-        {
-          "id": "ROOM_FT42",
-          "description": "A failure to share is explained.",
-          "procedure": [
-            "Click \"Chia sẻ màn hình\" in a browser where sharing is refused by the system."
-          ],
-          "expected": [
-            "The message \"Không chia sẻ được màn hình. Vui lòng thử lại.\" (MSG341) appears; the person stays in the room."
-          ],
-          "preconditions": [
-            "Backend and frontend running on the test build with LiveKit configured.",
-            "An Online meeting M1 in status InProgress; its roster has a Chair, a Secretary and a Member (current assignments).",
-            "A browser or system that refuses screen capture.",
-            "Member account of M1 supplied by QA lead; signed in."
-          ],
-          "note": "UC-39c | MSG341 | Manual only"
-        },
-        {
-          "id": "ROOM_FT43",
-          "description": "The browser blocks autoplay of sound until the user clicks.",
-          "procedure": [
-            "Join the room in a browser that blocks audio autoplay while another person speaks."
-          ],
-          "expected": [
-            "A banner shows \"Trình duyệt đang chặn phát âm thanh.\" (MSG338) with the button \"Bấm để nghe mọi người\"; after clicking it the sound plays and the banner goes."
-          ],
-          "preconditions": [
-            "Backend and frontend running on the test build with LiveKit configured.",
-            "An Online meeting M1 in status InProgress; its roster has a Chair, a Secretary and a Member (current assignments).",
-            "A browser with autoplay blocked; another person speaks in the room.",
-            "Member account of M1 supplied by QA lead; signed in."
-          ],
-          "note": "UC-39a | MSG338 | Manual only"
+          "note": "UC-39c | BR-326 | Manual only · Evidence(AC21): tests/qa/out/SCRUM-195/20261122-035329-eb5a3255/20-chair-AC21-desktop-thanh-vien-trinh-bay.png · AX hai phiên: Thành viên trình bày, Chủ toạ thấy tên + hình thật (videoWidth>0).",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -823,46 +513,7 @@
       ],
       "cases": [
         {
-          "id": "ROOM_FT44",
-          "description": "The lobby lists microphones, speakers and cameras and the choice is used in the room.",
-          "procedure": [
-            "Open the lobby with several devices.",
-            "Open the picker \"Micro\" and choose another microphone; do the same for \"Loa\" and \"Camera\".",
-            "Click \"Vào phòng\" on the \"Sẵn sàng tham gia?\" screen."
-          ],
-          "expected": [
-            "Each picker lists the devices once; the system default is marked \"Theo mặc định của hệ thống\".",
-            "The level bar next to the microphone moves when speaking; after joining, the room uses the chosen devices."
-          ],
-          "preconditions": [
-            "Backend and frontend running on the test build with LiveKit configured.",
-            "An Online meeting M1 in status InProgress; its roster has a Chair, a Secretary and a Member (current assignments).",
-            "A computer with two microphones and two cameras (virtual devices are fine).",
-            "Member account of M1 supplied by QA lead; signed in."
-          ],
-          "note": "UC-39d | BR-331 | Manual only"
-        },
-        {
-          "id": "ROOM_FT45",
-          "description": "Devices can be changed from the room tray.",
-          "procedure": [
-            "In the room click \"Cài đặt âm thanh\" and choose another \"Micro\" and \"Loa\".",
-            "Click \"Cài đặt video\" and choose another \"Camera\"."
-          ],
-          "expected": [
-            "The tray shows pickers \"Micro\" and \"Loa\" (audio) and \"Camera\" (video); the change takes effect at once without leaving the room."
-          ],
-          "preconditions": [
-            "Backend and frontend running on the test build with LiveKit configured.",
-            "An Online meeting M1 in status InProgress; its roster has a Chair, a Secretary and a Member (current assignments).",
-            "Several devices as above.",
-            "Member account of M1 supplied by QA lead; signed in.",
-            "Member is connected."
-          ],
-          "note": "UC-39d | Manual only"
-        },
-        {
-          "id": "ROOM_FT46",
+          "id": "ROOM_FT23",
           "description": "The choice is kept in this browser and changes nothing on the server.",
           "procedure": [
             "Choose another microphone in the lobby, join, leave.",
@@ -878,41 +529,10 @@
             "Several devices as above.",
             "Member account of M1 supplied by QA lead; signed in."
           ],
-          "note": "UC-39d | BR-331 | Manual only"
-        },
-        {
-          "id": "ROOM_FT47",
-          "description": "A picker without permission says it cannot be used.",
-          "procedure": [
-            "Block the microphone for the site, open the lobby and open the picker \"Micro\"."
-          ],
-          "expected": [
-            "The picker shows \"Chưa dùng được\" and its tooltip says \"Chưa có quyền dùng micro, hoặc máy không có micro\"."
-          ],
-          "preconditions": [
-            "Backend and frontend running on the test build with LiveKit configured.",
-            "An Online meeting M1 in status InProgress; its roster has a Chair, a Secretary and a Member (current assignments).",
-            "Microphone blocked for the site.",
-            "Member account of M1 supplied by QA lead; signed in."
-          ],
-          "note": "UC-39d | MSG334 | Manual only"
-        },
-        {
-          "id": "ROOM_FT48",
-          "description": "A browser that cannot pick a speaker says so.",
-          "procedure": [
-            "Open the lobby in a browser without speaker selection (Safari or Firefox) and look at the \"Loa\" picker."
-          ],
-          "expected": [
-            "The picker shows the reason \"Trình duyệt này không cho chọn loa\"."
-          ],
-          "preconditions": [
-            "Backend and frontend running on the test build with LiveKit configured.",
-            "An Online meeting M1 in status InProgress; its roster has a Chair, a Secretary and a Member (current assignments).",
-            "Firefox or Safari.",
-            "Member account of M1 supplied by QA lead; signed in."
-          ],
-          "note": "UC-39d | Manual only"
+          "note": "UC-39d | BR-331 | Manual only · Evidence(AC3): tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/11-secretary-AC3-desktop-sau-khi-tai-lai-van-nho.png; tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/14-secretary-AC3-phone-sau-khi-tai-lai-van-nho.png · AX một phiên: nhớ lựa chọn trình duyệt qua reload; không gửi gì lên server.",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -923,7 +543,7 @@
       ],
       "cases": [
         {
-          "id": "ROOM_FT49",
+          "id": "ROOM_FT24",
           "description": "The people panel lists everyone connected with their meeting role.",
           "procedure": [
             "Chair, Secretary and Member join the room.",
@@ -939,28 +559,13 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Chair, Secretary and Member accounts of M1; three browsers."
           ],
-          "note": "UC-40 | Manual only"
+          "note": "UC-40 | Manual only · Evidence(AC30): tests/qa/out/SCRUM-195/20261124-104227-ece83cb4/01-member-AC30-desktop-panel-nguoi-du-ba-nguoi.png; tests/qa/out/SCRUM-195/20261124-104227-ece83cb4/02-member-AC30-desktop-cham-dang-noi.png; tests/qa/out/SCRUM-195/20261124-104227-ece83cb4/03-member-AC30-phone-panel-nguoi-du-ba-nguoi.png; tests/qa/out/SCRUM-195/20261124-104227-ece83cb4/04-member-AC30-phone-cham-dang-noi.png (giọng Thư ký là máy đọc edge-tts vi-VN qua micro giả; người thật vẫn cần cho nhận dạng ai)",
+          "round1": "Passed",
+          "date1": "2026-11-24",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_FT50",
-          "description": "The list follows people who join and leave.",
-          "procedure": [
-            "Two people are in the room with \"Người dự\" open.",
-            "A third person joins, then leaves."
-          ],
-          "expected": [
-            "The count in the title and the header (\"N người trong phòng\") goes up and down within moments; no reload is needed."
-          ],
-          "preconditions": [
-            "Backend and frontend running on the test build with LiveKit configured.",
-            "An Online meeting M1 in status InProgress; its roster has a Chair, a Secretary and a Member (current assignments).",
-            "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
-            "Three accounts of M1."
-          ],
-          "note": "UC-40 | Manual only"
-        },
-        {
-          "id": "ROOM_FT51",
+          "id": "ROOM_FT25",
           "description": "A Guest is listed with the name they gave and no email.",
           "procedure": [
             "A verified Guest joins the room.",
@@ -975,10 +580,13 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "A verified Guest of M1 and a Member in the room."
           ],
-          "note": "UC-40 | Manual only"
+          "note": "UC-40 · Evidence(AC33): tests/qa/out/SCRUM-195/20261124-105809-ece83cb4/02-anon-AC33-desktop-dong-khach-thanh-vien-nhin-cua-so-chinh-nguoi-thu-hai.png; tests/qa/out/SCRUM-195/20261124-105809-ece83cb4/04-anon-AC33-phone-dong-khach-thanh-vien-nhin-cua-so-chinh-nguoi-thu-hai.png (panel ở cửa sổ Thành viên: 'Người dự (2)', dòng Khách đúng tên đã khai, vai trò 'Khách', data-tooltip 'Tên tự khai', không email; OTP qua Mailpit tới example.test)",
+          "round1": "Passed",
+          "date1": "2026-11-24",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_FT52",
+          "id": "ROOM_FT26",
           "description": "A hand-over of the Chair role updates the panel without rejoining.",
           "procedure": [
             "Chair and Member are in the room with \"Người dự\" open.",
@@ -993,40 +601,10 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Chair and Member in the room; Organizer account in a third browser."
           ],
-          "note": "UC-40 | BR-329 | Manual only"
-        },
-        {
-          "id": "ROOM_FT53",
-          "description": "Many participants are shown in pages.",
-          "procedure": [
-            "Have more than 9 people in the room on a computer (or more than 4 on a phone).",
-            "Use the arrows \"Trang sau\" and \"Trang trước\"."
-          ],
-          "expected": [
-            "The grid shows up to 9 tiles (4 on a phone) with \"Trang 1/2\"; the arrows move between pages."
-          ],
-          "preconditions": [
-            "Backend and frontend running on the test build with LiveKit configured.",
-            "An Online meeting M1 in status InProgress; its roster has a Chair, a Secretary and a Member (current assignments).",
-            "Ten test accounts or Guests in the room (supplied by QA lead)."
-          ],
-          "note": "UC-40 | Manual only"
-        },
-        {
-          "id": "ROOM_FT54",
-          "description": "A full room refuses the 51st connection.",
-          "procedure": [
-            "With 50 people connected, a further Member clicks \"Vào phòng\"."
-          ],
-          "expected": [
-            "The room service refuses the connection and the person does not enter; after someone leaves, a new try succeeds."
-          ],
-          "preconditions": [
-            "Backend and frontend running on the test build with LiveKit configured.",
-            "An Online meeting M1 in status InProgress; its roster has a Chair, a Secretary and a Member (current assignments).",
-            "50 test connections held by QA lead."
-          ],
-          "note": "UC-40 | BR-336 | Manual only"
+          "note": "UC-40 | BR-329 | Manual only · Evidence(AC13): tests/qa/out/SCRUM-195/20261122-035329-eb5a3255/16-member-AC13-desktop-truoc-khi-ban-giao.png; tests/qa/out/SCRUM-195/20261122-035329-eb5a3255/17-member-AC13-desktop-sau-khi-ban-giao.png · AX hai phiên + API: bàn giao qua API, panel tự cập nhật không vào lại; Chủ toạ cũ tắt mic 403 MSG123.",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -1037,7 +615,7 @@
       ],
       "cases": [
         {
-          "id": "ROOM_FT55",
+          "id": "ROOM_FT27",
           "description": "The Chair mutes another person.",
           "procedure": [
             "Chair and Member join; the Member's microphone is on.",
@@ -1053,27 +631,13 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Chair and Member accounts of M1; two browsers."
           ],
-          "note": "UC-41 | BR-325 | MSG339, MSG342 | Manual only"
+          "note": "UC-41 | BR-325 | MSG339, MSG342 | Manual only · Evidence(AC7): tests/qa/out/SCRUM-195/20261122-040048-eb5a3255/01-member-AC7-desktop-bi-chu-toa-tat-mic-cua-so-chinh-nguoi-thu-hai.png; tests/qa/out/SCRUM-195/20261122-040048-eb5a3255/03-member-AC7-desktop-dong-minh-khong-nut-tat-cua-so-chinh-nguoi-thu-hai.png · AX hai phiên (cửa sổ thứ hai cùng trình duyệt).",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_FT56",
-          "description": "The muted person can turn the microphone on again.",
-          "procedure": [
-            "After the mute above, the Member clicks \"Bật micro\"."
-          ],
-          "expected": [
-            "The Member's microphone is on again; only a new \"Tắt mic\" by the Chair turns it off."
-          ],
-          "preconditions": [
-            "Backend and frontend running on the test build with LiveKit configured.",
-            "An Online meeting M1 in status InProgress; its roster has a Chair, a Secretary and a Member (current assignments).",
-            "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
-            "Member has just been muted by the Chair."
-          ],
-          "note": "UC-41 | BR-325 | Manual only"
-        },
-        {
-          "id": "ROOM_FT57",
+          "id": "ROOM_FT28",
           "description": "The Chair cannot switch someone's microphone on.",
           "procedure": [
             "Chair opens \"Người dự\" and looks at the row of a person whose microphone is off."
@@ -1087,10 +651,13 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Chair and a Member with the microphone off in the room."
           ],
-          "note": "UC-41 | BR-325 | Manual only"
+          "note": "UC-41 | BR-325 | Manual only · Evidence(AC7): tests/qa/out/SCRUM-195/20261122-040048-eb5a3255/04-member-AC7-desktop-dong-micro-tat-khong-nut-bat-ho.png · Dòng micro tắt chỉ hiện icon (tooltip title Micro tắt, đã assert attribute), không có chữ hiện và không có nút bật micro hộ — tắt một chiều.",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_FT58",
+          "id": "ROOM_FT29",
           "description": "A Member does not see the mute button.",
           "procedure": [
             "The Member opens \"Người dự\" and looks at other people's rows."
@@ -1104,10 +671,13 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Two Members in the room."
           ],
-          "note": "UC-41 | BR-325 | MSG123 | Manual only"
+          "note": "UC-41 | BR-325 | MSG123 | Manual only · Evidence(AC6): tests/qa/out/SCRUM-195/20261122-035627-eb5a3255/02-member-AC6-desktop-panel-nguoi-du-hai-nguoi.png · Góc nhìn Thành viên: panel không có nút Tắt mic (đã assert count 0).",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_FT59",
+          "id": "ROOM_FT30",
           "description": "The Chair has no mute button on their own row.",
           "procedure": [
             "The Chair looks at their own row in \"Người dự\"."
@@ -1121,10 +691,13 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Chair in the room."
           ],
-          "note": "UC-41 | Manual only"
+          "note": "UC-41 | Manual only · Evidence(AC7): tests/qa/out/SCRUM-195/20261122-040048-eb5a3255/03-member-AC7-desktop-dong-minh-khong-nut-tat-cua-so-chinh-nguoi-thu-hai.png · Dòng của chính Chủ toạ (không gắn (Bạn) ở góc Chủ toạ) không có nút Tắt mic/Bật micro.",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_FT60",
+          "id": "ROOM_FT31",
           "description": "The former Chair loses the mute button after a hand-over.",
           "procedure": [
             "Chair and Member are in the room.",
@@ -1139,24 +712,10 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Chair and Member in the room; Organizer in a third browser."
           ],
-          "note": "UC-41 | BR-329 | MSG123 | Manual only"
-        },
-        {
-          "id": "ROOM_FT61",
-          "description": "Muting someone who has just left tells the Chair.",
-          "procedure": [
-            "The Chair clicks \"Tắt mic\" for a person who left in the same moment."
-          ],
-          "expected": [
-            "The error message \"Người này không còn trong phòng hoặc chưa bật micro.\" (409 MSG282) appears."
-          ],
-          "preconditions": [
-            "Backend and frontend running on the test build with LiveKit configured.",
-            "An Online meeting M1 in status InProgress; its roster has a Chair, a Secretary and a Member (current assignments).",
-            "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
-            "Chair and Member in the room."
-          ],
-          "note": "UC-41 | MSG282 | Manual only"
+          "note": "UC-41 | BR-329 | MSG123 | Manual only · Evidence(AC13): tests/qa/out/SCRUM-195/20261122-035329-eb5a3255/18-member-AC13-desktop-chu-toa-cu-khong-nut-tat-mic.png · Chủ toạ cũ mở panel: không còn nút Tắt mic ở dòng nào; API 403 MSG123 đã assert. Câu báo stale-click không dàn được qua UI vì nút biến mất ngay.",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -1167,7 +726,7 @@
       ],
       "cases": [
         {
-          "id": "ROOM_FT62",
+          "id": "ROOM_FT32",
           "description": "A message reaches the people in the room with the sender and time.",
           "procedure": [
             "Two people are in the room; the first opens \"Chat\".",
@@ -1183,10 +742,13 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Two accounts of M1 in two browsers."
           ],
-          "note": "UC-42 | BR-327 | Manual only"
+          "note": "UC-42 | BR-327 | Manual only · Evidence(AC8): tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/28-chair-AC8-desktop-dem-tin-chua-doc.png; tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/30-chair-AC8-desktop-da-gui.png · AX hai phiên + người thứ ba vào sau (cửa sổ riêng): tin kèm tên + giờ, ô mình hiện Bạn, đếm n/1000.",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_FT63",
+          "id": "ROOM_FT33",
           "description": "An empty chat shows its placeholder.",
           "procedure": [
             "Open \"Chat\" in a room where nobody wrote yet."
@@ -1200,10 +762,13 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Member account of M1 supplied by QA lead; signed in."
           ],
-          "note": "UC-42 | Manual only"
+          "note": "UC-42 | Manual only · Evidence(AC25): tests/qa/out/SCRUM-195/20261122-033044-eb5a3255/01-member-AC25-desktop-chat-trong-nut-gui-tat.png · Phòng mới: Chưa có tin nhắn nào + nút Gửi tắt (đã assert disabled).",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_FT64",
+          "id": "ROOM_FT34",
           "description": "Shift+Enter makes a new line and Enter sends.",
           "procedure": [
             "Type a line, press Shift+Enter and type a second line, then press Enter."
@@ -1218,27 +783,13 @@
             "Member account of M1 supplied by QA lead; signed in.",
             "A computer keyboard."
           ],
-          "note": "UC-42 | Manual only"
+          "note": "UC-42 | Manual only · Evidence(AC8): tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/29-chair-AC8-desktop-dang-go-hai-dong.png; tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/30-chair-AC8-desktop-da-gui.png · Shift+Enter xuống dòng, Enter gửi; ô trống lại 0/1000.",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_FT65",
-          "description": "A message is limited to 1000 characters.",
-          "procedure": [
-            "Paste 1,001 characters into the chat box."
-          ],
-          "expected": [
-            "The box keeps 1,000 characters and the counter shows \"1000/1000\"; the message sends."
-          ],
-          "preconditions": [
-            "Backend and frontend running on the test build with LiveKit configured.",
-            "An Online meeting M1 in status InProgress; its roster has a Chair, a Secretary and a Member (current assignments).",
-            "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
-            "Member account of M1 supplied by QA lead; signed in."
-          ],
-          "note": "UC-42 | Manual only"
-        },
-        {
-          "id": "ROOM_FT66",
+          "id": "ROOM_FT35",
           "description": "A blank message cannot be sent.",
           "procedure": [
             "Type only spaces in the chat box."
@@ -1252,43 +803,10 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Member account of M1 supplied by QA lead; signed in."
           ],
-          "note": "UC-42 | Manual only"
-        },
-        {
-          "id": "ROOM_FT67",
-          "description": "A person who joins later does not get earlier messages.",
-          "procedure": [
-            "Two people chat.",
-            "A third person joins and opens \"Chat\"."
-          ],
-          "expected": [
-            "The third person sees \"Chưa có tin nhắn nào.\"; nothing is stored, so after leaving and rejoining the history is empty too (BR-327)."
-          ],
-          "preconditions": [
-            "Backend and frontend running on the test build with LiveKit configured.",
-            "An Online meeting M1 in status InProgress; its roster has a Chair, a Secretary and a Member (current assignments).",
-            "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
-            "Three accounts of M1."
-          ],
-          "note": "UC-42 | BR-327 | Manual only"
-        },
-        {
-          "id": "ROOM_FT68",
-          "description": "A failed send keeps the draft and says so.",
-          "procedure": [
-            "Cut the network after joining, type a message and click \"Gửi\"."
-          ],
-          "expected": [
-            "The error message \"Không gửi được tin nhắn. Vui lòng thử lại.\" (MSG343) appears and the typed text stays in the box."
-          ],
-          "preconditions": [
-            "Backend and frontend running on the test build with LiveKit configured.",
-            "An Online meeting M1 in status InProgress; its roster has a Chair, a Secretary and a Member (current assignments).",
-            "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
-            "Member account of M1 supplied by QA lead; signed in.",
-            "Browser network can be cut."
-          ],
-          "note": "UC-42 | MSG343 | Manual only"
+          "note": "UC-42 | Manual only · Evidence(AC25): tests/qa/out/SCRUM-195/20261122-033044-eb5a3255/01-member-AC25-desktop-chat-trong-nut-gui-tat.png · Ô chỉ dấu cách: Gửi vẫn tắt, Enter không gửi gì (đã assert).",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -1299,7 +817,7 @@
       ],
       "cases": [
         {
-          "id": "ROOM_FT69",
+          "id": "ROOM_FT36",
           "description": "Opening the floating window moves the call there and leaves a notice in the main tab.",
           "procedure": [
             "Join as the Member in Chrome or Edge on a computer.",
@@ -1316,44 +834,13 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Chrome or Edge on a computer (Document Picture-in-Picture)."
           ],
-          "note": "UC-78 | BR-332 | Manual only"
+          "note": "UC-78 | BR-332 | Manual only · Evidence(AC22): tests/qa/out/SCRUM-195/20261122-031916-eb5a3255/01-secretary-AC22-desktop-dang-o-cua-so-noi.png · Sân khấu báo Cuộc họp đang ở cửa sổ nổi + nút đưa về; số người không tăng (đã assert).",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_FT70",
-          "description": "Bringing the call back closes the floating window.",
-          "procedure": [
-            "Click \"Đưa cuộc họp về cửa sổ này\" (or \"Đóng cửa sổ nổi\")."
-          ],
-          "expected": [
-            "The floating window closes and the main stage shows the grid again; the person stays connected."
-          ],
-          "preconditions": [
-            "Backend and frontend running on the test build with LiveKit configured.",
-            "An Online meeting M1 in status InProgress; its roster has a Chair, a Secretary and a Member (current assignments).",
-            "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
-            "The floating window is open."
-          ],
-          "note": "UC-78 | BR-332 | Manual only"
-        },
-        {
-          "id": "ROOM_FT71",
-          "description": "Leaving from the floating window leaves the room without changing the meeting.",
-          "procedure": [
-            "In the floating window click \"Rời phòng\" and confirm."
-          ],
-          "expected": [
-            "The person leaves; the main tab shows \"Bạn đã rời phòng họp.\"; the meeting stays \"Đang diễn ra\"."
-          ],
-          "preconditions": [
-            "Backend and frontend running on the test build with LiveKit configured.",
-            "An Online meeting M1 in status InProgress; its roster has a Chair, a Secretary and a Member (current assignments).",
-            "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
-            "The floating window is open."
-          ],
-          "note": "UC-78 | BR-332 | MSG328 | Manual only"
-        },
-        {
-          "id": "ROOM_FT72",
+          "id": "ROOM_FT37",
           "description": "A browser without the feature shows no floating-window button.",
           "procedure": [
             "Join the room in Firefox or on a phone."
@@ -1367,7 +854,10 @@
             "Firefox or a phone browser.",
             "Member account of M1 supplied by QA lead; signed in."
           ],
-          "note": "UC-78 | Manual only"
+          "note": "UC-78 | Manual only · Evidence(AC22): tests/qa/out/SCRUM-195/20261122-035329-eb5a3255/24-secretary-AC22-phone-dien-thoai-khong-nut-cua-so-noi.png · Điện thoại không có nút Mở cửa sổ nổi (đã assert count 0).",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -1378,7 +868,7 @@
       ],
       "cases": [
         {
-          "id": "ROOM_FT73",
+          "id": "ROOM_FT38",
           "description": "A Member raises a hand and sees the place in the queue.",
           "procedure": [
             "Join the room as the Member.",
@@ -1396,10 +886,13 @@
             "Member account of M1 supplied by QA lead; signed in.",
             "Member is connected; nobody else has a hand up."
           ],
-          "note": "UC-79 | BR-337 | Manual only"
+          "note": "UC-79 | BR-337 | Manual only · Evidence(AC20): tests/qa/out/SCRUM-195/20261122-040048-eb5a3255/10-chair-AC20-desktop-goc-nhin-nguoi-gio-tay-cua-so-chinh-nguoi-thu-hai.png · Panel người giơ tay: Bạn đang giơ tay · thứ 1, không nút Mời (đã assert); ô mình có tay Đang giơ tay (người khác xem hàng đợi thay vì ô hộ).",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_FT74",
+          "id": "ROOM_FT39",
           "description": "The Chair is told when a hand goes up.",
           "procedure": [
             "Chair and Member are in the room.",
@@ -1414,10 +907,13 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Chair and Member in the room in two browsers."
           ],
-          "note": "UC-79 | Manual only"
+          "note": "UC-79 | Manual only · Evidence(AC20): tests/qa/out/SCRUM-195/20261122-040048-eb5a3255/11-chair-AC20-desktop-hang-doi-hai-nguoi.png · Chủ toạ nhận toast tên người giơ tay (đã assert text) + badge Phát biểu đếm tay chờ.",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_FT75",
+          "id": "ROOM_FT40",
           "description": "The Chair sees the queue in order with \"Mời\" buttons; a Member does not.",
           "procedure": [
             "Two Members raise their hands one after the other.",
@@ -1433,10 +929,13 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Chair and two Members in the room."
           ],
-          "note": "UC-79 | BR-338 | Manual only"
+          "note": "UC-79 | BR-338 | Manual only · Evidence(AC20): tests/qa/out/SCRUM-195/20261122-040048-eb5a3255/11-chair-AC20-desktop-hang-doi-hai-nguoi.png; tests/qa/out/SCRUM-195/20261122-040048-eb5a3255/12-chair-AC20-desktop-thanh-vien-xem-hang-doi-cua-so-chinh-nguoi-thu-hai.png · Hai người giơ tay: hàng đợi có thứ tự Thứ 1/2, mỗi dòng có Mời + Từ chối ở góc Chủ toạ; góc Thành viên không có nút Mời/Từ chối (đã assert).",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_FT76",
+          "id": "ROOM_FT41",
           "description": "The Chair invites a person; the invited person sees the turn banner and starts speaking.",
           "procedure": [
             "Member raises a hand.",
@@ -1446,7 +945,7 @@
           ],
           "expected": [
             "After \"Mời\" the row shows the badge \"Đã mời\"; the Member sees the banner \"Đến lượt bạn phát biểu\" and the microphone is still off (BR-338).",
-            "After starting, the row shows \"Đang nói\" and the Member's panel shows \"Bạn đang nói\"; \"Mời\" is disabled for the others.",
+            "After starting, the row shows \"Đang nói\" and the Member's panel shows \"Bạn đang nói\"; \"Mời\" is hidden for the others.",
             "After finishing, the Member's request leaves the queue and the button returns to \"Giơ tay\"; the speaking time is kept for the minutes."
           ],
           "preconditions": [
@@ -1455,17 +954,20 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Chair and Member in the room in two browsers."
           ],
-          "note": "UC-79 | BR-338 | Manual only"
+          "note": "UC-79 | BR-338 | Manual only · Evidence(AC20): tests/qa/out/SCRUM-195/20261122-040048-eb5a3255/13-chair-AC20-desktop-den-luot-thanh-vien-cua-so-chinh-nguoi-thu-hai.png; tests/qa/out/SCRUM-195/20261122-040048-eb5a3255/19-chair-AC20-desktop-dang-noi.png; tests/qa/out/SCRUM-195/20261122-040048-eb5a3255/20-chair-AC20-desktop-ket-thuc-luot.png · Mời: badge Đã mời, banner + Bắt đầu phát biểu, micro vẫn tắt (BR-338). Nút Mời ở dòng chờ ẩn hẳn (hidden) thay vì disabled như câu chữ case — chủ ý theo code. Bắt đầu: Đang nói/Bạn đang nói; kết thúc: lượt rời hàng đợi, nút về Giơ tay.",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_FT77",
+          "id": "ROOM_FT42",
           "description": "Only one person can hold the floor.",
           "procedure": [
             "Two Members raise hands; the Chair invites the first.",
             "The Chair looks at the second row."
           ],
           "expected": [
-            "\"Mời\" on the second row is disabled while the first is invited or speaking; the server would answer 409 MSG459 \"Đang có người được mời hoặc đang phát biểu. Hãy kết thúc lượt đó trước.\"."
+            "\"Mời\" on the second row is hidden while the first is invited or speaking; the server would answer 409 MSG459 \"Đang có người được mời hoặc đang phát biểu. Hãy kết thúc lượt đó trước.\"."
           ],
           "preconditions": [
             "Backend and frontend running on the test build with LiveKit configured.",
@@ -1473,10 +975,13 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Chair and two Members in the room."
           ],
-          "note": "UC-79 | BR-338 | MSG459 | Manual only"
+          "note": "UC-79 | BR-338 | MSG459 | Manual only · Evidence(AC20): tests/qa/out/SCRUM-195/20261122-040048-eb5a3255/11-chair-AC20-desktop-hang-doi-hai-nguoi.png; tests/qa/out/SCRUM-195/20261122-040048-eb5a3255/19-chair-AC20-desktop-dang-noi.png · Đang có lượt được mời/nói: dòng chờ mất nút Mời (ẩn, đã assert count 0); API mời tiếp trả 409 MSG459 (đã assert trong AC).",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_FT78",
+          "id": "ROOM_FT43",
           "description": "The Chair declines a hand after a confirmation.",
           "procedure": [
             "The Chair clicks \"Từ chối\" on a queued row."
@@ -1491,10 +996,13 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Chair and a Member with a raised hand."
           ],
-          "note": "UC-79 | BR-338 | Manual only"
+          "note": "UC-79 | BR-338 | Manual only · Evidence(AC20): tests/qa/out/SCRUM-195/20261122-040048-eb5a3255/16-chair-AC20-desktop-hop-xac-nhan-tu-choi.png; tests/qa/out/SCRUM-195/20261122-040048-eb5a3255/17-chair-AC20-desktop-da-tu-choi-mot-tay.png · Hộp Từ chối lượt phát biểu đúng câu Hạ tay của <tên>? Người này có thể giơ tay lại; Để sau giữ nguyên, Từ chối dọn hàng đợi (server đã kiểm qua dump).",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_FT79",
+          "id": "ROOM_FT44",
           "description": "The Chair withdraws an invitation.",
           "procedure": [
             "The Chair invites a Member, then clicks \"Huỷ lời mời\" and confirms."
@@ -1508,10 +1016,13 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Chair and a Member in the room."
           ],
-          "note": "UC-79 | BR-338 | Manual only"
+          "note": "UC-79 | BR-338 | Manual only · Evidence(AC20): tests/qa/out/SCRUM-195/20261122-040048-eb5a3255/14-chair-AC20-desktop-hop-xac-nhan-rut-loi-moi.png; tests/qa/out/SCRUM-195/20261122-040048-eb5a3255/15-chair-AC20-desktop-da-rut-loi-moi.png · Dòng được mời có Huỷ lời mời; xác nhận xong banner biến mất, sàn trống lại (về chờ).",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_FT80",
+          "id": "ROOM_FT45",
           "description": "The Chair closes a speaker's turn.",
           "procedure": [
             "While a Member is speaking the Chair clicks \"Kết thúc\" on the row and confirms."
@@ -1525,10 +1036,13 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "A Member is speaking in the room."
           ],
-          "note": "UC-79 | BR-338 | Manual only"
+          "note": "UC-79 | BR-338 | Manual only · Evidence(AC29): tests/qa/out/SCRUM-195/20261124-050904-02ec608b/01-chair-AC29-desktop-luot-dang-noi.png; tests/qa/out/SCRUM-195/20261124-050904-02ec608b/02-chair-AC29-desktop-xac-nhan-ket-thuc-luot.png; tests/qa/out/SCRUM-195/20261124-050904-02ec608b/03-chair-AC29-desktop-het-luot-ve-gio-tay.png · Desktop-only (phone has no Phát biểu button in footer.room-controls); member button back to Giơ tay asserted.",
+          "round1": "Passed",
+          "date1": "2026-11-24",
+          "tester1": "Nguyễn Trường Huy"
         },
         {
-          "id": "ROOM_FT81",
+          "id": "ROOM_FT46",
           "description": "A person lowers their own hand.",
           "procedure": [
             "The Member who raised a hand clicks \"Hạ tay\"."
@@ -1542,27 +1056,13 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "A Member with a raised hand."
           ],
-          "note": "UC-79 | BR-337 | Manual only"
+          "note": "UC-79 | BR-337 | Manual only · Evidence(AC20): tests/qa/out/SCRUM-195/20261122-040048-eb5a3255/21-chair-AC20-desktop-da-ha-tay.png · Hạ tay: hết yêu cầu của mình qua API (myRequestId null), nút về Giơ tay.",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_FT82",
-          "description": "Leaving the room lowers the hand.",
-          "procedure": [
-            "A Member with a raised hand leaves the room."
-          ],
-          "expected": [
-            "The Chair's queue no longer lists the Member; the hand icon is gone."
-          ],
-          "preconditions": [
-            "Backend and frontend running on the test build with LiveKit configured.",
-            "An Online meeting M1 in status InProgress; its roster has a Chair, a Secretary and a Member (current assignments).",
-            "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
-            "A Member with a raised hand and the Chair in the room."
-          ],
-          "note": "UC-79 | BR-337 | Manual only"
-        },
-        {
-          "id": "ROOM_FT83",
+          "id": "ROOM_FT47",
           "description": "Raising a hand right after joining may be refused until the room knows you are in.",
           "procedure": [
             "Join and click \"Giơ tay\" within the first second."
@@ -1576,79 +1076,32 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Member account of M1 supplied by QA lead; signed in."
           ],
-          "note": "UC-79 | MSG458 | Manual only"
+          "note": "UC-79 | MSG458 | Manual only · Evidence(AC28, API): xem report.html/summary.md của lần chạy · API: join-token không kèm kết nối LiveKit rồi giơ tay trả 409 MSG458 (đã assert); bấm Giơ tay sau khi vào thật 200/201 (AC20). Không chụp màn hình (AC API).",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_FT84",
-          "description": "A stale queue answers that the request changed.",
-          "procedure": [
-            "The Chair keeps the list open while the Member lowers the hand; the Chair then clicks \"Mời\" on that row."
-          ],
-          "expected": [
-            "An error message shows \"Yêu cầu phát biểu này đã thay đổi. Hãy tải lại danh sách.\" (409 MSG460) and the list refreshes."
-          ],
-          "preconditions": [
-            "Backend and frontend running on the test build with LiveKit configured.",
-            "An Online meeting M1 in status InProgress; its roster has a Chair, a Secretary and a Member (current assignments).",
-            "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
-            "Chair and a Member in the room."
-          ],
-          "note": "UC-79 | MSG460 | Manual only"
-        },
-        {
-          "id": "ROOM_FT85",
+          "id": "ROOM_FT48",
           "description": "A hand cannot be raised when the meeting is not running.",
           "procedure": [
-            "Open \"Phát biểu\" in a room whose meeting has just ended."
+            "As the Member call POST on the raise-hand endpoint of a meeting that has just ended."
           ],
           "expected": [
-            "The panel says \"Chỉ đăng ký phát biểu khi cuộc họp đang diễn ra.\" and the button \"Giơ tay\" is not shown."
+            "Backend answers 409/MSG117; no hand is added. The room closes at once when the meeting ends, so the panel \"Phát biểu\" cannot be opened."
           ],
           "preconditions": [
             "Backend and frontend running on the test build with LiveKit configured.",
             "An Ended meeting M1; a Member who was in the room.",
             "Member account of M1 supplied by QA lead; signed in."
           ],
-          "note": "UC-79 | MSG117 | Manual only"
+          "note": "UC-79 | MSG117 | Manual only · Evidence(AC17, API): xem report.html/summary.md của lần chạy · Case cũ: E đòi panel Phát biểu trong phòng khi họp vừa kết thúc, nhưng phòng đóng ngay (bằng chứng AC11) nên không mở được panel. Server từ chối giơ tay 409 MSG117 (AC28 đã assert). · Đã sửa case theo sản phẩm (2026-11-22).",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_FT86",
-          "description": "Saving a hand that fails explains it and changes nothing.",
-          "procedure": [
-            "Click \"Giơ tay\" while the database is unavailable."
-          ],
-          "expected": [
-            "An error message shows \"Không lưu được thay đổi lượt phát biểu. Vui lòng thử lại.\" (503 MSG462); the button still reads \"Giơ tay\"."
-          ],
-          "preconditions": [
-            "Backend and frontend running on the test build with LiveKit configured.",
-            "An Online meeting M1 in status InProgress; its roster has a Chair, a Secretary and a Member (current assignments).",
-            "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
-            "Member account of M1 supplied by QA lead; signed in.",
-            "QA lead can stop the database."
-          ],
-          "note": "UC-79 | MSG462 | Manual only"
-        },
-        {
-          "id": "ROOM_FT87",
-          "description": "A failed read of the queue offers a retry.",
-          "procedure": [
-            "Open \"Phát biểu\" while the queue cannot be read."
-          ],
-          "expected": [
-            "The panel shows the error \"Không tải được danh sách phát biểu. Vui lòng thử lại.\" (MSG461) and a button \"Thử lại\"."
-          ],
-          "preconditions": [
-            "Backend and frontend running on the test build with LiveKit configured.",
-            "An Online meeting M1 in status InProgress; its roster has a Chair, a Secretary and a Member (current assignments).",
-            "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
-            "Member account of M1 supplied by QA lead; signed in.",
-            "QA lead can stop the database."
-          ],
-          "note": "UC-79 | MSG461 | Manual only"
-        },
-        {
-          "id": "ROOM_FT88",
+          "id": "ROOM_FT49",
           "description": "The empty queue has a placeholder.",
           "procedure": [
             "Open \"Phát biểu\" when no hand is raised."
@@ -1662,7 +1115,10 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Member account of M1 supplied by QA lead; signed in."
           ],
-          "note": "UC-79 | Manual only"
+          "note": "UC-79 | Manual only · Evidence(AC20): tests/qa/out/SCRUM-195/20261122-040048-eb5a3255/09-chair-AC20-desktop-hang-doi-trong.png · Mở Phát biểu khi chưa ai giơ tay: Chưa có ai giơ tay.",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -1673,7 +1129,7 @@
       ],
       "cases": [
         {
-          "id": "ROOM_FT89",
+          "id": "ROOM_FT50",
           "description": "The Secretary opens the notes panel and writes a note; it saves on its own.",
           "procedure": [
             "Join as the Secretary and open \"Ghi chú\".",
@@ -1689,10 +1145,13 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Secretary account of M1 supplied by QA lead; signed in."
           ],
-          "note": "UC-82 | BR-399 | MSG415 | Manual only"
+          "note": "UC-82 | BR-399 | MSG415 | Manual only · Evidence(AC26): tests/qa/out/SCRUM-195/20261122-033544-eb5a3255/01-secretary-AC26-desktop-ghi-chu-chung-da-luu.png · Ghi chú chung tự lưu (Chưa lưu → Đang lưu… → Đã lưu ghi chú. (HH:mm)), tải lại vẫn còn (đã assert).",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_FT90",
+          "id": "ROOM_FT51",
           "description": "Notes can be kept per agenda item.",
           "procedure": [
             "Open \"Ghi chú cho\", choose an agenda item (the current one is marked \"Đang bàn\") and type a note."
@@ -1707,10 +1166,13 @@
             "M1 has an agenda with at least two items.",
             "Secretary account of M1 supplied by QA lead; signed in."
           ],
-          "note": "UC-82 | Manual only"
+          "note": "UC-82 | Manual only · Evidence(AC26): tests/qa/out/SCRUM-195/20261122-033544-eb5a3255/02-secretary-AC26-desktop-ghi-chu-theo-muc.png · Ghi chú theo mục nghị sự lưu riêng; mục có gợi ý Có ghi chú; Chung không đổi (đã assert qua lại).",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_FT91",
+          "id": "ROOM_FT52",
           "description": "The Chair reads the notes but cannot write.",
           "procedure": [
             "Join as the Chair and open \"Ghi chú\"."
@@ -1725,10 +1187,13 @@
             "Chair account of M1 supplied by QA lead; signed in.",
             "The Secretary has written a note."
           ],
-          "note": "UC-82 | MSG416 | Manual only"
+          "note": "UC-82 | MSG416 | Manual only · Evidence(AC26): tests/qa/out/SCRUM-195/20261122-033544-eb5a3255/04-secretary-AC26-desktop-chu-toa-chi-doc-cua-so-chinh-nguoi-thu-hai.png · Chủ toạ đọc được ghi chú, không có ô nhập (đã assert count 0).",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_FT92",
+          "id": "ROOM_FT53",
           "description": "A Member does not get the notes panel.",
           "procedure": [
             "Join as the Member and look at the panel buttons and the \"Thêm\" menu."
@@ -1742,80 +1207,13 @@
             "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
             "Member account of M1 supplied by QA lead; signed in."
           ],
-          "note": "UC-82 | Manual only"
+          "note": "UC-82 | Manual only · Evidence(AC19): tests/qa/out/SCRUM-195/20261122-031155-eb5a3255/70-member-AC19-desktop-bang-noi-dung-hop.png · Thành viên không có nút/bảng Ghi chú (đã assert count 0 desktop + phone).",
+          "round1": "Passed",
+          "date1": "2026-11-22",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "ROOM_FT93",
-          "description": "A note edited in two windows asks which version to keep.",
-          "procedure": [
-            "The Secretary opens the notes in two tabs, saves a change in tab A, then saves another in tab B."
-          ],
-          "expected": [
-            "Tab B shows \"Ghi chú vừa được sửa ở cửa sổ khác. Tải lại để xem bản mới nhất.\" (409 MSG418) with the choices \"Dùng bản mới\", \"Giữ bản này\" and \"Tải lại\"; the text typed in B is not lost."
-          ],
-          "preconditions": [
-            "Backend and frontend running on the test build with LiveKit configured.",
-            "An Online meeting M1 in status InProgress; its roster has a Chair, a Secretary and a Member (current assignments).",
-            "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
-            "Secretary account of M1 supplied by QA lead; signed in."
-          ],
-          "note": "UC-82 | BR-399 | MSG418 | Manual only"
-        },
-        {
-          "id": "ROOM_FT94",
-          "description": "A note over 20,000 characters is refused.",
-          "procedure": [
-            "Paste 20,001 characters into the note."
-          ],
-          "expected": [
-            "The counter shows the length over 20.000 and the server answers 400 MSG419 \"Ghi chú quá dài, tối đa 20.000 ký tự.\"; the saved note is unchanged."
-          ],
-          "preconditions": [
-            "Backend and frontend running on the test build with LiveKit configured.",
-            "An Online meeting M1 in status InProgress; its roster has a Chair, a Secretary and a Member (current assignments).",
-            "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
-            "Secretary account of M1 supplied by QA lead; signed in."
-          ],
-          "note": "UC-82 | BR-400 | MSG419 | Manual only"
-        },
-        {
-          "id": "ROOM_FT95",
-          "description": "Losing the network keeps the typed note on this device and saves it later.",
-          "procedure": [
-            "Type a note, cut the network, type more, then restore the network."
-          ],
-          "expected": [
-            "The status shows \"Mất kết nối. Ghi chú vẫn giữ trên máy này và sẽ lưu khi có mạng lại.\" (MSG423); after the network returns the note is saved and the status says \"Đã lưu ghi chú.\"."
-          ],
-          "preconditions": [
-            "Backend and frontend running on the test build with LiveKit configured.",
-            "An InProgress Online meeting M1 of sensitivity Normal (a Secret meeting keeps no draft on the device).",
-            "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
-            "Secretary account of M1 supplied by QA lead; signed in.",
-            "Browser network can be cut."
-          ],
-          "note": "UC-82 | BR-403 | MSG423 | Manual only"
-        },
-        {
-          "id": "ROOM_FT96",
-          "description": "A failed save keeps the text and offers a retry.",
-          "procedure": [
-            "Type a note while the database is unavailable."
-          ],
-          "expected": [
-            "The status shows \"Không lưu được ghi chú. Nội dung vẫn giữ trên máy này và sẽ gửi lại.\" (503 MSG422) with \"Thử lại\"; after the database returns, \"Thử lại\" saves it."
-          ],
-          "preconditions": [
-            "Backend and frontend running on the test build with LiveKit configured.",
-            "An Online meeting M1 in status InProgress; its roster has a Chair, a Secretary and a Member (current assignments).",
-            "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
-            "Secretary account of M1 supplied by QA lead; signed in.",
-            "QA lead can stop the database."
-          ],
-          "note": "UC-82 | MSG422 | Manual only"
-        },
-        {
-          "id": "ROOM_FT97",
+          "id": "ROOM_FT54",
           "description": "Notes close once the draft minutes exist.",
           "procedure": [
             "After the meeting has ended, create the draft minutes.",
@@ -1830,24 +1228,10 @@
             "Secretary account of M1 supplied by QA lead; signed in.",
             "A way to create the draft minutes (UC-58)."
           ],
-          "note": "UC-82 | MSG417 | Manual only"
-        },
-        {
-          "id": "ROOM_FT98",
-          "description": "The notes can be opened in a new tab.",
-          "procedure": [
-            "Click the icon \"Mở ghi chú ở tab mới\" in the panel header."
-          ],
-          "expected": [
-            "A new tab opens with the same notes for the same person; saving works there too."
-          ],
-          "preconditions": [
-            "Backend and frontend running on the test build with LiveKit configured.",
-            "An Online meeting M1 in status InProgress; its roster has a Chair, a Secretary and a Member (current assignments).",
-            "Chrome or Edge with microphone and camera allowed (a fake device is fine).",
-            "Secretary account of M1 supplied by QA lead; signed in."
-          ],
-          "note": "UC-82 | Manual only"
+          "note": "UC-82 | MSG417 | Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. PUT notes 409 MSG417, ô khoá, báo lỗi kèm \"Tải lại\"; bấm \"Tải lại\" thì hiện \"Chưa lưu được: Chung\" với Sao chép, Bỏ (case thiếu bước Tải lại). Evidence: tests/qa/out/MANUAL-R1/20261123-071414-03594e25/15-secretary-ROOM_FT54-desktop-bi-tu-choi-o-khoa.png; tests/qa/out/MANUAL-R1/20261123-071414-03594e25/16-secretary-ROOM_FT54-desktop-chua-luu-duoc.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "HuyNT"
         }
       ]
     }

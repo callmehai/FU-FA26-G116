@@ -310,7 +310,7 @@ phòng được chuyển chữ lại cả tệp sau mỗi lượt (khoảng 30 p
 ```json
 {
   "recordingId": "…", "status": "Completed",
-  "provider": "self-hosted:gipformer-1.5-68m-int8@b528768939c7",
+  "provider": "self-hosted:gipformer-1.5-68m-fp32@96b3c83c9c39",
   "language": "vi", "errorMessage": "", "completedAt": "…", "durationMs": 23380, "canEdit": true,
   "progressPercent": 100, "processingStartedAt": "…",
   "segments": [

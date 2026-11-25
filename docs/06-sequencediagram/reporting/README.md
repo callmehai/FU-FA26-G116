@@ -9,7 +9,7 @@ các UC con.
 | UC | Source | Ảnh |
 |---|---|---|
 | UC-79a View Reports & Statistics | [UC79a_ViewReportsAndStatistics.txt](UC79a_ViewReportsAndStatistics.txt) | [PNG](UC79a_ViewReportsAndStatistics.png) · [draw.io](../drawio-png/uc79a_viewreportsandstatistics.drawio.png) |
-| UC-79b Export Report (`<<extend>>` UC-79a) | [UC79b_ExportReport.txt](UC79b_ExportReport.txt) | [PNG](UC79b_ExportReport.png) · [draw.io](../drawio-png/uc79b_exportreport.drawio.png) |
+| UC-79b Export Report | [UC79b_ExportReport.txt](UC79b_ExportReport.txt) | [PNG](UC79b_ExportReport.png) · [draw.io](../drawio-png/uc79b_exportreport.drawio.png) |
 
 - Actor là mọi người dùng nội bộ; số liệu chỉ đếm cuộc họp người xem đọc được, Quản trị cũng vậy (BR-149, BR-150).
 - Kết quả chỉ có số đếm, tỷ lệ và trung bình — không tiêu đề, người dự hay nội dung cuộc họp (BR-152).

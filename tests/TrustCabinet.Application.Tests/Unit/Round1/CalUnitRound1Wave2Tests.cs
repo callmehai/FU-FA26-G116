@@ -827,7 +827,7 @@ public sealed class CalUnitRound1Wave2Tests
 
         public void BusyRow(Guid user, DateTimeOffset start, DateTimeOffset end)
             => Busy.Rows.Add(new BusyAssignment(user, AssignmentStatus.Current, MeetingRole.Member,
-                InvitationResponse.Accepted, null, MeetingStatus.Published, Sensitivity.Normal,
+                InvitationResponse.Accepted, MeetingStatus.Published, Sensitivity.Normal,
                 start, end, null, null));
     }
 

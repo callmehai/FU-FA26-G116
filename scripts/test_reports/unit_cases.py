@@ -526,6 +526,26 @@ def expected_text(c):
     return f"Return: {c.get('return', '')}\nException: {c.get('exception', '')}\nLog Message: {c.get('log', '')}"
 
 
+def rich_expected(c):
+    """Expected cell with the three labels bold (openpyxl rich text).
+
+    Never emit a whitespace-only run: openpyxl does not put
+    xml:space="preserve" on those and Excel repairs the file ("String
+    properties"). The newline therefore leads the next label run.
+    """
+    from openpyxl.cell.rich_text import CellRichText, TextBlock
+    from openpyxl.cell.text import InlineFont
+    bold = InlineFont(b=True)
+    parts = []
+    for i, (label, key) in enumerate((('Return: ', 'return'), ('Exception: ', 'exception'),
+                                      ('Log Message: ', 'log'))):
+        parts.append(TextBlock(bold, label if i == 0 else '\n' + label))
+        val = str(c.get(key, '') or '')
+        if val.strip():
+            parts.append(val)
+    return CellRichText(*parts)
+
+
 def cmd_md(_):
     m = manifest()
     for entry in m['sheets']:
@@ -566,15 +586,17 @@ def bulleted(items):
     return '\n'.join(f'- {s}' for s in items)
 
 
-def height_for(values_and_widths, line_height=13.5):
+def height_for(values_and_widths, line_height=15):
     lines = 1
     for value, width in values_and_widths:
         if not value:
             continue
-        per_line = max(int(width * 1.15), 8)
+        # Same conservative estimate as the integration book: ~1 char per
+        # width unit, +2 lines rounding margin (Excel never breaks mid-word).
+        per_line = max(int(width * 1.0), 8)
         n = sum(max(1, math.ceil(len(part) / per_line)) for part in str(value).split('\n'))
         lines = max(lines, n)
-    return min(409, lines * line_height + 4)
+    return min(409, lines * line_height + 6)
 
 
 def styles_of(ws, row, cols):
@@ -625,9 +647,26 @@ def build_book(m):
     group_style = styles_of(proto, 12, 16)
     case_style = styles_of(proto, 13, 16)
     widths = {k: v.width for k, v in proto.column_dimensions.items()}
+    # Pre-conditions (B) autofit, like the integration book: only as wide as
+    # its longest line (+2), capped so long bullets wrap instead of stretching.
+    entries = [(entry, load(case_file(entry))) for entry in m['sheets']]
+    bmax = 0
+    for _, doc in entries:
+        for mo in doc['methods']:
+            for c in mo.get('cases', []):
+                for part in str(numbered(c.get('preconditions', []))).split('\n'):
+                    bmax = max(bmax, len(part))
+    widths['B'] = min(40, max(20, bmax + 2))
+    # Inputs (C) autofit the same way.
+    cmax = 0
+    for _, doc in entries:
+        for mo in doc['methods']:
+            for c in mo.get('cases', []):
+                for part in str(c.get('inputs', '')).split('\n'):
+                    cmax = max(cmax, len(part))
+    widths['C'] = min(45, max(20, cmax + 2))
     built = []
-    for entry in m['sheets']:
-        doc = load(case_file(entry))
+    for entry, doc in entries:
         ws = wb.copy_worksheet(proto)
         ws.title = entry['sheet']
         clear_from(ws, 12)
@@ -661,6 +700,7 @@ def build_book(m):
                           c.get('defects', ''), c.get('note', '')]
                 for col, v in enumerate(values, 1):
                     ws.cell(r, col, v)
+                ws.cell(r, 4).value = rich_expected(c)
                 ws.row_dimensions[r].height = height_for(
                     [(values[i], widths.get(col, 10)) for i, col in enumerate('ABCD')] + [(values[3], 34), (values[15], 24)])
                 case_rows.append(r)
@@ -734,7 +774,7 @@ def build_book(m):
             c.alignment = Alignment(wrap_text=True, vertical='top',
                                     horizontal='center' if col == 'B' else 'left')
             if col != 'D':
-                c.font = Font(name='Tahoma', size=10, color='000000')
+                c.font = Font(name='Calibri', size=11, color='000000')
         tc.row_dimensions[rr].height = height_for(
             [(tc[f'{col}{rr}'].value, w) for col, w in (('C', 24), ('D', 28), ('E', 40), ('F', 32), ('G', 30))])
     tc.freeze_panes = 'B9'
@@ -801,6 +841,22 @@ def build_book(m):
         pie.dataLabels.showLeaderLines = False
         pie.width, pie.height = 11, 7.5
         ts.add_chart(pie, anchor)
+
+    # Fonts follow the integration book: Calibri 11 everywhere (bold, italic,
+    # underline and colours kept; links stay blue). The template is Tahoma 10.
+    # NOTE: never copy() a StyleProxy — the copy does not serialise and the
+    # cell falls back to the Normal style on reload. Build a real Font.
+    from openpyxl.styles import Font as _Font
+    for _ws in wb.worksheets:
+        for _row in _ws.iter_rows():
+            for _cell in _row:
+                _f = _cell.font
+                if _f.name != 'Calibri' or _f.sz != 11 or _f.italic:
+                    _cell.font = _Font(name='Calibri', size=11, bold=_f.bold,
+                                       italic=False, underline=_f.underline,
+                                       strike=_f.strike, color=_f.color,
+                                       vertAlign=_f.vertAlign)
+    wb._named_styles['Normal'].font = _Font(name='Calibri', sz=11)
 
     target = REPORTS / m['book']['file']
     try:

@@ -123,6 +123,9 @@ GROUPS: tuple[Group, ...] = (
                     "meeting-recording": "Meeting Recording",
                     "transcription-voice-id": "Transcription & Voice ID",
                     "online-meeting-room": "Online Meeting Room",
+                    "minutes-management": "Minutes Management",
+                    "calendar-sharing": "Calendar Sharing",
+                    "reporting": "Reporting",
                     "drawio-png": "drawio",
                 },
                 file_map={
@@ -200,8 +203,8 @@ GROUPS: tuple[Group, ...] = (
                 patterns=("*.drawio", "*.png"),
                 file_map={
                     "uc-system-admin.png": "trustcabinet-use-cases-System Admin.drawio.png",
-                    "uc-meeting-organizer.png": "trustcabinet-use-cases-Meeting Organizer.drawio.png",
-                    "uc-meeting-approver.png": "trustcabinet-use-cases-Meeting Approver.drawio.png",
+                    "uc-member.png": "trustcabinet-use-cases-Meeting Organizer.drawio.png",
+                    "uc-approver.png": "trustcabinet-use-cases-Meeting Approver.drawio.png",
                     "uc-chair.png": "trustcabinet-use-cases-Chair.drawio.png",
                     "uc-secretary.png": "trustcabinet-use-cases-Secretary.drawio.png",
                     "uc-participant.png": "trustcabinet-use-cases-Participant.drawio.png",

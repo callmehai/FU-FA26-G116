@@ -35,6 +35,7 @@ import { NotesPanel } from '../../notes/NotesPanel'
 import { RecordingsPanel } from '../../recordings/RecordingsPanel'
 import { useCallFailed } from '../../calls/callFailed'
 import { useHeldRoomMic } from '../../recordings/roomMicContext'
+import { showsRoomMicCard } from '../../recordings/hybridMic'
 import { useRoomRecordings } from '../../recordings/useRoomRecordings'
 import { SpeechPanel } from '../../speech/SpeechPanel'
 import { useSpeech } from '../../speech/useSpeech'
@@ -218,12 +219,19 @@ function MeetingDetail({
     running &&
     meeting.myMeetingRole === 'Secretary'
   // A take, or one this laptop kept from a closed tab, stays on screen until it is saved, even past the meeting's end.
+  // ADR-0085: not a hybrid meeting's take fed by this browser's call room, which shows its mic itself (and in its
+  // picture-in-picture window while the Secretary is here).
   const showsRecorder =
     room !== null &&
-    (recordsRoom ||
-      room.phase !== 'off' ||
-      room.unfinished !== null ||
-      (meeting.myMeetingRole === 'Secretary' && roomRecordings.open !== null))
+    showsRoomMicCard({
+      mode: meeting.mode,
+      switchHere: recordsRoom,
+      phase: room.phase,
+      unfinished: room.unfinished !== null,
+      openTake: meeting.myMeetingRole === 'Secretary' && roomRecordings.open !== null,
+      otherTab: room.otherTab,
+      callUnusable,
+    })
   // A take opening or closing: whether the call room's tab of this browser feeds it, so the card says so.
   const openTake = roomRecordings.open?.id
   const recheckRoom = room?.recheck

@@ -9,7 +9,7 @@ spec chưa khớp với code hiện có.
 
 1. UC-79 Register to Speak: [05-use-case-specifications.md](../01-requirements/05-use-case-specifications.md) (tìm `### UC-79`),
    BR-337, BR-338, BR-339 trong [06-business-rules.md](../01-requirements/06-business-rules.md).
-2. Sequence [UC79_RegisterToSpeak.txt](../06-sequencediagram/online-meeting-room/UC79_RegisterToSpeak.txt) — **rút gọn**: gộp
+2. Sequence [UC79_RegisterToSpeak.txt](../06-sequencediagram/online-meeting-room/UC50_RegisterToSpeak.txt) — **rút gọn**: gộp
    `Invited → Speaking → Finished` thành một bước. **Đặc tả UC-79 mới là chuẩn**; BA sẽ sửa sequence ở lần Final Review sau.
 3. Phòng họp hiện có: [09-phong-hop-truc-tuyen.md](../03-api/09-phong-hop-truc-tuyen.md) (danh tính LiveKit, Khách, `call_participants`),
    [CallEndpoints.cs](../../backend/TrustCabinet.Web/Endpoints/CallEndpoints.cs), [MeetingHub.cs](../../backend/TrustCabinet.Web/MeetingHub.cs).

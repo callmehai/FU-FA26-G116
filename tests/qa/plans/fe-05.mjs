@@ -34,6 +34,13 @@ async function client(qa, role) {
   return qa.__clients[role]
 }
 
+/** An access token for the context's own signed-in role, from its refresh cookie. */
+async function bearer(qa) {
+  const res = await qa.context.request.post('/api/auth/refresh')
+  qa.expect(res.status(), 'refresh for a bearer token').toBe(200)
+  return (await res.json()).accessToken
+}
+
 const rand = () => Math.random().toString(36).slice(2, 6)
 const iso = (ms) => new Date(ms).toISOString().replace(/\.\d{3}Z$/, 'Z')
 const MINUTE = 60_000
@@ -219,6 +226,16 @@ async function settled(qa) {
 }
 const toast = (qa, text) => qa.page.locator('.toast-stack').getByText(text)
 const dialog = (qa, name) => qa.page.getByRole('dialog', { name })
+
+/** Closes every toast on screen (the app's toasts stay until dismissed and would match the next assertion). */
+async function dismissToasts(qa) {
+  for (let i = 0; i < 5; i++) {
+    const closers = qa.page.locator('.toast-stack').getByRole('button', { name: 'Đóng' })
+    if (!(await closers.count())) break
+    await closers.first().click()
+    await qa.page.waitForTimeout(300)
+  }
+}
 const panel = (qa) => qa.page.getByRole('region', { name: 'Nội dung cuộc họp' })
 const row = (qa, title) => panel(qa).locator('li.agenda-item').filter({ hasText: title })
 async function press(qa, locator) {
@@ -456,6 +473,8 @@ export default {
           const confirm = dialog(qa, 'Xoá nội dung')
           await qa.expect(confirm).toBeVisible()
           await qa.expect(confirm.getByText(victim.title)).toBeVisible()
+          // AGENDA_FT16 E1: the dialog says the attached documents stay in the Documents tab.
+          await qa.expect(confirm.getByText('Tài liệu đã gắn vẫn còn trong tab Tài liệu.')).toBeVisible()
           await settled(qa)
           await qa.shot('xac-nhan-xoa')
           await confirm.getByRole('button', { name: 'Xoá', exact: true }).click()
@@ -611,14 +630,15 @@ export default {
       id: 'AC9',
       role: 'chair',
       devices: ['desktop', 'phone'],
-      title: 'Chủ toạ thêm mục trên màn hình ở cuộc họp Đã công bố và giao người trình bày; người được giao nhận thông báo, tự giao mình thì không (UC-23a, UC-23b)',
+      title: 'Chủ toạ thêm và sửa mục trên màn hình ở cuộc họp Đã công bố và giao người trình bày; người được giao nhận thông báo, tự giao mình thì không (UC-23a, UC-23b, AGENDA_FT12)',
       steps: [
         'Đăng nhập chutoa@, mở tab Nội dung cuộc họp của cuộc họp Đã công bố',
         'Thêm mục, người trình bày là chính mình (Chủ toạ), Lưu',
         'Thêm mục thứ hai, người trình bày Lê An (thanhvien@), Lưu',
+        'Sửa mục thứ hai: đổi tên, Lưu',
       ],
       expected:
-        'Chủ toạ thấy "Thêm nội dung", bút chì và thùng rác (SCRUM-25, PO 02/11); hai toast MSG60; thanhvien@ nhận một thông báo AgendaPresenterAssigned của cuộc họp; chutoa@ không nhận thông báo nào cho mục tự giao',
+        'Chủ toạ thấy "Thêm nội dung", bút chì và thùng rác (SCRUM-25, PO 02/11); ba toast MSG60/MSG61; thanhvien@ nhận một thông báo AgendaPresenterAssigned của cuộc họp; chutoa@ không nhận thông báo nào cho mục tự giao',
       async run(qa) {
         const u = await users(qa)
         const m = await reused(qa, 'Published')
@@ -644,10 +664,19 @@ export default {
           const r = row(qa, made[1])
           await qa.expect(r.getByRole('button', { name: `Sửa: ${made[1]}` })).toBeVisible()
           await qa.expect(r.getByRole('button', { name: `Xoá: ${made[1]}` })).toBeVisible()
+          // AGENDA_FT12 E1: the Chair edits like the Secretary (200 MSG61).
+          await press(qa, r.getByRole('button', { name: `Sửa: ${made[1]}` }))
+          const edit = dialog(qa, 'Sửa nội dung')
+          const renamed = `${made[1]} (chủ toạ sửa)`
+          await edit.getByPlaceholder('VD: Dự toán ngân sách năm 2027').fill(renamed)
+          await edit.getByRole('button', { name: 'Lưu' }).click()
+          await qa.expect(toast(qa, 'Cập nhật mục nghị sự thành công.')).toBeVisible()
+          await qa.expect(row(qa, renamed)).toBeVisible()
           await settled(qa)
           await qa.shot('chu-toa-them-muc')
           await noSidewaysScroll(qa)
           // The member's notification arrives after commit; wait for it, then the chair must have none.
+          // (The notification names the title as added — before the Chair's edit below.)
           await qa.expect
             .poll(async () => (await notifications(qa, 'member', m.id, made[1])).length, { timeout: 15_000, message: 'thanhvien@ got no AgendaPresenterAssigned' })
             .toBeGreaterThanOrEqual(1)
@@ -749,21 +778,70 @@ export default {
     },
     {
       id: 'AC12',
-      role: 'admin',
+      role: 'anon',
       title: 'Người tổ chức không phải Chủ toạ/Thư ký chỉ đọc chương trình nghị sự (không tự có quyền ghi)',
-      steps: ['quantri@ tổ chức cuộc họp Đã công bố (chutoa@ Chủ toạ, thuky@ Thư ký)', 'Mở tab Nội dung cuộc họp; gọi POST agenda'],
+      steps: [
+        'Tài khoản [QA] mang vai trò chỉ có "Tạo cuộc họp" tổ chức cuộc họp Đã công bố (Chủ toạ chutoa@, Thư ký thuky@)',
+        'Tài khoản đó mở tab Nội dung cuộc họp; gọi GET/POST agenda',
+      ],
       expected: 'Đọc được (GET 200, canCreate false); không có "Thêm nội dung"; POST 403 MSG67',
       async run(qa) {
-        const m = await reused(qa, 'Published', 'admin')
+        const admin = await qa.api('admin')
+        // A reusable organizer whose only capability is creating meetings (quantri@ cannot organise: no MeetingCreator).
+        const roleName = qa.name('FE-05 vai trò tổ chức')
+        let role = (await admin.get('/api/roles')).body.find((r) => r.name === roleName)
+        if (!role) {
+          const mk = await admin.post('/api/roles', { name: roleName, description: null, capabilities: ['MeetingCreator'] })
+          qa.expectStatus(mk, 201)
+          role = mk.body.role
+        }
+        const orgEmail = `qa-fe05-tochuc@trustcabinet.local`
+        const orgPassword = process.env.QA_PASSWORD ?? 'TrustCabinet@2026'
+        let orgUser = (await admin.get('/api/users')).body.find((u) => u.email === orgEmail)
+        if (!orgUser) {
+          const mk = await admin.post('/api/users', {
+            fullName: qa.name('FE-05 người tổ chức'),
+            email: orgEmail,
+            password: orgPassword,
+            roleId: role.id,
+          })
+          qa.expectStatus(mk, 201)
+          orgUser = mk.body.user
+        }
+        await qa.signIn(orgEmail)
+        const org = await qa.api(orgEmail)
+        const chairId = (await (await qa.api('chair')).get('/api/auth/me')).body.id
+        const secId = (await (await qa.api('secretary')).get('/api/auth/me')).body.id
+        const title = qa.name('FE-05 dùng lại (người tổ chức)')
+        let m = (await org.get(`/api/meetings?q=${encodeURIComponent(title)}&status=Published&pageSize=20`)).body.items?.find(
+          (i) => i.title === title,
+        )
+        if (!m) {
+          const u = await users(qa)
+          const created = await org.post('/api/meetings', {
+            ...(await meetingBody(qa, title)),
+            participants: [
+              { userId: chairId, role: 'Chair' },
+              { userId: secId, role: 'Secretary' },
+              { userId: u.member.id, role: 'Member' },
+            ],
+          })
+          qa.expectStatus(created, 201)
+          const id = created.body.meeting.id
+          qa.expectStatus(await org.post(`/api/meetings/${id}/transitions`, { action: 'SubmitForApproval', assignedApproverId: chairId }), 200)
+          qa.expectStatus(await (await qa.api('chair')).post(`/api/meetings/${id}/transitions`, { action: 'Approve' }), 200)
+          qa.expectStatus(await org.post(`/api/meetings/${id}/transitions`, { action: 'Publish' }), 200)
+          m = (await org.get(`/api/meetings/${id}`)).body
+        }
         await openAgenda(qa, m)
         await qa.expect(panel(qa).getByRole('button', { name: 'Thêm nội dung' })).toHaveCount(0)
         await qa.expect(panel(qa).getByText('Chưa có nội dung nào').or(panel(qa).locator('li.agenda-item').first())).toBeVisible()
         await settled(qa)
         await qa.shot('nguoi-to-chuc-chi-doc')
-        const snap = await snapshot(qa, 'admin', m.id)
+        const snap = await snapshot(qa, orgEmail, m.id)
         qa.expect(snap.permissions.canCreate).toBe(false)
-        qa.expectStatus(await (await client(qa, 'admin')).post(A(m.id), itemBody('Người tổ chức thêm')), 403)
-        qa.expect((await (await client(qa, 'admin')).post(A(m.id), itemBody('Người tổ chức thêm'))).body.code).toBe('MSG67')
+        qa.expectStatus(await org.post(A(m.id), itemBody('Người tổ chức thêm')), 403)
+        qa.expect((await org.post(A(m.id), itemBody('Người tổ chức thêm'))).body.code).toBe('MSG67')
       },
     },
 
@@ -780,7 +858,7 @@ export default {
         'Mở mục đó',
       ],
       expected:
-        'Toast "Bắt đầu mục nghị sự thành công." (MSG64), mục có chip "Đang bàn", các mục khác không còn nút "Bắt đầu"; toast "Hoàn thành mục nghị sự thành công." (MSG65), chip "Đã xong", các mục còn lại có lại "Bắt đầu", cuộc họp vẫn Đang diễn ra; API ghi actualStartedAt/actualEndedAt; mở mục đã xong thấy "Bàn từ hh:mm đến hh:mm" (UC-26 bước 3), cả trên điện thoại',
+        'Toast "Bắt đầu mục nghị sự thành công." (MSG64), mục có chip "Đang bàn", các mục khác không còn nút "Bắt đầu"; toast "Hoàn thành mục nghị sự thành công." (MSG65), chip "Đã xong", các mục còn lại có lại "Bắt đầu", cuộc họp vẫn Đang diễn ra; API ghi actualStartedAt/actualEndedAt; mở mục đã xong thấy "Bàn từ hh:mm đến hh:mm" (UC-26 bước 3), cả trên điện thoại; mục đang bàn không có nút Xoá (AGENDA_FT17), mục chờ không có nút Xong (AGENDA_FT35 E1)',
       async run(qa) {
         const m = await freshMeeting(qa, 'InProgress', `trực tiếp ${qa.device}`)
         const ids = []
@@ -797,6 +875,11 @@ export default {
           await qa.expect(row(qa, second).getByText('Đang bàn')).toBeVisible()
           await qa.expect(panel(qa).getByRole('button', { name: 'Bắt đầu' })).toHaveCount(0)
           await qa.expect(row(qa, second).getByRole('button', { name: 'Xong' })).toBeVisible()
+          // AGENDA_FT17: no delete button on the item under way.
+          await qa.expect(row(qa, second).getByRole('button', { name: /^Xoá:/ })).toHaveCount(0)
+          // AGENDA_FT35 E1: no "Xong" on a Pending item (the Chair's view).
+          await qa.expect(row(qa, first).getByRole('button', { name: 'Xong' })).toHaveCount(0)
+          await qa.expect(row(qa, third).getByRole('button', { name: 'Xong' })).toHaveCount(0)
           await settled(qa)
           await qa.shot('dang-ban-muc-2')
           await noSidewaysScroll(qa)
@@ -891,14 +974,16 @@ export default {
       id: 'AC15',
       role: 'secretary',
       devices: ['desktop', 'phone'],
-      title: 'Thư ký ghi kết luận cho mục đang bàn; kết luận hiện kèm người lưu và thời điểm; mục chờ không ghi được',
+      title: 'Thư ký ghi và sửa kết luận cho mục đang bàn; kết luận hiện kèm người lưu và thời điểm; mục chờ không ghi được (AGENDA_FT40, AGENDA_FT42)',
       steps: [
         'Cuộc họp Đang diễn ra, Chủ toạ đã bắt đầu một mục; thuky@ mở tab Nội dung cuộc họp',
         'Ở mục đang bàn (mở sẵn), bấm "Ghi kết luận", nhập, bấm "Lưu kết luận"',
+        'Bấm "Sửa kết luận": form điền sẵn + đếm n/2.000, nút khoá khi trống/không đổi; sửa và lưu',
+        'Nhập 2.100 ký tự vào form: giữ 2.000 + đếm "2.000/2.000", lưu được',
         'Mở một mục còn chờ',
       ],
       expected:
-        'Toast "Lưu kết luận mục nghị sự thành công." (MSG271); hộp Kết luận hiện nội dung và "Trần Việt Hải · <ngày giờ>", dòng có chip kết luận; mục chờ không có nút "Ghi kết luận"',
+        'Toast "Lưu kết luận mục nghị sự thành công." (MSG271); hộp Kết luận hiện nội dung và "Trần Việt Hải · <ngày giờ>", dòng có chip kết luận; "Sửa kết luận" mở form điền sẵn, đếm "n/2.000", nút "Lưu kết luận" khoá khi trống hoặc không đổi (AGENDA_FT40); dán 2.100 ký tự chỉ giữ 2.000, đếm "2.000/2.000", lưu 200 (AGENDA_FT42); mục chờ không có nút "Ghi kết luận"',
       async run(qa) {
         const u = await users(qa)
         const m = await reused(qa, 'InProgress')
@@ -924,16 +1009,48 @@ export default {
           await qa.expect(r.getByText(text)).toBeVisible()
           await qa.expect(r.locator('.agenda-stamp')).toContainText(u.secretary.name)
           await qa.expect(r.locator('.agenda-concluded')).toBeVisible()
+          await dismissToasts(qa)
           await settled(qa)
           await qa.shot('da-luu-ket-luan')
           await noSidewaysScroll(qa)
+          // AGENDA_FT40: editing reopens the form with the current text, a live n/2.000 counter,
+          // and a save button locked while empty or unchanged.
+          await press(qa, r.getByRole('button', { name: 'Sửa kết luận', exact: true }))
+          const editor = r.getByLabel(`Kết luận: ${liveTitle}`)
+          await qa.expect(editor).toHaveValue(text)
+          await qa.expect(r.getByText(`${text.length}/2.000`)).toBeVisible()
+          const saveConclusion = r.getByRole('button', { name: 'Lưu kết luận', exact: true })
+          await qa.expect(saveConclusion).toBeDisabled()
+          await editor.fill('')
+          await qa.expect(saveConclusion).toBeDisabled()
+          const edited = `Thống nhất điều chỉnh ${rand()}.`
+          await editor.fill(edited)
+          await qa.expect(r.getByText(`${edited.length}/2.000`)).toBeVisible()
+          await qa.expect(saveConclusion).toBeEnabled()
+          await settled(qa)
+          await qa.shot('dang-sua-ket-luan')
+          await press(qa, saveConclusion)
+          await qa.expect(toast(qa, 'Lưu kết luận mục nghị sự thành công.')).toBeVisible()
+          await qa.expect(r.getByText(edited)).toBeVisible()
+          await qa.expect(r.locator('.agenda-stamp')).toContainText(u.secretary.name)
+          await dismissToasts(qa)
+          // AGENDA_FT42: pasting 2.100 characters keeps 2.000 and the counter reads "2.000/2.000".
+          await press(qa, r.getByRole('button', { name: 'Sửa kết luận', exact: true }))
+          await editor.fill('k'.repeat(2100))
+          await qa.expect(editor).toHaveValue('k'.repeat(2000))
+          await qa.expect(r.getByText('2.000/2.000')).toBeVisible()
+          await settled(qa)
+          await qa.shot('dem-2000-2000')
+          await press(qa, r.getByRole('button', { name: 'Lưu kết luận', exact: true }))
+          await qa.expect(toast(qa, 'Lưu kết luận mục nghị sự thành công.')).toBeVisible()
+          await dismissToasts(qa)
           await press(qa, row(qa, pendingTitle).locator('button.agenda-title'))
           await qa.expect(row(qa, pendingTitle).getByText('Chưa có kết luận.')).toBeVisible()
           await qa.expect(row(qa, pendingTitle).getByRole('button', { name: 'Ghi kết luận', exact: true })).toHaveCount(0)
           await settled(qa)
           await qa.shot('muc-cho-khong-ghi-ket-luan')
           const after = itemOf(await snapshot(qa, 'secretary', m.id), live)
-          qa.expect(after.conclusion).toBe(text)
+          qa.expect(after.conclusion).toBe('k'.repeat(2000))
           qa.expect(after.conclusionUpdatedById).toBe(u.secretary.id)
           qa.expect(after.status).toBe('InProgress')
         } finally {
@@ -1028,10 +1145,10 @@ export default {
       id: 'AC18',
       role: 'member',
       devices: ['desktop', 'phone'],
-      title: 'Thành viên xem chương trình của cuộc họp đã kết thúc: thứ tự, người trình bày, trạng thái, kết luận kèm người lưu và thời điểm',
-      steps: ['thanhvien@ mở tab Nội dung cuộc họp của cuộc họp Đã kết thúc', 'Mở mục đã xong'],
+      title: 'Thành viên xem chương trình của cuộc họp đã kết thúc và mục chờ chỉ đọc: thứ tự, người trình bày, trạng thái, kết luận kèm người lưu và thời điểm (AGENDA_FT44)',
+      steps: ['thanhvien@ mở tab Nội dung cuộc họp của cuộc họp Đã kết thúc', 'Mở mục đã xong', 'Mở mục chưa bàn'],
       expected:
-        'Mục đã xong có chip "Đã xong" và chip kết luận (chữ "Đã kết luận" trên điện thoại, biểu tượng có tooltip "Đã có kết luận" trên máy tính); mở ra thấy ghi chú, kết luận "Thống nhất thông qua báo cáo quý III." với tên người lưu và thời điểm, không có nút "Ghi kết luận"; mục chưa bàn không có chip; không có nút sửa',
+        'Mục đã xong có chip "Đã xong" và chip kết luận; mở ra thấy ghi chú, kết luận với tên người lưu và thời điểm, không có nút "Ghi kết luận"; mục chưa bàn không có chip, mở ra "Chưa có kết luận." và không có nút "Ghi kết luận"/"Sửa kết luận" (AGENDA_FT44 E1); mục chờ không có nút; không có nút sửa',
       async run(qa) {
         const m = await reused(qa, 'Ended')
         const snap = await snapshot(qa, 'member', m.id)
@@ -1051,6 +1168,14 @@ export default {
         await qa.expect(r.getByText('Phòng Kế hoạch trình bày.')).toBeVisible()
         await qa.expect(r.getByRole('button', { name: /kết luận/ })).toHaveCount(0)
         await qa.expect(panel(qa).getByRole('button', { name: /^(Sửa|Xoá):/ })).toHaveCount(0)
+        // AGENDA_FT44 E1: a Pending item opens read-only for the Member too.
+        if (pending) {
+          await press(qa, row(qa, pending.title).locator('button.agenda-title'))
+          await qa.expect(row(qa, pending.title).getByText('Chưa có kết luận.')).toBeVisible()
+          await qa.expect(row(qa, pending.title).getByRole('button', { name: /kết luận/ })).toHaveCount(0)
+          await settled(qa)
+          await qa.shot('thanh-vien-muc-cho-chi-doc')
+        }
         await settled(qa)
         await qa.shot('thanh-vien-xem-ket-luan')
         await noSidewaysScroll(qa)
@@ -1118,6 +1243,945 @@ export default {
         await qa.expect(row(qa, snap.items[0].title)).toBeVisible()
         await qa.expect(alert).toHaveCount(0)
         await qa.shot('thu-lai-thanh-cong')
+      },
+    },
+    // ------------------------------------------------------------ AC bổ sung cho Round 1 (R1-FE05)
+    {
+      id: 'AC21',
+      role: 'secretary',
+      devices: ['desktop', 'phone'],
+      title: 'Xoá mục có tài liệu gắn kèm: tài liệu vẫn còn trong tab Tài liệu (AGENDA_FT16 E3)',
+      steps: [
+        'Tải một tệp lên mục nghị sự của cuộc họp Nháp (API)',
+        'Thư ký mở tab Nội dung cuộc họp, xoá mục đó sau khi xác nhận',
+        'Mở tab Tài liệu',
+      ],
+      expected:
+        'Sau khi xoá: toast MSG62, mục biến mất; tab Tài liệu vẫn còn tệp đã gắn (không bị xoá theo mục)',
+      async run(qa) {
+        const m = await reused(qa, 'Draft')
+        const itemId = await addItem(qa, 'secretary', m.id, 'Mục có tài liệu gắn kèm')
+        try {
+          await openAgenda(qa, m)
+          const base = new URL(qa.page.url()).origin
+          const token = await bearer(qa)
+          // A real PDF: the server parses the header and counts the pages, so a fake byte stream is refused.
+          const { readFileSync } = await import('node:fs')
+          const { fileURLToPath } = await import('node:url')
+          const { dirname, join } = await import('node:path')
+          const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..')
+          const pdf = readFileSync(join(repoRoot, 'e2e', 'khanh', 'artifacts', 'bb11-01a1cb20-5fc4-7d08-9756-52d483c3d364.pdf'))
+          const fileName = `qa-fe05-gan-kem-${Date.now().toString(36)}.pdf`
+          const up = await qa.context.request.post(`${base}/api/meetings/${m.id}/agenda/${itemId}/documents/upload`, {
+            headers: { Authorization: `Bearer ${token}` },
+            multipart: {
+              files: { name: fileName, mimeType: 'application/pdf', buffer: pdf },
+            },
+          })
+          qa.expect(up.status(), `tải tệp vào mục: ${await up.text()}`).toBe(200)
+          const snap = await snapshot(qa, 'secretary', m.id)
+          const title = itemOf(snap, itemId).title
+          const r = row(qa, title)
+          await qa.expect(r.getByText('1 tài liệu')).toBeVisible()
+          await settled(qa)
+          await qa.shot('muc-co-tai-lieu-gan-kem')
+          await press(qa, r.getByRole('button', { name: `Xoá: ${title}` }))
+          await dialog(qa, 'Xoá nội dung').getByRole('button', { name: 'Xoá', exact: true }).click()
+          await qa.expect(toast(qa, 'Xoá mục nghị sự thành công.')).toBeVisible()
+          await qa.expect(row(qa, title)).toHaveCount(0)
+          await qa.page.getByRole('tab', { name: 'Tài liệu' }).click()
+          await qa.expect(qa.page.getByText(fileName).first()).toBeVisible({ timeout: 10_000 })
+          await settled(qa)
+          await qa.shot('tai-lieu-con-sau-khi-xoa-muc')
+          await noSidewaysScroll(qa)
+          await noRawCodes(qa)
+        } finally {
+          await cleanup(qa, m.id, [itemId]).catch(() => undefined)
+        }
+      },
+    },
+    {
+      id: 'AC22',
+      role: 'secretary',
+      devices: ['desktop', 'phone'],
+      title: 'Cuộc họp Nháp trống: gợi ý khác nhau theo vai trò; tải lỗi thì báo và thử lại được (AGENDA_FT02, AGENDA_FT06)',
+      steps: [
+        'Thư ký mở tab Nội dung cuộc họp của cuộc họp Nháp trống',
+        'Chủ toạ và Thành viên mở cùng tab (API: Member GET Nháp 404)',
+        'Thư ký mở lại khi GET agenda 500 MSG128, bấm "Thử lại"',
+      ],
+      expected:
+        'Thư ký/Chủ toạ: "Chưa có nội dung nào" + "Thêm các nội dung cần bàn trong cuộc họp." + nút "Thêm nội dung"; Thành viên: "Chưa có nội dung nào" + "Các nội dung cần bàn sẽ hiện ở đây khi được lập.", không có nút Thêm, API 404; tải lỗi: "Không tải được chương trình nghị sự." + "Thử lại", thử lại thì gợi ý trống hiện',
+      async run(qa) {
+        const m = await reused(qa, 'Draft')
+        qa.expect((await snapshot(qa, 'secretary', m.id)).items.length, 'cuộc họp Nháp dùng lại không trống').toBe(0)
+        const emptyHint = async (role, canCreate) => {
+          await openAgenda(qa, m)
+          await qa.expect(panel(qa).getByText('Chưa có nội dung nào')).toBeVisible()
+          await qa.expect(
+            panel(qa).getByText(
+              canCreate ? 'Thêm các nội dung cần bàn trong cuộc họp.' : 'Các nội dung cần bàn sẽ hiện ở đây khi được lập.',
+            ),
+          ).toBeVisible()
+          await qa.expect(panel(qa).getByRole('button', { name: 'Thêm nội dung' })).toHaveCount(canCreate ? 1 : 0)
+          await settled(qa)
+          await qa.shot(`nhap-trong-${role}`)
+          await noSidewaysScroll(qa)
+        }
+        await emptyHint('secretary', true)
+        // Chair và Member xem trên cùng một cuộc họp Nháp.
+        const chairClient = await client(qa, 'chair')
+        qa.expectStatus(await chairClient.get(A(m.id)), 200)
+        // Member không được xem Nháp: màn hình 404, API 404 (AC11 đã phủ, nhắc lại ở đây cho đủ vai trò).
+        qa.expectStatus(await (await client(qa, 'member')).get(A(m.id)), 404)
+        // AGENDA_FT06: cùng một cuộc họp Nháp, lỗi tải và thử lại (cơ chế như AC20 nhưng ở Nháp và vai trò soạn).
+        const pattern = `**/api/meetings/${m.id}/agenda`
+        await qa.page.route(pattern, (route) =>
+          route.request().method() === 'GET'
+            ? route.fulfill({ status: 500, contentType: 'application/json', body: JSON.stringify({ code: 'MSG128', message: 'Không tải được chương trình nghị sự.' }) })
+            : route.continue(),
+        )
+        await qa.goto(`/mgmt/meetings/${m.id}?tab=agenda`)
+        const alert = qa.page.getByRole('alert').filter({ hasText: 'Không tải được chương trình nghị sự.' })
+        await qa.expect(alert).toBeVisible()
+        await qa.expect(panel(qa).getByText('Chưa có nội dung nào')).toHaveCount(0)
+        await settled(qa)
+        await qa.shot('nhap-loi-tai')
+        await qa.page.unroute(pattern)
+        await press(qa, alert.getByRole('button', { name: 'Thử lại' }))
+        await qa.expect(panel(qa).getByText('Chưa có nội dung nào')).toBeVisible()
+        await qa.expect(alert).toHaveCount(0)
+        await qa.shot('nhap-thu-lai-duoc')
+      },
+    },
+    {
+      id: 'AC23',
+      role: 'secretary',
+      devices: ['desktop', 'phone'],
+      title: 'Hộp Thêm nội dung: danh sách người trình bày, gợi ý và lưu không bắt buộc (AGENDA_FT10)',
+      steps: ['Mở "Thêm nội dung" trên cuộc họp Nháp', 'Mở danh sách "Người trình bày"', 'Lưu mà không chọn người trình bày'],
+      expected:
+        'Danh sách có "Chưa phân công" và các thành viên nội bộ đang hoạt động (Chủ toạ, Thư ký, Thành viên); gợi ý "Không bắt buộc, có thể chọn sau."; lưu được, mục mới presenterId null',
+      async run(qa) {
+        const u = await users(qa)
+        const m = await reused(qa, 'Draft')
+        await openAgenda(qa, m)
+        await press(qa, panel(qa).getByRole('button', { name: 'Thêm nội dung' }))
+        const form = dialog(qa, 'Thêm nội dung')
+        const title = `Mục không giao ai ${rand()}`
+        await form.getByPlaceholder('VD: Dự toán ngân sách năm 2027').fill(title)
+        await form.getByRole('button', { name: /^Người trình bày/ }).click()
+        const list = qa.page.getByRole('listbox', { name: 'Người trình bày' })
+        await qa.expect(list.getByRole('option', { name: 'Chưa phân công', exact: true })).toBeVisible()
+        await qa.expect(list.getByRole('option', { name: u.chair.name })).toBeVisible()
+        await qa.expect(list.getByRole('option', { name: u.secretary.name })).toBeVisible()
+        await qa.expect(list.getByRole('option', { name: u.member.name })).toBeVisible()
+        qa.note('Danh sách người trình bày = Chưa phân công + Chủ toạ + Thư ký + Thành viên đang hoạt động.')
+        await qa.expect(form.getByText('Không bắt buộc, có thể chọn sau.')).toBeVisible()
+        await settled(qa)
+        await qa.shot('danh-sach-nguoi-trinh-bay')
+        await qa.page.keyboard.press('Escape')
+        qa.note('Khách "(khách)" trong danh sách chưa phủ: cuộc họp Nháp dùng lại không có lời mời Khách.')
+        await form.getByRole('button', { name: 'Lưu' }).click()
+        await qa.expect(toast(qa, 'Tạo mục nghị sự thành công.')).toBeVisible()
+        const r = row(qa, title)
+        // Layout hiện tại không còn cột người trình bày ở dòng (chỉ số + tên + tài liệu + thao tác):
+        // mục không giao ai hiện đúng như các dòng khác, không nhãn nào thêm.
+        await qa.expect(r).toBeVisible()
+        await dismissToasts(qa)
+        await dismissToasts(qa)
+        const snap = await snapshot(qa, 'secretary', m.id)
+        qa.expect(itemOf(snap, snap.items.find((i) => i.title === title).id).presenterId).toBeNull()
+        await settled(qa)
+        await qa.shot('muc-khong-giao-ai')
+        await noSidewaysScroll(qa)
+        await cleanup(qa, m.id, [snap.items.find((i) => i.title === title).id])
+      },
+    },
+    {
+      id: 'AC24',
+      role: 'secretary',
+      title: 'Người trình bày bị gỡ khỏi cuộc họp: presenter bị xoá hẳn, không giữ tên cũ (AGENDA_FT14 — case cũ đòi giữ tên)',
+      steps: [
+        'Tạo mục, giao cho Thành viên, rồi gỡ Thành viên khỏi thành phần (API)',
+        'Mở tab Nội dung cuộc họp, xem dòng và hộp Sửa',
+      ],
+      expected:
+        'Sau khi gỡ: dòng không còn tên người cũ (backend xoá presenterId và đặt tên cũ thành rỗng, event PresenterCleared), tooltip "Chưa có người trình bày"; hộp Sửa không nêu "Trước đây:" — case cũ đòi giữ tên cũ, đề nghị BA sửa',
+      async run(qa) {
+        const u = await users(qa)
+        const sec = await client(qa, 'secretary')
+        // A dedicated Draft meeting: removing the Member here must not disturb the reused one.
+        const m = await freshMeeting(qa, 'Draft', 'người cũ')
+        const id = await addItem(qa, 'secretary', m.id, 'Mục người cũ', { presenterId: u.member.id })
+        try {
+          await qa.goto('/calendar')
+          // Gỡ Thành viên khỏi cuộc họp: displayName trong roster mất đi, presenterId thành tên cũ đã lưu.
+          const parts = await sec.get(`/api/meetings/${m.id}/participants?pageSize=100`)
+          const etag = parts.headers.etag ?? `"participants-${parts.body.revision}"`
+          const memberPart = parts.body.items.find((p) => p.userId === u.member.id)
+          const del = await qa.context.request.delete(`${new URL(qa.page.url()).origin}/api/meetings/${m.id}/participants/${memberPart.id}`, {
+            headers: { Authorization: `Bearer ${await bearer(qa)}`, 'If-Match': etag },
+          })
+          qa.expect(del.status(), `gỡ thành viên: ${await del.text()}`).toBe(200)
+          const snap = await snapshot(qa, 'secretary', m.id)
+          const item = itemOf(snap, id)
+          qa.expect(item.presenterId, 'presenterId còn sau khi gỡ').toBeNull()
+          qa.note(`Backend xoá presenter khi gỡ (presenterId=null, legacy=${JSON.stringify(item.legacyPresenterName)}) — case cũ đòi giữ tên cũ.`)
+          const title = item.title
+          await openAgenda(qa, m)
+          const r = row(qa, title)
+          await qa.expect(r.getByText(u.member.name)).toHaveCount(0)
+          await qa.expect(r.locator('.agenda-presenter-none')).toHaveAttribute('data-tooltip', 'Chưa có người trình bày')
+          await settled(qa)
+          await qa.shot('nguoi-trinh-bay-bi-go-mat-ten')
+          await press(qa, r.getByRole('button', { name: `Sửa: ${title}` }))
+          const form = dialog(qa, 'Sửa nội dung')
+          await qa.expect(form.getByText(/Trước đây:/)).toHaveCount(0)
+          await settled(qa)
+          await qa.shot('sua-khong-con-ten-cu')
+          await noSidewaysScroll(qa)
+        } finally {
+          await transition(qa, 'chair', m.id, 'end').catch(() => undefined)
+        }
+      },
+    },
+    {
+      id: 'AC25',
+      role: 'secretary',
+      title: 'Huỷ form Sửa khi đã nhập thì hỏi "Bỏ thay đổi chưa lưu?" (AGENDA_FT15)',
+      steps: ['Mở hộp Sửa của một mục, đổi tên', 'Bấm Huỷ → "Tiếp tục sửa" giữ chữ → Huỷ → "Bỏ thay đổi"'],
+      expected: 'Hộp hỏi nêu "Những gì bạn vừa nhập sẽ không được lưu."; "Tiếp tục sửa" giữ tên đã đổi; "Bỏ thay đổi" đóng, không gửi PUT, tên mục không đổi',
+      async run(qa) {
+        const m = await reused(qa, 'Draft')
+        const id = await addItem(qa, 'secretary', m.id, 'Mục huỷ sửa')
+        let puts = 0
+        qa.page.on('request', (r) => {
+          if (r.method() === 'PUT' && /\/api\/meetings\/.+\/agenda\//.test(r.url())) puts += 1
+        })
+        try {
+          const snap = await snapshot(qa, 'secretary', m.id)
+          const title = itemOf(snap, id).title
+          await openAgenda(qa, m)
+          await press(qa, row(qa, title).getByRole('button', { name: `Sửa: ${title}` }))
+          const form = dialog(qa, 'Sửa nội dung')
+          const typed = `${title} (sửa dở)`
+          await form.getByPlaceholder('VD: Dự toán ngân sách năm 2027').fill(typed)
+          await form.getByRole('button', { name: 'Huỷ' }).click()
+          const confirm = dialog(qa, 'Bỏ thay đổi chưa lưu?')
+          await qa.expect(confirm).toBeVisible()
+          await qa.expect(confirm).toContainText('Những gì bạn vừa nhập sẽ không được lưu.')
+          await qa.shot('hoi-bo-sua-muc')
+          await confirm.getByRole('button', { name: 'Tiếp tục sửa' }).click()
+          await qa.expect(form.getByPlaceholder('VD: Dự toán ngân sách năm 2027')).toHaveValue(typed)
+          await form.getByRole('button', { name: 'Huỷ' }).click()
+          await confirm.getByRole('button', { name: 'Bỏ thay đổi' }).click()
+          await qa.expect(form).toHaveCount(0)
+          qa.expect(itemOf(await snapshot(qa, 'secretary', m.id), id).title).toBe(title)
+          qa.expect(puts, 'a discarded edit was sent').toBe(0)
+        } finally {
+          await cleanup(qa, m.id, [id]).catch(() => undefined)
+        }
+      },
+    },
+    {
+      id: 'AC26',
+      role: 'secretary',
+      title: 'Lưu bị từ chối do trạng thái đổi giữa chừng: báo trong hộp, danh sách tải lại (AGENDA_FT19)',
+      steps: ['Mở "Thêm nội dung" trên cuộc họp Nháp, nhập tên', 'Cuộc họp kết thúc qua đủ bước (API), bấm "Lưu"'],
+      expected: '409 MSG67; hộp báo "Trạng thái cuộc họp không cho phép thao tác này."; không tạo mục; họp đã kết thúc, mục không được tạo',
+      async run(qa) {
+        // A dedicated Draft meeting: ending it must not disturb the reused one.
+        const m = await freshMeeting(qa, 'Draft', 'giữa chừng')
+        await openAgenda(qa, m)
+        await press(qa, panel(qa).getByRole('button', { name: 'Thêm nội dung' }))
+        const form = dialog(qa, 'Thêm nội dung')
+        await form.getByPlaceholder('VD: Dự toán ngân sách năm 2027').fill(`Mục giữa chừng ${rand()}`)
+        // The meeting is driven all the way to Ended behind the open dialog.
+        await transition(qa, 'secretary', m.id, 'submit')
+        await transition(qa, 'chair', m.id, 'approve')
+        await transition(qa, 'secretary', m.id, 'publish')
+        await transition(qa, 'chair', m.id, 'start')
+        await transition(qa, 'chair', m.id, 'end')
+        const posted = qa.page.waitForResponse((r) => r.url().endsWith('/agenda') && r.request().method() === 'POST')
+        await form.getByRole('button', { name: 'Lưu' }).click()
+        qa.expect((await posted).status()).toBe(409)
+        await qa.expect(form.getByText('Trạng thái cuộc họp không cho phép thao tác này.')).toBeVisible()
+        await qa.expect(form).toBeVisible()
+        await settled(qa)
+        await qa.shot('luu-bi-tu-choi-giua-chung')
+        await noRawCodes(qa)
+        qa.expect((await snapshot(qa, 'secretary', m.id)).items.length, 'mục vẫn được tạo').toBe(0)
+      },
+    },
+    {
+      id: 'AC27',
+      role: 'chair',
+      title: 'Chủ toạ ở cuộc họp Đã công bố không thấy "Bắt đầu" (AGENDA_FT30 một phần)',
+      steps: ['Đăng nhập chutoa@, mở tab Nội dung cuộc họp của cuộc họp Đã công bố'],
+      expected: 'Không có nút "Bắt đầu" nào trên màn hình (API 409 MSG73 đã phủ ở AC14)',
+      async run(qa) {
+        const m = await reused(qa, 'Published')
+        await openAgenda(qa, m)
+        await qa.expect(panel(qa).getByRole('button', { name: 'Bắt đầu' })).toHaveCount(0)
+        await settled(qa)
+        await qa.shot('chu-toa-cong-bo-khong-bat-dau')
+        await noSidewaysScroll(qa)
+        await noRawCodes(qa)
+      },
+    },
+    {
+      id: 'AC28',
+      role: 'secretary',
+      devices: ['desktop', 'phone'],
+      title: 'Thư ký ở cuộc họp Đang diễn ra không thấy "Bắt đầu"/"Xong" (AGENDA_FT30, AGENDA_FT35 góc Thư ký)',
+      steps: ['Cuộc họp Đang diễn ra (không có mục nào đang bàn); thuky@ mở tab Nội dung cuộc họp'],
+      expected: 'Không có nút "Bắt đầu" và "Xong" nào trên màn hình; mục chờ hiển thị bình thường (API 403 đã phủ ở AC10/AC14)',
+      async run(qa) {
+        const m = await reused(qa, 'InProgress')
+        await clearCurrent(qa, m.id)
+        await openAgenda(qa, m)
+        await qa.expect(panel(qa).getByRole('button', { name: 'Bắt đầu' })).toHaveCount(0)
+        await qa.expect(panel(qa).getByRole('button', { name: 'Xong' })).toHaveCount(0)
+        await settled(qa)
+        await qa.shot('thu-ky-dang-dien-ra-chi-doc')
+        await noSidewaysScroll(qa)
+        await noRawCodes(qa)
+      },
+    },
+    {
+      id: 'AC29',
+      role: 'chair',
+      title: 'REMOVED: bấm Bắt đầu/Xong trên trang cũ cần hai trình duyệt thật (AGENDA_FT29, FT31) — xem R1.md',
+      steps: ['REMOVED'],
+      expected: 'REMOVED',
+      async run(qa) {
+        qa.inconclusive('Cần hai trình duyệt thật: runner một phiên tự nhận realtime nên nút biến mất trước khi bấm. FT29/FT31 để trống (AX).')
+      },
+    },
+    {
+      id: 'AC30',
+      role: 'chair',
+      title: 'REMOVED: bấm Xong trên trang cũ cần hai trình duyệt thật (AGENDA_FT36) — xem R1.md',
+      steps: ['REMOVED'],
+      expected: 'REMOVED',
+      async run(qa) {
+        qa.inconclusive('Cần hai trình duyệt thật: runner một phiên tự nhận realtime nên nút Xong biến mất trước khi bấm. FT36 để trống (AX).')
+      },
+    },
+    {
+      id: 'AC31',
+      role: 'chair',
+      devices: ['desktop', 'phone'],
+      title: 'Chủ toạ ghi kết luận cho mục đang bàn trên màn hình (AGENDA_FT39)',
+      steps: ['Cuộc họp Đang diễn ra, mục đang bàn; chutoa@ mở tab Nội dung cuộc họp', 'Bấm "Ghi kết luận", nhập, "Lưu kết luận"'],
+      expected: 'Toast MSG271; hộp Kết luận hiện nội dung và "<tên chủ toạ> · <ngày giờ>", dòng có chip "Đã kết luận"; giữ sau tải lại',
+      async run(qa) {
+        const u = await users(qa)
+        const m = await reused(qa, 'InProgress')
+        await clearCurrent(qa, m.id)
+        const live = await addItem(qa, 'secretary', m.id, 'Mục chủ toạ ghi')
+        try {
+          qa.expectStatus(await (await client(qa, 'chair')).post(`${A(m.id)}/${live}/current`), 200)
+          const snap = await snapshot(qa, 'chair', m.id)
+          const title = itemOf(snap, live).title
+          await openAgenda(qa, m)
+          const r = row(qa, title)
+          await press(qa, r.getByRole('button', { name: 'Ghi kết luận', exact: true }))
+          const text = `Chủ toạ kết luận ${rand()}.`
+          await r.getByLabel(`Kết luận: ${title}`).fill(text)
+          await settled(qa)
+          await qa.shot('chu-toa-dang-ghi-ket-luan')
+          await press(qa, r.getByRole('button', { name: 'Lưu kết luận', exact: true }))
+          await qa.expect(toast(qa, 'Lưu kết luận mục nghị sự thành công.')).toBeVisible()
+          await qa.expect(r.getByText(text)).toBeVisible()
+          await qa.expect(r.locator('.agenda-stamp')).toContainText(u.chair.name)
+          await qa.expect(r.locator('.agenda-concluded')).toBeVisible()
+          await qa.goto(`/mgmt/meetings/${m.id}?tab=agenda`)
+          await qa.expect(row(qa, title).getByText(text)).toBeVisible()
+          await qa.shot('chu-toa-da-luu-ket-luan')
+          await noSidewaysScroll(qa)
+          const after = itemOf(await snapshot(qa, 'chair', m.id), live)
+          qa.expect(after.conclusionUpdatedById).toBe(u.chair.id)
+        } finally {
+          await (await client(qa, 'chair')).post(`${A(m.id)}/${live}/complete`)
+        }
+      },
+    },
+    {
+      id: 'AC32',
+      role: 'secretary',
+      title: 'Huỷ editor kết luận giữ nguyên kết luận đã lưu (AGENDA_FT43)',
+      steps: ['Mục đang bàn đã có kết luận; bấm "Sửa kết luận", gõ thêm, bấm "Huỷ"', 'Mở editor ở mục chưa có kết luận, gõ, bấm "Huỷ"'],
+      expected: 'Bấm "Huỷ" đóng editor ngay (editor kết luận không hỏi Bỏ thay đổi), kết luận cũ còn nguyên; mục chưa có kết luận vẫn "Chưa có kết luận."',
+      async run(qa) {
+        const m = await reused(qa, 'InProgress')
+        await clearCurrent(qa, m.id)
+        const live = await addItem(qa, 'secretary', m.id, 'Mục huỷ editor')
+        const bare = await addItem(qa, 'secretary', m.id, 'Mục chưa ghi')
+        try {
+          const chair = await client(qa, 'chair')
+          qa.expectStatus(await chair.post(`${A(m.id)}/${live}/current`), 200)
+          qa.expectStatus(await (await client(qa, 'secretary')).put(`${A(m.id)}/${live}/conclusion`, { conclusion: 'Kết luận đã lưu.' }), 200)
+          const snap = await snapshot(qa, 'secretary', m.id)
+          const [liveTitle, bareTitle] = [itemOf(snap, live).title, itemOf(snap, bare).title]
+          await openAgenda(qa, m)
+          const openRow = async (title) => {
+            // Mục đang bàn tự mở; mục khác thì đóng — chỉ bấm khi đang đóng.
+            if (!(await row(qa, title).locator('.agenda-body').count())) {
+              await press(qa, row(qa, title).locator('button.agenda-title'))
+            }
+          }
+          await openRow(liveTitle)
+          const editorRow = row(qa, liveTitle)
+          await editorRow.scrollIntoViewIfNeeded()
+          await press(qa, editorRow.getByRole('button', { name: 'Sửa kết luận', exact: true }))
+          await row(qa, liveTitle).getByLabel(`Kết luận: ${liveTitle}`).fill('Kết luận đã lưu. Gõ dở.')
+          await row(qa, liveTitle).getByRole('button', { name: 'Huỷ', exact: true }).click()
+          await qa.expect(row(qa, liveTitle).getByText('Kết luận đã lưu.')).toBeVisible()
+          await qa.expect(row(qa, liveTitle).getByText('Gõ dở')).toHaveCount(0)
+          await settled(qa)
+          await qa.shot('huy-editor-giu-ket-luan')
+          // Mục chưa có kết luận cũng phải đang bàn mới có nút Ghi: hoàn thành live rồi bắt đầu bare.
+          await (await client(qa, 'chair')).post(`${A(m.id)}/${live}/complete`)
+          qa.expectStatus(await (await client(qa, 'chair')).post(`${A(m.id)}/${bare}/current`), 200)
+          await qa.goto(`/mgmt/meetings/${m.id}?tab=agenda`)
+          await openRow(bareTitle)
+          await press(qa, row(qa, bareTitle).getByRole('button', { name: 'Ghi kết luận', exact: true }))
+          await row(qa, bareTitle).getByLabel(`Kết luận: ${bareTitle}`).fill('Gõ dở rồi bỏ.')
+          await row(qa, bareTitle).getByRole('button', { name: 'Huỷ', exact: true }).click()
+          await qa.expect(row(qa, bareTitle).getByText('Chưa có kết luận.')).toBeVisible()
+        } finally {
+          await (await client(qa, 'chair')).post(`${A(m.id)}/${bare}/complete`)
+          await cleanup(qa, m.id, [bare])
+        }
+      },
+    },
+    {
+      id: 'AC33',
+      role: 'secretary',
+      title: 'Mất quyền xem giữa chừng: PUT kết luận 404, tab hiện thông báo mất quyền (AGENDA_FT46 — case đòi giữ editor/inline, sản phẩm thay cả tab)',
+      steps: ['Mục đang bàn; thuky@ mở editor và gõ kết luận (chặn realtime để editor không bị gỡ trước)', 'Chủ toạ gỡ thuky@ khỏi cuộc họp (API)', 'Bấm "Lưu kết luận"'],
+      expected: 'PUT 404 MSG174; editor báo lỗi rồi tab tải lại thành "Bạn không còn xem được nội dung của cuộc họp này." (không giữ editor/chữ như E1 FT46 — case cũ, đề nghị BA sửa)',
+      async run(qa) {
+        const u = await users(qa)
+        const { request: playwrightRequest } = await import('@playwright/test')
+        const chairCtx = await playwrightRequest.newContext()
+        // FT46 needs a meeting the secretary can no longer see at all: it must be organised by
+        // someone else (the organiser keeps read access even after being removed from participants).
+        const ORG = 'qa-fe05-tochuc@trustcabinet.local'
+        let m = null
+        try {
+          m = await createAt(qa, 'InProgress', qa.name(`FE-05 mất quyền ${rand()}`), ORG)
+          qa.note(`Tạo: ${m.title} (${m.id}, InProgress, tổ chức bởi ${ORG})`)
+          const live = await addItem(qa, 'secretary', m.id, 'Mục mất quyền')
+          // Chặn realtime: giữ editor mở cho tới khi bấm Lưu (không để participantsChanged gỡ editor trước).
+          await qa.page.route('**/hubs/**', (route) => route.abort('connectionfailed'))
+          try {
+            qa.expectStatus(await (await client(qa, 'chair')).post(`${A(m.id)}/${live}/current`), 200)
+            const snap = await snapshot(qa, 'secretary', m.id)
+            const title = itemOf(snap, live).title
+            await openAgenda(qa, m)
+            const base = new URL(qa.page.url()).origin
+            const r = row(qa, title)
+            await press(qa, r.getByRole('button', { name: 'Ghi kết luận', exact: true }))
+            const typed = `Kết luận giữa chừng ${rand()}.`
+            await r.getByLabel(`Kết luận: ${title}`).fill(typed)
+            // Chair removes the secretary behind the open editor, through an independent request context.
+            // A meeting must keep a Secretary: quantri@ steps in first, so removing thuky@ is allowed.
+            const login = await chairCtx.post(`${base}/api/auth/login`, {
+              data: { email: u.chair.email, password: process.env.QA_PASSWORD ?? 'TrustCabinet@2026' },
+            })
+            qa.expect(login.status(), 'chair login').toBe(200)
+            const chairToken = (await login.json()).accessToken
+            const chead = { Authorization: `Bearer ${chairToken}` }
+            const parts = await chairCtx.get(`${base}/api/meetings/${m.id}/participants?pageSize=100`, { headers: chead })
+            qa.expect(parts.status()).toBe(200)
+            const body = await parts.json()
+            const adminId = (await (await client(qa, 'admin')).get('/api/auth/me')).body.id
+            const added = await chairCtx.post(`${base}/api/meetings/${m.id}/participants`, {
+              headers: { ...chead, 'If-Match': parts.headers()['etag'] ?? `"participants-${body.revision}"` },
+              data: { userIds: [adminId], role: 'Secretary' },
+            })
+            qa.expect(added.status(), `thêm thư ký thay thế: ${await added.text()}`).toBe(201)
+            const parts2 = await chairCtx.get(`${base}/api/meetings/${m.id}/participants?pageSize=100`, { headers: chead })
+            const body2 = await parts2.json()
+            const secPart = body2.items.find((p) => p.userId === u.secretary.id)
+            const del = await chairCtx.delete(`${base}/api/meetings/${m.id}/participants/${secPart.id}`, {
+              headers: { Authorization: `Bearer ${chairToken}`, 'If-Match': parts2.headers()['etag'] ?? `"participants-${body2.revision}"` },
+            })
+            qa.expect(del.status(), `gỡ thư ký: ${await del.text()}`).toBe(200)
+            const failed = qa.page.waitForResponse((r) => r.url().endsWith(`/agenda/${live}/conclusion`))
+            await press(qa, r.getByRole('button', { name: 'Lưu kết luận', exact: true }))
+            const failedRes = await failed
+            let failedBody = ''
+            try { failedBody = JSON.stringify(await failedRes.json()).slice(0, 300) } catch { failedBody = '(no json body)' }
+            qa.note(`PUT conclusion sau khi mất quyền: HTTP ${failedRes.status()} ${failedBody}`)
+            qa.expect(failedRes.status()).toBe(404)
+            qa.expect(failedBody).toContain('MSG174')
+            // Sản phẩm thay cả tab bằng thông báo mất quyền (không giữ editor/inline như E1 FT46).
+            await qa.expect(qa.page.getByText('Bạn không còn xem được nội dung của cuộc họp này.')).toBeVisible({ timeout: 15000 })
+            await settled(qa)
+            await qa.shot('mat-quyen-gone')
+            await noRawCodes(qa)
+          } finally {
+            await transition(qa, 'chair', m.id, 'end').catch(() => undefined)
+          }
+        } finally {
+          await qa.page.unroute('**/hubs/**').catch(() => undefined)
+          await chairCtx.dispose()
+        }
+      },
+    },
+    {
+      id: 'AC34',
+      role: 'secretary',
+      title: 'Máy chủ lỗi 503 giữa chừng: hộp ở lại, giá trị và thứ tự giữ nguyên (AGENDA_FT20, FT27, FT32, FT47)',
+      steps: [
+        'Nháp: chặn POST agenda 503, bấm Lưu trong hộp Thêm',
+        'Nháp: chặn PUT agenda 503, bấm Lưu trong hộp Sửa',
+        'Nháp: chặn PUT order 503, kéo tay nắm đổi thứ tự',
+        'InProgress: chặn PUT conclusion 503, bấm Lưu kết luận (lỗi hiện inline trong editor)',
+      ],
+      expected: 'Mỗi lần: hộp/editor ở lại, đúng mã MSG68/MSG71/MSG274 "Không lưu được thao tác nghị sự. Vui lòng thử lại.", giá trị giữ nguyên; thứ tự và trạng thái trên API không đổi, tải lại về đúng (FT32)',
+      async run(qa) {
+        const notSaved = 'Không lưu được thao tác nghị sự. Vui lòng thử lại.'
+        const fail503 = async (pattern, method, code) => {
+          await qa.page.route(pattern, (route) =>
+            route.request().method() === method
+              ? route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ code, message: notSaved }) })
+              : route.continue(),
+          )
+        }
+        // A dedicated Draft meeting: leftovers from earlier runs must not disturb this criterion.
+        const m = await freshMeeting(qa, 'Draft', 'lỗi 503 nháp')
+        qa.note('AC34: thêm mục pending')
+        const sec34 = await client(qa, 'secretary')
+        const mkPending = await sec34.post(A(m.id), itemBody('Mục 503'))
+        qa.note(`AC34 add pending: HTTP ${mkPending.status}`)
+        qa.expectStatus(mkPending, 201)
+        const pending = mkPending.body.agendaItemId
+        try {
+          const snap = await snapshot(qa, 'secretary', m.id)
+          const title = itemOf(snap, pending).title
+          await openAgenda(qa, m)
+          // FT20: POST 503 MSG68 keeps the create dialog and its values.
+          await fail503(`**/api/meetings/${m.id}/agenda`, 'POST', 'MSG68')
+          await press(qa, panel(qa).getByRole('button', { name: 'Thêm nội dung' }))
+          const create = dialog(qa, 'Thêm nội dung')
+          const typed = `Mục lỗi 503 ${rand()}`
+          await create.getByPlaceholder('VD: Dự toán ngân sách năm 2027').fill(typed)
+          await create.getByRole('button', { name: 'Lưu' }).click()
+          await qa.expect(create.getByText(notSaved)).toBeVisible()
+          await qa.expect(create.getByPlaceholder('VD: Dự toán ngân sách năm 2027')).toHaveValue(typed)
+          await qa.expect(create).toBeVisible()
+          await qa.shot('post-503-hop-o-lai')
+          await create.getByRole('button', { name: 'Huỷ' }).click()
+          await dialog(qa, 'Bỏ thay đổi chưa lưu?').getByRole('button', { name: 'Bỏ thay đổi' }).click()
+          await qa.page.unroute(`**/api/meetings/${m.id}/agenda`)
+          // FT27: PUT 503 MSG68 keeps the edit dialog and its values.
+          await fail503(`**/api/meetings/${m.id}/agenda/${pending}`, 'PUT', 'MSG68')
+          await press(qa, row(qa, title).getByRole('button', { name: `Sửa: ${title}` }))
+          const edit = dialog(qa, 'Sửa nội dung')
+          await edit.getByPlaceholder('VD: Dự toán ngân sách năm 2027').fill(`${title} (sửa lỗi)`)
+          await edit.getByRole('button', { name: 'Lưu' }).click()
+          await qa.expect(edit.getByText(notSaved)).toBeVisible()
+          await qa.expect(edit.getByPlaceholder('VD: Dự toán ngân sách năm 2027')).toHaveValue(`${title} (sửa lỗi)`)
+          await qa.expect(edit).toBeVisible()
+          await qa.shot('put-503-hop-o-lai')
+          await edit.getByRole('button', { name: 'Huỷ' }).click()
+          await dialog(qa, 'Bỏ thay đổi chưa lưu?').getByRole('button', { name: 'Bỏ thay đổi' }).click()
+          await qa.page.unroute(`**/api/meetings/${m.id}/agenda/${pending}`)
+          // FT32: PUT order 503 MSG71 — the screen keeps the dragged order, the API keeps the saved one;
+          // reloading shows the saved order again.
+          qa.note('AC34: thêm mục other')
+          const other = await addItem(qa, 'secretary', m.id, 'Mục đứng yên 503')
+          try {
+            const before = (await snapshot(qa, 'secretary', m.id)).items.map((i) => i.id)
+            const moverTitle = itemOf(await snapshot(qa, 'secretary', m.id), pending).title
+            await qa.goto(`/mgmt/meetings/${m.id}?tab=agenda`)
+            await fail503(`**/api/meetings/${m.id}/agenda/order`, 'PUT', 'MSG71')
+            const grip = row(qa, moverTitle).getByRole('button', { name: `Kéo để đổi vị trí: ${moverTitle}` })
+            const from = await grip.boundingBox()
+            await qa.page.mouse.move(from.x + from.width / 2, from.y + from.height / 2)
+            await qa.page.mouse.down()
+            await qa.page.mouse.move(from.x + from.width / 2, from.y + from.height / 2 + 220, { steps: 12 })
+            await qa.page.mouse.up()
+            await qa.expect(panel(qa).locator('li.agenda-item .agenda-title').first()).toContainText(moverTitle, { timeout: 10_000 })
+            await qa.page.unroute(`**/api/meetings/${m.id}/agenda/order`)
+            await qa.expect(toast(qa, notSaved)).toBeVisible()
+            await dismissToasts(qa)
+            qa.expect((await snapshot(qa, 'secretary', m.id)).items.map((i) => i.id)).toEqual(before)
+            const reloaded = qa.page.waitForResponse((r) => r.url().endsWith('/agenda') && r.request().method() === 'GET')
+            await qa.page.reload()
+            await reloaded
+            const firstTitle = itemOf(await snapshot(qa, 'secretary', m.id), before[0]).title
+            await qa.expect(panel(qa).locator('li.agenda-item .agenda-title').first()).toContainText(firstTitle, { timeout: 15_000 })
+            await qa.shot('order-503-tra-lai-thu-tu')
+          } finally {
+            await cleanup(qa, m.id, [other])
+          }
+          // FT47: PUT conclusion 503 MSG274 keeps the editor with the text (needs an InProgress item).
+          qa.note('AC34: thêm mục conc')
+          const mLive = await freshMeeting(qa, 'InProgress', 'lỗi 503 kết luận')
+          const conc = await addItem(qa, 'secretary', mLive.id, 'Mục lỗi kết luận 503')
+          const mid = mLive.id
+          try {
+            const chair = await client(qa, 'chair')
+            qa.expectStatus(await chair.post(`${A(mid)}/${conc}/current`), 200)
+            const snap = await snapshot(qa, 'secretary', mid)
+            const tConc = itemOf(snap, conc).title
+            await qa.goto(`/mgmt/meetings/${mid}?tab=agenda`)
+            await fail503(`**/api/meetings/${mid}/agenda/${conc}/conclusion`, 'PUT', 'MSG274')
+            await press(qa, row(qa, tConc).getByRole('button', { name: 'Ghi kết luận', exact: true }))
+            await row(qa, tConc).getByLabel(`Kết luận: ${tConc}`).fill('Kết luận lỗi 503.')
+            await press(qa, row(qa, tConc).getByRole('button', { name: 'Lưu kết luận', exact: true }))
+            // The conclusion editor reports the failure inline (field-error), not as a toast.
+            await qa.expect(row(qa, tConc).locator('.field-error', { hasText: notSaved })).toBeVisible()
+            await qa.expect(row(qa, tConc).getByLabel(`Kết luận: ${tConc}`)).toHaveValue('Kết luận lỗi 503.')
+            await qa.expect(row(qa, tConc).getByRole('button', { name: 'Lưu kết luận', exact: true })).toBeVisible()
+            await qa.page.unroute(`**/api/meetings/${mid}/agenda/${conc}/conclusion`)
+            await settled(qa)
+            await qa.shot('conclusion-503-giu-editor')
+            await noRawCodes(qa)
+          } finally {
+            await cleanup(qa, mid, [conc]).catch(() => undefined)
+            await transition(qa, 'chair', mid, 'end').catch(() => undefined)
+          }
+        } finally {
+          await cleanup(qa, m.id, [pending]).catch(() => undefined)
+        }
+      },
+    },
+    {
+      id: 'AC39',
+      role: 'chair',
+      title: 'Máy chủ lỗi 503 giữa chừng ở Đang diễn ra: mục giữ trạng thái, nút bấm lại được (AGENDA_FT32, FT38)',
+      steps: [
+        'InProgress: chặn POST current 503 MSG75, bấm Bắt đầu',
+        'Chặn POST complete 503 MSG76, bấm Xong ở mục đang bàn',
+      ],
+      expected:
+        '503: toast "Không lưu được thao tác nghị sự. Vui lòng thử lại."; mục vẫn chờ/đang bàn, nút "Bắt đầu"/"Xong" còn đó bấm lại được; API giữ nguyên',
+      async run(qa) {
+        const notSaved = 'Không lưu được thao tác nghị sự. Vui lòng thử lại.'
+        const fail503 = async (pattern, method, code) => {
+          await qa.page.route(pattern, (route) =>
+            route.request().method() === method
+              ? route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ code, message: notSaved }) })
+              : route.continue(),
+          )
+        }
+        const live2 = await freshMeeting(qa, 'InProgress', 'lỗi 503 trực tiếp')
+        const a = await addItem(qa, 'secretary', live2.id, 'Mục lỗi current')
+        const b = await addItem(qa, 'secretary', live2.id, 'Mục lỗi complete')
+        try {
+          const chair = await client(qa, 'chair')
+          qa.expectStatus(await chair.post(`${A(live2.id)}/${b}/current`), 200)
+          const snap = await snapshot(qa, 'chair', live2.id)
+          const [tA, tB] = [a, b].map((id) => itemOf(snap, id).title)
+          await openAgenda(qa, live2)
+          await qa.expect(panel(qa).locator('li.agenda-item').first()).toBeVisible()
+          // Complete B 503 trước (B đang bàn), rồi hoàn thành thật để test current A.
+          await fail503(`**/api/meetings/${live2.id}/agenda/${b}/complete`, 'POST', 'MSG76')
+          await press(qa, row(qa, tB).getByRole('button', { name: 'Xong' }))
+          await qa.expect(row(qa, tB).getByText('Đã xong')).toHaveCount(0)
+          await qa.expect(toast(qa, notSaved)).toBeVisible()
+          await dismissToasts(qa)
+          await qa.expect(row(qa, tB).getByRole('button', { name: 'Xong' })).toBeVisible()
+          await qa.page.unroute(`**/api/meetings/${live2.id}/agenda/${b}/complete`)
+          qa.expect(itemOf(await snapshot(qa, 'chair', live2.id), b).status).toBe('InProgress')
+          await qa.shot('complete-503-muc-dang-ban-nut-lai')
+          qa.expectStatus(await chair.post(`${A(live2.id)}/${b}/complete`), 200)
+          await fail503(`**/api/meetings/${live2.id}/agenda/${a}/current`, 'POST', 'MSG75')
+          await press(qa, row(qa, tA).getByRole('button', { name: 'Bắt đầu' }))
+          await qa.expect(row(qa, tA).getByText('Đang bàn')).toHaveCount(0)
+          await qa.expect(toast(qa, notSaved)).toBeVisible()
+          await dismissToasts(qa)
+          await qa.expect(row(qa, tA).getByRole('button', { name: 'Bắt đầu' })).toBeVisible()
+          await qa.page.unroute(`**/api/meetings/${live2.id}/agenda/${a}/current`)
+          qa.expect(itemOf(await snapshot(qa, 'chair', live2.id), a).status).toBe('Pending')
+          await settled(qa)
+          await qa.shot('current-503-muc-cho-nut-lai')
+          await noSidewaysScroll(qa)
+          await noRawCodes(qa)
+        } finally {
+          await transition(qa, 'chair', live2.id, 'end').catch(() => undefined)
+        }
+      },
+    },
+    {
+      id: 'AC35',
+      role: 'secretary',
+      title: 'Kéo-thả mục đã xong và sắp xếp từ danh sách cũ (AGENDA_FT24, AGENDA_FT25)',
+      steps: [
+        'InProgress có một mục Đã xong và hai mục chờ; kéo mục Đã xong xuống cuối',
+        'Lấy orderVersion, đổi thứ tự nơi khác (API), PUT order với orderVersion cũ',
+      ],
+      expected:
+        'Kéo-thả: 200 MSG63, mục Đã xong xuống cuối vẫn Done, giờ làm việc giữ nguyên (FT24); orderVersion cũ: 409 MSG143 + toast, danh sách tải lại đúng thứ tự mới (FT25)',
+      async run(qa) {
+        const m = await freshMeeting(qa, 'InProgress', 'sắp xếp đặc biệt')
+        const done = await addItem(qa, 'secretary', m.id, 'Mục đã xong kéo')
+        const p1 = await addItem(qa, 'secretary', m.id, 'Mục chờ một')
+        const p2 = await addItem(qa, 'secretary', m.id, 'Mục chờ hai')
+        const chair = await client(qa, 'chair')
+        const sec = await client(qa, 'secretary')
+        // Chặn realtime từ đầu: màn hình giữ đúng orderVersion đã đọc cho tới khi re-read qua GET.
+        await qa.page.route('**/hubs/**', (route) => route.abort('connectionfailed'))
+        try {
+          qa.expectStatus(await chair.post(`${A(m.id)}/${done}/current`), 200)
+          qa.expectStatus(await chair.post(`${A(m.id)}/${done}/complete`), 200)
+          let snap = await snapshot(qa, 'secretary', m.id)
+          const staleVersion = snap.orderVersion
+          const [tDone, tP1, tP2] = [done, p1, p2].map((id) => itemOf(snap, id).title)
+          await openAgenda(qa, m)
+          // FT24: drag the Done item below the Pending ones on screen.
+          const grip = row(qa, tDone).getByRole('button', { name: `Kéo để đổi vị trí: ${tDone}` })
+          await qa.expect(grip).toBeVisible()
+          const from = await grip.boundingBox()
+          const to = await row(qa, tP2).boundingBox()
+          await qa.page.mouse.move(from.x + from.width / 2, from.y + from.height / 2)
+          await qa.page.mouse.down()
+          await qa.page.mouse.move(from.x + from.width / 2, to.y + to.height * 0.8, { steps: 12 })
+          await qa.page.mouse.up()
+          await qa.expect(panel(qa).locator('li.agenda-item .agenda-title').last()).toContainText(tDone)
+          await settled(qa)
+          await qa.shot('keo-muc-da-xong')
+          snap = await snapshot(qa, 'secretary', m.id)
+          qa.expect(snap.items.at(-1).id).toBe(done)
+          qa.expect(itemOf(snap, done).status).toBe('Done')
+          qa.expect(itemOf(snap, done).actualEndedAt).toBeTruthy()
+          // FT25: reorder from a stale list is refused and the list reloads.
+          // staleVersion was read before the drag above, so it is already old here.
+          // Mimic the second browser without realtime: block the hub, reorder via API,
+          // then drag on screen — the screen sends the old orderVersion and gets 409 + toast.
+          await qa.page.route('**/hubs/**', (route) => route.abort('connectionfailed'))
+          try {
+            const fresh = await snapshot(qa, 'secretary', m.id)
+            const all = fresh.items.map((i) => i.id)
+            const rotated = [...all.slice(1), all[0]]
+            const okRot = await sec.put(`${A(m.id)}/order`, { orderVersion: fresh.orderVersion, orderedItemIds: rotated })
+            qa.expectStatus(okRot, 200)
+            const dragFailed = qa.page
+              .waitForResponse((r) => r.url().endsWith('/agenda/order') && r.request().method() === 'PUT')
+              .catch(() => null)
+            const grip2 = row(qa, tP1).getByRole('button', { name: `Kéo để đổi vị trí: ${tP1}` })
+            const from2 = await grip2.boundingBox()
+            const to2 = await row(qa, tP2).boundingBox()
+            await qa.page.mouse.move(from2.x + from2.width / 2, from2.y + from2.height / 2)
+            await qa.page.mouse.down()
+            await qa.page.mouse.move(from2.x + from2.width / 2, to2.y + to2.height * 0.8, { steps: 12 })
+            await qa.page.mouse.up()
+            const putRes = await dragFailed
+            qa.expect(putRes?.status?.(), 'PUT /agenda/order never answered').toBe(409)
+            await qa.expect(toast(qa, 'Chương trình nghị sự đã thay đổi. Vui lòng tải lại.')).toBeVisible()
+            await qa.expect(panel(qa).locator('li.agenda-item .agenda-title').first()).toContainText(rotated[0] ? itemOf(await snapshot(qa, 'secretary', m.id), rotated[0]).title : '')
+            await settled(qa)
+            await qa.shot('stale-order-409-reload')
+            await noRawCodes(qa)
+          } finally {
+            await qa.page.unroute('**/hubs/**').catch(() => undefined)
+          }
+        } finally {
+          await transition(qa, 'chair', m.id, 'end').catch(() => undefined)
+        }
+      },
+    },
+    {
+      id: 'AC36',
+      role: 'secretary',
+      title: 'Hai người sắp xếp cùng lúc: người sau bị 409 và thấy thứ tự của người trước (AGENDA_FT26)',
+      steps: ['Nháp hai mục; thuky@ mở tab Nội dung cuộc họp', 'Đảo thứ tự qua API (như người khác), kéo-thả trên màn hình'],
+      expected: 'Kéo-thả trả 409 MSG143 + toast "Chương trình nghị sự đã thay đổi. Vui lòng tải lại."; danh sách tải lại đúng thứ tự của API',
+      async run(qa) {
+        const m = await freshMeeting(qa, 'Draft', 'sắp xếp hai người')
+        const a = await addItem(qa, 'secretary', m.id, 'Mục A hai người')
+        const b = await addItem(qa, 'secretary', m.id, 'Mục B hai người')
+        const sec = await client(qa, 'secretary')
+        // Block the realtime hub: without it the screen keeps the old orderVersion after the API reorder below.
+        await qa.page.route('**/hubs/**', (route) => route.abort('connectionfailed'))
+        try {
+          const snap = await snapshot(qa, 'secretary', m.id)
+          const [tA, tB] = [itemOf(snap, a).title, itemOf(snap, b).title]
+          await openAgenda(qa, m)
+          // Someone else reorders first (the screen still holds the old orderVersion).
+          qa.expectStatus(await sec.put(`${A(m.id)}/order`, { orderVersion: snap.orderVersion, orderedItemIds: [b, a] }), 200)
+          const failed = qa.page
+            .waitForResponse((r) => r.url().endsWith('/agenda/order') && r.request().method() === 'PUT')
+            .catch(() => null)
+          const grip = row(qa, tA).getByRole('button', { name: `Kéo để đổi vị trí: ${tA}` })
+          const from = await grip.boundingBox()
+          const to = await row(qa, tB).boundingBox()
+          await qa.page.mouse.move(from.x + from.width / 2, from.y + from.height / 2)
+          await qa.page.mouse.down()
+          await qa.page.mouse.move(from.x + from.width / 2, to.y + to.height * 0.8, { steps: 12 })
+          await qa.page.mouse.up()
+          const putRes = await failed
+          qa.expect(putRes?.status?.(), 'PUT /agenda/order never answered').toBe(409)
+          await qa.expect(toast(qa, 'Chương trình nghị sự đã thay đổi. Vui lòng tải lại.')).toBeVisible()
+          await qa.expect(panel(qa).locator('li.agenda-item .agenda-title').first()).toContainText(tB, { timeout: 10_000 })
+          await settled(qa)
+          await qa.shot('hai-nguoi-sap-xep-409')
+          await noRawCodes(qa)
+          await qa.page.unroute('**/hubs/**')
+        } finally {
+          await transition(qa, 'chair', m.id, 'end').catch(() => undefined)
+        }
+      },
+    },
+    {
+      id: 'AC37',
+      role: 'member',
+      title: 'Mất quyền xem giữa chừng: toàn trang về 404, backend 404 (AGENDA_FT05 — case đòi câu trong tab, sản phẩm 404 toàn trang)',
+      steps: ['Thành viên mở tab Nội dung cuộc họp của cuộc họp Đã công bố', 'Chủ toạ gỡ Thành viên khỏi cuộc họp (API)'],
+      expected: 'GET agenda 404; realtime đưa toàn trang về "Không tìm thấy trang" (không phải câu trong tab — case cũ, đề nghị BA sửa)',
+      async run(qa) {
+        const u = await users(qa)
+        const { request: playwrightRequest } = await import('@playwright/test')
+        const chairCtx = await playwrightRequest.newContext()
+        let m = null
+        try {
+          m = await freshMeeting(qa, 'Published', 'mất quyền xem')
+          await openAgenda(qa, m)
+          await qa.expect(panel(qa)).toBeVisible()
+          const base = new URL(qa.page.url()).origin
+          const login = await chairCtx.post(`${base}/api/auth/login`, {
+            data: { email: u.chair.email, password: process.env.QA_PASSWORD ?? 'TrustCabinet@2026' },
+          })
+          qa.expect(login.status(), 'chair login').toBe(200)
+          const chairToken = (await login.json()).accessToken
+          const chead = { Authorization: `Bearer ${chairToken}` }
+          const parts = await chairCtx.get(`${base}/api/meetings/${m.id}/participants?pageSize=100`, { headers: chead })
+          const body = await parts.json()
+          const memberPart = body.items.find((p) => p.userId === u.member.id)
+          const del = await chairCtx.delete(`${base}/api/meetings/${m.id}/participants/${memberPart.id}`, {
+            headers: { Authorization: `Bearer ${chairToken}`, 'If-Match': parts.headers()['etag'] ?? `"participants-${body.revision}"` },
+          })
+          qa.expect(del.status(), `gỡ thành viên: ${await del.text()}`).toBe(200)
+          const afterGet = await (await client(qa, 'member')).get(A(m.id))
+          qa.note(`GET agenda sau khi gỡ: HTTP ${afterGet.status} ${JSON.stringify(afterGet.body).slice(0, 200)}`)
+          qa.expect(afterGet.status).toBe(404)
+          // Realtime đưa toàn trang về 404 (route guard theo quyền đọc cuộc họp), không phải câu trong tab.
+          await qa.expect(qa.page.getByRole('heading', { name: 'Không tìm thấy trang' })).toBeVisible({ timeout: 20_000 })
+          await settled(qa)
+          await qa.shot('mat-quyen-xem-404-toan-trang')
+          await noRawCodes(qa)
+        } finally {
+          await chairCtx.dispose().catch(() => undefined)
+          await transition(qa, 'chair', m.id, 'end').catch(() => undefined)
+        }
+      },
+    },
+    {
+      id: 'AC38',
+      role: 'member',
+      title: 'Đang mở chương trình thì cuộc họp kết thúc: màn hình khoá mà không cần tải lại (AGENDA_FT37)',
+      steps: ['thanhvien@ mở tab Nội dung cuộc họp của cuộc họp Đang diễn ra', 'Chủ toạ kết thúc cuộc họp (API)'],
+      expected: 'Mục đang bàn thành "Đã xong" ngay trên trang của Thành viên mà không tải lại; nút "Thêm/Bắt đầu/Xong" biến mất',
+      async run(qa) {
+        const m = await freshMeeting(qa, 'InProgress', 'kết thúc trực tiếp')
+        const live = await addItem(qa, 'secretary', m.id, 'Mục kết thúc trực tiếp')
+        const chair = await client(qa, 'chair')
+        try {
+          qa.expectStatus(await chair.post(`${A(m.id)}/${live}/current`), 200)
+          const snap = await snapshot(qa, 'member', m.id)
+          const title = itemOf(snap, live).title
+          await openAgenda(qa, m)
+          await qa.expect(row(qa, title).getByText('Đang bàn')).toBeVisible()
+          qa.expectStatus(await chair.post(`/api/meetings/${m.id}/transitions`, { action: 'End' }), 200)
+          await qa.expect(row(qa, title).getByText('Đã xong')).toBeVisible({ timeout: 15_000 })
+          await qa.expect(panel(qa).getByRole('button', { name: 'Thêm nội dung' })).toHaveCount(0)
+          await qa.expect(panel(qa).getByRole('button', { name: /^(Bắt đầu|Xong)$/ })).toHaveCount(0)
+          let navigations = 0
+          qa.page.on('framenavigated', (f) => f === qa.page.mainFrame() && navigations++)
+          await qa.page.waitForTimeout(2000)
+          qa.expect(navigations, 'the page reloaded').toBe(0)
+          await settled(qa)
+          await qa.shot('ket-thuc-tu-khoa')
+          await noSidewaysScroll(qa)
+        } finally {
+          await transition(qa, 'chair', m.id, 'end').catch(() => undefined)
+        }
+      },
+    },
+    {
+      id: 'AC40',
+      role: 'secretary',
+      title: 'Không có tay nắm kéo với một mục duy nhất; Thành viên cũng không thấy (AGENDA_FT23)',
+      steps: ['Cuộc họp Nháp một mục; thuky@ mở tab Nội dung cuộc họp', 'PUT order một mục (API)', 'Member xem Published (AC10 đã phủ)'],
+      expected: 'Secretary không thấy nút "Kéo để đổi vị trí"; API 400 MSG143; Member không thấy tay nắm (AC10)',
+      async run(qa) {
+        const sec = await client(qa, 'secretary')
+        const m = await freshMeeting(qa, 'Draft', 'một mục duy nhất')
+        const only = await addItem(qa, 'secretary', m.id, 'Mục duy nhất')
+        try {
+          const snap = await snapshot(qa, 'secretary', m.id)
+          const title = itemOf(snap, only).title
+          await openAgenda(qa, m)
+          await qa.expect(panel(qa).locator('li.agenda-item')).toHaveCount(1)
+          await qa.expect(panel(qa).getByRole('button', { name: /Kéo để đổi vị trí/ })).toHaveCount(0)
+          qa.note('Nhánh Thành viên: AC10 kiểm Member không thấy tay nắm trên Published nhiều mục.')
+          await settled(qa)
+          await qa.shot('mot-muc-khong-tay-nam')
+          await noSidewaysScroll(qa)
+          const c = checker(qa)
+          c.check('order một mục', await sec.put(`${A(m.id)}/order`, { orderVersion: snap.orderVersion, orderedItemIds: [only] }), 400, 'MSG143')
+          c.done()
+          await noRawCodes(qa)
+        } finally {
+          await cleanup(qa, m.id, [only]).catch(() => undefined)
+        }
+      },
+    },
+    {
+      id: 'AC41',
+      role: 'secretary',
+      title: 'Kéo-thả bằng bàn phím: Space nhấc, mũi tên di chuyển, Space thả, Esc huỷ (AGENDA_FT22)',
+      steps: ['Cuộc họp Nháp ba mục; focus tay nắm mục 3, Space, ArrowUp, Space', 'Focus tay nắm, Space, Esc'],
+      expected: 'Thông báo đọc màn hình nhắc tới mục ("... đang ở vị trí 2 trên 3.", "Đã chuyển ... tới vị trí 2 trên 3."); thứ tự mới lưu (API), tải lại giữ; Esc: "Đã huỷ, ... giữ nguyên vị trí.", thứ tự không đổi; gợi ý "Nhấn phím cách để nhấc nội dung lên..." có trong trang',
+      async run(qa) {
+        const m = await freshMeeting(qa, 'Draft', 'kéo bằng bàn phím')
+        const ids = []
+        for (const t of ['Mục bàn phím một', 'Mục bàn phím hai', 'Mục bàn phím ba']) ids.push(await addItem(qa, 'secretary', m.id, t))
+        try {
+          const snap = await snapshot(qa, 'secretary', m.id)
+          const [t1, t2, t3] = ids.map((id) => itemOf(snap, id).title)
+          await openAgenda(qa, m)
+          const live = qa.page.locator('[aria-live="assertive"]')
+          const grip = row(qa, t3).getByRole('button', { name: `Kéo để đổi vị trí: ${t3}` })
+          await grip.focus()
+          await qa.page.keyboard.press('Space')
+          // Thông báo "Đã chọn..." hiện thoáng qua rồi bị ghi đè bởi dragOver: chỉ cần live region nhắc tới mục.
+          await qa.expect(live).toContainText(`"${t3}"`, { timeout: 10_000 })
+          await qa.page.keyboard.press('ArrowUp')
+          await qa.expect(live).toContainText(`"${t3}" đang ở vị trí 2 trên 3.`, { timeout: 10_000 })
+          await settled(qa)
+          await qa.shot('ban-phim-dang-nhac')
+          await qa.page.keyboard.press('Space')
+          await qa.expect(live).toContainText(`Đã chuyển "${t3}" tới vị trí 2 trên 3.`, { timeout: 10_000 })
+          await qa.expect(panel(qa).locator('li.agenda-item .agenda-title').nth(1)).toContainText(t3)
+          const after = (await snapshot(qa, 'secretary', m.id)).items.map((i) => i.title)
+          qa.expect(after[1]).toBe(t3)
+          await settled(qa)
+          await qa.shot('ban-phim-da-tha')
+          // Esc huỷ: nhấc rồi huỷ, thứ tự giữ nguyên.
+          const grip2 = row(qa, t3).getByRole('button', { name: `Kéo để đổi vị trí: ${t3}` })
+          await grip2.focus()
+          await qa.page.keyboard.press('Space')
+          await qa.expect(live).toContainText(`"${t3}"`, { timeout: 10_000 })
+          await qa.page.keyboard.press('Escape')
+          await qa.expect(live).toContainText(`Đã huỷ, "${t3}" giữ nguyên vị trí.`, { timeout: 10_000 })
+          const kept = (await snapshot(qa, 'secretary', m.id)).items.map((i) => i.title)
+          qa.expect(kept).toEqual(after)
+          await qa.expect(qa.page.getByText('Nhấn phím cách để nhấc nội dung lên', { exact: false })).toHaveCount(1)
+          await settled(qa)
+          await qa.shot('ban-phim-huy')
+          await noSidewaysScroll(qa)
+          await noRawCodes(qa)
+        } finally {
+          await cleanup(qa, m.id, ids).catch(() => undefined)
+        }
       },
     },
   ],

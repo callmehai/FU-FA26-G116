@@ -20,7 +20,7 @@ cách chia việc: [AGENTS.md](../AGENTS.md).
 Sinh lại, tại thư mục gốc repository (đóng Excel trước):
 
 ```powershell
-python scripts/test_reports/integration_cases.py build   # 5.2.2; thêm --with-ui để sinh cả 5.2
+python scripts/test_reports/integration_cases.py build   # sinh cả 5.2 và 5.2.2
 python scripts/test_reports/unit_cases.py build          # 5.1
 ```
 

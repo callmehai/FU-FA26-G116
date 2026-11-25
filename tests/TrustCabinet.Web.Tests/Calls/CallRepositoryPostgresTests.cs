@@ -3,6 +3,7 @@ using Npgsql;
 using TrustCabinet.Application.Calls;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
+using TrustCabinet.Domain.Participants;
 using TrustCabinet.Infrastructure;
 using TrustCabinet.Infrastructure.Calls;
 
@@ -126,13 +127,16 @@ public sealed class CallRepositoryPostgresTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task Room_access_needs_an_invitation_that_was_not_delegated_and_an_active_account()
+    public async Task Room_access_needs_a_current_invitation_and_an_active_account()
     {
         var (meeting, users) = await SeedAsync(MeetingStatus.InProgress, MeetingMode.Hybrid, 4);
-        (await _db.MeetingParticipants.SingleAsync(p => p.UserId == users[1].Id)).Response = InvitationResponse.Delegated;
+        var removed = await _db.MeetingParticipants.SingleAsync(p => p.UserId == users[1].Id);
+        removed.AssignmentStatus = AssignmentStatus.Removed;
+        removed.RemovedAt = DateTimeOffset.UtcNow;
+        removed.RemovedById = users[0].Id;
         (await _db.Users.SingleAsync(u => u.Id == users[2].Id)).IsActive = false;
-        // A delegation target set without the Delegated response still hands the seat away.
-        (await _db.MeetingParticipants.SingleAsync(p => p.UserId == users[3].Id)).DelegatedToUserId = users[0].Id;
+        // A guest-role seat is not a current member seat.
+        (await _db.MeetingParticipants.SingleAsync(p => p.UserId == users[3].Id)).Role = MeetingRole.Guest;
         await _db.SaveChangesAsync();
         var calls = new CallRepository(_db);
 

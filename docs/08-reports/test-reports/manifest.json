@@ -2,18 +2,18 @@
   "project": "TrustCabinet",
   "projectCode": "SEP490-G116",
   "date": "2026-11-25",
-  "generatedAt": "2026-11-25T07:15:26.470347+00:00",
-  "commit": "545c6f7722c694b4c89b0c3163492bc940f6cafc",
-  "sourceDigest": "8485c443d2c5b172800f3d6d654ef992cabab3f3256659262d18ffa3678cf5a6",
+  "generatedAt": "2026-11-25T08:06:55.873425+00:00",
+  "commit": "1dcc422762803a4e0e27038fd2dc226c9ab59562",
+  "sourceDigest": "923d867f412acdd1f4af49f1de1ae67fa8a3dd759067886e116f3254c21d57e5",
   "evidenceVerified": false,
-  "testMethods": 2791,
+  "testMethods": 3099,
   "classification": {
-    "UNIT": 1759,
-    "API": 757,
-    "INTEGRATION": 275
+    "UNIT": 1969,
+    "API": 839,
+    "INTEGRATION": 291
   },
   "status": {
-    "NotRun": 2791
+    "NotRun": 3099
   },
   "manualCases": {
     "UI": 20,
@@ -26,7 +26,7 @@
   },
   "tocEntriesRefreshed": 26,
   "files": {
-    "Report5.0_Test_Documentation.docx": "1971612cd1b89a8c14f0c982a8a163195bca6d102080b82fb17ec8a70e42b923",
-    "Report5.5_Acceptance_Test.xlsx": "0ae092f68b90b9cea83ded64053d19edebdd1e72c48345fd732cb4fff0da9200"
+    "Report5.0_Test_Documentation.docx": "5c6eb010a2778bbe9e2cc42f0a4246789ae937bb7609c0808977c745e941bee0",
+    "Report5.5_Acceptance_Test.xlsx": "010a6cd7b9e61f2c12ea3425d26d3b07ba0fececf9cc3b935d67312db1a7336b"
   }
 }

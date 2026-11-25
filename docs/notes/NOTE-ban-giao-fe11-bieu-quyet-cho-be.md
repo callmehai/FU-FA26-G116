@@ -9,7 +9,7 @@ Ngày 28/10/2026. Ticket: **SCRUM-96** (biểu quyết + UC-74). Nhánh thiết 
 2. [ERD mục tiêu](../02-design/02-erd.md) — `VotingSession`, `VoteEligibleVoter`, `VoteDocument`,
    `VoteReceipt`/`VoteChoice`, `DocumentReadConfirmation`.
 3. Sequence [voting-management](../06-sequencediagram/voting-management/README.md) (UC-52a…57, 76a/b)
-   và [UC-74](../06-sequencediagram/document-management/UC74_ConfirmDocumentRead.txt).
+   và [UC-74](../06-sequencediagram/document-management/UC42_ConfirmDocumentRead.txt).
 4. Class diagram [FE-11](../07-classdiagram/feature-11-voting-management-class-diagram.drawio) +
    [README §6f](../07-classdiagram/README.md).
 5. State machine [SM-08](../10-statemachine/SM-08_Voting.drawio),

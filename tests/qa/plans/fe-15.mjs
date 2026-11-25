@@ -7,7 +7,7 @@
 // Other QA agents create meetings in parallel, so a number on a seed account's report is only ever compared with the API
 // response the page itself received, or with the same API read just before. Exact figures are checked on an account of
 // the plan's own, which no other agent knows about:
-// - "[QA] FE-15 người xem báo cáo" (qa-fe15-reporter@trustcabinet.local, built-in role Thư ký) organizes every FE-15
+// - "[QA] FE-15 người xem báo cáo" (qa-fe15-reporter@trustcabinet.local, built-in role Thành viên (ADR-0075 bỏ vai trò Thư ký)) organizes every FE-15
 //   meeting, all on one day 15 weeks from today (Vietnam time), with chutoa@ as Chair and approver, itself as Secretary
 //   and thanhvien@ as Member: one meeting in each of the 8 statuses, mixed sensitivities, varied hours; the Ended one
 //   has attendance taken (Chair and Secretary present, Member absent). Reused across runs, never cancelled.
@@ -164,7 +164,7 @@ async function reporterMeetings(qa, month) {
 }
 
 async function createMeeting(qa, spec) {
-  await ensureAccount(qa, REPORTER, 'FE-15 người xem báo cáo', 'Thư ký')
+  await ensureAccount(qa, REPORTER, 'FE-15 người xem báo cáo', 'Thành viên')
   const rep = await me(qa, REPORTER)
   const chair = await me(qa, 'chair')
   const member = await me(qa, 'member')
@@ -553,12 +553,12 @@ export default {
       role: 'admin',
       title: 'Chuẩn bị dữ liệu [QA] FE-15 (qua API)',
       steps: [
-        `Tìm hoặc tạo tài khoản ${REPORTER} (vai trò Thư ký)`,
+        `Tìm hoặc tạo tài khoản ${REPORTER} (vai trò Thành viên)`,
         `Tài khoản đó tổ chức 8 cuộc họp [QA] FE-15 ngày ${FAR}, mỗi cuộc một trạng thái; cuộc Đã kết thúc có điểm danh 2 có mặt, 1 vắng`,
       ],
       expected: 'Đủ 8 cuộc họp đúng trạng thái, chutoa@ là Chủ toạ và người duyệt, thanhvien@ là Thành viên',
       async run(qa) {
-        await ensureAccount(qa, REPORTER, 'FE-15 người xem báo cáo', 'Thư ký')
+        await ensureAccount(qa, REPORTER, 'FE-15 người xem báo cáo', 'Thành viên')
         await prepareAll(qa)
         for (const s of STATUSES) qa.note(`${s}: ${made[s].title} · ${made[s].sensitivity} · ${made[s].id}`)
       },
@@ -736,8 +736,9 @@ export default {
         'Mở /mgmt/reports trong tháng đó, Nhóm theo = Trạng thái cuộc họp (?groupBy=status)',
         'Chọn Dữ liệu = Người dự họp, Nhóm theo = Điểm danh',
         'Chọn Dữ liệu = Cuộc họp, Nhóm theo = Từng cuộc họp, Hiển thị = Tất cả',
+        'Chọn Hiển thị = 5 nhóm đầu, tải lại trang (RPT_FT16)',
       ],
-      expected: `Bảng theo trạng thái: mỗi trạng thái bằng số đếm từ danh sách cuộc họp (cùng luật đọc, BR-149, BR-150), mỗi trạng thái ≥ 1; Tỷ lệ có mặt = trung bình Có mặt / số thành phần của các cuộc Đã kết thúc có điểm danh (BR-151); Giờ họp = tổng giờ thực tế của cuộc Đã kết thúc; dải số: Đã họp, Sắp họp, Đã huỷ đúng danh sách, Thông qua "0 / 0 biểu quyết", Biên bản ban hành 0 (chưa ban hành biên bản nào); Người dự họp theo điểm danh: Có mặt = số người có mặt, Vắng = số người vắng của cuộc Đã kết thúc, Lượt mời = 3 × số cuộc họp; Từng cuộc họp: đúng các cuộc họp của tài khoản, tên là link /mgmt/meetings/{id}, ẩn 3 cột luôn 1/0; màn khớp API; không cuộn ngang`,
+      expected: `Bảng theo trạng thái: mỗi trạng thái bằng số đếm từ danh sách cuộc họp (cùng luật đọc, BR-149, BR-150), mỗi trạng thái ≥ 1; Tỷ lệ có mặt = trung bình Có mặt / số thành phần của các cuộc Đã kết thúc có điểm danh (BR-151); Giờ họp = tổng giờ thực tế của cuộc Đã kết thúc; dải số: Đã họp, Sắp họp, Đã huỷ đúng danh sách, Thông qua "0 / 0 biểu quyết", Biên bản ban hành 0 (chưa ban hành biên bản nào); Người dự họp theo điểm danh: Có mặt = số người có mặt, Vắng = số người vắng của cuộc Đã kết thúc, Lượt mời = 3 × số cuộc họp; Từng cuộc họp: đúng các cuộc họp của tài khoản, tên là link /mgmt/meetings/{id}, ẩn 3 cột luôn 1/0; Hiển thị 5 nhóm đầu cắt còn 5 dòng kèm "5 / <n> nhóm", URL giữ top=5, tải lại vẫn bảng đó; màn khớp API; không cuộn ngang`,
       async run(qa) {
         await prepareAll(qa)
         // The plan's meetings are reused across runs, so they sit in the month of the day they were first made.
@@ -821,6 +822,31 @@ export default {
         qa.expect(links.sort()).toEqual(ids.map((id) => `/mgmt/meetings/${id}`).sort())
         await settled(qa)
         await qa.shot('tung-cuoc-hop', { fullPage: true })
+        // RPT_FT16: the display lives in the URL and survives a reload; a long grouping is cut with a count.
+        await pick(qa, 'Hiển thị', '5 nhóm đầu')
+        await qa.expect(qa.page).toHaveURL(/top=5/)
+        const cut = await lastReport(
+          qa,
+          tables,
+          (x) => x.params.entity === 'meetings' && x.params.groupBy === 'meeting' && x.params.top === '5',
+        )
+        await figuresReady(qa)
+        await expectTableMatches(qa, cut)
+        qa.expect(cut.rows.length, `the meeting list of ${list.length} is not cut to 5`).toBe(5)
+        await settled(qa)
+        await qa.shot('nam-nhom-dau', { fullPage: true })
+        await qa.page.reload()
+        const reloaded = await lastReport(
+          qa,
+          tables,
+          (x) => x.params.entity === 'meetings' && x.params.groupBy === 'meeting' && x.params.top === '5',
+        )
+        await figuresReady(qa)
+        await expectTableMatches(qa, reloaded)
+        qa.expect(
+          reloaded.rows.map((r) => r.key),
+          'the table changed across a reload',
+        ).toEqual(cut.rows.map((r) => r.key))
         await noSidewaysScroll(qa)
         await noRawCodes(qa)
       },
@@ -828,16 +854,17 @@ export default {
     {
       id: 'AC5',
       role: REPORTER,
-      title: `Tạo thêm một cuộc họp ngày ${FAR}: báo cáo của người tổ chức tăng đúng 1 (tháng, Nháp, Mật); Quản trị và Thành viên không thấy thay đổi; huỷ đi thì chuyển Nháp → Đã huỷ, tổng giữ nguyên`,
+      title: `Tạo thêm một cuộc họp ngày ${FAR}: báo cáo của người tổ chức tăng đúng 1 (tháng, Nháp, Mật); Quản trị và Thành viên không thấy thay đổi; huỷ đi thì chuyển Nháp → Đã huỷ, tổng giữ nguyên; dải số trên màn của mỗi người khớp báo cáo API của chính họ`,
       steps: [
         `Đọc báo cáo ${FAR_MONTH} của ${REPORTER}, quantri@, thanhvien@`,
         `${REPORTER} tạo "[QA] FE-15 đếm thêm …" (Mật, Nháp) ngày ${FAR} 19:30, đọc lại cả ba`,
         'Huỷ cuộc họp đó, đọc lại báo cáo người tổ chức',
+        'Mở Báo cáo tháng đó với tư cách người tổ chức rồi Thành viên: dải số của mỗi người khớp báo cáo API của chính họ (RPT_FT10)',
       ],
       expected:
-        'Người tổ chức: total +1, tháng +1, Draft +1, Secret +1, các nhóm khác giữ nguyên. Quản trị (All-in-one, không tham dự) và Thành viên (chưa công bố): không đổi — Quản trị không thấy toàn hệ thống (BR-149, BR-150, PO Q1). Sau huỷ: Draft −1, Cancelled +1, total giữ nguyên (BR-149, BR-150: đã huỷ vẫn đếm)',
+        'Người tổ chức: total +1, tháng +1, Draft +1, Secret +1, các nhóm khác giữ nguyên. Quản trị (All-in-one, không tham dự) và Thành viên (chưa công bố): không đổi — Quản trị không thấy toàn hệ thống (BR-149, BR-150, PO Q1). Sau huỷ: Draft −1, Cancelled +1, total giữ nguyên (BR-149, BR-150: đã huỷ vẫn đếm). Trên màn: dải số của người tổ chức và của Thành viên đều khớp báo cáo API đọc bằng chính tài khoản đó — Nháp của người tổ chức không vào dải số của Thành viên',
       async run(qa) {
-        await ensureAccount(qa, REPORTER, 'FE-15 người xem báo cáo', 'Thư ký')
+        await ensureAccount(qa, REPORTER, 'FE-15 người xem báo cáo', 'Thành viên')
         const read = (who) => report(qa, who, FAR_MONTH, FAR_MONTH)
         const diff = (a, b) => {
           const out = { total: b.total - a.total }
@@ -863,6 +890,16 @@ export default {
         const dc = diff(after.rep, cancelled)
         if (JSON.stringify(dc) !== JSON.stringify({ Draft: -1, Cancelled: 1 })) wrong.push(`cancelling moved the organizer by ${JSON.stringify(dc)}`)
         qa.expect(wrong, wrong.join('\n')).toEqual([])
+        // RPT_FT10 on the new screen: the band counts only what the viewer may read.
+        for (const who of [REPORTER, 'member']) {
+          await qa.signIn(who)
+          await qa.goto(`/mgmt/reports?from=${FAR_MONTH}&to=${FAR_MONTH}`)
+          await figuresReady(qa)
+          await expectBandMatches(qa, await read(who))
+        }
+        await settled(qa)
+        await qa.shot('dai-so-theo-nguoi-xem')
+        await noSidewaysScroll(qa)
       },
     },
 
@@ -912,7 +949,7 @@ export default {
       id: 'AC7',
       role: 'secretary',
       devices: ['desktop', 'phone'],
-      title: 'Khoảng sai trên màn (EX-1): tháng bắt đầu sau tháng kết thúc, hoặc quá 24 tháng → MSG463 dưới thanh chọn, không gọi API, khoá Xuất Excel; tháng sai dạng trên URL bị bỏ qua',
+      title: 'Khoảng sai trên URL (EX-1) → MSG463 dưới thanh chọn, không gọi API, khoá Xuất Excel; ô chọn không bao giờ để lại khoảng sai (đầu kia chạy theo, UC-79a); tháng sai dạng trên URL bị bỏ qua',
       steps: [
         'thuky@ mở /mgmt/reports?from=2026-06&to=2026-01',
         `Mở /mgmt/reports?from=${addMonths(NOW_MONTH, -24)}&to=${NOW_MONTH} (25 tháng)`,
@@ -1064,8 +1101,9 @@ export default {
         'Chọn Dữ liệu = Người dự họp, Nhóm theo = Điểm danh, Trạng thái cuộc họp = Đã kết thúc',
         'Bấm Xuất Excel',
         'Quản trị đọc nhật ký hệ thống, sự kiện report.exported',
+        'Lọc Hình thức = Trực tiếp rồi Xoá lọc; lọc Hình thức = Trực tuyến (không khớp gì) rồi Xoá bộ lọc (RPT_FT17)',
       ],
-      expected: `Tệp bao-cao-thanh-phan_<tháng>_<tháng>.xlsx, sheet "Người dự họp": khoảng "<tháng> – <tháng>", Nhóm theo "Điểm danh", Bộ lọc "Trạng thái cuộc họp: Đã kết thúc", thời điểm xuất (GMT+7); hàng tiêu đề #, Điểm danh, Lượt mời, Có mặt, Vắng, Tỷ lệ có mặt; từng nhóm đúng hạng, nhãn và số API trang nhận, Tổng đúng; không có tiêu đề cuộc họp; nhật ký có đúng một dòng "Xuất báo cáo" mới của tài khoản đó, objectType Report, details report=participants, groupBy=attendance, filters status=Ended (BR-010)`,
+      expected: `Tệp bao-cao-thanh-phan_<tháng>_<tháng>.xlsx, sheet "Người dự họp": khoảng "<tháng> – <tháng>", Nhóm theo "Điểm danh", Bộ lọc "Trạng thái cuộc họp: Đã kết thúc", thời điểm xuất (GMT+7); hàng tiêu đề #, Điểm danh, Lượt mời, Có mặt, Vắng, Tỷ lệ có mặt; từng nhóm đúng hạng, nhãn và số API trang nhận, Tổng đúng; không có tiêu đề cuộc họp; nhật ký có đúng một dòng "Xuất báo cáo" mới của tài khoản đó, objectType Report, details report=participants, groupBy=attendance, filters status=Ended (BR-010). Lọc Hình thức = Trực tiếp thu hẹp bảng rồi Xoá lọc trả lại bảng đầy đủ (URL hết mode); Hình thức = Trực tuyến cho "Không có dữ liệu khớp bộ lọc." kèm Xoá bộ lọc, bấm thì bảng trở lại`,
       async run(qa) {
         await prepareAll(qa)
         const FAR_MONTH = planMonth()
@@ -1106,6 +1144,55 @@ export default {
         qa.note(`Tệp: ${file.name}, ${file.buf.length} byte, ${xlsx.rows.length} dòng có dữ liệu`)
         qa.expect(wrong, wrong.join('\n')).toEqual([])
         await expectAuditRow(qa, REPORTER, FAR_MONTH, FAR_MONTH, since, { report: 'participants', groupBy: 'attendance', filters: 'status=Ended' })
+        // RPT_FT17: a filter narrows the query and clears again; a filter that matches
+        // nothing shows its own empty line with its own clear button. Every plan meeting
+        // is InPerson, so mode=Online matches nothing on any database. The watch arrays
+        // are cleared before each step: clearing a filter removes a parameter, so an old
+        // response would match the next wait.
+        await pick(qa, 'Hình thức', 'Trực tiếp')
+        await qa.expect(qa.page).toHaveURL(/mode=InPerson/)
+        tables.length = 0
+        const inPerson = await lastReport(
+          qa,
+          tables,
+          (x) => x.params.entity === 'participants' && x.params.groupBy === 'attendance' && x.params.mode === 'InPerson',
+        )
+        await figuresReady(qa)
+        await expectTableMatches(qa, inPerson)
+        await press(qa, queryCard(qa).getByRole('button', { name: /^Xoá lọc$/ }))
+        await qa.expect(qa.page).not.toHaveURL(/mode=/)
+        tables.length = 0
+        const unfiltered = await lastReport(
+          qa,
+          tables,
+          (x) => x.params.entity === 'participants' && x.params.groupBy === 'attendance',
+        )
+        await figuresReady(qa)
+        await expectTableMatches(qa, unfiltered)
+        await pick(qa, 'Hình thức', 'Trực tuyến')
+        await qa.expect(qa.page).toHaveURL(/mode=Online/)
+        tables.length = 0
+        const empty = await lastReport(
+          qa,
+          tables,
+          (x) => x.params.entity === 'participants' && x.params.groupBy === 'attendance' && x.params.mode === 'Online',
+        )
+        await figuresReady(qa)
+        qa.expect(empty.total.count).toBe(0)
+        await qa.expect(queryCard(qa).getByText('Không có dữ liệu khớp bộ lọc.')).toBeVisible()
+        await press(qa, queryCard(qa).getByRole('button', { name: 'Xoá bộ lọc' }))
+        await qa.expect(qa.page).not.toHaveURL(/mode=/)
+        tables.length = 0
+        const restored = await lastReport(
+          qa,
+          tables,
+          (x) => x.params.entity === 'participants' && x.params.groupBy === 'attendance',
+        )
+        await figuresReady(qa)
+        await expectTableMatches(qa, restored)
+        await settled(qa)
+        await qa.shot('loc-va-xoa-loc')
+        await noSidewaysScroll(qa)
       },
     },
 

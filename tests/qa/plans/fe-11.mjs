@@ -8,11 +8,18 @@
 // docs/03-api/15-bieu-quyet.md (§2 permissions by state, §7 as built), the message catalogue (MSG205–236, 252–255,
 // 265–270) and the Jira comments on SCRUM-28 / SCRUM-96.
 //
+// AC23-AC31 (Round 1 UI, 2026-11-22): the list on one screen (AC23), empty (AC24), removed from the meeting (AC25),
+// list read failure injected with page.route (AC26), create on an Approved meeting (AC27), storage full simulated by
+// the library response (AC28), ballot failure injected (AC29), cancelling the close dialog (AC30), an abandoned
+// conclusion (AC31); AC2, AC14, AC16, AC17 also check cancelled writes, the Member's view, the Secretary's screen.
+//
 // Safe on a shared local dev database: every meeting is created here through the API, titled "[QA] FE-11 …", dated
 // seven weeks from today, organised by thuky@ with chutoa@ as Chair and approver, thuky@ as Secretary and thanhvien@ as
 // Member. quantri@ is never on the roster (the non-participant). Two meetings are found again by title on the next run
 // when a run stopped half-way ("Họp chuẩn bị biểu quyết" while Published, "Họp biểu quyết trực tiếp" while InProgress);
-// a full run ends both (AC19, AC20) and cancels the third, so nothing is left running.
+// a full run ends both (AC19, AC20) and cancels the third, so nothing is left running. The "empty" and "approved" meetings stay Published / Approved and are reused; AC25 makes and cancels its own.
+
+import { ACCOUNTS } from '../lib/qa.mjs'
 
 const ALL_ROLES = ['Chair', 'Secretary', 'Member', 'Guest']
 const OPTIONS = ['Đồng ý', 'Không đồng ý', 'Không ý kiến']
@@ -20,7 +27,11 @@ const TITLES = {
   prep: 'FE-11 Họp chuẩn bị biểu quyết',
   live: 'FE-11 Họp biểu quyết trực tiếp',
   states: 'FE-11 Họp kiểm trạng thái biểu quyết',
+  empty: 'FE-11 Họp chưa có biểu quyết',
+  approved: 'FE-11 Họp đã duyệt chuẩn bị biểu quyết',
+  gone: 'FE-11 Họp gỡ người xem biểu quyết',
 }
+const MSG228 = 'Không ghi được phiếu. Chưa có phiếu nào được ghi. Vui lòng thử lại.'
 const MSG = {
   MSG205: 'Không truy cập được biểu quyết của cuộc họp này.',
   MSG209: 'Thông tin biểu quyết không hợp lệ. Kiểm tra các trường được đánh dấu.',
@@ -62,7 +73,7 @@ const rand = () => Math.random().toString(36).slice(2, 7)
 const iso = (ms) => new Date(ms).toISOString().replace(/\.\d{3}Z$/, 'Z')
 
 /** A 30-minute slot on the day seven weeks from today (Vietnam time), at its own hour per kind of meeting. */
-const HOURS = { prep: [8, 0], live: [14, 0], states: [10, 30] }
+const HOURS = { prep: [8, 0], live: [14, 0], states: [10, 30], empty: [9, 0], approved: [11, 30], gone: [12, 30] }
 function slot(key) {
   const [h, m] = HOURS[key] ?? [16, 30]
   const day = new Date(Date.now() + 49 * 86_400_000 + 7 * 3_600_000).toISOString().slice(0, 10)
@@ -237,6 +248,8 @@ async function settled(qa) {
 const toast = (qa, text) => qa.page.locator('.toast-stack').getByText(text)
 const dialog = (qa, name) => qa.page.getByRole('dialog', { name })
 const panel = (qa) => qa.page.locator('section.vote-panel')
+/** The "Tạo biểu quyết" button sits in the toolbar above the card on the page (inside the panel only in the room). */
+const createButton = (qa) => qa.page.locator('.vote-toolbar').getByRole('button', { name: 'Tạo biểu quyết' })
 /** The card of one vote, by its exact title. */
 const card = (qa, v) =>
   panel(qa).locator('li.vote-item').filter({ has: qa.page.getByRole('button', { name: v.title, exact: true }) })
@@ -246,11 +259,120 @@ async function press(qa, locator) {
   else await locator.click()
 }
 
+/** Opens a vote card that starts collapsed (a closed vote with nothing left for the caller to do). */
+async function expand(qa, v) {
+  const head = card(qa, v).getByRole('button', { name: v.title, exact: true })
+  if ((await head.getAttribute('aria-expanded')) === 'false') await press(qa, head)
+}
+
+/** Counts the writes (POST / PUT / DELETE) the page sends under one path, to prove a cancelled step sent none. */
+function watchWrites(qa, pathMatches) {
+  const sent = []
+  const listener = (r) => {
+    if (r.method() !== 'GET' && pathMatches(new URL(r.url()).pathname)) sent.push(`${r.method()} ${new URL(r.url()).pathname}`)
+  }
+  qa.page.on('request', listener)
+  return { sent, stop: () => qa.page.off('request', listener) }
+}
+
+/** HTTP with a custom header: the runner's client sends none, and a roster change needs If-Match. */
+async function removeFromRoster(qa, meetingId, userId) {
+  const login = await fetch(`${qa.base}/api/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: ACCOUNTS.secretary, password: process.env.QA_PASSWORD ?? 'TrustCabinet@2026' }),
+  })
+  const headers = { Authorization: `Bearer ${(await login.json()).accessToken}` }
+  const roster = await (await fetch(`${qa.base}/api/meetings/${meetingId}/participants?pageSize=100`, { headers })).json()
+  const row = roster.items.find((i) => i.userId === userId)
+  const res = await fetch(`${qa.base}/api/meetings/${meetingId}/participants/${row.id}`, {
+    method: 'DELETE',
+    headers: { ...headers, 'If-Match': `"participants-${roster.revision}"` },
+  })
+  return res.status
+}
+
 /** Opens the meeting's Biểu quyết tab and waits for the panel. */
 async function openVotesTab(qa, m) {
   await qa.goto(`/mgmt/meetings/${m.id}?tab=votes`)
   await qa.expect(qa.page.getByRole('tab', { name: 'Biểu quyết' })).toHaveAttribute('aria-selected', 'true')
   await qa.expect(panel(qa)).toBeVisible()
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+// Guest voter (UC-04 OTP by email): the FE-01 pattern (example.test lands in local Mailpit). The browser stays
+// anonymous; every signed-in call goes through global fetch with a secretary login, like removeFromRoster above.
+
+async function guestMailpit(to) {
+  const r = await fetch(`http://localhost:8025/api/v1/search?query=${encodeURIComponent(`to:"${to}"`)}`)
+  const j = await r.json()
+  return (j.messages ?? []).map((m) => ({ id: m.ID, subject: m.Subject }))
+}
+
+async function guestCode(to) {
+  const until = Date.now() + 90_000
+  while (Date.now() < until) {
+    const hit = (await guestMailpit(to)).find((x) => /Mã xác minh/.test(x.subject))
+    if (hit) {
+      const full = await (await fetch(`http://localhost:8025/api/v1/message/${hit.id}`)).json()
+      const code = (full.Text ?? '').match(/\b\d{6}\b/)?.[0] ?? ''
+      if (code) return code
+    }
+    await new Promise((r) => setTimeout(r, 2000))
+  }
+  return ''
+}
+
+async function guestInvite(qa, meetingId, name, email) {
+  const login = await fetch(`${qa.base}/api/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: ACCOUNTS.secretary, password: process.env.QA_PASSWORD ?? 'TrustCabinet@2026' }),
+  })
+  const headers = { Authorization: `Bearer ${(await login.json()).accessToken}` }
+  const roster = await (await fetch(`${qa.base}/api/meetings/${meetingId}/participants?pageSize=100`, { headers })).json()
+  const res = await fetch(`${qa.base}/api/meetings/${meetingId}/guest-invitations`, {
+    method: 'POST',
+    headers: { ...headers, 'Content-Type': 'application/json', 'If-Match': `"participants-${roster.revision}"` },
+    body: JSON.stringify({ invitedName: name, email }),
+  })
+  if (res.status !== 201) throw new Error(`guest invitation: HTTP ${res.status} ${await res.text()}`)
+  let link = null
+  await qa.expect
+    .poll(
+      async () => {
+        const box = await guestMailpit(email)
+        for (const m of box) {
+          const full = await (await fetch(`http://localhost:8025/api/v1/message/${m.id}`)).json()
+          const raw = full.Text ?? ''
+          const pattern = /https?:\/\/\S*?\/guest\/[0-9a-f-]{36}#token=[A-Za-z0-9\-_+/=]+/
+          const found = raw.match(pattern) ?? raw.replace(/\r?\n(?=[A-Za-z0-9\-_+/=])/g, '').match(pattern)
+          if (found) {
+            link = found[0]
+            return link
+          }
+        }
+        return null
+      },
+      { timeout: 90_000 },
+    )
+    .not.toBeNull()
+  return link
+}
+
+/** Opens the invitation link, verifies the OTP and declares the display name; lands on the guest meeting page. */
+async function guestVerify(qa, link, email, displayName) {
+  const u = new URL(link)
+  await qa.goto(u.pathname + u.hash)
+  await qa.expect(qa.page.getByText(/Nhập mã 6 số/)).toBeVisible({ timeout: 15_000 })
+  const code = await guestCode(email)
+  qa.expect(code, 'no 6-digit code mailed').toMatch(/^\d{6}$/)
+  await qa.page.getByLabel('Chữ số 1').fill(code)
+  await qa.page.getByRole('button', { name: 'Xác minh' }).click()
+  await qa.expect(qa.page.getByLabel(/Tên hiển thị/)).toBeVisible({ timeout: 15_000 })
+  await qa.page.getByLabel(/Tên hiển thị/).fill(displayName)
+  await qa.page.getByRole('button', { name: 'Vào cuộc họp' }).click()
+  await qa.expect(qa.page.getByRole('tab', { name: 'Biểu quyết' })).toBeVisible({ timeout: 15_000 })
 }
 
 /** A one-page PDF a strict reader accepts (correct xref offsets), with ASCII text. */
@@ -321,7 +443,7 @@ export default {
       async run(qa) {
         const m = await meeting(qa, 'prep', 'Published')
         await openVotesTab(qa, m)
-        await press(qa, panel(qa).getByRole('button', { name: 'Tạo biểu quyết' }))
+        await press(qa, createButton(qa))
         const dlg = dialog(qa, 'Tạo biểu quyết')
         await qa.expect(dlg).toBeVisible()
         await qa.expect(dlg.getByRole('radio', { name: 'Công khai' })).toBeChecked()
@@ -366,7 +488,8 @@ export default {
         const sec = await client(qa, 'secretary')
         const before = (await sec.get(votesPath(m))).body.votes.length
         await openVotesTab(qa, m)
-        await press(qa, panel(qa).getByRole('button', { name: 'Tạo biểu quyết' }))
+        const writes = watchWrites(qa, (path) => path === votesPath(m))
+        await press(qa, createButton(qa))
         const dlg = dialog(qa, 'Tạo biểu quyết')
         await dlg.getByRole('textbox', { name: 'Phương án 2', exact: true }).fill('đồng ý')
         for (const role of ['Chủ toạ', 'Thư ký', 'Thành viên', 'Khách']) await dlg.getByRole('checkbox', { name: role }).uncheck()
@@ -381,6 +504,24 @@ export default {
         await qa.expect(discard).toBeVisible()
         await discard.getByRole('button', { name: 'Bỏ thay đổi' }).click()
         await qa.expect(dlg).toHaveCount(0)
+        qa.expect(writes.sent, 'the form sent a write although it was refused').toEqual([])
+
+        // VOTE_FT08: typed something, then Huỷ and "Bỏ thay đổi": nothing saved, nothing sent.
+        await press(qa, createButton(qa))
+        const abandoned = dialog(qa, 'Tạo biểu quyết')
+        await abandoned.getByLabel('Nội dung biểu quyết').fill('Nháp bỏ dở')
+        await abandoned.getByRole('button', { name: 'Huỷ' }).click()
+        await qa.expect(dialog(qa, 'Bỏ thay đổi chưa lưu?')).toBeVisible()
+        await settled(qa)
+        await qa.shot('huy-giua-chung-hoi-bo-thay-doi')
+        await dialog(qa, 'Bỏ thay đổi chưa lưu?').getByRole('button', { name: 'Bỏ thay đổi' }).click()
+        await qa.expect(abandoned).toHaveCount(0)
+        await qa.expect(dialog(qa, 'Bỏ thay đổi chưa lưu?')).toHaveCount(0)
+        await qa.expect(panel(qa)).not.toContainText('Nháp bỏ dở')
+        qa.expect(writes.sent, 'abandoning the form sent a write').toEqual([])
+        writes.stop()
+        await settled(qa)
+        await qa.shot('khong-co-nhap-bo-do')
 
         const c = checker(qa)
         const cases = [
@@ -504,7 +645,7 @@ export default {
         const v = await draftVote(qa, m, 'Nháp bị ẩn')
         await openVotesTab(qa, m)
         await qa.expect(panel(qa).getByText('Không có biểu quyết nào để hiển thị.')).toBeVisible()
-        await qa.expect(panel(qa).getByRole('button', { name: 'Tạo biểu quyết' })).toHaveCount(0)
+        await qa.expect(createButton(qa)).toHaveCount(0)
         await qa.expect(panel(qa)).not.toContainText(v.title)
         await settled(qa)
         await qa.shot('khong-thay-nhap')
@@ -610,7 +751,7 @@ export default {
         const m = await meeting(qa, 'live', 'InProgress')
         try {
           await openVotesTab(qa, m)
-          await press(qa, panel(qa).getByRole('button', { name: 'Tạo biểu quyết' }))
+          await press(qa, createButton(qa))
           let dlg = dialog(qa, 'Tạo biểu quyết')
           const first = { title: qa.name(`FE-11 Mở từ form ${qa.device} ${rand()}`) }
           await dlg.getByLabel('Nội dung biểu quyết').fill(first.title)
@@ -620,7 +761,7 @@ export default {
           await qa.expect(toast(qa, 'Mở biểu quyết thành công.')).toBeVisible()
           await qa.expect(card(qa, first).locator('.vote-status')).toHaveText('Đang mở')
 
-          await press(qa, panel(qa).getByRole('button', { name: 'Tạo biểu quyết' }))
+          await press(qa, createButton(qa))
           dlg = dialog(qa, 'Tạo biểu quyết')
           const second = qa.name(`FE-11 Mở thêm bị chặn ${qa.device} ${rand()}`)
           await dlg.getByLabel('Nội dung biểu quyết').fill(second)
@@ -662,7 +803,7 @@ export default {
         await row.scrollIntoViewIfNeeded()
         await settled(qa)
         await qa.shot('thu-ky-khong-co-nut-mo')
-        await panel(qa).getByRole('button', { name: 'Tạo biểu quyết' }).click()
+        await createButton(qa).click()
         const dlg = dialog(qa, 'Tạo biểu quyết')
         await qa.expect(dlg.getByRole('button', { name: 'Lưu nháp' })).toBeVisible()
         await qa.expect(dlg.getByRole('button', { name: 'Mở biểu quyết' })).toHaveCount(0)
@@ -940,6 +1081,25 @@ export default {
         await settled(qa)
         await qa.shot('da-ghi-ket-luan')
         await noSidewaysScroll(qa)
+        // VOTE_FT23: the Member sees the recorded conclusion with its note, and still does after F5; nothing to edit.
+        await qa.signIn('member')
+        await openVotesTab(qa, m)
+        await expand(qa, v)
+        const mrow = card(qa, v)
+        await qa.expect(mrow.locator('.vote-meta .vote-conclusion-chip')).toHaveText('Không thông qua')
+        await qa.expect(mrow.getByText(note)).toBeVisible()
+        await qa.expect(mrow.locator('form.vote-conclusion-form')).toHaveCount(0)
+        await mrow.scrollIntoViewIfNeeded()
+        await settled(qa)
+        await qa.shot('thanh-vien-thay-ket-luan')
+        await qa.page.reload()
+        await expand(qa, v)
+        await qa.expect(card(qa, v).locator('.vote-meta .vote-conclusion-chip')).toHaveText('Không thông qua')
+        await qa.expect(card(qa, v).getByText(note)).toBeVisible()
+        await qa.expect(card(qa, v).locator('form.vote-conclusion-form')).toHaveCount(0)
+        await card(qa, v).scrollIntoViewIfNeeded()
+        await settled(qa)
+        await qa.shot('thanh-vien-sau-khi-tai-lai')
         if (qa.device !== 'desktop') return
         const chair = await client(qa, 'chair')
         const c = checker(qa)
@@ -1018,6 +1178,16 @@ export default {
         const m = await meeting(qa, 'live', 'InProgress')
         const d = await draftVote(qa, m, 'Nháp không đóng được')
         const v = await openedVote(qa, m, 'Đóng sai người')
+        // VOTE_FT20: on the screen the Secretary has no "Đóng phiếu" and no "Mở" on the open vote.
+        await openVotesTab(qa, m)
+        const row = card(qa, v)
+        await qa.expect(row.locator('.vote-status')).toHaveText('Đang mở')
+        await qa.expect(row.getByRole('button', { name: 'Đóng phiếu' })).toHaveCount(0)
+        await qa.expect(row.getByRole('button', { name: 'Mở', exact: true })).toHaveCount(0)
+        await qa.expect(createButton(qa)).toBeVisible()
+        await row.scrollIntoViewIfNeeded()
+        await settled(qa)
+        await qa.shot('thu-ky-khong-co-nut-dong')
         const c = checker(qa)
         const list = (await (await client(qa, 'secretary')).get(votesPath(m))).body
         c.fact('Thư ký canClose false', list.permissions.canClose === false && list.permissions.canOpen === false)
@@ -1073,12 +1243,17 @@ export default {
           const c = checker(qa)
           const chair = await client(qa, 'chair')
           c.check('gắn lại', await chair.post(`${votePath(m, v)}/documents`, { meetingDocumentIds: [docId] }), 409, 'MSG266')
+          const hiddenDraft = await draftVote(qa, m, 'Nháp ẩn với thành viên')
           await openVote(qa, m, v)
 
           await qa.signIn('member')
           await openVotesTab(qa, m)
           const mrow = card(qa, v)
           await qa.expect(mrow.locator('.vote-docs li').filter({ hasText: fileName })).toContainText('Chưa đọc')
+          // VOTE_FT10: a Member sees the open vote's documents but no paperclip and no detach; the draft is not listed.
+          await qa.expect(mrow.getByRole('button', { name: `Thêm tài liệu: ${v.title}` })).toHaveCount(0)
+          await qa.expect(mrow.getByRole('button', { name: `Gỡ khỏi biểu quyết: ${fileName}` })).toHaveCount(0)
+          await qa.expect(card(qa, hiddenDraft)).toHaveCount(0)
           await press(qa, mrow.getByRole('radio', { name: 'Đồng ý', exact: true }))
           await qa.expect(mrow.getByRole('button', { name: 'Gửi phiếu' })).toBeDisabled()
           await qa.expect(mrow.getByText('Mở từng tài liệu, đọc tới trang cuối rồi xác nhận.')).toBeVisible()
@@ -1292,6 +1467,541 @@ export default {
         qa.inconclusive(
           'Cần hai người trong một phòng LiveKit thật (máy chủ media không chạy trong bộ chạy này). Người kiểm: hai trình duyệt, chutoa@ và thanhvien@ vào phòng của một cuộc họp [QA] FE-11 đang diễn ra, chutoa@ mở biểu quyết.',
         )
+      },
+    },
+    // ------------------------------------------------------------------------------------------- UC-62a / 52b list
+    {
+      id: 'AC23',
+      role: 'chair',
+      devices: ['desktop', 'phone'],
+      title: 'Tab Biểu quyết của cuộc họp đang diễn ra: nháp, đang mở, đã đóng trên một màn; Thành viên không thấy nháp và nút tạo',
+      steps: [
+        'Cuộc họp đang diễn ra có một biểu quyết kín đã đóng (1 phiếu), một biểu quyết công khai đang mở, một nháp',
+        'chutoa@ mở tab Biểu quyết',
+        'thanhvien@ mở lại tab Biểu quyết',
+      ],
+      expected:
+        'Chủ toạ: ba thẻ, chip "Đã đóng" / "Đang mở" / "Nháp", "Kín" hoặc "Công khai", lượt bỏ 1/3 và 0/3 (thẻ nháp không có lượt bỏ); nút "Tạo biểu quyết" hiện. Thành viên: chỉ hai thẻ, không có nháp, không có nút "Tạo biểu quyết"',
+      async run(qa) {
+        const m = await meeting(qa, 'live', 'InProgress')
+        const closed = await openedVote(qa, m, 'Danh sách đã đóng', { isAnonymous: true })
+        qa.expectStatus(await cast(qa, 'member', m, closed, 0), 200)
+        await closeVote(qa, m, closed)
+        const open = await openedVote(qa, m, 'Danh sách đang mở')
+        const draft = await draftVote(qa, m, 'Danh sách nháp')
+        try {
+          await openVotesTab(qa, m)
+          const cClosed = card(qa, closed)
+          const cOpen = card(qa, open)
+          const cDraft = card(qa, draft)
+          await qa.expect(cClosed.locator('.vote-status')).toHaveText(/Đã đóng/)
+          await qa.expect(cClosed.locator('.vote-meta')).toContainText('Kín')
+          await qa.expect(cClosed.locator('.vote-turnout-text')).toHaveText('1/3')
+          await qa.expect(cOpen.locator('.vote-status')).toHaveText('Đang mở')
+          await qa.expect(cOpen.locator('.vote-meta')).toContainText('Công khai')
+          await qa.expect(cOpen.locator('.vote-turnout-text')).toHaveText('0/3')
+          await qa.expect(cDraft.locator('.vote-status')).toHaveText(/Nháp/)
+          await qa.expect(cDraft.locator('.vote-turnout-text')).toHaveCount(0)
+          await qa.expect(createButton(qa)).toBeVisible()
+          await settled(qa)
+          await qa.shot('chu-toa-ba-trang-thai', { fullPage: true })
+          await noSidewaysScroll(qa)
+          await noRawCodes(qa)
+
+          await qa.signIn('member')
+          await openVotesTab(qa, m)
+          await qa.expect(card(qa, closed)).toBeVisible()
+          await qa.expect(card(qa, open)).toBeVisible()
+          await qa.expect(card(qa, draft)).toHaveCount(0)
+          await qa.expect(panel(qa).locator('.vote-status', { hasText: 'Nháp' })).toHaveCount(0)
+          await qa.expect(createButton(qa)).toHaveCount(0)
+          await settled(qa)
+          await qa.shot('thanh-vien-khong-thay-nhap', { fullPage: true })
+          await noSidewaysScroll(qa)
+        } finally {
+          await closeOpenVotes(qa, m)
+        }
+      },
+    },
+    {
+      id: 'AC24',
+      role: 'chair',
+      devices: ['desktop', 'phone'],
+      title: 'Cuộc họp chưa có biểu quyết: câu "Không có biểu quyết nào để hiển thị."; gợi ý tạo chỉ hiện với người quản lý nháp',
+      steps: ['Cuộc họp Đã công bố chưa có biểu quyết nào', 'chutoa@ mở tab Biểu quyết', 'thanhvien@ mở tab Biểu quyết'],
+      expected:
+        'Chủ toạ: "Không có biểu quyết nào để hiển thị." kèm "Tạo biểu quyết để chuẩn bị trước, mở khi đang họp." và nút "Tạo biểu quyết". Thành viên: chỉ câu đầu, không gợi ý, không nút',
+      async run(qa) {
+        const m = await meeting(qa, 'empty', 'Published')
+        await openVotesTab(qa, m)
+        await qa.expect(panel(qa).getByText('Không có biểu quyết nào để hiển thị.')).toBeVisible()
+        await qa.expect(panel(qa).getByText('Tạo biểu quyết để chuẩn bị trước, mở khi đang họp.')).toBeVisible()
+        await qa.expect(createButton(qa)).toBeVisible()
+        await settled(qa)
+        await qa.shot('chu-toa-chua-co-bieu-quyet')
+        await noSidewaysScroll(qa)
+        await noRawCodes(qa)
+        await qa.signIn('member')
+        await openVotesTab(qa, m)
+        await qa.expect(panel(qa).getByText('Không có biểu quyết nào để hiển thị.')).toBeVisible()
+        await qa.expect(panel(qa).getByText('Tạo biểu quyết để chuẩn bị trước')).toHaveCount(0)
+        await qa.expect(createButton(qa)).toHaveCount(0)
+        await settled(qa)
+        await qa.shot('thanh-vien-chua-co-bieu-quyet')
+        await noSidewaysScroll(qa)
+      },
+    },
+    {
+      id: 'AC25',
+      role: 'member',
+      title: 'Người đang xem tab Biểu quyết bị gỡ khỏi cuộc họp: màn hình đổi sang trang "Không tìm thấy trang", API 404 MSG205',
+      steps: [
+        'thanhvien@ mở tab Biểu quyết của một cuộc họp Đã công bố',
+        'thuky@ gỡ thanhvien@ khỏi thành phần (API, có If-Match)',
+        'Chờ panel tự đọc lại (sự kiện participantsChanged)',
+      ],
+      expected: 'Trang đổi sang "Không tìm thấy trang" (không lộ cuộc họp có tồn tại); API GET danh sách 404 MSG205; không có mã MSG nào hiện ra',
+      async run(qa) {
+        const u = await users(qa)
+        const m = await createMeeting(qa, `${TITLES.gone} ${rand()}`, 'Published', 'gone')
+        try {
+          await openVotesTab(qa, m)
+          await qa.expect(panel(qa).getByText('Không có biểu quyết nào để hiển thị.')).toBeVisible()
+          qa.expect(await removeFromRoster(qa, m.id, u.member.id), 'gỡ thành viên khỏi cuộc họp').toBe(200)
+          // The meeting page itself re-reads on the same event and answers its 404 page (existence is not revealed);
+          // the panel's own sentence shows only if the panel's read comes first.
+          await qa.expect(qa.page.getByRole('heading', { name: 'Không tìm thấy trang' })).toBeVisible({ timeout: 20_000 })
+          await settled(qa)
+          await qa.shot('khong-con-xem-duoc')
+          await noRawCodes(qa)
+          const c = checker(qa)
+          c.check('GET danh sách sau khi bị gỡ', await (await client(qa, 'member')).get(votesPath(m)), 404, 'MSG205')
+          c.done()
+        } finally {
+          await step(qa, m.id, 'cancel')
+        }
+      },
+    },
+    // ------------------------------------------------------------------------------------------- UC-62a EX-2 (AX)
+    {
+      id: 'AC26',
+      role: 'chair',
+      devices: ['desktop', 'phone'],
+      title: 'Lỗi tải danh sách (chèn 500 MSG206): tab báo lỗi kèm "Thử lại"; bấm "Thử lại" khi hết lỗi thì danh sách hiện',
+      steps: [
+        'Chặn GET /api/meetings/<id>/votes trả 500 MSG206 (page.route)',
+        'chutoa@ mở tab Biểu quyết',
+        'Bỏ chặn, bấm "Thử lại"',
+      ],
+      expected:
+        'Hộp báo lỗi "Không tải được danh sách biểu quyết. Vui lòng thử lại." và nút "Thử lại", không có danh sách, không lộ mã MSG; sau Thử lại: danh sách các biểu quyết hiện',
+      async run(qa) {
+        const m = await meeting(qa, 'prep', 'Published')
+        const v = await draftVote(qa, m, 'Danh sách sau thử lại')
+        const failing = (url) => url.pathname === votesPath(m)
+        await qa.page.route(failing, (route) =>
+          route.request().method() === 'GET'
+            ? route.fulfill({
+                status: 500,
+                contentType: 'application/json',
+                body: JSON.stringify({ code: 'MSG206', message: 'Không tải được danh sách biểu quyết. Vui lòng thử lại.' }),
+              })
+            : route.continue(),
+        )
+        await qa.goto(`/mgmt/meetings/${m.id}?tab=votes`)
+        const alert = qa.page.getByRole('alert').filter({ hasText: 'Không tải được danh sách biểu quyết. Vui lòng thử lại.' })
+        await qa.expect(alert).toBeVisible()
+        await qa.expect(alert.getByRole('button', { name: 'Thử lại' })).toBeVisible()
+        await qa.expect(qa.page.locator('li.vote-item')).toHaveCount(0)
+        await settled(qa)
+        await qa.shot('loi-tai-danh-sach')
+        await noRawCodes(qa)
+        await noSidewaysScroll(qa)
+        await qa.page.unroute(failing)
+        await press(qa, alert.getByRole('button', { name: 'Thử lại' }))
+        await qa.expect(card(qa, v)).toBeVisible()
+        await qa.expect(alert).toHaveCount(0)
+        await settled(qa)
+        await qa.shot('thu-lai-thanh-cong')
+      },
+    },
+    // ------------------------------------------------------------------------------------------- UC-63 on an Approved meeting
+    {
+      id: 'AC27',
+      role: 'chair',
+      devices: ['desktop', 'phone'],
+      title: 'Chủ toạ tạo nháp trên cuộc họp Đã duyệt: chỉ chọn Chủ toạ và Thành viên; "Lưu nháp" hiện "Đang lưu…", thẻ mới có chip "Nháp"',
+      steps: [
+        'chutoa@ mở tab Biểu quyết của cuộc họp Đã duyệt, bấm "Tạo biểu quyết"',
+        'Nhập nội dung, giữ Công khai, bỏ tích Thư ký và Khách (còn Chủ toạ, Thành viên), bấm "Lưu nháp" (yêu cầu bị giữ 1 giây để thấy nút đang lưu)',
+      ],
+      expected:
+        'Form có "Nội dung biểu quyết", "Phương án" (3 dòng), "Hình thức" (Công khai / Bỏ phiếu kín), "Người được bỏ phiếu" (4 vai trò), "Mô tả"; nút "Đang lưu…" rồi toast "Tạo biểu quyết nháp thành công."; thẻ "Nháp" với 2 vai trò Chủ toạ, Thành viên; API: Draft, Công khai, roles Chair + Member',
+      async run(qa) {
+        const m = await meeting(qa, 'approved', 'Approved')
+        await openVotesTab(qa, m)
+        await press(qa, createButton(qa))
+        const dlg = dialog(qa, 'Tạo biểu quyết')
+        await qa.expect(dlg).toBeVisible()
+        for (const name of ['Nội dung biểu quyết', 'Mô tả']) await qa.expect(dlg.getByLabel(name)).toBeVisible()
+        await qa.expect(dlg.getByText('Phương án', { exact: true })).toBeVisible()
+        await qa.expect(dlg.getByRole('radio', { name: 'Công khai' })).toBeVisible()
+        await qa.expect(dlg.getByRole('radio', { name: 'Bỏ phiếu kín' })).toBeVisible()
+        const title = qa.name(`FE-11 Thông qua kế hoạch quý IV ${qa.device} ${rand()}`)
+        await dlg.getByLabel('Nội dung biểu quyết').fill(title)
+        for (const role of ['Thư ký', 'Khách']) await dlg.getByRole('checkbox', { name: role }).uncheck()
+        await qa.expect(dlg.getByRole('checkbox', { name: 'Chủ toạ' })).toBeChecked()
+        await qa.expect(dlg.getByRole('checkbox', { name: 'Thành viên' })).toBeChecked()
+        await settled(qa)
+        await qa.shot('form-da-nhap')
+        const held = (url) => url.pathname === votesPath(m)
+        await qa.page.route(held, async (route) => {
+          if (route.request().method() !== 'POST') return route.continue()
+          await new Promise((r) => setTimeout(r, 1200))
+          await route.continue()
+        })
+        try {
+          await press(qa, dlg.getByRole('button', { name: 'Lưu nháp' }))
+          await qa.expect(dlg.getByRole('button', { name: 'Đang lưu…' })).toBeVisible()
+          await settled(qa)
+          await qa.shot('dang-luu')
+          await qa.expect(toast(qa, 'Tạo biểu quyết nháp thành công.')).toBeVisible()
+        } finally {
+          await qa.page.unroute(held)
+        }
+        const row = card(qa, { title })
+        await qa.expect(row.locator('.vote-status')).toHaveText(/Nháp/)
+        await press(qa, row.getByRole('button', { name: title, exact: true }))
+        await qa.expect(row.locator('.vote-roles .badge')).toHaveText(['Chủ toạ', 'Thành viên'])
+        await row.scrollIntoViewIfNeeded()
+        await settled(qa)
+        await qa.shot('nhap-da-tao')
+        await noSidewaysScroll(qa)
+        await noRawCodes(qa)
+        const list = (await (await client(qa, 'chair')).get(votesPath(m))).body
+        const made = list.votes.find((x) => x.title === title)
+        try {
+          qa.expect(made?.status).toBe('Draft')
+          qa.expect(made?.isAnonymous).toBe(false)
+          qa.expect(made?.eligibleRoles).toEqual(['Chair', 'Member'])
+        } finally {
+          if (made) await (await client(qa, 'secretary')).delete(votePath(m, made))
+        }
+      },
+    },
+    // ------------------------------------------------------------------------------------------- UC-68a storage full (simulated)
+    {
+      id: 'AC28',
+      role: 'chair',
+      title: 'Kho tài liệu hệ thống gần đầy (giả lập qua phản hồi kho): hộp thoại gắn tệp từ máy chặn tệp trước khi gửi',
+      steps: [
+        'Giả lập GET /api/documents báo kho chỉ còn 100 byte (page.route; không đổi cấu hình máy chủ)',
+        'chutoa@ mở thẻ nháp, kẹp giấy → "Tải tệp lên từ máy", chọn một PDF lớn hơn 100 byte',
+      ],
+      expected:
+        'Hộp thoại báo "Bộ nhớ tài liệu của hệ thống không đủ chỗ. Hãy báo quản trị viên." kèm "Đang chọn … hệ thống còn …"; nút gắn bị khoá; không có yêu cầu tải lên nào được gửi',
+      async run(qa) {
+        const m = await meeting(qa, 'prep', 'Published')
+        const v = await draftVote(qa, m, 'Kho đầy')
+        const library = (url) => url.pathname === '/api/documents'
+        await qa.page.route(library, async (route) => {
+          if (route.request().method() !== 'GET') return route.continue()
+          const res = await route.fetch()
+          const body = await res.json()
+          body.storageUsedBytes = body.storageLimitBytes - 100
+          await route.fulfill({ response: res, json: body })
+        })
+        const uploads = watchWrites(qa, (path) => path.includes('/upload'))
+        await openVotesTab(qa, m)
+        await press(qa, card(qa, v).getByRole('button', { name: `Thêm tài liệu: ${v.title}` }))
+        await qa.page.getByRole('menuitem', { name: 'Tải tệp lên từ máy' }).click()
+        const dlg = dialog(qa, 'Thêm tài liệu cho biểu quyết')
+        await qa.expect(dlg).toBeVisible()
+        await dlg.locator('input[type=file]').setInputFiles({
+          name: `qa-fe11-day-${rand()}.pdf`,
+          mimeType: 'application/pdf',
+          buffer: Buffer.from(makePdf('QA FE-11 kho day'), 'base64'),
+        })
+        await qa.expect(dlg.getByText('Bộ nhớ tài liệu của hệ thống không đủ chỗ. Hãy báo quản trị viên.')).toBeVisible()
+        await qa.expect(dlg.getByText(/Đang chọn .*, hệ thống còn/)).toBeVisible()
+        await settled(qa)
+        await qa.shot('kho-day')
+        await noRawCodes(qa)
+        await noSidewaysScroll(qa)
+        await qa.expect(dlg.getByRole('button', { name: /^(Thêm|Gắn|Tải)/ }).first()).toBeDisabled()
+        qa.expect(uploads.sent, 'an upload request left the browser').toEqual([])
+        uploads.stop()
+      },
+    },
+    // ------------------------------------------------------------------------------------------- UC-65 EX-6 (AX)
+    {
+      id: 'AC29',
+      role: 'member',
+      devices: ['desktop', 'phone'],
+      title: 'Phiếu không ghi được (chèn 503 MSG228): báo lỗi, phiếu vẫn mở để bỏ lại; gửi lại thì ghi đúng một phiếu',
+      steps: [
+        'chutoa@ mở biểu quyết công khai',
+        'Chèn POST .../ballots trả 503 MSG228; thanhvien@ chọn "Đồng ý", bấm "Gửi phiếu"',
+        'Bỏ chèn, bấm "Gửi phiếu" lần nữa',
+      ],
+      expected:
+        'Lần 1: thông báo lỗi "Không ghi được phiếu. Chưa có phiếu nào được ghi. Vui lòng thử lại.", hộp phiếu còn các lựa chọn, lượt bỏ 0/3. Lần 2: toast "Đã ghi nhận phiếu của bạn.", "Bạn đã gửi phiếu.", 1/3; API receiptCount 1',
+      async run(qa) {
+        const m = await meeting(qa, 'live', 'InProgress')
+        const v = await openedVote(qa, m, 'Lỗi ghi phiếu')
+        try {
+          await openVotesTab(qa, m)
+          const row = card(qa, v)
+          const ballots = (url) => url.pathname === `${votePath(m, v)}/ballots`
+          await qa.page.route(ballots, (route) =>
+            route.fulfill({
+              status: 503,
+              contentType: 'application/json',
+              body: JSON.stringify({ code: 'MSG228', message: MSG228 }),
+            }),
+          )
+          await press(qa, row.getByRole('radio', { name: 'Đồng ý', exact: true }))
+          await press(qa, row.getByRole('button', { name: 'Gửi phiếu' }))
+          await qa.expect(qa.page.getByText(MSG228).first()).toBeVisible()
+          await qa.expect(row.getByRole('radio')).toHaveCount(3)
+          await qa.expect(row.locator('.vote-turnout-text')).toHaveText('0/3')
+          await qa.expect(row.getByText('Bạn đã gửi phiếu.')).toHaveCount(0)
+          await settled(qa)
+          await qa.shot('loi-ghi-phieu')
+          await noRawCodes(qa)
+          await noSidewaysScroll(qa)
+          await qa.page.unroute(ballots)
+          await qa.expect(row.getByRole('button', { name: 'Gửi phiếu' })).toBeEnabled()
+          await press(qa, row.getByRole('button', { name: 'Gửi phiếu' }))
+          await qa.expect(toast(qa, 'Đã ghi nhận phiếu của bạn.')).toBeVisible()
+          await qa.expect(row.getByText('Bạn đã gửi phiếu.')).toBeVisible()
+          await qa.expect(row.locator('.vote-turnout-text')).toHaveText('1/3')
+          await settled(qa)
+          await qa.shot('gui-lai-thanh-cong')
+          const d = (await detail(qa, 'member', m, v)).body
+          qa.expect(d.receiptCount).toBe(1)
+        } finally {
+          await closeOpenVotes(qa, m)
+        }
+      },
+    },
+    // ------------------------------------------------------------------------------------------- UC-76 cancelled
+    {
+      id: 'AC30',
+      role: 'chair',
+      devices: ['desktop', 'phone'],
+      title: 'Chủ toạ huỷ hộp "Đóng biểu quyết": phiếu vẫn "Đang mở", không có yêu cầu đóng nào được gửi',
+      steps: ['chutoa@ bấm "Đóng phiếu" trên phiếu đang mở', 'Trong hộp thoại "Đóng biểu quyết" bấm "Huỷ"'],
+      expected: 'Hộp thoại đóng, chip vẫn "Đang mở", nút "Đóng phiếu" còn; không có POST .../close; API status Open',
+      async run(qa) {
+        const m = await meeting(qa, 'live', 'InProgress')
+        const v = await openedVote(qa, m, 'Huỷ đóng phiếu')
+        try {
+          await openVotesTab(qa, m)
+          const row = card(qa, v)
+          const writes = watchWrites(qa, (path) => path.endsWith('/close'))
+          await press(qa, row.getByRole('button', { name: 'Đóng phiếu', exact: true }))
+          const dlg = dialog(qa, 'Đóng biểu quyết')
+          await qa.expect(dlg).toBeVisible()
+          await settled(qa)
+          await qa.shot('hop-thoai-dong')
+          await press(qa, dlg.getByRole('button', { name: 'Huỷ' }))
+          await qa.expect(dlg).toHaveCount(0)
+          await qa.expect(row.locator('.vote-status')).toHaveText('Đang mở')
+          await qa.expect(row.getByRole('button', { name: 'Đóng phiếu', exact: true })).toBeVisible()
+          await settled(qa)
+          await qa.shot('van-dang-mo')
+          await noSidewaysScroll(qa)
+          qa.expect(writes.sent, 'a close request was sent').toEqual([])
+          writes.stop()
+          qa.expect((await detail(qa, 'chair', m, v)).body.status).toBe('Open')
+        } finally {
+          await closeOpenVotes(qa, m)
+        }
+      },
+    },
+    // ------------------------------------------------------------------------------------------- UC-67 abandoned
+    {
+      id: 'AC31',
+      role: 'chair',
+      devices: ['desktop', 'phone'],
+      title: 'Chủ toạ chọn kết luận và gõ ghi chú nhưng không ghi: rời tab rồi quay lại vẫn chưa có kết luận; Thành viên thấy "Chưa có kết luận."',
+      steps: [
+        'Biểu quyết đã đóng chưa kết luận',
+        'chutoa@ chọn "Thông qua", gõ ghi chú, không bấm "Ghi kết luận"; sang tab "Thông tin chung" rồi quay lại tab Biểu quyết',
+        'thanhvien@ mở thẻ đó',
+      ],
+      expected:
+        'Chủ toạ: không có chip kết luận, form "Ghi kết luận" còn và trống; không có POST .../conclusion; API conclusion null. Thành viên: "Chưa có kết luận."',
+      async run(qa) {
+        const m = await meeting(qa, 'live', 'InProgress')
+        const v = await openedVote(qa, m, 'Bỏ dở kết luận')
+        qa.expectStatus(await cast(qa, 'member', m, v, 0), 200)
+        await closeVote(qa, m, v)
+        try {
+          await openVotesTab(qa, m)
+          const row = card(qa, v)
+          const writes = watchWrites(qa, (path) => path.endsWith('/conclusion'))
+          const form = row.locator('form.vote-conclusion-form')
+          await press(qa, form.getByRole('radio', { name: 'Thông qua', exact: true }))
+          await form.getByLabel('Ghi chú').fill('Gõ dở, chưa ghi.')
+          await settled(qa)
+          await qa.shot('chon-chua-ghi')
+          await press(qa, qa.page.getByRole('tab', { name: 'Thông tin chung' }))
+          await qa.expect(qa.page.getByRole('tab', { name: 'Thông tin chung' })).toHaveAttribute('aria-selected', 'true')
+          await press(qa, qa.page.getByRole('tab', { name: 'Biểu quyết' }))
+          await qa.expect(panel(qa)).toBeVisible()
+          const back = card(qa, v)
+          await qa.expect(back.locator('form.vote-conclusion-form')).toBeVisible()
+          await qa.expect(back.locator('.vote-conclusion-chip')).toHaveCount(0)
+          await qa.expect(back.locator('form.vote-conclusion-form').getByRole('radio', { checked: true })).toHaveCount(0)
+          await back.scrollIntoViewIfNeeded()
+          await settled(qa)
+          await qa.shot('quay-lai-van-chua-ket-luan')
+          await noSidewaysScroll(qa)
+          qa.expect(writes.sent, 'a conclusion was sent').toEqual([])
+          writes.stop()
+          qa.expect((await detail(qa, 'chair', m, v)).body.conclusion).toBeNull()
+
+          await qa.signIn('member')
+          await openVotesTab(qa, m)
+          await expand(qa, v)
+          await qa.expect(card(qa, v).getByText('Chưa có kết luận.')).toBeVisible()
+          await card(qa, v).scrollIntoViewIfNeeded()
+          await settled(qa)
+          await qa.shot('thanh-vien-chua-co-ket-luan')
+        } finally {
+          await closeOpenVotes(qa, m)
+        }
+      },
+    },
+    // ------------------------------------------------------------------------------------------- UC-42 read gate
+    // R1/FE-11 (24/11/2026): AC mới — DOC_FT51 (nút xác nhận chỉ mở ở trang cuối, 200 MSG253).
+    {
+      id: 'AC32',
+      role: 'member',
+      devices: ['desktop', 'phone'],
+      title: 'Nút xác nhận chỉ mở ở trang cuối: "Đọc tới trang cuối" khoá, cuộn hết thì "Xác nhận đã đọc", bấm xong 200 MSG253 (DOC_FT51)',
+      steps: [
+        'chutoa@ thêm một PDF vào cuộc họp đang diễn ra, gắn vào biểu quyết đang mở; thanhvien@ mở tab, chọn phương án',
+        'thanhvien@ bấm tài liệu (trình xem phủ trên tab mở với ?read=1), đọc nút ở đầu trước khi cuộn',
+        'Cuộn xuống hết trang cuối, bấm "Xác nhận đã đọc", đóng trình xem, gửi phiếu',
+      ],
+      expected:
+        'Trước khi cuộn nút xanh "Đọc tới trang cuối" bị khoá; cuộn hết thì thành "Xác nhận đã đọc" và mở được (UC-42); bấm: backend 200 MSG253, toast "Đã xác nhận đọc tài liệu.", đầu trình xem "Đã xác nhận đọc"; về thẻ tài liệu "Đã đọc", "Gửi phiếu" mở được',
+      async run(qa) {
+        const c = checker(qa)
+        const m = await meeting(qa, 'live', 'InProgress')
+        // The upload runs with the page's own session: the Chair's, like AC17 (a Member may not add files, MSG162).
+        await qa.signIn('chair')
+        await openVotesTab(qa, m)
+        const fileName = `qa-fe11-doc51-${rand()}.pdf`
+        const up = await uploadMeetingPdf(qa, m, fileName)
+        if (up.status === 503) qa.inconclusive('Kho tệp local không chạy (503). Người kiểm: docker compose up -d (SeaweedFS) và FileStorage:* user-secrets, rồi chạy lại AC32.')
+        qa.expect(up.status, JSON.stringify(up.body)).toBe(201)
+        const docId = up.body.documents[0].id
+        const v = await draftVote(qa, m, 'Đọc trang cuối')
+        try {
+          const chair = await client(qa, 'chair')
+          qa.expectStatus(await chair.post(`${votePath(m, v)}/documents`, { meetingDocumentIds: [docId] }), 200)
+          await openVote(qa, m, v)
+
+          await qa.signIn('member')
+          await openVotesTab(qa, m)
+          const mrow = card(qa, v)
+          await qa.expect(mrow.locator('.vote-docs li').filter({ hasText: fileName })).toContainText('Chưa đọc')
+          await press(qa, mrow.getByRole('radio', { name: 'Đồng ý', exact: true }))
+          await qa.expect(mrow.getByRole('button', { name: 'Gửi phiếu' })).toBeDisabled()
+          await mrow.getByRole('link', { name: new RegExp(fileName.replace('.', '\\.')) }).click()
+          // ADR-0066: the viewer is a layer over the tab (its link still carries ?read=1 for a new tab).
+          await qa.expect(qa.page.getByRole('dialog', { name: 'Xem tài liệu' })).toBeVisible({ timeout: 20_000 })
+          qa.expect(await mrow.getByRole('link', { name: new RegExp(fileName.replace('.', '\\.')) }).getAttribute('href')).toContain('read=1')
+          // UC-42: locked until the reader reaches the end of the last page; the label says so (no tooltip on touch).
+          const locked = qa.page.getByRole('button', { name: 'Đọc tới trang cuối' })
+          await qa.expect(locked).toBeDisabled({ timeout: 20_000 })
+          await qa.page.locator('.viewer-scroll .pdf-page').first().waitFor()
+          await settled(qa)
+          await qa.shot('chua-cuoi-khoa-xac-nhan')
+          await qa.page.locator('.viewer-scroll').evaluate((el) => el.scrollTo(0, el.scrollHeight))
+          const confirm = qa.page.getByRole('button', { name: 'Xác nhận đã đọc' })
+          await qa.expect(confirm).toBeEnabled({ timeout: 20_000 })
+          await settled(qa)
+          await qa.shot('cuoi-trang-mo-xac-nhan')
+          const answered = qa.page.waitForResponse((r) => r.url().includes('/read-confirmation') && r.request().method() === 'POST')
+          await press(qa, confirm)
+          const res = await answered
+          qa.expect(res.status(), 'POST read-confirmation').toBe(200)
+          const body = await res.json()
+          qa.expect(body.code, JSON.stringify(body)).toBe('MSG253')
+          await qa.expect(toast(qa, 'Đã xác nhận đọc tài liệu.')).toBeVisible()
+          await qa.expect(qa.page.getByText('Đã xác nhận đọc', { exact: true })).toBeVisible()
+          await settled(qa)
+          await qa.shot('da-xac-nhan-doc')
+          const viewer = qa.page.getByRole('dialog', { name: 'Xem tài liệu' })
+          await viewer.getByRole('button', { name: 'Đóng', exact: true }).click()
+          await qa.expect(viewer).toHaveCount(0)
+          await noSidewaysScroll(qa)
+          await noRawCodes(qa)
+          const back = card(qa, v)
+          await qa.expect(back.locator('.vote-docs li').filter({ hasText: fileName })).toContainText('Đã đọc')
+          await back.getByRole('radio', { name: 'Đồng ý', exact: true }).check()
+          await qa.expect(back.getByRole('button', { name: 'Gửi phiếu' })).toBeEnabled()
+          await back.getByRole('button', { name: 'Gửi phiếu' }).click()
+          await qa.expect(toast(qa, 'Đã ghi nhận phiếu của bạn.')).toBeVisible()
+          await settled(qa)
+          await qa.shot('da-doc-da-gui')
+          c.done()
+        } finally {
+          await closeOpenVotes(qa, m)
+        }
+      },
+    },
+    {
+      // R1/FE-11 (24/11/2026): AC mới — VOTE_FT15 (Khách bỏ phiếu kín qua OTP).
+      id: 'AC33',
+      role: 'anon',
+      devices: ['desktop', 'phone'],
+      title: 'Khách bỏ phiếu kín: hòm phiếu không tên người bỏ, bỏ xong báo "Bạn đã gửi phiếu.", lượt kín tăng một không gắn tên (VOTE_FT15)',
+      steps: [
+        'Thư ký mời Khách (email riêng cho lần chạy) vào cuộc họp đang diễn ra; Khách xác minh OTP, khai tên',
+        'Thư ký tạo biểu quyết kín cho vai trò Khách; Chủ toạ mở',
+        'Khách mở tab Biểu quyết, chọn phương án, gửi phiếu; Chủ toạ đọc lượt qua API',
+      ],
+      expected:
+        'Hòm phiếu của Khách không hiện tên người bỏ; gửi xong Khách thấy "Bạn đã gửi phiếu."; lượt kín tăng một, phiếu không gắn tên (UC-65)',
+      async run(qa) {
+        const m = await meeting(qa, 'live', 'InProgress')
+        const email = `qa-khach-vote15-${Date.now().toString(36)}-${qa.device}@example.test`
+        const displayName = `Khách VOTE15 ${rand()}`
+        const link = await guestInvite(qa, m.id, 'Khách Bỏ phiếu', email)
+        const v = await draftVote(qa, m, 'Khach kin', { isAnonymous: true, eligibleRoles: ['Guest'] })
+        try {
+          await openVote(qa, m, v)
+          await guestVerify(qa, link, email, displayName)
+          await press(qa, qa.page.getByRole('tab', { name: 'Biểu quyết' }))
+          const box = card(qa, v)
+          await qa.expect(box).toBeVisible({ timeout: 15_000 })
+          const names = `${(await users(qa)).chair.name}|${(await users(qa)).secretary.name}|${(await users(qa)).member.name}|${displayName}`
+          qa.expect(await box.innerText(), 'voter names shown on the secret ballot box').not.toMatch(new RegExp(names))
+          await press(qa, box.getByRole('radio', { name: 'Đồng ý', exact: true }))
+          await qa.expect(box.getByRole('button', { name: 'Gửi phiếu' })).toBeEnabled()
+          await box.getByRole('button', { name: 'Gửi phiếu' }).click()
+          await qa.expect(box.getByText('Bạn đã gửi phiếu.')).toBeVisible({ timeout: 15_000 })
+          await settled(qa)
+          await qa.shot('khach da gui phieu kin')
+          await noSidewaysScroll(qa)
+          await noRawCodes(qa)
+          const chair = await client(qa, 'chair')
+          await closeVote(qa, m, v)
+          const detail = (await chair.get(votePath(m, v))).body
+          qa.expect(detail.result?.ballotCount, 'secret tally grew by one').toBe(1)
+          qa.expect(detail.result?.voters, 'anonymous tally carries no voter names').toBeNull()
+          const leaked = JSON.stringify(detail.result ?? {})
+          qa.expect(leaked, `voter identity leaked into the tally: ${leaked.slice(0, 200)}`).not.toMatch(/voterName|displayName|email|userId/i)
+          qa.note(`tally: ballotCount=${detail.result?.ballotCount}, voters=${detail.result?.voters}`)
+        } finally {
+          await closeOpenVotes(qa, m)
+        }
       },
     },
   ],

@@ -8,7 +8,7 @@
 ## 1. Quy tắc chung
 
 - Cả hai endpoint cần đăng nhập và tài khoản còn hoạt động; thiếu token → `401`. Quyền tạo cuộc họp (`MeetingCreator`, actor
-  *Meeting Organizer*) được kiểm lại ở server **trước** mọi tham số → `403 MSG448` (BR-140, BR-141).
+  *Member*) được kiểm lại ở server **trước** mọi tham số → `403 MSG448` (BR-140, BR-141).
 - Chỉ lịch của người **đã chia sẻ cho chính người gọi** được đọc: chia sẻ `Effective`, chưa quá ngày kết thúc (BR-142, BR-143), chủ lịch
   còn hoạt động. Mỗi người chỉ ở mốc đã chia sẻ: `Level1` = họp Thường, `Level2` = Thường + Nội bộ; họp **Mật** của người khác
   không bao giờ được đọc (BR-140, BR-141, BR-144, BR-145).

@@ -92,5 +92,28 @@ class ClosestPairTests(unittest.TestCase):
         self.assertIsNone(pipeline.closest_pair({0: unit(1, 0)}))
 
 
+class FoldSmallVoiceTests(unittest.TestCase):
+    """After the second pass, a voice under MIN_SPEAKER_SHARE of the speech gives each of its turns to the closest
+    other voice, judged on the whole turn (stubs: a turn's audio is its start, its embedding is looked up)."""
+
+    def engine(self, turn_vectors, voice_vectors):
+        engine = object.__new__(pipeline.Engine)
+        engine._slice = lambda regions, start, end: np.array([start])
+        engine._embed = lambda audio: turn_vectors[int(audio[0])]
+        engine._voice = lambda parts: voice_vectors[tuple(int(audio[0]) for audio in parts)]
+        engine._check = lambda: None
+        return engine
+
+    def test_each_small_turn_takes_its_own_nearest_voice(self):
+        # Voices 0 and 1 hold 98 and 100 samples; voice 2 holds 2 of 200 (1%), in two turns that sound like 1 and 0.
+        turns = [(0, 98, 0), (100, 101, 2), (101, 201, 1), (300, 301, 2)]
+        engine = self.engine({100: unit(0.1, 1), 300: unit(1, 0.1)}, {(0,): unit(1, 0), (101,): unit(0, 1)})
+        self.assertEqual(engine._fold_small_voices([], turns), [(0, 98, 0), (100, 201, 1), (300, 301, 0)])
+
+    def test_a_voice_at_the_share_stays(self):
+        turns = [(0, 96, 0), (100, 104, 2), (104, 200, 1)]  # 4 of 196 samples: 2.04%
+        self.assertEqual(self.engine({}, {})._fold_small_voices([], turns), turns)
+
+
 if __name__ == "__main__":
     unittest.main()

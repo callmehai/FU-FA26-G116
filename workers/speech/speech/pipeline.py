@@ -33,6 +33,12 @@ log = logging.getLogger(__name__)
 SAMPLE_RATE = 16000
 
 # --- Transcription ----------------------------------------------------------------------------
+# The recogniser's files (models.manifest): Gipformer as published, in fp32, not its int8 copy (ADR-0086). The int8
+# copy loses words where the speech is far and noisy: on synthetic far-field meetings WER 11.8% → 11.1% and 8.2% → 7.6%,
+# on spontaneous speech played through a far room (VietMed) 23.0% → 22.1%, on read speech 4.9% → 4.7%. It costs about
+# 45% more time in the recogniser (a whole run on a Mac M1: RTF 0.133 → 0.137 on 50 minutes, 0.139 → 0.153 on 8), a
+# 190 MB larger file and about 150 MB more memory per process (peak 1.49 → 1.63 GB).
+ASR_FILES = {part: f"gipformer/{part}.onnx" for part in ("encoder", "decoder", "joiner")}
 # Longest piece handed to the recogniser at once; the VAD cuts speech at this length, and a
 # longer turn is split again. The transducer degrades and memory grows on very long inputs.
 MAX_CHUNK_S = 25.0
@@ -118,6 +124,22 @@ MIN_REGION_S = 0.5
 # A cluster with less speech than this is not a person but noise, laughter or a cough; its windows
 # join the nearest real speaker. Skipped when the caller states the number of speakers.
 MIN_SPEAKER_S = 2.0
+# ...nor is a cluster with less than this share of the recording's speech (ADR-0086). On a long room recording the
+# clustering leaves a tail of small clusters beside the real people: windows where two people talk at once (half one
+# person, half the other), a laugh, the far end of a laptop speaker. A real meeting of 24/11/2026 (62 minutes, 6–7
+# people) came out as 20–25 voices, only about 7 with more than a minute. On synthetic far-field meetings with exact
+# truth (eval/far_meeting.py: 30–52 minutes, 6–7 people) those clusters held 3–124 s each, mostly half one person and
+# half another (two people at once), and 2% of the speech (about a minute in an hour) folded them: 42 voices for 21
+# people → 18, and 26 for 12 → 10, DER 16.2% → 13.3% and 18.1% → 16.5% (README, "Hiệu chỉnh"). A short meeting is
+# untouched: 2% of three minutes is under MIN_SPEAKER_S. The price is that a person who says less than that share is
+# written under the nearest voice, as one who said a single word already was.
+# The fold runs after the second pass (MERGE_THRESHOLD), turn by turn: each turn of a small voice goes to the closest
+# voice judged on the whole turn (Engine._fold_small_voices). Folding 3-second windows before the second pass, as it
+# first did, moved 15% of the windows of that 24/11 meeting into the large clusters; the mixed clusters then missed
+# the 0.8 of the second pass, and one person 17 minutes long came out as three voices (11, 4 and 2 minutes). Turn by
+# turn after the merge it stays one voice of 17 minutes; on the synthetic meetings DER 16.5% → 16.0% (far-hard) and
+# 20.4% → 20.2% (far-test), the same elsewhere, with the same number of voices.
+MIN_SPEAKER_SHARE = 0.02
 # Cut for sherpa-onnx FastClustering over the window embeddings (README, "Hiệu chỉnh"; ADR-0074). 0.5
 # was tuned on synthetic clips (17 of 20 right) and on real rooms split 4 people into 41 voices (team
 # test 21/11/2026, 15 minutes) and 3 people plus a laptop speaker into 15. On those two recordings 0.72
@@ -276,7 +298,7 @@ def model_ids(hashes: dict[str, str]) -> dict[str, str]:
         return hashes[path][:12]
 
     return {
-        "asr": f"gipformer-1.5-68m-int8@{short('gipformer/encoder.int8.onnx')}",
+        "asr": f"gipformer-1.5-68m-fp32@{short(ASR_FILES['encoder'])}",
         "embedding": f"eres2net-base-200k@{short('eres2net_base.onnx')}",
         "vad": f"silero-vad@{short('silero_vad.onnx')}",
         "punctuation": f"vibert-capu-int8@{short(punctuation.MODEL_FILE)}",
@@ -579,9 +601,9 @@ class Engine:
         # SPEECH_HOTWORDS_FILE=0 turns it off, to compare with and without.
         self._hotwords = hotwords.prepare(root, hotwords.settings())
         self._recognizer = sherpa_onnx.OfflineRecognizer.from_transducer(
-            encoder=str(root / "gipformer/encoder.int8.onnx"),
-            decoder=str(root / "gipformer/decoder.int8.onnx"),
-            joiner=str(root / "gipformer/joiner.int8.onnx"),
+            encoder=str(root / ASR_FILES["encoder"]),
+            decoder=str(root / ASR_FILES["decoder"]),
+            joiner=str(root / ASR_FILES["joiner"]),
             tokens=str(root / "gipformer/tokens.txt"),
             num_threads=threads,
             sample_rate=SAMPLE_RATE,
@@ -760,6 +782,30 @@ class Engine:
             turns = [(start, end, keep if label == drop else label) for start, end, label in turns]
         return merge_turns(turns)
 
+    def _fold_small_voices(self, regions: list[tuple[int, np.ndarray]],
+                           turns: list[tuple[int, int, int]]) -> list[tuple[int, int, int]]:
+        """Give each turn of a voice under MIN_SPEAKER_SHARE of the speech to the closest of the other voices, judged on
+        the whole turn against each voice's own embedding, after _merge_same_voices has joined one person's parts."""
+        held: dict[int, int] = defaultdict(int)
+        for start, end, label in turns:
+            held[label] += end - start
+        least = MIN_SPEAKER_SHARE * sum(held.values())
+        large = {label for label, length in held.items() if length >= least}
+        if not large or len(large) == len(held):
+            return turns
+        parts: dict[int, list[np.ndarray]] = defaultdict(list)
+        for start, end, label in turns:
+            if label in large:
+                parts[label].append(self._slice(regions, start, end))
+        voices = {label: self._voice(audio) for label, audio in parts.items()}
+        folded = []
+        for start, end, label in turns:
+            if label not in large:
+                self._check()
+                label = nearest(self._embed(self._slice(regions, start, end)), voices)
+            folded.append((start, end, label))
+        return merge_turns(folded)
+
     def _diarize(self, regions: list[tuple[int, np.ndarray]], speakers: int | None) -> list[tuple[int, int, int]]:
         """(start sample, end sample, cluster) turns over the VAD's speech regions."""
         window, hop = int(WINDOW_S * SAMPLE_RATE), int(HOP_S * SAMPLE_RATE)
@@ -803,7 +849,9 @@ class Engine:
                 turns.append((start, end, nearest(self._embed(self._slice(regions, start, end)), anchors)))
         turns = [turn for turn in sorted(turns) if turn[1] - turn[0] >= MIN_TURN_S * SAMPLE_RATE]
         self._track("diarize", DIARIZE_EMBED_SHARE)
-        return self._merge_same_voices(regions, turns) if turns and not speakers else turns
+        if not turns or speakers:
+            return turns
+        return self._fold_small_voices(regions, self._merge_same_voices(regions, turns))
 
     def _checked(self, function, *args):
         self._check()

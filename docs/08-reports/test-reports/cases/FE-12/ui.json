@@ -22,14 +22,17 @@
           "expected": [
             "Step 2: \"Bản nháp điền sẵn thông tin cuộc họp và dự thảo vào mẫu biên bản.\" and the notice \"Chưa có dự thảo AI nên mục I–III để trống.\" with a \"Tạo dự thảo\" button.",
             "Step 3: the backend answers 201 MSG395; toast \"Đã tạo bản nháp biên bản.\"; badge \"Bản nháp\"; the paper shows \"BIÊN BẢN\", the Chair and Secretary names, the agenda and \"……\" blanks; the foot reads \"Lưu lần cuối <time>\".",
-            "Buttons \"Tải xuống\", \"Tạo lại\", \"Sửa\" and \"Gửi duyệt\" appear.",
+            "Buttons \"Tải xuống\", \"Sửa\" and \"Gửi duyệt\" appear (no \"Tạo lại\": with no AI draft a rebuild would only bring back the same empty sections).",
             "Step 4: the same draft is shown."
           ],
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Secretary of an InProgress meeting with an agenda and a closed vote; no AI draft and no minutes yet."
+            "Signed in as the Secretary of an Ended meeting with an agenda and a closed vote; no AI draft and no minutes yet. (The app locks minutes until the meeting has ended, MSG398.)"
           ],
-          "note": "UC-59 | BR-384 | Manual only"
+          "note": "UC-59 | BR-384 | Manual only · Evidence(AC1): tests/qa/out/SCRUM-199/20261121-164920-eb5a3255/01-secretary-AC1-desktop-chua-co-bien-ban.png; tests/qa/out/SCRUM-199/20261121-164920-eb5a3255/02-secretary-AC1-desktop-da-tao-ban-nhap.png; tests/qa/out/SCRUM-199/20261121-164920-eb5a3255/03-secretary-AC1-desktop-to-bien-ban.png; tests/qa/out/SCRUM-199/20261121-164920-eb5a3255/04-secretary-AC1-phone-chua-co-bien-ban.png; tests/qa/out/SCRUM-199/20261121-164920-eb5a3255/05-secretary-AC1-phone-da-tao-ban-nhap.png; tests/qa/out/SCRUM-199/20261121-164920-eb5a3255/06-secretary-AC1-phone-to-bien-ban.png · Preconditions changed InProgress→Ended per re-review 24/11 (the app locks minutes until Ended, MSG398). Re-run AC1 24/11: Passed: tests/qa/out/SCRUM-199/20261124-041219-b5224b3f/01-secretary-AC1-desktop-chua-co-bien-ban.png; tests/qa/out/SCRUM-199/20261124-041219-b5224b3f/02-secretary-AC1-desktop-da-tao-ban-nhap.png; tests/qa/out/SCRUM-199/20261124-041219-b5224b3f/03-secretary-AC1-desktop-to-bien-ban.png; tests/qa/out/SCRUM-199/20261124-041219-b5224b3f/04-secretary-AC1-phone-chua-co-bien-ban.png; tests/qa/out/SCRUM-199/20261124-041219-b5224b3f/05-secretary-AC1-phone-da-tao-ban-nhap.png; tests/qa/out/SCRUM-199/20261124-041219-b5224b3f/06-secretary-AC1-phone-to-bien-ban.png",
+          "round1": "Passed",
+          "date1": "2026-11-24",
+          "tester1": "Nguyễn Trường Huy"
         },
         {
           "id": "MIN_FT02",
@@ -49,65 +52,34 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Secretary of an Ended meeting whose AI draft is written (\"Chưa duyệt\") and which has no minutes."
           ],
-          "note": "UC-59 AF-4 | BR-382 | Manual only"
+          "note": "UC-59 AF-4 · BR-382 · Evidence(AC24): tests/qa/out/SCRUM-199/20261124-111144-ece83cb4/01-secretary-AC24-desktop-canh-bao-du-thao-chua-duyet.png; tests/qa/out/SCRUM-199/20261124-111144-ece83cb4/02-secretary-AC24-desktop-cuon-toi-nut-duyet.png; tests/qa/out/SCRUM-199/20261124-111144-ece83cb4/03-secretary-AC24-desktop-bien-ban-dung-du-thao-chua-duyet.png; tests/qa/out/SCRUM-199/20261124-111240-ece83cb4/01-secretary-AC24-phone-canh-bao-du-thao-chua-duyet.png; tests/qa/out/SCRUM-199/20261124-111240-ece83cb4/02-secretary-AC24-phone-cuon-toi-nut-duyet.png; tests/qa/out/SCRUM-199/20261124-111240-ece83cb4/03-secretary-AC24-phone-bien-ban-dung-du-thao-chua-duyet.png (dự thảo viết thật bằng máy AI local qwen2.5:7b-instruct từ bản ghi giọng máy edge-tts vi-VN; mỗi màn hình một cuộc họp riêng)",
+          "id": "MIN_FT02",
+          "round1": "Passed",
+          "date1": "2026-11-24",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "MIN_FT03",
-          "description": "Verify \"Tạo lại\" asks before replacing the edited draft and then rebuilds it.",
+          "description": "Verify no draft can be built before the meeting ends.",
           "procedure": [
-            "Open /mgmt/meetings/{meetingId} and click the tab \"Biên bản\".",
-            "Click \"Tạo lại\" on the card \"Biên bản\".",
-            "Click \"Huỷ\".",
-            "Click \"Tạo lại\" again and confirm \"Tạo lại\"."
+            "Open /mgmt/meetings/{meetingId} and look at the \"Biên bản\" tab.",
+            "Send the draft-build request directly (Postman)."
           ],
           "expected": [
-            "Step 2: dialog \"Tạo lại bản nháp biên bản?\" — \"Bản nháp mới điền lại từ mẫu và dự thảo hiện tại. Mọi chỗ đã sửa trong bản nháp biên bản sẽ mất.\"",
-            "Step 3: the dialog closes; the hand edit \"Bản Thư ký đã sửa.\" is still on the paper; no request is sent.",
-            "Step 4: the button shows \"Đang tạo…\", then toast \"Đã tạo bản nháp biên bản.\"; the paper is the template again and the hand edit is gone."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Secretary of an InProgress meeting whose draft minutes were edited to contain \"Bản Thư ký đã sửa.\"."
-          ],
-          "note": "UC-59 AF-2 | BR-388 | Manual only"
-        },
-        {
-          "id": "MIN_FT04",
-          "description": "Verify the card says the AI draft changed after the minutes were built.",
-          "procedure": [
-            "Edit and save one section of the card \"Dự thảo nội dung\".",
-            "Read the card \"Biên bản\".",
-            "Click \"Tạo lại\" in the notice and confirm."
-          ],
-          "expected": [
-            "Step 2: notice \"Biên bản chưa có dự thảo mới nhất.\" with a \"Tạo lại\" button.",
-            "Step 3: toast \"Đã tạo bản nháp biên bản.\"; the paper holds the edited section and the notice is gone."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Secretary on the tab \"Biên bản\" of an Ended meeting whose reviewed AI draft was used to build the minutes."
-          ],
-          "note": "UC-59 AF-5 | BR-382 | Manual only"
-        },
-        {
-          "id": "MIN_FT05",
-          "description": "Verify no draft can be built before the meeting starts.",
-          "procedure": [
-            "Open /mgmt/meetings/{meetingId} and click the tab \"Biên bản\".",
-            "Read the card \"Biên bản\"."
-          ],
-          "expected": [
-            "The card shows \"Chưa có biên bản.\" and no \"Tạo bản nháp\" button.",
-            "Sending the build anyway (Postman) is refused with 409 MSG398 \"Chỉ soạn biên bản khi cuộc họp đang diễn ra hoặc đã kết thúc.\"."
+            "The \"Biên bản\" tab is locked (\"Mở khi cuộc họp kết thúc\"): no draft card and no \"Tạo bản nháp\" button; opening ?tab=minutes lands on the overview tab.",
+            "Sending the build anyway (Postman) is refused with 409 MSG398 \"Chỉ soạn biên bản khi cuộc họp đã kết thúc.\"."
           ],
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Secretary of a Published meeting."
           ],
-          "note": "UC-59 EX-2 | BR-387 | Manual only"
+          "note": "UC-59 EX-2 | BR-387 | Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. The tab is locked before the meeting ends (PR #427), so there is no draft card; a direct draft request answers 409 MSG398. Evidence: tests/qa/out/MANUAL-R1/20261123-070954-03594e25/05-secretary-MIN_FT03-desktop-tab-bien-ban-chua-hop.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MIN_FT06",
+          "id": "MIN_FT04",
           "description": "Verify a Member sees no draft and no build control.",
           "procedure": [
             "Open /mgmt/meetings/{meetingId} and click the tab \"Biên bản\".",
@@ -119,27 +91,12 @@
           ],
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as a Member of an InProgress meeting whose Secretary has built draft minutes."
+            "Signed in as a Member of an Ended meeting whose Secretary has built draft minutes. (The app locks minutes until the meeting has ended, MSG398.)"
           ],
-          "note": "UC-58 AF-1 | BR-386 | BR-412 | Manual only"
-        },
-        {
-          "id": "MIN_FT07",
-          "description": "Verify two officers building the first draft at once end with one draft.",
-          "procedure": [
-            "In browser A (Secretary) and browser B (Chair) open the tab \"Biên bản\"; both show \"Tạo bản nháp\".",
-            "Click \"Tạo bản nháp\" in A.",
-            "Click \"Tạo bản nháp\" in B."
-          ],
-          "expected": [
-            "Step 2: A shows toast \"Đã tạo bản nháp biên bản.\" and the draft.",
-            "Step 3: B shows toast \"Cuộc họp đã có bản nháp biên bản.\" and reloads the card with the draft A built; only one draft exists."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Chair and Secretary of an InProgress meeting without minutes, signed in in two browsers."
-          ],
-          "note": "UC-59 EX-3 | BR-388 | Manual only"
+          "note": "UC-58 AF-1 | BR-386 | BR-412 | Manual only · Evidence(AC12): tests/qa/out/SCRUM-199/20261121-170741-eb5a3255/10-member-AC12-desktop-thanh-vien-chua-thay-gi.png; tests/qa/out/SCRUM-199/20261121-170741-eb5a3255/12-member-AC12-phone-thanh-vien-chua-thay-gi.png · Preconditions changed InProgress→Ended per re-review 24/11 (the app locks minutes until Ended, MSG398). Re-run AC12 24/11: Passed: tests/qa/out/SCRUM-199/20261124-041426-b5224b3f/02-member-AC12-desktop-thanh-vien-chua-thay-gi.png; tests/qa/out/SCRUM-199/20261124-041426-b5224b3f/03-member-AC12-desktop-thanh-vien-bi-tra-lai-khong-thay.png; tests/qa/out/SCRUM-199/20261124-041426-b5224b3f/04-member-AC12-phone-thanh-vien-chua-thay-gi.png; tests/qa/out/SCRUM-199/20261124-041426-b5224b3f/05-member-AC12-phone-thanh-vien-bi-tra-lai-khong-thay.png",
+          "round1": "Passed",
+          "date1": "2026-11-24",
+          "tester1": "Nguyễn Trường Huy"
         }
       ]
     },
@@ -150,7 +107,7 @@
       ],
       "cases": [
         {
-          "id": "MIN_FT08",
+          "id": "MIN_FT05",
           "description": "Verify a Member reads the minutes only once they are issued.",
           "procedure": [
             "Open /mgmt/meetings/{meetingId} and click the tab \"Biên bản\".",
@@ -165,10 +122,13 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as a Member of an Ended meeting whose minutes are WaitingApproval; the Chair issues them during the test."
           ],
-          "note": "UC-58 | BR-412 | Manual only"
+          "note": "UC-58 | BR-412 | Manual only · Evidence(AC13): tests/qa/out/SCRUM-199/20261121-170431-eb5a3255/08-member-AC13-desktop-thanh-vien-doc-ban-hanh.png; tests/qa/out/SCRUM-199/20261121-170431-eb5a3255/09-member-AC13-desktop-thanh-vien-menu-tai.png; tests/qa/out/SCRUM-199/20261121-170431-eb5a3255/11-member-AC13-phone-thanh-vien-doc-ban-hanh.png; tests/qa/out/SCRUM-199/20261121-170431-eb5a3255/12-member-AC13-phone-thanh-vien-menu-tai.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MIN_FT09",
+          "id": "MIN_FT06",
           "description": "Verify the version picker opens an earlier revision and returns to the latest.",
           "procedure": [
             "Open /mgmt/meetings/{meetingId} and click the tab \"Biên bản\".",
@@ -185,10 +145,13 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as a Member of an Ended meeting whose minutes were issued and then corrected (the correction issued too)."
           ],
-          "note": "UC-58 AF-2 | BR-409 | Manual only"
+          "note": "UC-58 AF-2 | BR-409 | Manual only · Evidence(AC16): tests/qa/out/SCRUM-199/20261121-164920-eb5a3255/45-member-AC16-desktop-thanh-vien-ds-phien-ban.png; tests/qa/out/SCRUM-199/20261121-164920-eb5a3255/46-member-AC16-desktop-thanh-vien-xem-ban-cu.png; tests/qa/out/SCRUM-199/20261121-164920-eb5a3255/47-member-AC16-desktop-thanh-vien-ve-ban-moi.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MIN_FT10",
+          "id": "MIN_FT07",
           "description": "Verify the tab of a Secret meeting shows the minutes without any download.",
           "procedure": [
             "Open /mgmt/meetings/{meetingId} and click the tab \"Biên bản\".",
@@ -201,10 +164,13 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as a Member of a Secret Ended meeting whose minutes are issued."
           ],
-          "note": "UC-58 EX-4 | BR-390 | Manual only"
+          "note": "UC-58 EX-4 | BR-390 | Manual only · Evidence(AC17): tests/qa/out/SCRUM-199/20261121-164920-eb5a3255/51-chair-AC17-desktop-hop-mat-khong-tai.png; tests/qa/out/SCRUM-199/20261121-164920-eb5a3255/52-chair-AC17-phone-hop-mat-khong-tai.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MIN_FT11",
+          "id": "MIN_FT08",
           "description": "Verify an outsider cannot reach the minutes of a meeting.",
           "procedure": [
             "Open /mgmt/meetings/{meetingId}?tab=minutes."
@@ -216,25 +182,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as a user who is not on the meeting and did not create or approve it; the meeting's minutes are issued."
           ],
-          "note": "UC-58 EX-3 | Manual only"
-        },
-        {
-          "id": "MIN_FT12",
-          "description": "Verify the tab says when the minutes cannot be loaded and recovers with \"Thử lại\".",
-          "procedure": [
-            "Ask QA lead to stop the database, then open the tab \"Biên bản\".",
-            "Ask QA lead to start the database and click \"Thử lại\" on the card \"Biên bản\"."
-          ],
-          "expected": [
-            "Step 1: the card \"Biên bản\" shows an error alert with a \"Thử lại\" button (backend 500 MSG403 \"Không tải được biên bản.\" or the sign-in check failing).",
-            "Step 2: the minutes are shown."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Secretary of a meeting with draft minutes.",
-            "QA lead can stop the database of the test build and start it again."
-          ],
-          "note": "UC-58 EX-1 | Manual only"
+          "note": "UC-58 EX-3 | Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Người ngoài (tài khoản mới) thấy \"Không tìm thấy trang\"; API 404. Evidence: tests/qa/out/MANUAL-R1/20261123-070954-03594e25/06-qa-mr1-ngoai-3rq4k-trustcabinet-local-MIN_FT08-desktop-nguoi-ngoai-404.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -245,7 +196,7 @@
       ],
       "cases": [
         {
-          "id": "MIN_FT13",
+          "id": "MIN_FT09",
           "description": "Verify the Secretary edits the minutes and the saved text persists.",
           "procedure": [
             "Open /mgmt/meetings/{meetingId} and click the tab \"Biên bản\".",
@@ -261,48 +212,36 @@
           ],
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Secretary of an InProgress meeting with draft minutes."
+            "Signed in as the Secretary of an Ended meeting with draft minutes."
           ],
-          "note": "UC-60 | BR-385 | Manual only | Deviation: UC-60 Step 2 describes a plain-text view and a separate preview; the editor is a single WYSIWYG sheet laid out as printed, with no plain-text view."
+          "note": "UC-60 | BR-385 | Manual only | Deviation: UC-60 Step 2 describes a plain-text view and a separate preview; the editor is a single WYSIWYG sheet laid out as printed, with no plain-text view. · Evidence(AC3): tests/qa/out/SCRUM-199/20261121-170741-eb5a3255/01-secretary-AC3-desktop-trinh-soan-mo.png; tests/qa/out/SCRUM-199/20261121-170741-eb5a3255/03-secretary-AC3-desktop-da-luu.png; tests/qa/out/SCRUM-199/20261121-170741-eb5a3255/04-secretary-AC3-phone-trinh-soan-mo.png; tests/qa/out/SCRUM-199/20261121-170741-eb5a3255/06-secretary-AC3-phone-da-luu.png; tests/qa/out/SCRUM-199/20261121-170741-eb5a3255/07-secretary-AC3-phone-failure.png · E3 observed on phone 21–22/11 on the dev build (Vite): the new paragraph landed in the header table (index 215, glued to the header text) instead of after the closing line; desktop saved correctly. · Round1 chạy tay 23/11 (HuyNT): Passed. Chạy lại fe-12 AC3 trên bản build production (không qua Vite): desktop đạt, phone đạt 3/3 lần (giả lập chạm). Evidence: tests/qa/out/SCRUM-199/20261123-065346-03594e25; tests/qa/out/SCRUM-199/20261123-065541-03594e25; tests/qa/out/SCRUM-199/20261123-065547-03594e25",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MIN_FT14",
-          "description": "Verify \"Tìm và thay thế\" replaces text inside the minutes only.",
-          "procedure": [
-            "Click \"Sửa\", then press Ctrl+F.",
-            "Type \"……\" in \"Tìm\" and \"Đã thống nhất.\" in \"Thay bằng\".",
-            "Click \"Thay tất cả\", then \"Lưu\"."
-          ],
-          "expected": [
-            "Step 1: the find bar opens in the editor, not the browser's own search.",
-            "Step 3: every \"……\" becomes \"Đã thống nhất.\"; toast \"Đã lưu biên bản.\"."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Secretary of an InProgress meeting whose draft minutes still hold \"……\"."
-          ],
-          "note": "UC-60 | BR-385 | Manual only"
-        },
-        {
-          "id": "MIN_FT15",
+          "id": "MIN_FT10",
           "description": "Verify an empty document cannot be saved.",
           "procedure": [
             "Click \"Sửa\".",
             "Select all text (Ctrl+A) and delete it."
           ],
           "expected": [
-            "The \"Lưu\" button is disabled; no PUT /api/minutes/{minutesId} is sent (DevTools > Network).",
+            "The \"Lưu\" button is blocked (aria-disabled, \"Biên bản chưa có nội dung\"); pressing it sends no PUT /api/minutes/{minutesId}.",
             "Clicking \"Huỷ\" restores the paper unchanged."
           ],
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Secretary of an InProgress meeting with draft minutes."
+            "Signed in as the Secretary of an Ended meeting with draft minutes. (The app locks minutes until the meeting has ended, MSG398.)"
           ],
-          "note": "UC-60 EX-2 | BR-394 | Manual only"
+          "note": "UC-60 EX-2 | BR-394 | Manual only · Preconditions changed InProgress→Ended per re-review 24/11 (the app locks minutes until Ended, MSG398). New AC23 24/11: Passed: tests/qa/out/SCRUM-199/20261124-041837-b5224b3f/01-secretary-AC23-desktop-soan-trong-khoa-luu.png; tests/qa/out/SCRUM-199/20261124-041837-b5224b3f/02-secretary-AC23-desktop-huy-giu-nguyen.png; tests/qa/out/SCRUM-199/20261124-041837-b5224b3f/03-secretary-AC23-phone-soan-trong-khoa-luu.png; tests/qa/out/SCRUM-199/20261124-041837-b5224b3f/04-secretary-AC23-phone-huy-giu-nguyen.png",
+          "round1": "Passed",
+          "date1": "2026-11-24",
+          "tester1": "Nguyễn Trường Huy"
         },
         {
-          "id": "MIN_FT16",
-          "description": "Verify \"Huỷ\" leaves the editor without saving.",
+          "id": "MIN_FT11",
+          "description": "Verify on an Ended meeting that \"Huỷ\" leaves the editor without saving.",
           "procedure": [
             "Click \"Sửa\" and type \"Chưa lưu\".",
             "Click \"Huỷ\".",
@@ -314,32 +253,15 @@
           ],
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Secretary of an InProgress meeting with draft minutes."
+            "Signed in as the Secretary of an Ended meeting with draft minutes."
           ],
-          "note": "UC-60 | Manual only"
+          "note": "UC-60 | Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed on an Ended meeting (the app only builds a draft after the meeting ends, MSG398 otherwise). Cancelling sends no PUT; reload is unchanged. Evidence: tests/qa/out/MANUAL-R1/20261123-070954-03594e25/07-secretary-MIN_FT11-desktop-dang-sua.png; tests/qa/out/MANUAL-R1/20261123-070954-03594e25/08-secretary-MIN_FT11-desktop-da-huy.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MIN_FT17",
-          "description": "Verify a save over someone else's newer save is refused and keeps the typed text.",
-          "procedure": [
-            "In browser A (Secretary) click \"Sửa\" and type \"Bản của Thư ký.\".",
-            "In browser B (Chair) click \"Sửa\", type \"Bản của Chủ trì.\", click \"Lưu\".",
-            "In browser A click \"Lưu\".",
-            "In browser A click \"Lưu\" again."
-          ],
-          "expected": [
-            "Step 2: B shows toast \"Đã lưu biên bản.\".",
-            "Step 3: A shows toast \"Biên bản vừa được người khác sửa. Tải lại để xem bản mới nhất.\" (MSG401); A's editor stays open with its text.",
-            "Step 4: A's save goes through (\"Đã lưu biên bản.\") over the newer version."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Chair and Secretary of an InProgress meeting with draft minutes, on the tab \"Biên bản\" in two browsers."
-          ],
-          "note": "UC-60 EX-1 | BR-389 | Manual only"
-        },
-        {
-          "id": "MIN_FT18",
+          "id": "MIN_FT12",
           "description": "Verify minutes sent for approval cannot be edited.",
           "procedure": [
             "Open /mgmt/meetings/{meetingId} and click the tab \"Biên bản\".",
@@ -353,7 +275,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Secretary of an Ended meeting whose minutes are WaitingApproval."
           ],
-          "note": "UC-60 EX-3 | BR-388 | Manual only"
+          "note": "UC-60 EX-3 | BR-388 | Manual only · Evidence(AC6): tests/qa/out/SCRUM-199/20261121-164920-eb5a3255/16-secretary-AC6-desktop-hoi-gui-duyet.png; tests/qa/out/SCRUM-199/20261121-164920-eb5a3255/17-secretary-AC6-desktop-cho-duyet.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -364,7 +289,7 @@
       ],
       "cases": [
         {
-          "id": "MIN_FT19",
+          "id": "MIN_FT13",
           "description": "Verify the minutes download as a Word file with the paper's content.",
           "procedure": [
             "Open /mgmt/meetings/{meetingId} and click the tab \"Biên bản\".",
@@ -377,29 +302,15 @@
           ],
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Secretary of a Normal InProgress meeting \"Họp giao ban tháng 11\" with draft minutes."
+            "Signed in as the Secretary of a Normal Ended meeting \"Họp giao ban tháng 11\" with draft minutes. (The app locks minutes until the meeting has ended, MSG398.)"
           ],
-          "note": "UC-60 AF-1 | BR-391 | Manual only"
+          "note": "UC-60 AF-1 | BR-391 | Manual only · Evidence(AC5-Word): tests/qa/out/SCRUM-199/20261121-170741-eb5a3255/08-secretary-AC5-desktop-menu-tai-xuong.png · E2 verified by unzipping the downloaded docx (document.xml holds BIÊN BẢN + meeting title); filename assert in AC5 run. · Preconditions changed InProgress→Ended per re-review 24/11 (the app locks minutes until Ended, MSG398). Re-run AC5 24/11: Passed: tests/qa/out/SCRUM-199/20261124-041426-b5224b3f/01-secretary-AC5-desktop-menu-tai-xuong.png",
+          "round1": "Passed",
+          "date1": "2026-11-24",
+          "tester1": "Nguyễn Trường Huy"
         },
         {
-          "id": "MIN_FT20",
-          "description": "Verify the minutes download as a PDF file.",
-          "procedure": [
-            "Open /mgmt/meetings/{meetingId} and click the tab \"Biên bản\".",
-            "Click \"Tải xuống\", then \"PDF\".",
-            "Open the file."
-          ],
-          "expected": [
-            "The browser saves \"Biên bản - Họp giao ban tháng 11.pdf\": A4, Vietnamese letters correct, same content as the paper."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Secretary of a Normal InProgress meeting \"Họp giao ban tháng 11\" with draft minutes."
-          ],
-          "note": "UC-60 AF-2 | BR-391 | Manual only"
-        },
-        {
-          "id": "MIN_FT21",
+          "id": "MIN_FT14",
           "description": "Verify a Member downloads issued minutes but never a draft.",
           "procedure": [
             "Open /mgmt/meetings/{meetingId} and click the tab \"Biên bản\".",
@@ -413,10 +324,13 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as a Member of a Normal Ended meeting whose minutes are issued."
           ],
-          "note": "UC-58 AF-3 | BR-412 | Manual only"
+          "note": "UC-58 AF-3 | BR-412 | Manual only · Evidence(AC13-Word+AC12+AC5): tests/qa/out/SCRUM-199/20261121-170431-eb5a3255/08-member-AC13-desktop-thanh-vien-doc-ban-hanh.png; tests/qa/out/SCRUM-199/20261121-170431-eb5a3255/09-member-AC13-desktop-thanh-vien-menu-tai.png · E1 Word download verified by filename assert + menu shot (PDF attempt in same AC fails environmentally); E2 draft-hidden by AC12 shots + draft-export 404 by AC5 API.",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MIN_FT22",
+          "id": "MIN_FT15",
           "description": "Verify the minutes of a Secret meeting cannot be downloaded, even by the Secretary.",
           "procedure": [
             "Open /mgmt/meetings/{meetingId} and click the tab \"Biên bản\".",
@@ -428,26 +342,12 @@
           ],
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Secretary of a Secret InProgress meeting with draft minutes."
+            "Signed in as the Secretary of a Secret Ended meeting with draft minutes. (The app locks minutes until the meeting has ended, MSG398.)"
           ],
-          "note": "UC-60 EX-6 | BR-390 | Manual only"
-        },
-        {
-          "id": "MIN_FT23",
-          "description": "Verify a failed download says so and leaves no file.",
-          "procedure": [
-            "Ask QA lead to stop the database after the tab has loaded.",
-            "Click \"Tải xuống\", then \"Word\"."
-          ],
-          "expected": [
-            "A toast shows the error (backend 500 MSG403 \"Không tải được biên bản.\", or the sign-in check failing); no file is saved."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Secretary on the tab \"Biên bản\" of a meeting with draft minutes.",
-            "QA lead can stop the database of the test build and start it again."
-          ],
-          "note": "UC-58 EX-1 | Manual only"
+          "note": "UC-60 EX-6 | BR-390 | Manual only · Evidence(AC17): tests/qa/out/SCRUM-199/20261121-164920-eb5a3255/51-chair-AC17-desktop-hop-mat-khong-tai.png · Preconditions changed InProgress→Ended per re-review 24/11 (the app locks minutes until Ended, MSG398). Re-run AC17 24/11: Passed: tests/qa/out/SCRUM-199/20261124-041426-b5224b3f/06-chair-AC17-desktop-hop-mat-khong-tai.png; tests/qa/out/SCRUM-199/20261124-041426-b5224b3f/07-chair-AC17-phone-hop-mat-khong-tai.png",
+          "round1": "Passed",
+          "date1": "2026-11-24",
+          "tester1": "Nguyễn Trường Huy"
         }
       ]
     },
@@ -458,7 +358,7 @@
       ],
       "cases": [
         {
-          "id": "MIN_FT24",
+          "id": "MIN_FT16",
           "description": "Verify the Secretary sends the minutes to the Chair and they lock.",
           "procedure": [
             "Open /mgmt/meetings/{meetingId} and click the tab \"Biên bản\".",
@@ -475,10 +375,13 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Secretary of an Ended meeting with completed draft minutes (no \"……\" left); the Chair signed in in a second browser."
           ],
-          "note": "UC-61 | BR-404 | BR-411 | Manual only"
+          "note": "UC-61 | BR-404 | BR-411 | Manual only · Evidence(AC6): tests/qa/out/SCRUM-199/20261121-164920-eb5a3255/16-secretary-AC6-desktop-hoi-gui-duyet.png; tests/qa/out/SCRUM-199/20261121-164920-eb5a3255/17-secretary-AC6-desktop-cho-duyet.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MIN_FT25",
+          "id": "MIN_FT17",
           "description": "Verify the dialog warns about blanks left in the minutes but still sends.",
           "procedure": [
             "Open /mgmt/meetings/{meetingId} and click the tab \"Biên bản\".",
@@ -493,26 +396,33 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Secretary of an Ended meeting whose draft minutes still hold \"……\"."
           ],
-          "note": "UC-61 AF-1 | Manual only"
+          "note": "UC-61 AF-1 | Manual only · Evidence(AC6): tests/qa/out/SCRUM-199/20261121-164920-eb5a3255/16-secretary-AC6-desktop-hoi-gui-duyet.png; tests/qa/out/SCRUM-199/20261121-164920-eb5a3255/17-secretary-AC6-desktop-cho-duyet.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MIN_FT26",
+          "id": "MIN_FT18",
           "description": "Verify the minutes cannot be sent before the meeting ends.",
           "procedure": [
-            "Open /mgmt/meetings/{meetingId} and click the tab \"Biên bản\".",
-            "Click \"Gửi duyệt\"."
+            "Open /mgmt/meetings/{meetingId} of an ongoing meeting and look at the \"Biên bản\" tab.",
+            "Send the draft-build request directly (Postman)."
           ],
           "expected": [
-            "The dialog shows \"Chỉ gửi duyệt biên bản sau khi cuộc họp kết thúc.\" and its \"Gửi duyệt\" button is disabled; no request is sent."
+            "The \"Biên bản\" tab is locked (\"Mở khi cuộc họp kết thúc\"): no draft exists yet, so there is no \"Gửi duyệt\" button and nothing to send.",
+            "The direct request is refused with 409 MSG398 \"Chỉ soạn biên bản khi cuộc họp đã kết thúc.\"."
           ],
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Secretary of an InProgress meeting with draft minutes."
+            "Signed in as the Secretary of an ongoing meeting with no draft (none can exist yet)."
           ],
-          "note": "UC-61 EX-2 | BR-405 | Manual only"
+          "note": "UC-61 EX-2 | BR-405 | Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. The guard is structural: the tab stays locked while the meeting runs (PR #427) and a direct draft request answers 409 MSG398. Evidence: tests/qa/out/MANUAL-R1/20261123-071414-03594e25/03-secretary-MIN_FT18-desktop-dang-hop-khong-gui-duyet.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MIN_FT27",
+          "id": "MIN_FT19",
           "description": "Verify the Chair is not offered \"Gửi duyệt\".",
           "procedure": [
             "Open /mgmt/meetings/{meetingId} and click the tab \"Biên bản\".",
@@ -525,27 +435,13 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Chair (not also Secretary) of an Ended meeting with draft minutes."
           ],
-          "note": "UC-61 EX-1 | BR-404 | Manual only"
+          "note": "UC-61 EX-1 | BR-404 | Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Chủ toạ có Tải xuống, Tạo lại, Sửa; không có Gửi duyệt. Evidence: tests/qa/out/MANUAL-R1/20261123-070954-03594e25/09-chair-MIN_FT19-desktop-chu-toa-ban-nhap.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MIN_FT28",
-          "description": "Verify sending a copy that someone has just changed is refused and the card reloads.",
-          "procedure": [
-            "In browser A (Secretary) open the tab \"Biên bản\".",
-            "In browser B (Chair) edit and save the minutes.",
-            "In browser A click \"Gửi duyệt\" and confirm."
-          ],
-          "expected": [
-            "Step 3: the dialog closes; toast \"Biên bản vừa được người khác sửa. Tải lại để xem bản mới nhất.\"; the card reloads with the Chair's text, still \"Bản nháp\"."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Chair and Secretary of an Ended meeting with draft minutes, signed in in two browsers."
-          ],
-          "note": "UC-61 EX-4 | BR-389 | Manual only"
-        },
-        {
-          "id": "MIN_FT29",
+          "id": "MIN_FT20",
           "description": "Verify the Secretary corrects returned minutes and sends them again.",
           "procedure": [
             "Open /mgmt/meetings/{meetingId} and click the tab \"Biên bản\".",
@@ -562,10 +458,13 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Secretary of an Ended meeting whose minutes the Chair returned with \"Bổ sung kết luận mục 2.\"."
           ],
-          "note": "UC-61 AF-2 | BR-407 | Manual only"
+          "note": "UC-61 AF-2 | BR-407 | Manual only · Evidence(AC9): tests/qa/out/SCRUM-199/20261121-164920-eb5a3255/27-secretary-AC9-desktop-thay-ly-do-tra-lai.png; tests/qa/out/SCRUM-199/20261121-164920-eb5a3255/28-secretary-AC9-desktop-gui-duyet-lai.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MIN_FT30",
+          "id": "MIN_FT21",
           "description": "Verify cancelling the dialog sends nothing.",
           "procedure": [
             "Open /mgmt/meetings/{meetingId} and click the tab \"Biên bản\".",
@@ -578,7 +477,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Secretary of an Ended meeting with draft minutes."
           ],
-          "note": "UC-61 | Manual only"
+          "note": "UC-61 | Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Không có POST submit, vẫn Bản nháp, Chủ toạ không có thông báo. Evidence: tests/qa/out/MANUAL-R1/20261123-070954-03594e25/10-secretary-MIN_FT21-desktop-hop-gui-duyet.png; tests/qa/out/MANUAL-R1/20261123-070954-03594e25/11-secretary-MIN_FT21-desktop-sau-khi-huy.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -589,7 +491,7 @@
       ],
       "cases": [
         {
-          "id": "MIN_FT31",
+          "id": "MIN_FT22",
           "description": "Verify the Chair approves and issues the minutes.",
           "procedure": [
             "Open /mgmt/meetings/{meetingId} and click the tab \"Biên bản\".",
@@ -606,10 +508,13 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Chair of an Ended meeting whose minutes are WaitingApproval."
           ],
-          "note": "UC-64 | BR-408 | Manual only"
+          "note": "UC-64 | BR-408 | Manual only · Evidence(AC11): tests/qa/out/SCRUM-199/20261121-164920-eb5a3255/29-chair-AC11-desktop-hoi-duyet.png; tests/qa/out/SCRUM-199/20261121-164920-eb5a3255/30-chair-AC11-desktop-da-ban-hanh.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MIN_FT32",
+          "id": "MIN_FT23",
           "description": "Verify every reader is told of the issue and the email opens the minutes tab.",
           "procedure": [
             "As the Chair, approve and issue the minutes.",
@@ -624,10 +529,13 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Chair and Member of a Normal Ended meeting whose minutes are WaitingApproval, in two browsers; the Member uses a controlled inbox."
           ],
-          "note": "UC-64 | BR-411 | BR-412 | Manual only"
+          "note": "UC-64 | BR-411 | BR-412 | Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Thành viên có \"Biên bản đã ban hành\", Chủ toạ không; thư \"Biên bản cuộc họp đã ban hành: <tên>\" có link ?tab=minutes, mở ra có \"Tải xuống\". Evidence: tests/qa/out/MANUAL-R1/20261123-070954-03594e25/12-chair-MIN_FT23-desktop-da-ban-hanh.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MIN_FT33",
+          "id": "MIN_FT24",
           "description": "Verify the Secretary cannot approve.",
           "procedure": [
             "Open /mgmt/meetings/{meetingId} and click the tab \"Biên bản\".",
@@ -640,23 +548,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Secretary (not also Chair) of an Ended meeting whose minutes are WaitingApproval."
           ],
-          "note": "UC-64 EX-1 | BR-406 | Manual only"
-        },
-        {
-          "id": "MIN_FT34",
-          "description": "Verify approving minutes another tab has already returned shows why and reloads.",
-          "procedure": [
-            "In tab A open the tab \"Biên bản\"; in tab B return the minutes with a reason.",
-            "In tab A click \"Duyệt và ban hành\" and confirm."
-          ],
-          "expected": [
-            "The dialog closes; toast \"Biên bản không ở trạng thái chờ duyệt.\" (MSG429); the card reloads with badge \"Bị trả lại\"."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Chair of an Ended meeting whose minutes are WaitingApproval, the meeting open in two tabs."
-          ],
-          "note": "UC-64 EX-2 | Manual only"
+          "note": "UC-64 EX-1 | BR-406 | Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Nhãn \"Chờ duyệt\", không có Trả lại / Duyệt và ban hành. Evidence: tests/qa/out/MANUAL-R1/20261123-070954-03594e25/13-secretary-MIN_FT24-desktop-thu-ky-cho-duyet.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -667,7 +562,7 @@
       ],
       "cases": [
         {
-          "id": "MIN_FT35",
+          "id": "MIN_FT25",
           "description": "Verify the Chair returns the minutes with a reason the Secretary sees.",
           "procedure": [
             "Open /mgmt/meetings/{meetingId} and click the tab \"Biên bản\".",
@@ -684,10 +579,13 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Chair of an Ended meeting whose minutes are WaitingApproval; the Secretary signed in in a second browser."
           ],
-          "note": "UC-65 | BR-407 | BR-411 | Manual only"
+          "note": "UC-65 | BR-407 | BR-411 | Manual only · Evidence(AC8): tests/qa/out/SCRUM-199/20261121-164920-eb5a3255/21-chair-AC8-desktop-chu-toa-thay-cho-duyet.png; tests/qa/out/SCRUM-199/20261121-164920-eb5a3255/23-chair-AC8-desktop-da-tra-lai.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MIN_FT36",
+          "id": "MIN_FT26",
           "description": "Verify the reason is required.",
           "procedure": [
             "Click \"Trả lại\".",
@@ -700,28 +598,13 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Chair on the tab \"Biên bản\" of an Ended meeting whose minutes are WaitingApproval."
           ],
-          "note": "UC-65 EX-3 | BR-407 | Manual only"
+          "note": "UC-65 EX-3 | BR-407 | Manual only · Evidence(AC8): tests/qa/out/SCRUM-199/20261121-164920-eb5a3255/22-chair-AC8-desktop-thieu-ly-do.png; tests/qa/out/SCRUM-199/20261121-164920-eb5a3255/23-chair-AC8-desktop-da-tra-lai.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MIN_FT37",
-          "description": "Verify the reason stops at 2,000 characters.",
-          "procedure": [
-            "Click \"Trả lại\".",
-            "Paste a text of 2,500 characters into \"Lý do trả lại\".",
-            "Click \"Trả lại\"."
-          ],
-          "expected": [
-            "Step 2: the field keeps the first 2,000 characters; the counter reads \"2.000/2.000\".",
-            "Step 3: toast \"Đã trả lại biên bản cho Thư ký.\"; the notice shows the 2,000-character reason."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Signed in as the Chair on the tab \"Biên bản\" of an Ended meeting whose minutes are WaitingApproval."
-          ],
-          "note": "UC-65 EX-3 | BR-407 | Manual only"
-        },
-        {
-          "id": "MIN_FT38",
+          "id": "MIN_FT27",
           "description": "Verify cancelling the return keeps the minutes waiting.",
           "procedure": [
             "Click \"Trả lại\", type a reason, click \"Huỷ\"."
@@ -733,10 +616,13 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Chair on the tab \"Biên bản\" of an Ended meeting whose minutes are WaitingApproval."
           ],
-          "note": "UC-65 | Manual only"
+          "note": "UC-65 | Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Không có POST reject, vẫn Chờ duyệt. Evidence: tests/qa/out/MANUAL-R1/20261123-070954-03594e25/14-chair-MIN_FT27-desktop-hop-tra-lai.png; tests/qa/out/MANUAL-R1/20261123-070954-03594e25/15-chair-MIN_FT27-desktop-van-cho-duyet.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MIN_FT39",
+          "id": "MIN_FT28",
           "description": "Verify a Member never sees returned minutes or the reason.",
           "procedure": [
             "Open /mgmt/meetings/{meetingId} and click the tab \"Biên bản\"."
@@ -748,7 +634,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as a Member of an Ended meeting whose minutes the Chair returned."
           ],
-          "note": "UC-65 | BR-412 | Manual only"
+          "note": "UC-65 | BR-412 | Manual only · Evidence(AC12): tests/qa/out/SCRUM-199/20261121-170741-eb5a3255/11-member-AC12-desktop-thanh-vien-bi-tra-lai-khong-thay.png; tests/qa/out/SCRUM-199/20261121-170741-eb5a3255/13-member-AC12-phone-thanh-vien-bi-tra-lai-khong-thay.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -759,7 +648,7 @@
       ],
       "cases": [
         {
-          "id": "MIN_FT40",
+          "id": "MIN_FT29",
           "description": "Verify the Chair creates a correction that starts from the issued text.",
           "procedure": [
             "Open /mgmt/meetings/{meetingId} and click the tab \"Biên bản\".",
@@ -775,10 +664,13 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Chair of an Ended meeting whose minutes are issued."
           ],
-          "note": "UC-83 | BR-409 | BR-413 | Manual only"
+          "note": "UC-83 | BR-409 | BR-413 | Manual only · Evidence(AC14): tests/qa/out/SCRUM-199/20261121-170431-eb5a3255/14-secretary-AC14-desktop-hoi-dinh-chinh.png; tests/qa/out/SCRUM-199/20261121-170431-eb5a3255/15-secretary-AC14-desktop-da-tao-dinh-chinh.png; tests/qa/out/SCRUM-199/20261121-170431-eb5a3255/16-secretary-AC14-desktop-danh-sach-phien-ban.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MIN_FT41",
+          "id": "MIN_FT30",
           "description": "Verify readers keep reading the issued text while a correction is written.",
           "procedure": [
             "As a Member, open the tab \"Biên bản\"."
@@ -791,10 +683,13 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as a Member of an Ended meeting whose minutes are issued and whose Chair has just created a correction."
           ],
-          "note": "UC-83 | BR-412 | Manual only"
+          "note": "UC-83 | BR-412 | Manual only · Evidence(AC14): tests/qa/out/SCRUM-199/20261121-170431-eb5a3255/17-member-AC14-desktop-thanh-vien-van-doc-ban-hanh.png; tests/qa/out/SCRUM-199/20261121-170431-eb5a3255/21-member-AC14-phone-thanh-vien-van-doc-ban-hanh.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MIN_FT42",
+          "id": "MIN_FT31",
           "description": "Verify an issued correction replaces the original, which stays readable.",
           "procedure": [
             "As the Secretary, edit the correction (\"Đính chính: sửa tên dự án.\"), save and \"Gửi duyệt\".",
@@ -809,28 +704,13 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Chair, Secretary and Member of a Normal Ended meeting whose minutes are issued and have a correction in Draft, in three browsers."
           ],
-          "note": "UC-64 AF-1 | BR-409 | Manual only"
+          "note": "UC-64 AF-1 | BR-409 | Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Nhãn hiện \"Đính chính · chờ duyệt\" rồi \"Đã ban hành\"; thư \"Bản đính chính…\"; \"Bản gốc\" có \"Đã thay thế\" và Tải xuống. Evidence: tests/qa/out/MANUAL-R1/20261123-071414-03594e25/04-secretary-MIN_FT31-desktop-dinh-chinh-cho-duyet.png; tests/qa/out/MANUAL-R1/20261123-071414-03594e25/05-member-MIN_FT31-desktop-thanh-vien-ban-dinh-chinh.png; tests/qa/out/MANUAL-R1/20261123-071414-03594e25/06-member-MIN_FT31-desktop-ban-goc-da-thay-the.png",
+          "round1": "Passed",
+          "date1": "2026-11-23",
+          "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MIN_FT43",
-          "description": "Verify only one correction can be started at a time.",
-          "procedure": [
-            "In browser A (Chair) and browser B (Secretary) open the tab \"Biên bản\" of the issued minutes.",
-            "In A click \"Tạo bản đính chính\" and confirm.",
-            "In B click \"Tạo bản đính chính\" and confirm."
-          ],
-          "expected": [
-            "Step 2: A shows \"Đã tạo bản đính chính.\".",
-            "Step 3: B's dialog closes with toast \"Biên bản đang có một bản đính chính chưa ban hành.\" and the card reloads showing A's correction."
-          ],
-          "preconditions": [
-            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
-            "Chair and Secretary of an Ended meeting whose minutes are issued, in two browsers."
-          ],
-          "note": "UC-83 EX-3 | BR-410 | Manual only"
-        },
-        {
-          "id": "MIN_FT44",
+          "id": "MIN_FT32",
           "description": "Verify a Member is not offered a correction.",
           "procedure": [
             "Open /mgmt/meetings/{meetingId} and click the tab \"Biên bản\"."
@@ -843,7 +723,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as a Member of an Ended meeting whose minutes are issued."
           ],
-          "note": "UC-83 EX-1 | BR-386 | Manual only"
+          "note": "UC-83 EX-1 | BR-386 | Manual only · Evidence(AC13+AC15): tests/qa/out/SCRUM-199/20261121-170431-eb5a3255/08-member-AC13-desktop-thanh-vien-doc-ban-hanh.png",
+          "round1": "Passed",
+          "date1": "2026-11-21",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

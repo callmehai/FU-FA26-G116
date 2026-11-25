@@ -11,6 +11,8 @@ Nội dung của dự án mẫu, người kiểm thử và kết quả mẫu đ�
 | `Report5.1_Unit_Test.xlsx` | Test unit theo hàng: mỗi production function một sheet, mỗi sheet các nhóm `Class.Method` và các dòng `UTCnnn`; sinh từ `cases/FE-xx/unit/` |
 | `Report5.2_Integration_Test.xlsx` | Test tích hợp qua giao diện, mỗi Feature một sheet; sinh từ `cases/FE-xx/ui.json` |
 | `Report5.2.2_Integration_Test_API_Test.xlsx` | Test API, mỗi Feature một sheet, mỗi *endpoint* một nhóm; sinh từ `cases/FE-xx/api.json` |
+| `round1/` | Tài liệu làm việc Round 1 (checklist, bug, kế hoạch, prompt, ánh xạ AC, báo cáo agent); mục lục ở [round1/README.md](round1/README.md). Không phải nguồn của workbook |
+| `../../../scripts/test_reports/apply_trx.py` | Đọc file `.trx` của `dotnet test` và ghi `round1`/`date1`/`tester1` vào `cases/FE-xx/api.json` cho case có `Automated:`
 | `Report5.3_System_Test_FRs.xlsx` | Mười workflow end-to-end (WorkFlow1 → WorkFlow10) theo BF-01 → BF-04; sinh từ `cases/system/` bằng `scripts/test_reports/system_cases.py` — xem [cases/system/README.md](cases/system/README.md) |
 | `Report5.4_System_Test_NFRs.xlsx` | Yêu cầu phi chức năng (Report 3 §IV.2): năm sheet Security, Performance, Usability, Reliability, Availability; sinh từ `cases/nfr/` bằng `scripts/test_reports/nfr_cases.py` — xem [cases/nfr/README.md](cases/nfr/README.md) |
 | `Report5.5_Acceptance_Test.xlsx` | Bốn sheet gốc: Cover, Statistics, Customer Feedback Statistics, Customers Feedbacks |
@@ -20,37 +22,33 @@ Nội dung của dự án mẫu, người kiểm thử và kết quả mẫu đ�
 
 ```powershell
 python scripts/test_reports/integration_cases.py check   # kiểm tra
-python scripts/test_reports/integration_cases.py build   # sinh lại 5.2.2 (đóng Excel trước)
+python scripts/test_reports/integration_cases.py build   # sinh lại 5.2 và 5.2.2 (đóng Excel trước)
 ```
 
 Agent đọc [AGENTS.md](AGENTS.md) trước — cấu trúc sheet, cách viết case và cách chia việc.
 
-**Workbook 5.2 đang dùng (trên Drive và trong repo) chưa sinh từ `cases/`.** Theo yêu cầu ngày 18/11/2026,
-nó là bản 1.1 (13 sheet theo chức năng, 124 case `XXX_IT01`) giữ nguyên từng ô, cộng 22 sheet mới cùng kiểu
-cho các chức năng bản 1.1 chưa có (287 case) — bản 1.2, tổng 411 case. Vì vậy `integration_cases.py build`
-mặc định chỉ sinh 5.2.2 và bỏ qua 5.2; `build --with-ui` mới sinh 5.2 từ `cases/` và ghi đè bản 1.2 — chỉ chạy
-khi nhóm đã thống nhất lấy `cases/` làm nguồn của 5.2.
+**Cả 5.2 và 5.2.2 sinh từ `cases/`** (nhóm thống nhất ngày 20/11/2026; bản 1.2 làm tay — 13 sheet, 411 case `XXX_IT01` — đã bỏ, ID cũ không còn). Kết quả chạy test ghi vào JSON (`round1`, `date1`, `tester1`…) chứ không gõ vào Excel, vì mỗi lần `build` workbook được dựng lại từ file mẫu.
 
-Số case trong `cases/` (nguồn của 5.2.2 và của bản 5.2 chia theo Feature; FE-14 không có sheet vì UC-69 đã bỏ). Mọi vòng đều `Pending` cho tới khi chạy thật:
+Số case trong `cases/` sau khi thu gọn (commit `03594e25` ngày 23/11/2026; nguồn của 5.2.2 và của bản 5.2 chia theo Feature; FE-14 không có sheet vì UC-69 đã bỏ). API: 825 case, 825 Passed (TRX 24/11 trên build local). UI: 563 case, 563 Passed, 0 Pending (REC_FT24–27 test tay 25/11, không ảnh evidence). Round 1 Báo cáo chạy lại 24/11 trên màn mới: 13/13 desktop + 13/13 phone. Mọi vòng đều `Pending` cho tới khi chạy thật:
 
 | Feature | Sheet | 5.2 UI | 5.2.2 API |
 |---|---|---:|---:|
-| FE-01 | Authentication | 34 | 57 |
-| FE-02 | User Management | 45 | 61 |
-| FE-03 | Access Control | 45 | 63 |
-| FE-04 | Meeting Management | 74 | 116 |
-| FE-05 | Agenda | 47 | 83 |
-| FE-06 | Participants | 90 | 195 |
-| FE-07 | Documents | 101 | 217 |
-| FE-08 | Online Room | 98 | 136 |
-| FE-09 | Recording | 69 | 126 |
-| FE-10 | Transcription & Summary | 85 | 181 |
-| FE-11 | Voting | 23 | 53 |
-| FE-12 | Minutes | 44 | 83 |
-| FE-13 | Notifications | 35 | 47 |
-| FE-15 | Reporting | 17 | 21 |
-| FE-16 | Calendar | 68 | 98 |
-| | **Tổng** | **875** | **1537** |
+| FE-01 | Authentication | 26 | 34 |
+| FE-02 | User Management | 33 | 36 |
+| FE-03 | Access Control | 28 | 33 |
+| FE-04 | Meeting Management | 44 | 66 |
+| FE-05 | Agenda | 29 | 46 |
+| FE-06 | Participants | 50 | 84 |
+| FE-07 | Documents | 51 | 91 |
+| FE-08 | Online Room | 54 | 73 |
+| FE-09 | Recording | 48 | 60 |
+| FE-10 | Transcription & Summary | 64 | 101 |
+| FE-11 | Voting | 21 | 44 |
+| FE-12 | Minutes | 32 | 51 |
+| FE-13 | Notifications | 24 | 31 |
+| FE-15 | Reporting | 18 | 24 |
+| FE-16 | Calendar | 41 | 51 |
+| | **Tổng** | **563** | **825** |
 
 `generate-test-reports.cmd` bên dưới không còn đụng tới 5.1 / 5.2 / 5.2.2 / 5.3 / 5.4 NFRs; nó chỉ sinh 5.0 và `Report5.5_Acceptance_Test.xlsx`. Report 5.0 lấy số case 5.3 từ `cases/system/` và ảnh minh hoạ 5.3 từ workbook đã build, nên chạy `system_cases.py build --overwrite` trước khi sinh 5.0.
 

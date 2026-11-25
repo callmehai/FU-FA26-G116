@@ -19,7 +19,7 @@ kiểm tra mã băm lúc build image, nên container chạy không cần interne
 
 | Vai trò | Model | License | Nguồn |
 |---|---|---|---|
-| Chuyển giọng nói thành chữ | Gipformer 1.5 — RNN-T Zipformer 68M tham số, int8 | MIT | [g-group-ai-lab/gipformer1.5-68M-rnnt](https://huggingface.co/g-group-ai-lab/gipformer1.5-68M-rnnt) |
+| Chuyển giọng nói thành chữ | Gipformer 1.5 — RNN-T Zipformer 68M tham số, fp32 (bản gốc; bản int8 dùng tới 24/11/2026, xem [ADR-0086](../../docs/05-decisions/0086-tach-nguoi-noi-va-chuyen-chu-mic-phong-dai.md)) | MIT | [g-group-ai-lab/gipformer1.5-68M-rnnt](https://huggingface.co/g-group-ai-lab/gipformer1.5-68M-rnnt) |
 | Vector giọng (512 chiều) — dùng cho cả tách người nói lẫn Voice ID | 3D-Speaker ERes2Net base, huấn luyện trên 200k người nói | Apache-2.0 | bản ONNX của k2-fsa |
 | Lọc khoảng lặng (VAD) | Silero VAD | MIT | bản ONNX của k2-fsa |
 | Dấu câu và chữ hoa | viBERT-capu — viBERT (FPT AI) tinh chỉnh bởi dragonSwing, int8 | CC BY-SA 4.0 (ghi công dragonSwing và FPT AI) | [dragonSwing/vibert-capu](https://huggingface.co/dragonSwing/vibert-capu), bản ONNX [welcomyou/vibert-capu-onnx](https://huggingface.co/welcomyou/vibert-capu-onnx) |
@@ -29,7 +29,7 @@ token của model. Không phải model riêng, chỉ là bảng token.
 
 Danh sách file, mã SHA-256 và URL nằm trong [models.manifest](models.manifest). Server kiểm tra lại
 mã băm mỗi lần khởi động; file bị thay hay thiếu thì **từ chối chạy**. Mỗi kết quả kèm mã model dạng
-`gipformer-1.5-68m-int8@b528768939c7` (12 ký tự đầu của SHA-256), để biết transcript nào làm bằng
+`gipformer-1.5-68m-fp32@96b3c83c9c39` (12 ký tự đầu của SHA-256), để biết transcript nào làm bằng
 model nào.
 
 ## Chạy cục bộ
@@ -37,7 +37,7 @@ model nào.
 **Cách 1: Docker** (giống server).
 
 ```bash
-docker compose --profile speech up -d --build   # lần đầu tải ~230 MB model khi build, image ~950 MB
+docker compose --profile speech up -d --build   # lần đầu tải ~420 MB model khi build, image ~1,15 GB
 curl http://127.0.0.1:8090/health
 ```
 
@@ -82,7 +82,7 @@ JSON dùng camelCase. Thân request là **byte âm thanh thô**, định dạng 
 Không cần xác thực.
 
 ```json
-{"status":"ok","models":{"asr":"gipformer-1.5-68m-int8@b528768939c7","embedding":"eres2net-base-200k@e2d2048292e0","vad":"silero-vad@9e2449e10874"}}
+{"status":"ok","models":{"asr":"gipformer-1.5-68m-fp32@96b3c83c9c39","embedding":"eres2net-base-200k@e2d2048292e0","vad":"silero-vad@9e2449e10874"}}
 ```
 
 ### `POST /v1/transcribe?diarize=true|false[&speakers=N][&profile=room|clip][&context=…][&run=…]`
@@ -104,7 +104,7 @@ Không cần xác thực.
 ```json
 {
   "durationMs": 23382, "language": "vi",
-  "asrModel": "gipformer-1.5-68m-int8@b528768939c7",
+  "asrModel": "gipformer-1.5-68m-fp32@96b3c83c9c39",
   "embeddingModel": "eres2net-base-200k@e2d2048292e0",
   "segments": [
     {"startMs": 31, "endMs": 5802, "speaker": "SPEAKER_00", "text": "Kính thưa các đồng chí, hôm nay chúng ta họp để thông qua kế hoạch ngân sách quý bốn.", "levelDbfs": -24.6, "wordStartsMs": [31, 311, 631, "… một mốc cho mỗi từ"], "wordConfidence": [99, 97, 64, "… một số cho mỗi từ"]}
@@ -200,12 +200,17 @@ Các bước xử lý một bản ghi:
    nói nhỏ.
 4. **Tách người nói**: cắt mỗi quãng thành các khung 3 giây, chồng nhau 1.5 giây. Mỗi khung
    được tạo một vector giọng, rồi các khung được gom nhóm bằng FastClustering của sherpa-onnx.
-   - Nhóm nào có dưới 2 giây tiếng (ho, cười, tiếng ồn) được nhập vào người gần nhất.
+   - Nhóm nào có dưới 2 giây tiếng (ho, cười, tiếng ồn) được nhập vào nhóm gần nhất.
    - Một khung lẻ khác nhãn với cả hai khung bên cạnh thì lấy theo nhãn của chúng.
    - Các khung liền nhau cùng nhãn ghép thành một lượt nói.
    - **Gộp lần hai**: mỗi nhóm được tạo một vector giọng tổng thể (tối đa 30 giây âm thanh của
      nhóm). Hai nhóm có cosine từ 0.8 trở lên là cùng một người bị tách đôi, nên được gộp lại,
      rồi các lượt liền nhau của cùng người được nối, để câu không bị cắt giữa chừng.
+   - Sau đó, giọng nào có dưới 2% tổng thời lượng lời của bản ghi (khoảng một phút với buổi họp một giờ) thì từng lượt
+     của nó về giọng gần nhất, so cả lượt với vector giọng tổng thể. Trên bản ghi phòng dài, các giọng nhỏ đó phần lớn là
+     chỗ hai người nói chồng nhau, nên không phải một người
+     ([ADR-0086](../../docs/05-decisions/0086-tach-nguoi-noi-va-chuyen-chu-mic-phong-dai.md), xem
+     [Hiệu chỉnh](#cuộc-họp-dài-mic-xa-25112026)).
 5. **Bỏ chỗ gần như im lặng** (chỉ hồ sơ `room`): đoạn nào khi đến micro (trước bước tăng âm) vừa
    nhỏ hơn −45 dBFS vừa nhỏ hơn trung vị các đoạn của bản ghi từ 25 dB trở lên thì bị bỏ trước khi
    chuyển chữ. Chỗ ngắt hơi hay chỗ nối hai lượt ghi được bước 2 nâng lên tới 30 dB, VAD tưởng là
@@ -502,6 +507,58 @@ Từ khoá riêng của từng cuộc họp (tên người tham dự, từ trong
 theo từng luồng (`create_stream(hotwords=…)`, cộng thêm vào danh sách chung), nên phần worker chỉ là một tham số mới của
 `/v1/transcribe`; phần lớn việc nằm ở backend (gửi danh sách) và ở việc đo lại, vì tên riêng tiếng Việt là từ thường
 ("Hải", "Lộc") và dễ kéo nhầm. Đáng thử sau buổi bảo vệ.
+
+### Cuộc họp dài, mic xa (25/11/2026)
+
+Mic phòng buổi họp 24/11/2026 (62 phút, laptop trên bàn, −40 dBFS, nói tự nhiên, chen ngang) ra 20–25 "Người nói" cho
+6–7 người, và nhiều từ máy không chắc. Cuộc họp thật không có đáp án ai nói lúc nào, nên đo trên các cuộc họp tổng hợp có
+đáp án chính xác: câu đọc VIVOS đặt vào một phòng xa (`eval/far_meeting.py`: mỗi người một khoảng cách và độ vang, một
+người qua loa laptop, ồn, rì rầm, 15–25% lượt nói chồng, người chỉ nói vài giây) và các cuộc họp ngắn của
+`vivos_dataset.py`; đo bằng chính code worker (`eval/meeting_bench.py`, [eval/](eval/README.md#6-cuộc-họp-dài-mic-xa-tách-người-nói-và-chuyển-chữ-cả-buổi)).
+Quyết định và các phương án đã thử: [ADR-0086](../../docs/05-decisions/0086-tach-nguoi-noi-va-chuyen-chu-mic-phong-dai.md).
+
+Trên cuộc họp dài, gom nhóm để lại một đuôi nhóm nhỏ 3–124 giây bên cạnh người thật, phần lớn có độ thuần chỉ khoảng 0,5:
+khung hai người nói chồng nhau, giọng nửa người này nửa người kia, không đủ giống ai để gộp lần hai (0,8) nhận. Hai thay
+đổi:
+
+1. Nhóm dưới **2% tổng thời lượng lời** (khoảng một phút trong buổi họp một giờ; dưới 2 giây với cuộc họp vài phút nên
+   luật 2 giây cũ vẫn quyết định) về người gần nhất (`MIN_SPEAKER_SHARE`). Ngưỡng gom nhóm 0,72 và gộp lần hai 0,8 giữ
+   nguyên: chúng được chỉnh trên giọng thật cùng phòng, còn giọng VIVOS khác nhau rõ hơn giọng thật.
+2. Chuyển chữ bằng **Gipformer bản gốc fp32** thay bản int8: bản int8 mất từ nhiều hơn ở chỗ xa và ồn.
+
+| Bộ | WER trước → sau | CER trước → sau | DER trước → sau | Giọng trước → sau / người (≥ 30 giây) |
+|---|--:|--:|--:|---|
+| far-long (3 × 30–36 phút, 7 người) | 9,5% → **8,4%** | 7,2% → 6,4% | 16,2% → **13,3%** | 42 → **18** / 21 (18) |
+| far-hard (2 × 50–52 phút, 6 người, ồn 10 dB) | 10,8% → **10,2%** | 8,2% → 7,9% | 18,1% → **16,5%** | 26 → **10** / 12 (8) |
+| far-test (3 × 8–9 phút, người của VIVOS test) | 12,0% → **11,1%** | 8,8% → 8,3% | 21,0% → 20,4% | 26 → 18 / 18 (14) |
+| vivos-room (12 × 2–4 phút) | 6,2% → **5,9%** | 3,7% → 3,5% | 27,4% → 27,4% | 52 → 52 / 61 |
+| vivos-clean (12 × 2–4 phút) | 5,1% → 5,1% | 3,1% → 3,1% | 19,6% → 19,6% | 60 → 60 / 61 |
+
+- WER/CER trên chữ của máy chuyển chữ, bỏ dấu câu, số viết bằng chữ, có từ khoá ưu tiên. DER kiểu NIST, không chừa biên,
+  mỗi giọng ứng nhiều nhất một người. DER hai bộ `vivos-*` cao vì đáp án gồm cả khoảng lặng hai đầu mỗi câu.
+- Cái giá: người chỉ nói 2–15 giây giữ được nhãn riêng ở 5/10 trường hợp trước, 1/10 sau; lời họ nằm dưới giọng người gần
+  nhất cho tới khi Thư ký sửa.
+- Riêng model (cùng đoạn cắt): VIVOS test 4,9% → 4,7%, VietMed (nói tự nhiên, 573 câu) 24,0% → 23,6%, VietMed phát qua
+  phòng xa 23,0% → 22,1%, far-test 11,6% → 10,9%. Hai model tiếng Việt khác của sherpa-onnx (zipformer-vi 2025-04-20 huấn
+  luyện trên 70 nghìn giờ, Zipformer 30M) ngang hoặc tệ hơn Gipformer int8.
+- Tốc độ cả lượt (dấu câu, viết số, từ khoá; M1, 4 luồng, process chạy nền): 50 phút RTF 0,133 → 0,137, 8 phút 0,139 →
+  0,153; bộ nhớ đỉnh 1,49 → 1,63 GB. Bước chuyển chữ chậm hơn khoảng 45%, nhưng ít giọng hơn thì các bước theo giọng nhanh
+  hơn.
+
+**Gộp sau gộp lần hai, theo lượt (25/11/2026).** Bản đầu gộp từng khung 3 giây trước gộp lần hai. Trên buổi họp 24/11 nó
+dời 15% số khung (khoảng 13 phút lời) vào các nhóm lớn; các nhóm bị lẫn đó không còn đạt 0,8 của gộp lần hai, nên một
+người nói 17 phút ra ba giọng (11, 4 và 2 phút) và Thư ký phải gán cả ba cho cùng một người. Gộp sau gộp lần hai, từng
+lượt theo cả lượt, người đó còn một giọng 17 phút, vẫn 8 giọng. Trên bộ tổng hợp (chỉ phần tách người nói, `--diar-only`):
+
+| Bộ | DER gộp theo khung → theo lượt | Giọng / người | Người nói rất ít giữ nhãn riêng |
+|---|--:|---|---|
+| far-long | 13,3% → 13,3% | 18 → 18 / 21 | 0/3 → 0/3 |
+| far-hard | 16,5% → **16,0%** | 10 → 10 / 12 | 1/4 → 1/4 |
+| far-test | 20,4% → **20,2%** | 18 → 18 / 18 | 0/3 → 1/3 |
+| vivos-room | 27,4% → 27,4% | 52 → 52 / 61 | — |
+
+Chưa xử lý: hai người nói đan nhau trong 2–3 giây (một câu chen, một tiếng "có") vẫn ra một lượt của một người, vì
+giọng được xét theo khung 3 giây; cần một model chia đoạn theo khung ngắn (pyannote segmentation) mới tách được.
 
 ## Hiệu năng
 

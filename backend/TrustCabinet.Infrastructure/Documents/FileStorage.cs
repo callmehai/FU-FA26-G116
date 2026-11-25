@@ -7,7 +7,7 @@ using TrustCabinet.Application.Documents;
 
 namespace TrustCabinet.Infrastructure.Documents;
 
-/// <summary>Any S3-compatible store: Cloudflare R2 on the test server, SeaweedFS in development.</summary>
+/// <summary>Any S3-compatible store; SeaweedFS on the app server and in development (ADR-0084).</summary>
 public sealed class S3FileStorage : IFileStorage, IDisposable
 {
     private readonly FileStorageOptions _options;
@@ -21,10 +21,10 @@ public sealed class S3FileStorage : IFileStorage, IDisposable
             new AmazonS3Config
             {
                 ServiceURL = _options.ServiceUrl,
-                // R2 treats us-east-1 as an alias of its "auto" region; SeaweedFS ignores the region.
+                // SeaweedFS ignores the region; the SDK still needs one to sign requests.
                 AuthenticationRegion = "us-east-1",
                 ForcePathStyle = true,
-                // R2 rejects the CRC trailers the SDK would otherwise add to every request.
+                // Some S3-compatible stores reject the CRC trailers the SDK would otherwise add to every request.
                 RequestChecksumCalculation = RequestChecksumCalculation.WHEN_REQUIRED,
                 ResponseChecksumValidation = ResponseChecksumValidation.WHEN_REQUIRED,
             });

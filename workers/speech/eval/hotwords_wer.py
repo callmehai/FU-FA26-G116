@@ -12,8 +12,9 @@ ba" and "23" compare equal, and lose punctuation and the fillers "ờ ừ ừm �
 
 `--config` takes comma-separated knobs: `hw=<score>` (hotwords on, shipped list or `--hotwords`), `words=<file>`
 (another list for this configuration), `paths=<n>` (max_active_paths, default 4), `blank=<penalty>`
-(blank_penalty, default 0); `base` is the worker's setting before hotwords. `--hyp name=<files>` scores another recogniser's text (one file per pair, in
-order) as a reference point. `--out` writes each configuration's text, for reading against the reference;
+(blank_penalty, default 0), `model=<dir>` (another transducer: encoder*/decoder*/joiner*.onnx and tokens.txt, the int8
+files when there are both); `base` is the worker's setting before hotwords. `--hyp name=<files>` scores another
+recogniser's text (one file per pair, in order) as a reference point. `--out` writes each configuration's text, for reading against the reference;
 `--cache` keeps the cut pieces between runs (they are audio: keep them outside the repo too).
 `--profile clip --tsv list.tsv` scores many short sentences the way the per-mic profile cuts them instead,
 e.g. the VIVOS test set (eval/README.md), as a check that a list does not hurt ordinary speech.
@@ -76,15 +77,26 @@ def score(refs: list[str], hyps: list[str]) -> tuple[float, float, int]:
 
 
 def parse_config(spec: str) -> dict:
-    knobs = {"hw": None, "words": None, "paths": 4, "blank": 0.0}
+    knobs = {"hw": None, "words": None, "paths": 4, "blank": 0.0, "model": None}
     for part in filter(None, spec.split(",")):
         if part == "base":
             continue
         key, _, value = part.partition("=")
         if key not in knobs:
             raise SystemExit(f"unknown knob {key!r} in {spec!r}")
-        knobs[key] = int(value) if key == "paths" else Path(value) if key == "words" else float(value)
+        knobs[key] = int(value) if key == "paths" else Path(value) if key in ("words", "model") else float(value)
     return knobs
+
+
+def model_files(folder: Path) -> dict[str, Path]:
+    """encoder/decoder/joiner of another transducer in `folder` (the int8 file when there is one)."""
+    out = {}
+    for part in ("encoder", "decoder", "joiner"):
+        found = sorted(folder.glob(f"{part}*.onnx"), key=lambda p: (".int8." not in p.name, p.name))
+        if not found:
+            raise SystemExit(f"no {part}*.onnx in {folder}")
+        out[part] = found[0]
+    return out
 
 
 def decode(recognizer, pieces: list) -> str:
@@ -173,11 +185,12 @@ def main() -> int:
             if knobs["hw"] is not None:
                 options = hotwords.recognizer_options(
                     hotwords.prepare(root, hotwords.Settings(knobs["words"] or args.hotwords, knobs["hw"])))
+            files = model_files(knobs["model"]) if knobs["model"] else {
+                part: root / path for part, path in pipeline.ASR_FILES.items()}
+            tokens = knobs["model"] / "tokens.txt" if knobs["model"] else root / "gipformer/tokens.txt"
             recognizer = sherpa_onnx.OfflineRecognizer.from_transducer(
-                encoder=str(root / "gipformer/encoder.int8.onnx"),
-                decoder=str(root / "gipformer/decoder.int8.onnx"),
-                joiner=str(root / "gipformer/joiner.int8.onnx"),
-                tokens=str(root / "gipformer/tokens.txt"),
+                encoder=str(files["encoder"]), decoder=str(files["decoder"]), joiner=str(files["joiner"]),
+                tokens=str(tokens),
                 num_threads=args.threads, sample_rate=pipeline.SAMPLE_RATE, feature_dim=80,
                 decoding_method="modified_beam_search", max_active_paths=knobs["paths"],
                 blank_penalty=knobs["blank"], **options,
@@ -188,7 +201,7 @@ def main() -> int:
                 hyps = [decode(recognizer, file_pieces) for file_pieces in pieces]
                 elapsed = min(elapsed, time.monotonic() - started)
             rtf = elapsed / durations
-            label = re.sub(r"words=([^,]*)", lambda m: "words=" + Path(m[1]).stem, spec)
+            label = re.sub(r"(words|model)=([^,]*)", lambda m: f"{m[1]}={Path(m[2]).name}", spec)
             rows.append((label, *score(refs, hyps), rtf))
             if args.out:
                 args.out.mkdir(parents=True, exist_ok=True)

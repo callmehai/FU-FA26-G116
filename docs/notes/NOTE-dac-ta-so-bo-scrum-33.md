@@ -61,7 +61,7 @@ Cuộc họp giữ `Ended` suốt luồng này (D1).
 ### UC-61 – Submit Meeting Minutes for Approval (Gửi duyệt biên bản)
 
 Thay placeholder *Submit Meeting Minutes for Signing*. `<<extend>>` UC-58. Sequence Diagram:
-[UC61_SubmitMeetingMinutesForApproval.txt](../06-sequencediagram/minutes-management/UC61_SubmitMeetingMinutesForApproval.txt)
+[UC61_SubmitMeetingMinutesForApproval.txt](../06-sequencediagram/minutes-management/UC72_SubmitMeetingMinutesForApproval.txt)
 
 | Mục | Nội dung |
 |---|---|
@@ -77,7 +77,7 @@ Thay placeholder *Submit Meeting Minutes for Signing*. `<<extend>>` UC-58. Seque
 ### UC-64 – Approve and Issue Meeting Minutes (Duyệt và ban hành biên bản)
 
 Thay placeholder *Finalize Meeting Minutes*; actor đổi từ Secretary sang Chair. `<<extend>>` UC-58. Sequence Diagram:
-[UC64_ApproveAndIssueMeetingMinutes.txt](../06-sequencediagram/minutes-management/UC64_ApproveAndIssueMeetingMinutes.txt)
+[UC64_ApproveAndIssueMeetingMinutes.txt](../06-sequencediagram/minutes-management/UC73_ApproveAndIssueMeetingMinutes.txt)
 
 | Mục | Nội dung |
 |---|---|
@@ -93,7 +93,7 @@ Thay placeholder *Finalize Meeting Minutes*; actor đổi từ Secretary sang Ch
 ### UC-65 – Return Meeting Minutes for Revision (Trả lại biên bản)
 
 Thay placeholder *Request Revision of Meeting Minutes*; actor đổi từ người ký sang Chair. `<<extend>>` UC-58. Sequence Diagram:
-[UC65_ReturnMeetingMinutesForRevision.txt](../06-sequencediagram/minutes-management/UC65_ReturnMeetingMinutesForRevision.txt)
+[UC65_ReturnMeetingMinutesForRevision.txt](../06-sequencediagram/minutes-management/UC74_ReturnMeetingMinutesForRevision.txt)
 
 | Mục | Nội dung |
 |---|---|
@@ -109,7 +109,7 @@ Thay placeholder *Request Revision of Meeting Minutes*; actor đổi từ ngư�
 ### UC-83 – Correct Issued Meeting Minutes (Tạo bản đính chính biên bản)
 
 UC mới, `<<extend>>` UC-58. Sequence Diagram:
-[UC83_CorrectIssuedMeetingMinutes.txt](../06-sequencediagram/minutes-management/UC83_CorrectIssuedMeetingMinutes.txt)
+[UC83_CorrectIssuedMeetingMinutes.txt](../06-sequencediagram/minutes-management/UC75_CorrectIssuedMeetingMinutes.txt)
 
 | Mục | Nội dung |
 |---|---|
