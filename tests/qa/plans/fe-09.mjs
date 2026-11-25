@@ -462,7 +462,7 @@ async function openMicCard(qa) {
 // case still runs in the browser. ../fixtures/ is committed (regression needs said.wav).
 
 const PLANS_DIR = dirname(fileURLToPath(import.meta.url))
-const SAID_WAV = join(PLANS_DIR, '..', '..', 'fixtures', 'said.wav')
+const SAID_WAV = join(PLANS_DIR, '..', 'fixtures', 'said.wav')
 const saidPcm = (qa) => {
   if (!existsSync(SAID_WAV)) qa.inconclusive('Vietnamese speech fixture ../fixtures/said.wav is missing.')
   return readFileSync(SAID_WAV).subarray(44)
@@ -1016,8 +1016,8 @@ export default {
         const m = await meeting(qa, 'ipRun')
         await clean(qa, m.id)
         try {
-          const first = await roomTake(qa, m.id, ['s1.pcm'], { consent: true })
-          await roomTake(qa, m.id, ['s2.pcm'])
+          const first = await roomTake(qa, m.id, saidTake(qa), { consent: true })
+          await roomTake(qa, m.id, saidTake(qa))
           const id = first.recordingId
           const t = await waitTranscript(qa, id)
           if (t?.status !== 'Completed')
@@ -1281,9 +1281,11 @@ export default {
           const rec = (await recordings(qa, 'secretary', m.id)).items.find((r) => r.status === 'Available')
           const expiry = new Intl.DateTimeFormat('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date(rec.retainUntil))
           await openTab(qa, m)
-          const meta = roomSection(qa).locator('li.recording-row .recording-meta').first()
-          if (qa.device === 'phone') await meta.tap()
-          else await meta.hover()
+          // The tooltip lives on the (i) button, never on the line: hover/tap the button (InfoTip/TooltipLayer).
+          // Skip a live take row ("Mic phòng đang ghi") if one is recording: its (i) explains the take, not retention.
+          const info = roomSection(qa).locator('li.recording-row:not(.recording-live) .recording-meta .info-tip').first()
+          if (qa.device === 'phone') await info.tap()
+          else await info.hover()
           const tip = qa.page.getByRole('tooltip')
           await qa.expect(tip).toContainText('Tự xoá ngày', { timeout: 5000 })
           await qa.expect(tip).toContainText(`Lưu bởi ${u.secretary.name}`)
@@ -1351,8 +1353,10 @@ export default {
       expected: 'Câu hiện trên dòng thời gian "Bản ghi trực tiếp"; hộp "Ghi âm của tôi" liệt kê câu có nút "Nghe lại"; xoá: toast "Đã xoá câu nói.", câu biến mất; API không còn câu',
       run: wrap(async (qa) => {
         const m = await meeting(qa, 'onRun')
-        const sent = await (await raw(qa, 'member')).putClip(m.id, crypto.randomUUID(), bytes(qa, 's2.wav'), wavMs(qa, 's2.wav'))
+        const said = saidHalves(qa)[0]
+        const sent = await (await raw(qa, 'member')).putClip(m.id, crypto.randomUUID(), said.buf, said.ms)
         if (sent.status === 503) qa.inconclusive(`Speech worker not ready (503 ${sent.body?.code}); start the worker on :8090`)
+        if (sent.status === 204) qa.inconclusive('Worker found no speech in the fixture; transcription fixture missing.') 
         qa.expectStatus(sent, 200)
         const clip = sent.body.clip
         qa.note(`Câu đã gỡ băng: "${clip.text}"`)
@@ -1398,8 +1402,10 @@ export default {
         const m = await meeting(qa, 'onRun')
         const ip = await meeting(qa, 'ipRun')
         const c = checker(qa)
-        const sent = await (await raw(qa, 'chair')).putClip(m.id, crypto.randomUUID(), bytes(qa, 's1.wav'), wavMs(qa, 's1.wav'))
+        const said = saidHalves(qa)[0]
+        const sent = await (await raw(qa, 'chair')).putClip(m.id, crypto.randomUUID(), said.buf, said.ms)
         if (sent.status === 503) qa.inconclusive(`Speech worker not ready (503 ${sent.body?.code})`)
+        if (sent.status === 204) qa.inconclusive('Worker found no speech in the fixture; transcription fixture missing.')
         qa.expectStatus(sent, 200)
         const id = sent.body.clip.id
         try {
@@ -1564,7 +1570,7 @@ export default {
           await uploadFile(qa, m.id, 's1.wav', 'audio/wav')
           await uploadFile(qa, m.id, 's2.mp3', 'audio/mpeg')
           await openTab(qa, m)
-          const rows = roomSection(qa).locator('li.recording-row')
+          const rows = roomSection(qa).locator('li.recording-row:not(.recording-live)')
           await qa.expect(rows).toHaveCount(2, { timeout: 10_000 })
           for (const n of [0, 1]) {
             const row = rows.nth(n)
@@ -1580,17 +1586,11 @@ export default {
           const row = rows.first()
           qa.note(`Dòng 1: ${(await row.locator('.recording-meta').innerText()).replace(/\s+/g, ' ')}`)
           await qa.expect(row.getByRole('button', { name: 'Nghe cả tệp' })).toBeVisible({ timeout: 10_000 })
-          const meta = row.locator('.recording-meta')
-          if (qa.device === 'phone') await meta.tap()
-          else await meta.hover()
-          if (qa.device === 'phone') {
-            // Round 1: a tap does not open the details tooltip on a phone (see AC19); noted, not a stop here.
-            const shown = await qa.page.getByRole('tooltip').isVisible({ timeout: 3000 }).catch(() => false)
-            qa.note(`Điện thoại: chạm dòng thông tin ${shown ? 'hiện' : 'KHÔNG hiện'} chú thích mục đích + hạn xoá`)
-          } else {
-            await qa.expect(qa.page.getByRole('tooltip')).toContainText('Tự xoá ngày', { timeout: 5000 })
-            await qa.expect(qa.page.getByRole('tooltip')).toContainText('Mục đích: QA FE-09: lập biên bản')
-          }
+          const info = row.locator('.recording-meta .info-tip')
+          if (qa.device === 'phone') await info.tap()
+          else await info.hover()
+          await qa.expect(qa.page.getByRole('tooltip')).toContainText('Tự xoá ngày', { timeout: 5000 })
+          await qa.expect(qa.page.getByRole('tooltip')).toContainText('Mục đích: QA FE-09: lập biên bản')
           await settled(qa)
           await qa.shot('danh-sach-chu-thich')
           await qa.page.mouse.move(5, 5)
@@ -2032,11 +2032,10 @@ export default {
           await press(qa, dlg.getByRole('button', { name: 'Tải lên' }))
           const row = roomSection(qa).locator('li.recording-row').filter({ hasText: 's1.mp3' })
           await qa.expect(row).toBeVisible({ timeout: 30_000 })
-          const meta = row.locator('.recording-meta')
-          if (qa.device === 'phone') await meta.tap()
-          else await meta.hover()
-          if (qa.device === 'desktop') await qa.expect(qa.page.getByRole('tooltip')).toContainText('Mục đích: Họp giao ban tháng 11')
-          else qa.note(`Điện thoại: chạm dòng thông tin ${(await qa.page.getByRole('tooltip').isVisible().catch(() => false)) ? 'hiện' : 'KHÔNG hiện'} chú thích`)
+          const info = row.locator('.recording-meta .info-tip')
+          if (qa.device === 'phone') await info.tap()
+          else await info.hover()
+          await qa.expect(qa.page.getByRole('tooltip')).toContainText('Mục đích: Họp giao ban tháng 11')
           await settled(qa)
           await qa.shot('muc-dich-tuy-chon')
           await qa.page.mouse.move(5, 5)

@@ -308,18 +308,21 @@ export default {
       id: 'AC3',
       role: 'secretary',
       devices: ['desktop', 'phone'],
-      title: 'Thư ký mở danh sách: thẻ "Họp hôm nay" được chọn, bốn thẻ có số đúng với API, danh sách hôm nay có cuộc họp tối nay',
-      steps: ['Đăng nhập thuky@ (MeetingCreator), mở /mgmt/meetings không tham số'],
+      title: 'Thư ký mở danh sách: không lọc sẵn (PR #430), bốn thẻ có số đúng với API; bấm thẻ "Họp hôm nay" thì lọc đúng, danh sách hôm nay có cuộc họp tối nay',
+      steps: ['Đăng nhập thuky@ (MeetingCreator), mở /mgmt/meetings không tham số', 'Bấm thẻ "Họp hôm nay"'],
       expected:
-        'Bốn thẻ Họp hôm nay, Đã công bố, Cần xử lý, Bản nháp; mỗi số bằng totalCount API trả cho chính trang đó; dòng phụ "N đang diễn ra" bằng số InProgress hôm nay; "Họp hôm nay" được chọn, danh sách có đúng số cuộc họp của thẻ, gồm "[QA] FE-14 họp tối nay" và "… họp khuya … chờ duyệt"; không cuộn ngang',
+        'Mở ra không thẻ nào được chọn (không lọc), bốn thẻ Họp hôm nay, Đã công bố, Cần xử lý, Bản nháp; mỗi số bằng totalCount API trả cho chính thẻ đó; dòng phụ "N đang diễn ra" bằng số InProgress hôm nay. Bấm thẻ Hôm nay: thẻ được chọn, danh sách lọc đúng số cuộc họp của thẻ, gồm "[QA] FE-14 họp tối nay" và "… họp khuya … chờ duyệt"; không cuộn ngang',
       async run(qa) {
         await requireHas(qa, 'secretary', 'MeetingCreator')
         await prepareAll(qa)
         const seen = await openList(qa)
         await qa.expect(stats(qa).getByRole('button')).toHaveCount(4)
-        await qa.expect(card(qa, 'today')).toHaveAttribute('aria-pressed', 'true')
+        // PR #430: the list opens unfiltered — no card is pressed.
+        await qa.expect(stats(qa).locator('[aria-pressed="true"]')).toHaveCount(0)
         for (const key of ['today', 'published', 'todo', 'draft']) await expectCardMatches(qa, seen, key)
         await expectLiveLine(qa, seen)
+        await press(qa, card(qa, 'today'))
+        await qa.expect(card(qa, 'today')).toHaveAttribute('aria-pressed', 'true')
         const today = parseCount(await card(qa, 'today').locator('.stat-value').innerText())
         const list = await nextList(qa, seen, (p) => p.from && !p.status && p.pageSize !== '1')
         qa.expect(list.total, `the today list holds ${list.total}, the card says ${today}`).toBe(today)

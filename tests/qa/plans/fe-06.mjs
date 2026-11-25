@@ -1874,9 +1874,14 @@ export default {
         try {
           await qa.goto('/calendar')
           await press(qa, qa.page.getByRole('button', { name: 'Danh sách' }))
-          // Họp ngày mai (sau Chủ nhật 22/11) nằm ở tuần sau.
-          await press(qa, qa.page.getByRole('button', { name: 'Tuần sau' }))
           const card = qa.page.locator('article').filter({ hasText: meeting.title })
+          // "Ngày mai" chỉ sang tuần sau khi hôm nay là cuối tuần: đợi thẻ hiện ở tuần hiện tại trước,
+          // chỉ bước sang tuần sau khi chắc chắn không có (tránh race: check isVisible ngay khi list chưa tải).
+          try {
+            await card.waitFor({ state: 'visible', timeout: 10_000 })
+          } catch {
+            await press(qa, qa.page.getByRole('button', { name: 'Tuần sau' }))
+          }
           await qa.expect(card).toBeVisible({ timeout: 15_000 })
           await qa.expect(card.getByText('Xác nhận tham dự?')).toBeVisible()
           await qa.shot('the-lich-chua-tra-loi')

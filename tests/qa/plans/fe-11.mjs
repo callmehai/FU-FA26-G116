@@ -360,6 +360,30 @@ async function guestInvite(qa, meetingId, name, email) {
   return link
 }
 
+/**
+ * Revokes a guest invitation created by guestInvite (the link carries /guest/{id}#token=…), so a shared meeting
+ * does not keep the guest as an eligible voter for later criteria. Never fails the criterion: cleanup only.
+ */
+async function revokeGuest(qa, meetingId, link) {
+  try {
+    const id = /\/guest\/([0-9a-f-]{36})/.exec(link ?? '')?.[1]
+    if (!id) return
+    const login = await fetch(`${qa.base}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: ACCOUNTS.secretary, password: process.env.QA_PASSWORD ?? 'TrustCabinet@2026' }),
+    })
+    const headers = { Authorization: `Bearer ${(await login.json()).accessToken}` }
+    const roster = await (await fetch(`${qa.base}/api/meetings/${meetingId}/participants?pageSize=1`, { headers })).json()
+    await fetch(`${qa.base}/api/meetings/${meetingId}/guest-invitations/${id}`, {
+      method: 'DELETE',
+      headers: { ...headers, 'If-Match': `"participants-${roster.revision}"` },
+    })
+  } catch {
+    // Cleanup best-effort: a leftover guest only skews later eligible counts, it never fails this criterion.
+  }
+}
+
 /** Opens the invitation link, verifies the OTP and declares the display name; lands on the guest meeting page. */
 async function guestVerify(qa, link, email, displayName) {
   const u = new URL(link)
@@ -1031,7 +1055,7 @@ export default {
           const form = row.locator('form.vote-conclusion-form')
           // It starts on "Thông qua" so it reads as a choice to make (Hải 23/11/2026); nothing is recorded until pressed.
           await qa.expect(form.getByRole('radio', { checked: true })).toHaveCount(1)
-          await qa.expect(form.getByRole('radio', { name: 'Thông qua' })).toBeChecked()
+          await qa.expect(form.getByRole('radio', { name: 'Thông qua', exact: true })).toBeChecked()
           await row.scrollIntoViewIfNeeded()
           await settled(qa)
           await qa.shot('ket-qua-cong-khai', { fullPage: true })
@@ -1854,7 +1878,8 @@ export default {
           const back = card(qa, v)
           await qa.expect(back.locator('form.vote-conclusion-form')).toBeVisible()
           await qa.expect(back.locator('.vote-conclusion-chip')).toHaveCount(0)
-          await qa.expect(back.locator('form.vote-conclusion-form').getByRole('radio', { checked: true })).toHaveCount(0)
+          await qa.expect(back.locator('form.vote-conclusion-form').getByRole('radio', { checked: true })).toHaveCount(1)
+          await qa.expect(back.locator('form.vote-conclusion-form').getByRole('radio', { name: 'Thông qua', exact: true })).toBeChecked()
           await back.scrollIntoViewIfNeeded()
           await settled(qa)
           await qa.shot('quay-lai-van-chua-ket-luan')
@@ -2001,6 +2026,7 @@ export default {
           qa.note(`tally: ballotCount=${detail.result?.ballotCount}, voters=${detail.result?.voters}`)
         } finally {
           await closeOpenVotes(qa, m)
+          await revokeGuest(qa, m.id, link)
         }
       },
     },

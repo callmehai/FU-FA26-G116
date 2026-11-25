@@ -472,10 +472,10 @@ export default {
       steps: [
         'PUT cuộc họp Draft và Rejected (đổi mô tả)',
         'PUT cuộc họp WaitingApproval, Approved, InProgress, Ended, Cancelled',
-        'PUT bằng chutoa@ (có MeetingCreator nhưng không phải người tạo), thanhvien@ (không có MeetingCreator)',
+        'PUT bằng chutoa@ (có MeetingCreator nhưng không phải người tạo), thanhvien@ (có MeetingCreator theo seed, không phải người tạo)',
       ],
       expected:
-        'Draft/Rejected: 200 MSG30, trạng thái giữ nguyên; trạng thái khác: 409 MSG33 và không đổi gì; chutoa@: 404 (không lộ quyền sở hữu); thanhvien@: 403',
+        'Draft/Rejected: 200 MSG30, trạng thái giữ nguyên; trạng thái khác: 409 MSG33 và không đổi gì; chutoa@ và thanhvien@ (đều có MeetingCreator nhưng không phải người tạo): 404 (không lộ quyền sở hữu)',
       async run(qa) {
         const sec = await client(qa, 'secretary')
         const c = checker(qa)
@@ -509,7 +509,7 @@ export default {
         await noSidewaysScroll(qa)
         const draft = await meetingAt(qa, 'Draft')
         c.check('PUT bởi chutoa@ (không phải người tạo)', await (await client(qa, 'chair')).put(`/api/meetings/${draft.id}`, put(draft, { description: 'x' })), 404)
-        c.check('PUT bởi thanhvien@', await (await client(qa, 'member')).put(`/api/meetings/${draft.id}`, put(draft, { description: 'x' })), 403)
+        c.check('PUT bởi thanhvien@ (có MeetingCreator, không phải người tạo)', await (await client(qa, 'member')).put(`/api/meetings/${draft.id}`, put(draft, { description: 'x' })), 404)
         c.done()
       },
     },
@@ -1457,13 +1457,13 @@ export default {
       title: 'Tài khoản mới chưa có cuộc họp: trạng thái trống, không khớp, ngày yên tĩnh',
       steps: [
         'Tạo người dùng Thành viên mới qua API, đăng nhập bằng form',
-        'Mở Danh sách: "Chưa có cuộc họp nào." + gợi ý thành viên, không có nút tạo',
-        'Đổi vai trò thành Thư ký, tải lại: có nút "Tạo cuộc họp"',
+        'Mở Danh sách: "Chưa có cuộc họp nào." + nút "Tạo cuộc họp" (Thành viên seed có MeetingCreator)',
+        'Đổi vai trò thành Phê duyệt viên, tải lại: vẫn có nút "Tạo cuộc họp"',
         'Tìm chuỗi không có rồi bấm "Xoá bộ lọc"',
         'Bấm thẻ "Họp hôm nay" rồi "Xem mọi cuộc họp"',
       ],
       expected:
-        'Thành viên mới: "Chưa có cuộc họp nào." + "Cuộc họp bạn được mời sẽ hiện ở đây sau khi được công bố.", không nút tạo. Lên Thư ký: có nút "Tạo cuộc họp". Không khớp: "Không có cuộc họp nào khớp bộ lọc.", "Xoá bộ lọc" đưa về trạng thái trống. Thẻ Hôm nay khi không có gì: "Hôm nay không có cuộc họp nào." + "Xem mọi cuộc họp" đưa về trạng thái trống',
+        'Thành viên mới (có MeetingCreator theo seed): "Chưa có cuộc họp nào." + nút "Tạo cuộc họp". Lên Phê duyệt viên: vẫn có nút. Không khớp: "Không có cuộc họp nào khớp bộ lọc.", "Xoá bộ lọc" đưa về trạng thái trống. Thẻ Hôm nay khi không có gì: "Hôm nay không có cuộc họp nào." + "Xem mọi cuộc họp" đưa về trạng thái trống',
       async run(qa) {
         const admin = await client(qa, 'admin')
         const email = `qa-fe04-empty-${rand()}@trustcabinet.local`
@@ -1482,11 +1482,10 @@ export default {
           await qa.expect(qa.page).not.toHaveURL(/\/login/)
           await qa.goto('/mgmt/meetings')
           await qa.expect(qa.page.getByText('Chưa có cuộc họp nào.')).toBeVisible()
-          await qa.expect(qa.page.getByText('Cuộc họp bạn được mời sẽ hiện ở đây sau khi được công bố.')).toBeVisible()
-          await qa.expect(qa.page.getByRole('link', { name: 'Tạo cuộc họp' })).toHaveCount(0)
+          await qa.expect(qa.page.getByRole('link', { name: 'Tạo cuộc họp' }).first()).toBeVisible()
           await settled(qa)
           await qa.shot('trong-voi-thanh-vien')
-          qa.expectStatus(await admin.put(`/api/users/${userId}`, { fullName, email, roleId: '01a0ce78-7203-7c7f-8326-7a0baebf4c22' }), 200)
+          qa.expectStatus(await admin.put(`/api/users/${userId}`, { fullName, email, roleId: '01a0ce78-7202-7945-be13-d2022cf25203' }), 200)
           await qa.page.reload()
           await qa.expect(qa.page.getByText('Chưa có cuộc họp nào.')).toBeVisible()
           await qa.expect(qa.page.getByRole('link', { name: 'Tạo cuộc họp' }).first()).toBeVisible()

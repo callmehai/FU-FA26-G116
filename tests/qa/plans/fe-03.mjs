@@ -536,7 +536,7 @@ export default {
           await openRoles(qa)
           await qa.page.getByRole('button', { name: `Sửa vai trò ${upper}` }).click()
           const dialog = qa.page.getByRole('dialog', { name: 'Sửa vai trò' })
-          await dialog.getByLabel('Tên vai trò').fill(BUILT_IN.secretary.name)
+          await dialog.getByLabel('Tên vai trò').fill(BUILT_IN.approver.name)
           await dialog.getByRole('button', { name: 'Lưu thay đổi' }).click()
           await qa.expect(dialog.getByText('Đã có vai trò dùng tên này. Hãy đặt một tên khác.')).toBeVisible()
           await qa.expect(dialog).toBeVisible()
@@ -1300,7 +1300,7 @@ export default {
         await qa.shot('loi-tai-danh-sach-vai-tro')
         await qa.page.unroute('**/api/roles')
         await retry.click()
-        await qa.expect(roleRow(qa, BUILT_IN.secretary.name)).toBeVisible()
+        await qa.expect(roleRow(qa, BUILT_IN.approver.name)).toBeVisible()
         await qa.shot('thu-lai-thanh-cong')
       },
     },

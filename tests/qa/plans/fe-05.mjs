@@ -1266,11 +1266,27 @@ export default {
           const base = new URL(qa.page.url()).origin
           const token = await bearer(qa)
           // A real PDF: the server parses the header and counts the pages, so a fake byte stream is refused.
-          const { readFileSync } = await import('node:fs')
-          const { fileURLToPath } = await import('node:url')
-          const { dirname, join } = await import('node:path')
-          const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..')
-          const pdf = readFileSync(join(repoRoot, 'e2e', 'khanh', 'artifacts', 'bb11-01a1cb20-5fc4-7d08-9756-52d483c3d364.pdf'))
+          // Build a minimal one-page PDF inline (same shape as fe-11 makePdf); no fixture file needed.
+          const pdfText = 'QA FE-05 gan kem'
+          const pdfStream = `BT /F1 20 Tf 72 760 Td (${pdfText}) Tj ET`
+          const pdfObjs = [
+            '<< /Type /Catalog /Pages 2 0 R >>',
+            '<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
+            '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>',
+            `<< /Length ${pdfStream.length} >>\nstream\n${pdfStream}\nendstream`,
+            '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>',
+          ]
+          let pdfOut = '%PDF-1.4\n'
+          const pdfOffsets = []
+          pdfObjs.forEach((o, i) => {
+            pdfOffsets.push(pdfOut.length)
+            pdfOut += `${i + 1} 0 obj\n${o}\nendobj\n`
+          })
+          const pdfXref = pdfOut.length
+          pdfOut += `xref\n0 ${pdfObjs.length + 1}\n0000000000 65535 f \n`
+          pdfOut += pdfOffsets.map((o) => `${String(o).padStart(10, '0')} 00000 n \n`).join('')
+          pdfOut += `trailer\n<< /Size ${pdfObjs.length + 1} /Root 1 0 R >>\nstartxref\n${pdfXref}\n%%EOF\n`
+          const pdf = Buffer.from(pdfOut, 'latin1')
           const fileName = `qa-fe05-gan-kem-${Date.now().toString(36)}.pdf`
           const up = await qa.context.request.post(`${base}/api/meetings/${m.id}/agenda/${itemId}/documents/upload`, {
             headers: { Authorization: `Bearer ${token}` },
@@ -1314,6 +1330,8 @@ export default {
         'Thư ký/Chủ toạ: "Chưa có nội dung nào" + "Thêm các nội dung cần bàn trong cuộc họp." + nút "Thêm nội dung"; Thành viên: "Chưa có nội dung nào" + "Các nội dung cần bàn sẽ hiện ở đây khi được lập.", không có nút Thêm, API 404; tải lỗi: "Không tải được chương trình nghị sự." + "Thử lại", thử lại thì gợi ý trống hiện',
       async run(qa) {
         const m = await reused(qa, 'Draft')
+        // The Draft meeting is shared across criteria: drain leftovers from an earlier failed run first.
+        for (const it of (await snapshot(qa, 'secretary', m.id)).items) await cleanup(qa, m.id, [it.id]).catch(() => undefined)
         qa.expect((await snapshot(qa, 'secretary', m.id)).items.length, 'cuộc họp Nháp dùng lại không trống').toBe(0)
         const emptyHint = async (role, canCreate) => {
           await openAgenda(qa, m)
@@ -2152,6 +2170,9 @@ export default {
           const grip = row(qa, t3).getByRole('button', { name: `Kéo để đổi vị trí: ${t3}` })
           await grip.focus()
           await qa.page.keyboard.press('Space')
+          // Wait for the drag to actually start before moving: ArrowUp sent mid-activation is swallowed
+          // and the item never leaves position 3 (flaky without this gate).
+          await qa.expect(row(qa, t3)).toHaveClass(/agenda-item-dragging/)
           // Thông báo "Đã chọn..." hiện thoáng qua rồi bị ghi đè bởi dragOver: chỉ cần live region nhắc tới mục.
           await qa.expect(live).toContainText(`"${t3}"`, { timeout: 10_000 })
           await qa.page.keyboard.press('ArrowUp')
@@ -2161,14 +2182,19 @@ export default {
           await qa.page.keyboard.press('Space')
           await qa.expect(live).toContainText(`Đã chuyển "${t3}" tới vị trí 2 trên 3.`, { timeout: 10_000 })
           await qa.expect(panel(qa).locator('li.agenda-item .agenda-title').nth(1)).toContainText(t3)
+          // The drop fires an unawaited PUT: poll the server until the new order lands instead of
+          // snapshotting mid-flight (a single read right after drop races the request).
+          await qa.expect
+            .poll(async () => (await snapshot(qa, 'secretary', m.id)).items.map((i) => i.title)[1], { timeout: 15_000 })
+            .toBe(t3)
           const after = (await snapshot(qa, 'secretary', m.id)).items.map((i) => i.title)
-          qa.expect(after[1]).toBe(t3)
           await settled(qa)
           await qa.shot('ban-phim-da-tha')
           // Esc huỷ: nhấc rồi huỷ, thứ tự giữ nguyên.
           const grip2 = row(qa, t3).getByRole('button', { name: `Kéo để đổi vị trí: ${t3}` })
           await grip2.focus()
           await qa.page.keyboard.press('Space')
+          await qa.expect(row(qa, t3)).toHaveClass(/agenda-item-dragging/)
           await qa.expect(live).toContainText(`"${t3}"`, { timeout: 10_000 })
           await qa.page.keyboard.press('Escape')
           await qa.expect(live).toContainText(`Đã huỷ, "${t3}" giữ nguyên vị trí.`, { timeout: 10_000 })

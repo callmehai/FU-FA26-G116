@@ -682,7 +682,7 @@ export default {
         const c = checker(qa)
         const sec = await client(qa, 'secretary')
         const member = await client(qa, 'member')
-        const m = await fresh(qa, 'api-draft', 'Ended', 'API bản nháp')
+        const m = await fresh(qa, 'api-draft-export', 'Ended', 'API bản nháp xuất')
         const cur = await driveTo(qa, m.id, 'Draft')
         await openMinutes(qa, m)
         await btn(qa, 'Tải xuống').click()

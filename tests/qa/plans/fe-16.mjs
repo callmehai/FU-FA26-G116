@@ -532,8 +532,13 @@ export default {
         check('direct trùng', await owner.post('/api/calendar/shares/direct', { viewerId: chair.id, ...ok }), 409, 'MSG449')
         const admin = await qa.api('admin')
         const adminMe = await me(qa, 'admin')
-        // admin → member: the member has no MeetingCreator, cannot receive a share (UC-80b EX-1).
-        check('direct cho Thành viên', await admin.post('/api/calendar/shares/direct', { viewerId: secretaryOfNothing.id, ...ok }), 400, 'MSG455')
+        // admin → member: the member HAS MeetingCreator (seed, ADR-0075), so a direct share is accepted (UC-80b main flow).
+        // Earlier runs may have left an open admin→member share: close it first so the direct call is not a duplicate.
+        await closePair(qa, 'admin', 'member')
+        const directMember = await admin.post('/api/calendar/shares/direct', { viewerId: secretaryOfNothing.id, ...ok })
+        check('direct cho Thành viên', directMember, 201, 'MSG441')
+        if (directMember.status === 201 && directMember.body?.share?.id)
+          await admin.post(`/api/calendar/shares/${directMember.body.share.id}/withdraw`)
         check('direct cho chính mình', await admin.post('/api/calendar/shares/direct', { viewerId: adminMe.id, ...ok }), 400, 'MSG455')
         check(
           'direct bắt đầu hôm qua',
@@ -1166,10 +1171,10 @@ export default {
       id: 'AC18',
       role: 'chair',
       devices: ['desktop', 'phone'],
-      title: 'Bên xem "Thôi xem lịch": chia sẻ ngừng, tuần hết giờ bận (chip "Đã dừng"); tuần chia sẻ đổi khoảng bằng nút',
-      steps: ['chutoa@ → Chia sẻ lịch → dòng Lê An → "…" → Thôi xem lịch → Thôi xem', 'Mở tab Lịch được chia sẻ: tuần hết giờ bận, chip "Đã dừng"; Tuần sau/trước đổi URL', 'Tìm giờ với Lê An (API)'],
+      title: 'Bên xem "Thôi xem lịch": chia sẻ kết thúc, tuần hết giờ bận (người chia sẻ không còn bật được); tuần chia sẻ đổi khoảng bằng nút',
+      steps: ['chutoa@ → Chia sẻ lịch → dòng Lê An → "…" → Thôi xem lịch → Thôi xem', 'Mở tab Lịch được chia sẻ: tuần hết giờ bận, người chia sẻ (nếu còn hiện) luôn tắt; Tuần sau/trước đổi URL', 'Tìm giờ với Lê An (API)'],
       expected:
-        'Hộp xác nhận "Thôi xem lịch của Lê An?"; toast MSG451 "Đã ngừng chia sẻ lịch."; dòng "Đã ngừng", mờ; chip người trên tab tuần chuyển "Đã dừng", tuần hết giờ bận; Tuần sau/trước đổi week= trong URL; tìm giờ: Lê An NotShared; đổi chia sẻ đã ngừng → 409 MSG450',
+        'Hộp xác nhận "Thôi xem lịch của Lê An?"; toast MSG451 "Đã ngừng chia sẻ lịch."; dòng "Đã ngừng", mờ. Viewer end → share Ended (UC-80e AF-1): tuần hết giờ bận, nút người chia sẻ — nếu còn hiện từ lượt dừng tự động trước (BR-142/143) — luôn ở trạng thái tắt. Tuần sau/trước đổi week= trong URL; tìm giờ: Lê An NotShared; đổi chia sẻ đã ngừng → 409 MSG450',
       async run(qa) {
         const s = await ensureMemberShare(qa, 'Level2')
         const name = s.owner.fullName
@@ -1193,10 +1198,10 @@ export default {
         await qa.goto(`/calendar/sharing?tab=week&week=${TUE}`)
         await qa.expect(qa.page.locator('.shared-grid, .share-empty').first()).toBeVisible()
         await qa.expect(qa.page.getByRole('img', { name: new RegExp(`${name} bận`) })).toHaveCount(0)
-        // The person stays on the week as a "Đã dừng" chip (CAL_FT49), only the busy time is gone.
-        const chip = qa.page.getByRole('group', { name: 'Người chia sẻ' })
-        await qa.expect(chip.getByText(name)).toBeVisible()
-        await qa.expect(chip.getByText('Đã dừng')).toBeVisible()
+        // Ended shares leave no active sharer: every remaining button for the owner (kept from an
+        // earlier automatic stop, BR-142/143) is disabled; on a clean database there is none at all.
+        const people = qa.page.getByRole('group', { name: 'Người chia sẻ' })
+        for (const b of await people.getByRole('button', { name: new RegExp(name) }).all()) await qa.expect(b).toBeDisabled()
         // CAL_FT50: the shared week moves with previous/next and keeps the week in the URL.
         await qa.page.getByRole('button', { name: 'Tuần sau' }).click()
         await qa.expect(qa.page).toHaveURL(new RegExp(`week=${addDays(MON, 7)}`))
@@ -1237,7 +1242,7 @@ export default {
           let temp = list.find((u) => u.email === TEMP_VIEWER)
           if (!temp) {
             const roles = (await admin.get('/api/roles')).body
-            const roleId = roles.find((r) => r.name === 'Thư ký')?.id
+            const roleId = roles.find((r) => r.name === 'Thành viên')?.id
             const created = await admin.post('/api/users', { fullName: qa.name('FE-16 người xem tạm'), email: TEMP_VIEWER, password: PASSWORD, roleId })
             qa.expectStatus(created, 201)
             temp = created.body.user
@@ -1436,15 +1441,15 @@ export default {
     {
       id: 'AC24',
       role: 'member',
-      title: 'Lịch làm việc chỉ hiện cuộc họp người xem được: Thành viên không thấy cuộc họp chưa công bố mà mình có tên; không có nút Tạo cuộc họp',
+      title: 'Lịch làm việc chỉ hiện cuộc họp người xem được: Thành viên không thấy cuộc họp chưa công bố mà mình có tên; nút "Tạo cuộc họp" hiện vì Thành viên seed có MeetingCreator',
       steps: [`thanhvien@ mở /calendar?week=${TUE}&status=all`, 'Đổi sang Danh sách'],
-      expected: 'Không có "[QA] FE-16 họp …" (Thành viên chỉ thấy từ khi Đã công bố, BR-016, BR-017 / UC-16); không có nút "Tạo cuộc họp"',
+      expected: 'Không có "[QA] FE-16 họp …" (Thành viên chỉ thấy từ khi Đã công bố, BR-016, BR-017 / UC-16); nút "Tạo cuộc họp" hiện (Thành viên seed có MeetingCreator theo ADR-0075)',
       async run(qa) {
         await ensureMeetings(qa)
         await qa.goto(`/calendar?week=${TUE}&status=all`)
         await qa.expect(qa.page.getByRole('button', { name: 'Hôm nay', exact: true })).toBeVisible()
         await qa.expect(qa.page.getByText(/\[QA\] FE-16 họp/)).toHaveCount(0)
-        await qa.expect(qa.page.getByRole('link', { name: 'Tạo cuộc họp' })).toHaveCount(0)
+        await qa.expect(qa.page.getByRole('link', { name: 'Tạo cuộc họp' }).first()).toBeVisible()
         await settled(qa)
         await qa.shot('lich-thanh-vien')
         await qa.goto(`/calendar?week=${TUE}&status=all&mode=list`)
@@ -1523,7 +1528,7 @@ export default {
         await qa.expect(qa.page.getByRole('button', { name: /Tháng 12\/2026/ })).toBeVisible()
         // The overlapped day folds its meetings behind "+N cuộc họp" (or lists them all).
         // Cell height (hence fit) varies with the window: assert shown + hidden add up to the five.
-        const wedCell = qa.page.getByRole('group', { name: /Thứ Tư, 16\/12/ })
+        const wedCell = qa.page.getByRole('group', { name: new RegExp(`Thứ Tư, ${dm(WED).replace('/', '\\/')}`) })
         await qa.expect(wedCell.getByText(/FE-16 chong 1/).first()).toBeVisible()
         const cellShown = (await wedCell.getByText(/FE-16 chong [1-5]/).allInnerTexts()).map((t) => t.trim())
         const monthMore = wedCell.getByRole('button', { name: /cuộc họp.*xem danh sách/ })

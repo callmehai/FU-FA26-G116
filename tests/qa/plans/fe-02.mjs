@@ -19,7 +19,7 @@ const UNKNOWN_ID = '01a0ce78-0000-7000-8000-000000000000'
 // Fixed ids of the built-in roles (docs/03-api/04-quan-ly-vai-tro.md §2).
 const ROLE = {
   chair: { id: '01a0ce78-7202-7945-be13-d2022cf25203', name: 'Chủ toạ' },
-  secretary: { id: '01a0ce78-7203-7c7f-8326-7a0baebf4c22', name: 'Thư ký' },
+  secretary: { id: '01a0ce78-7202-7945-be13-d2022cf25203', name: 'Phê duyệt viên' },
   member: { id: '01a0ce78-7204-7558-b181-e908a08e83a3', name: 'Thành viên' },
 }
 // The plan's own accounts. `name` goes through qa.name(), so it reads "[QA] FE-02 …".
