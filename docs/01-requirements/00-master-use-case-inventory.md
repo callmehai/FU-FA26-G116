@@ -11,7 +11,7 @@
 > [Report 2](../08-reports/Report-2_Project_Management_Plan.md) (kế hoạch),
 > [Report 3](../08-reports/Report-3_Software_Requirement_Specification.md) (UC, BR, quyền).
 
-**Baseline hiện tại: 16 Feature, UC-01 → UC-81** — mã đánh số lại ngày 24/11/2026 theo ADR-0079, tra mã cũ ở [bảng 10](10-bang-anh-xa-uc-dot-1.md) (FE-16 thêm ngày 07/11/2026; UC-28 thuộc SCRUM-30; UC-75 là Tạo bản đính chính biên bản, đã đặc tả ở SCRUM-33; UC-57 là Thư ký thu Voice ID hộ, SCRUM-152). Cập nhật FE-07/FE-11 ngày 15/10/2026:
+**Baseline hiện tại: 15 Feature, FE-01 → FE-15, UC-01 → UC-81** — mã UC đánh số lại ngày 24/11/2026 theo ADR-0079, tra mã cũ ở [bảng 10](10-bang-anh-xa-uc-dot-1.md); ngày 25/11/2026 FE-15 Báo cáo và FE-16 Lịch làm việc đổi thành FE-14, FE-15 để không bỏ trống số 14 (Report 1–4 và wireframe v15) (Lịch làm việc thêm ngày 07/11/2026; UC-28 thuộc SCRUM-30; UC-75 là Tạo bản đính chính biên bản, đã đặc tả ở SCRUM-33; UC-57 là Thư ký thu Voice ID hộ, SCRUM-152). Cập nhật FE-07/FE-11 ngày 15/10/2026:
 UC-32b cũ vẫn bỏ; UC-36b được tái cấp cho gắn tài liệu vào mục nghị sự, bổ sung UC-36d để bỏ gắn một mục
 theo [ADR-0020](../05-decisions/0020-tai-lieu-theo-quyen-xem-cuoc-hop.md). FE-07 có 16 UC chi tiết;
 FE-11 có 9 UC chi tiết.
@@ -264,13 +264,13 @@ Cột **Đặc tả**: *Đã đặc tả* = Report 3 có bảng đặc tả; *Pl
 | UC-77 | Đánh dấu đã đọc *(Mark Notifications as Read)* — gồm UC-77a Một thông báo, UC-77b Tất cả | System Admin, Member, Approver, Chair, Secretary, Participant | Đã đặc tả | `<<extend>>` UC-76 |
 | UC-78 | Mở đối tượng từ thông báo *(Open Notification Target)* | System Admin, Member, Approver, Chair, Secretary, Participant | Đã đặc tả | Nối thẳng actor |
 
-## FE-15 — Báo cáo & Thống kê *(Reporting & Statistics)*
+## FE-14 — Báo cáo & Thống kê *(Reporting & Statistics)*
 
 | UC | Tên | Actor | Đặc tả | Quan hệ |
 |---|---|---|---|---|
 | UC-79 | Xem & xuất báo cáo *(View & Export Reports)* — gồm UC-79a Xem (dải số quản lý + truy vấn theo bảng/nhóm/bộ lọc/top N, EX `400 MSG484` khi tham số không có; BR-152 nới cho dòng nhóm theo người/cuộc họp; phạm vi thấy theo BR-153, BR-151), UC-79b Xuất (đúng bảng đang xem, tệp `bao-cao-<bảng>_<từ>_<đến>.xlsx`, nhãn audit "Xuất báo cáo") | System Admin, Member, Approver, Chair, Secretary, Participant | Đã đặc tả các UC con (SCRUM-38, 09/11/2026; truy vấn 22/11/2026, PR #488) | Nối thẳng actor |
 
-## FE-16 — Lịch làm việc & tìm giờ họp *(Working Calendar & Meeting Time Search)*
+## FE-15 — Lịch làm việc & tìm giờ họp *(Working Calendar & Meeting Time Search)*
 
 Quyết định phạm vi: [ADR-0058](../05-decisions/0058-chia-se-lich-va-tim-gio-hop.md) — chỉ chia sẻ bận/rảnh, họp Mật không bao giờ chia sẻ, không có trợ lý AI.
 
@@ -390,8 +390,9 @@ Sửa sau ban hành: UC-75 tạo bản đính chính, đi lại UC-72, UC-62 cũ
 | FE-11 | Voting Management | 7 | 4 |
 | FE-12 | Meeting Minutes & Approval | 7 | — |
 | FE-13 | Email & In-App Notification | 3 | 2 |
-| FE-15 | Reporting & Statistics | 1 | 2 |
-| **Tổng** | | **79** | **63** |
+| FE-14 | Reporting & Statistics | 1 | 2 |
+| FE-15 | Working Calendar & Meeting Time Search | 2 | 9 |
+| **Tổng** | | **81** | **72** |
 
 # 8. Ngoài phạm vi UC
 

@@ -20,11 +20,11 @@ Table of Contents
 | 05/10/2026 | M | KhanhPG | Sync with the PO-confirmed Master UC baseline: personal library and document reuse, Secretary audio upload; attendance, summaries, audit, comments and minutes revision. |
 | 08/10/2026 | M, D | KhanhPG | Align baseline: FE-04 removed, FE-05 is Meeting Management; meeting-level schedule and voting, one minutes workflow per Meeting. |
 | 09/10/2026 | M, D | KhanhPG | Renumber FE-01–FE-15; in-meeting voting with Chair conclusions (no time-box, quorum or Resolution scope); safeguards, effort and dates preserved. |
-| 13/10/2026 | M | HaiTV | Align the plan with ADR-0018 (immutable files, folders, browser previews) and ADR-0016/17 (Chair-selected voters, Guests vote, no close-Votes requirement). |
-| 30/10/2026 | M | HuyNQ | Fix review findings (v1.2): fifteen features in risk R04, EX means Exception, Cancelled lifecycle added, TBDs closed (ADR-0026/0015), R03 lowered, no 'versioning' in Iteration 2, ToC fixed. |
+| 13/10/2026 | M | HaiTV | Align the plan with the decisions on documents (immutable files, folders, browser previews) and on voting (Chair-selected voters, Guests vote, no close-Votes requirement). |
+| 30/10/2026 | M | HuyNQ | Fix review findings (v1.2): fifteen features in risk R04, EX means Exception, Cancelled lifecycle added, TBDs closed, R03 lowered, no 'versioning' in Iteration 2, ToC fixed. |
 | 15/11/2026 | M, D | KhanhPG | SCRUM-207 (note 51): drop FE-14 from scope and Iteration 6; account lifecycle ends at deactivation, per-minute sign-in limit kept. |
 | 24/11/2026 | M, A, D | LocHD | Supervisor review: align with Report 1 and the built system: minutes approved, not signed; AI environment decided; in-meeting recording; FE-16 in Iteration 6; app/main branches; Actual metrics to 24/11/2026. |
-| 25/11/2026 | M | LocHD | [PR #548] Constraints: outgoing email is sent through Resend only; SMTP is no longer an alternative; page breaks moved onto the headings. |
+| 25/11/2026 | M | LocHD | [PR #548] Outgoing email through Resend only; page breaks moved onto the headings; features numbered FE-01 to FE-15 without a gap; decision-record references removed. |
 
 *A - Added M - Modified D - Deleted
 
@@ -53,7 +53,7 @@ The work to be implemented consists of the fifteen active major features baselin
 
 ●  Meeting governance - FE-11 Voting Management and FE-12 Meeting Minutes & Approval.
 
-●  Communication and visibility - FE-13 Email & In-App Notification, FE-15 Reporting & Statistics, FE-16 Working Calendar & Meeting Time Search.
+●  Communication and visibility - FE-13 Email & In-App Notification, FE-14 Reporting & Statistics, FE-15 Working Calendar & Meeting Time Search.
 
 Each feature is elaborated into detailed requirements in Report 3 - Software Requirement Specification during the iteration in which it is built, and is broken down into tasks in the Project Tracking workbook. The mapping between a feature and the iteration that delivers it is given in Section I.3 - Cost & Time Estimations and in Section II.1 - Project Process/Methodology.
 
@@ -80,11 +80,11 @@ TrustCabinet is a standalone capstone project. It is not a sub-project of, and c
 | 6 | Version 1 operates in Vietnamese only, with no translation and no subtitles (Report 1, LI-04). | Scope |
 | 7 | No recording bot joins a meeting and the server never records on its own. Audio is captured in the browser under human control after attendees are informed: the Secretary records the room, personal microphones are recorded only after everyone has acknowledged the recording notice, and an audio file may be uploaded instead (Report 1, FE-09, LI-01 and LI-02). | Scope / Security |
 | 8 | Meeting minutes are approved and issued by the Chair and are not signed: neither internal electronic signatures nor certificate-authority signatures on a USB token are in scope (Report 1, FE-12 and LI-06). | Scope |
-| 9 | The technology stack is fixed in the source code repository: ASP.NET Core 10 (C#) for the backend, React 19 with TypeScript and Vite for the frontend, PostgreSQL 17 through Entity Framework Core 10 as the database and Redis for refresh tokens (Section II.6.3). Speech processing runs in-house in a separate CPU-only worker (ADR-0026, 23/10/2026), and the AI draft of the minutes runs on a self-hosted language model, with an external API allowed for Normal meetings only (ADR-0054, ADR-0056). | Technology |
+| 9 | The technology stack is fixed in the source code repository: ASP.NET Core 10 (C#) for the backend, React 19 with TypeScript and Vite for the frontend, PostgreSQL 17 through Entity Framework Core 10 as the database and Redis for refresh tokens (Section II.6.3). Speech processing runs in-house in a separate CPU-only worker (decided on 23/10/2026), and the AI draft of the minutes runs on a self-hosted language model, with an external API allowed for Normal meetings only. | Technology |
 
 ### 3. Cost & Time Estimations
 
-Effort is expressed in eight-hour person-days (pds). The 300 pds committed below are the effective working capacity derived in Section I.4; the 75 pds buffer remains unallocated. The total allocates 20 pds for initial planning and 40 pds for each of six iterations and the deployment phase. The fifteen active features are FE-01 to FE-13, FE-15 and FE-16, aligned with the Report 3 SRS baseline of 24/11/2026. Consolidating the Meeting lifecycle and narrowing voting changes work-package content; the iteration dates and closing milestone remain unchanged.
+Effort is expressed in eight-hour person-days (pds). The 300 pds committed below are the effective working capacity derived in Section I.4; the 75 pds buffer remains unallocated. The total allocates 20 pds for initial planning and 40 pds for each of six iterations and the deployment phase. The fifteen active features are FE-01 to FE-14, aligned with the Report 3 SRS baseline of 24/11/2026. Consolidating the Meeting lifecycle and narrowing voting changes work-package content; the iteration dates and closing milestone remain unchanged.
 
 | # | Work Package | Effort<br>(pds) | Due Date |
 | --- | --- | --- | --- |
@@ -138,9 +138,9 @@ Effort is expressed in eight-hour person-days (pds). The 300 pds committed below
 | 5.5 | Report 5.2 and 5.3: Integration Test cases and System Test cases | 5 | 29/11/2026 |
 | 5.6 | Code package & Report 5.1 Unit Test | 5 | 29/11/2026 |
 | 5.7 | Software Package v5.0 (increment 5) | 3 | 29/11/2026 |
-| 6 | Iteration 6: Reporting & Calendar - FE-15, FE-16 (weeks 12-13)30/11/2026 - 13/12/2026 | 40 |  |
-| 6.1 | FE-15 Reporting & Statistics | 5 | 13/12/2026 |
-| 6.2 | FE-16 Working Calendar & Meeting Time Search | 4 | 13/12/2026 |
+| 6 | Iteration 6: Reporting & Calendar - FE-14, FE-15 (weeks 12-13)30/11/2026 - 13/12/2026 | 40 |  |
+| 6.1 | FE-14 Reporting & Statistics | 5 | 13/12/2026 |
+| 6.2 | FE-15 Working Calendar & Meeting Time Search | 4 | 13/12/2026 |
 | 6.3 | Report 5.3 and 5.4: System Test cases and System Test report (FRs and NFRs) | 6 | 13/12/2026 |
 | 6.4 | Report 6: Software User Guides (installation guide, user manual) | 6 | 13/12/2026 |
 | 6.5 | Code package & Report 5.1 Unit Test | 4 | 13/12/2026 |
@@ -192,8 +192,8 @@ Risks are reviewed in the evaluation phase of every iteration. Probability and i
 | --- | --- | --- | --- | --- |
 | R01 | The online meeting room (FE-08) is the team's first piece of real-time media work. Connection establishment, NAT traversal and multi-party audio and video quality may take substantially longer than estimated, putting the single largest work package of the plan at risk. | High | High | Run a feasibility study in the Initial Planning phase before the estimate is committed, and build on a proven open-source media server rather than on raw peer-to-peer connections. FE-08 is the only major feature of Iteration 4 so that the iteration carries slack for it. If the room is not demonstrable at the Iteration 4 evaluation, fall back to the reduced room agreed by the team in advance and recorded in Report 3: audio, screen sharing and chat, with a capped number of participants. |
 | R02 | Speaker-attributed transcription of Vietnamese meeting audio (FE-10) produces output too inaccurate to summarise, making the meeting summary and the minutes built on it unusable. | Medium | High | Evaluate candidate models during the Initial Planning feasibility study against three to five of the team's own recorded meetings, agree an acceptance threshold within the team before implementation starts and record it in Report 3. Keep the transcript editable so that the Secretary can correct speaker labels before the summary is generated, which keeps the feature usable even at imperfect accuracy. FE-09 and FE-10 are scheduled in Iteration 3 rather than late in the project, so that the evaluation phase of that iteration still leaves time to change approach. |
-| R03 | The environment in which the speech-processing and summarisation models run was open when this plan was first written. The Product Owner decided that speech processing runs in-house in a separate CPU-only worker (ADR-0026, 23/10/2026) and the AI draft on a self-hosted language model, with an external API allowed for Normal meetings only (ADR-0054, ADR-0056). The remaining risk is that these models need more memory than the deployment servers have. | Low | High | Run the speech worker on a team machine that the server reaches over Tailscale, with a backup worker on the server itself (ADR-0036, ADR-0081), and the language model on team machines over Tailscale with a backup machine (ADR-0063). The application keeps working while a worker is off, and the functions that need it report MSG312 or MSG394. Keep transcription and drafting behind internal interfaces so a worker can change host without changing the rest of the system. |
-| R04 | Fifteen features in fifteen weeks may exceed what five members can build in their committed 40 hours a week, particularly when other courses take back more time than the 20% buffer of Section I.4 covers. The risk surfaces late, as unfinished work carried from one iteration to the next. | High | High | Prioritise the active feature list with the Product Owner into must-have FE-01 to FE-13 and should-have FE-15 and FE-16, recording the agreed priority in Report 3. Measure effort consumed in each iteration evaluation and re-plan against actual effort. The 20% buffer in Section I.4 is excluded from committed work packages. Scope changes follow Section II.6.1 and the Change Log; retired Meeting Session and Resolution work must not be reintroduced silently. |
+| R03 | The environment in which the speech-processing and summarisation models run was open when this plan was first written. The Product Owner decided that speech processing runs in-house in a separate CPU-only worker (decided on 23/10/2026) and the AI draft on a self-hosted language model, with an external API allowed for Normal meetings only. The remaining risk is that these models need more memory than the deployment servers have. | Low | High | Run the speech worker on a team machine that the server reaches over Tailscale, with a backup worker on the server itself, and the language model on team machines over Tailscale with a backup machine. The application keeps working while a worker is off, and the functions that need it report MSG312 or MSG394. Keep transcription and drafting behind internal interfaces so a worker can change host without changing the rest of the system. |
+| R04 | Fifteen features in fifteen weeks may exceed what five members can build in their committed 40 hours a week, particularly when other courses take back more time than the 20% buffer of Section I.4 covers. The risk surfaces late, as unfinished work carried from one iteration to the next. | High | High | Prioritise the active feature list with the Product Owner into must-have FE-01 to FE-13 and should-have FE-14 and FE-15, recording the agreed priority in Report 3. Measure effort consumed in each iteration evaluation and re-plan against actual effort. The 20% buffer in Section I.4 is excluded from committed work packages. Scope changes follow Section II.6.1 and the Change Log; retired Meeting Session and Resolution work must not be reintroduced silently. |
 | R05 | Workload is distributed unevenly, or a member becomes unavailable at a critical point, leaving a module that only one person understands. | Medium | Medium | Give every work package one accountable owner and make sure at least two members have worked on each module, by pairing on the first task of every new module. Log effort per member in Jira and review it in the weekly supervisor meeting. Reassign tasks in the planning phase of the next iteration when the distribution drifts. |
 
 ## II. Management Approach
@@ -386,7 +386,7 @@ Phases of this iteration:
 
 Increment delivered: Software Package v5.0 - increment 4 plus in-meeting voting, recorded Chair conclusions and approved, issued meeting minutes. Reports delivered: Report 3 v1.3, Report 4 v1.3, Reports 5.2 and 5.3.
 
-Iteration 6: Reporting & Calendar - FE-15, FE-16 (2 weeks)
+Iteration 6: Reporting & Calendar - FE-14, FE-15 (2 weeks)
 
 Time: 30/11/2026 - 13/12/2026
 
@@ -394,13 +394,13 @@ Iteration goal: Make everything already built visible and actionable, and reach 
 
 Phases of this iteration:
 
-●  Planning - Set the iteration goal and select FE-15 and FE-16. Both depend on the earlier increments, which is why they are planned last: there is nothing to display, count or schedule around until the meeting, audio and governance features exist.
+●  Planning - Set the iteration goal and select FE-14 and FE-15. Both depend on the earlier increments, which is why they are planned last: there is nothing to display, count or schedule around until the meeting, audio and governance features exist.
 
-●  	Requirements - Define the figures the reports must produce, their breakdowns by period, status and sensitivity and their Excel export, and the calendar sharing (busy or free only) and meeting time search of FE-16. Recorded as the final detailed version of Report 3.
+●  	Requirements - Define the figures the reports must produce, their breakdowns by period, status and sensitivity and their Excel export, and the calendar sharing (busy or free only) and meeting time search of FE-15. Recorded as the final detailed version of Report 3.
 
 ●  	Analysis & design - Design the aggregation behind the reporting figures and the free-slot search over shared calendars.
 
-●  Implementation - Build FE-15 Reporting & Statistics and FE-16 Working Calendar & Meeting Time Search, completing the feature set baselined in Report 1.
+●  Implementation - Build FE-14 Reporting & Statistics and FE-15 Working Calendar & Meeting Time Search, completing the feature set baselined in Report 1.
 
 ●  	Testing - Unit and integration tests for the new modules, followed by full system testing of the complete product against the functional requirements (Report 5.3) and the non-functional requirements (Report 5.4), and a regression pass over every previous increment.
 
@@ -639,7 +639,7 @@ The Business Analyst (KhanhPG) is accountable for document management: for the f
 
 All source code is kept in one GitHub repository owned by the team. The repository is public so that the supervisor and the review council can read it; only the five members can push to it. The repository holds the front end, the back end, the audio-processing component, the database migration scripts, the deployment configuration and the report sources, so that one commit history covers the whole system.
 
-The team follows a two-branch model with short-lived task branches (ADR-0065, ADR-0068):
+The team follows a two-branch model with short-lived task branches:
 
 ●  	app - the main branch. Every pull request targets it, the CI pipeline builds and tests every pull request, and every merge into app is deployed automatically to the app test server, where integration, regression, system and acceptance testing take place.
 
@@ -659,15 +659,15 @@ Merge conflicts are resolved by the member who owns the feature branch, with the
 
 | Category | Tools / Infrastructure |
 | --- | --- |
-| Technology | Backend: ASP.NET Core 10 (C#, Minimal API) in four projects (Domain, Application, Infrastructure, Web; ADR-0064), JWT bearer authentication and Google sign-in (Google.Apis.Auth). Frontend: React 19, TypeScript, Vite and React Router. Real-time: SignalR for notifications; a self-hosted LiveKit SFU provides the WebRTC audio, video and screen-sharing room, with backend-authorized access and Chair controls (FE-08, FE-13). Email: Resend. |
+| Technology | Backend: ASP.NET Core 10 (C#, Minimal API) in four projects (Domain, Application, Infrastructure, Web), JWT bearer authentication and Google sign-in (Google.Apis.Auth). Frontend: React 19, TypeScript, Vite and React Router. Real-time: SignalR for notifications; a self-hosted LiveKit SFU provides the WebRTC audio, video and screen-sharing room, with backend-authorized access and Chair controls (FE-08, FE-13). Email: Resend. |
 | Database | PostgreSQL 17 through Entity Framework Core 10 (Npgsql), code-first migrations; Redis 8 for refresh tokens; SeaweedFS (self-hosted, S3-compatible) for document files |
-| AI model / speech processing | Speech: Vietnamese transcription, speaker attribution and Voice ID on a self-hosted CPU-only speech worker (Python, sherpa-onnx; ADR-0026). AI draft of the minutes: a self-hosted language model behind an OpenAI-compatible API (Ollama; ADR-0054) with a backup machine (ADR-0063); an administrator may send Normal meetings only to an external language-model API (ADR-0056). The model is recorded with each result; consent, retention and erasure safeguards apply, and an external provider may not retain or reuse data. |
+| AI model / speech processing | Speech: Vietnamese transcription, speaker attribution and Voice ID on a self-hosted CPU-only speech worker (Python, sherpa-onnx). AI draft of the minutes: a self-hosted language model behind an OpenAI-compatible API (Ollama) with a backup machine; an administrator may send Normal meetings only to an external language-model API. The model is recorded with each result; consent, retention and erasure safeguards apply, and an external provider may not retain or reuse data. |
 | IDEs / Editors | Visual Studio Code; Visual Studio or JetBrains Rider for the backend; a shared .editorconfig keeps formatting consistent across IDEs |
 | Diagramming | draw.io (architecture and UML diagrams), Figma (UI mock-up) |
 | Documentation | Microsoft Word and Excel (.docx and .xlsx report sources kept in the repository), Google Drive (published copies and supervisor comments) |
 | Version Control | GitHub (source code and report sources), Google Drive (published reports) |
 | CI / Build | GitHub Actions: build and test of the backend (with PostgreSQL and Redis services), lint, unit tests and build of the frontend, on every pull request and every push to app or main; each push to app or main is then deployed to its own server |
 | Development environment | .NET 10 SDK, Node.js 22, Docker Compose (PostgreSQL 17 and Redis 8 for local development) |
-| Deployment server | Two AWS Lightsail instances running Docker Compose behind Caddy, one for app and one for the frozen main demonstration (ADR-0015, ADR-0065). The speech worker runs on a team machine over Tailscale with a backup worker on the server (ADR-0036, ADR-0081), and the language model on team machines over Tailscale with a backup machine (ADR-0063). |
+| Deployment server | Two AWS Lightsail instances running Docker Compose behind Caddy, one for app and one for the frozen main demonstration. The speech worker runs on a team machine over Tailscale with a backup worker on the server, and the language model on team machines over Tailscale with a backup machine. |
 | Project management | Jira (iteration planning, task, defect and issue management) |
 | Communication | Google Meet (team and supervisor meetings), Messenger and Zalo (quick communication) |

@@ -23,11 +23,11 @@ Table of Contents
 | 05/10/2026 | M | KhanhPG | Sync the PO-confirmed Master UC baseline: personal document library, two-source meeting documents, Secretary uploads meeting audio; attendance, summaries, comments, audit log and minutes-revision scope. |
 | 08/10/2026 | M, D | KhanhPG | Remove FE-04; consolidate Meeting and former Meeting Session scope in FE-05; Agenda, Vote and Resolution attach to Meeting. |
 | 09/10/2026 | M, D | KhanhPG | Renumber active features FE-01–FE-15; in-meeting voting with Chair conclusions (no time-box, quorum or separate Resolution scope); audio safeguards kept; schedule and effort preserved. |
-| 13/10/2026 | M | HaiTV | FE-07: no document versions, one immutable file, Chair/Secretary manage meeting documents, library folders, browser previews (ADR-0018). FE-11: Chair-selected voters, Guests vote, ending a Meeting needs no closed Votes (ADR-0016/17). |
+| 13/10/2026 | M | HaiTV | FE-07: no document versions, one immutable file, Chair/Secretary manage meeting documents, library folders, browser previews. FE-11: Chair-selected voters, Guests vote, ending a Meeting needs no closed Votes. |
 | 03/11/2026 | M, D | KhanhPG | Remove stakeholder emails and phone numbers from the public report; keep names and roles only. |
 | 15/11/2026 | M, D | KhanhPG | SCRUM-207 (note 51): drop FE-14 Personal Dashboard & Meeting Workspace and account unlock; sign-in keeps per-minute attempt limits only. |
-| 24/11/2026 | M, A | LocHD | Supervisor review: align with the built system: minutes are approved, not signed (FE-12); AI environment decided (ADR-0056); in-meeting recording, Voice ID, notifications and reports as built; add FE-16 (ADR-0058); Architecture moves to Nguyen Quang Huy. |
-| 25/11/2026 | M | LocHD | [PR #548] Email through Resend only (no SMTP); no blank page after the Change Log. |
+| 24/11/2026 | M, A | LocHD | Supervisor review: align with the built system: minutes are approved, not signed (FE-12); AI environment decided; in-meeting recording, Voice ID, notifications and reports as built; add FE-16; Architecture moves to Nguyen Quang Huy. |
+| 25/11/2026 | M | LocHD | [PR #548] Email via Resend only; no blank page after the Change Log; FE-01 to FE-15; no Vietnamese or decision records. |
 
 *A - Added M - Modified D - Deleted
 
@@ -45,8 +45,6 @@ Table of Contents
 ### 1. Project Information
 
 - English name: TrustCabinet — Internal Meeting and Document Management System for TrustSoft Company
-
-- Vietnamese name: TrustCabinet – Hệ thống quản lý cuộc họp và tài liệu nội bộ cho Công ty TrustSoft
 
 - Project code: IMDMS
 
@@ -180,8 +178,8 @@ For traceability, the gaps identified in Section III – Existing Solutions are 
 | FE-11 | Voting Management | The current Chair or Secretary prepares Vote drafts before or during the Meeting, and only the Chair opens a Vote, one at a time, while the Meeting is InProgress. A Vote belongs directly to one Meeting and does not require an Agenda Item. For each Vote the Chair selects which meeting roles may vote (Chair, Secretary, Participant, verified Guest); each eligible person confirms reading every Vote document and may submit one ballot while the Meeting is InProgress; submitted ballots cannot be changed or withdrawn. Public and secret ballots are supported. After closing and tallying, the Chair records Passed, NotPassed or Deferred on that Vote. There is no time-boxed voting, deadline, quorum or separate Resolution object. Ending the Meeting does not require closing Votes: no ballot is accepted after it ends, and the Chair may still close an Open Vote and record its conclusion. Tallies and Chair conclusions are included in its minutes. | GAP-05 |
 | FE-12 | Meeting Minutes & Approval | After the Meeting ends, the current Chair and the current Secretary build the minutes from one fixed template, the Meeting details, official attendance, agenda outcomes, the reviewed draft, vote tallies and Chair conclusions, and edit them. The Secretary sends the minutes to the Chair, who approves and issues them or returns them with a reason; issued minutes are read-only and are corrected only through a new revision that is approved again. The minutes are not signed. Each Meeting has its own formal minutes; no separate Resolution workflow is maintained. | GAP-05, GAP-06 |
 | FE-13 | Email & In-App Notification | Meeting approval requests and results, invitations, role changes, rescheduling, cancellations, removals, pre-meeting reminders, the start of a Meeting, added documents, agenda presenter assignments, voting calls, minutes waiting for approval, returned or issued, calendar-sharing requests and voice samples collected for a user are delivered as in-application notifications in real time, each linking directly to the item that requires action. Invitations and changes to them are also sent by email, and Guests receive their invitation link and verification code by email. | GAP-03, GAP-04 |
-| FE-15 | Reporting & Statistics | Every signed-in internal user views aggregated statistics on the meetings they may read over a chosen period: meetings per month, by status and by sensitivity, the average attendance rate, the average meeting duration and the average time from the end of a meeting to the issue of its minutes. Each table can be exported to Excel. No separate Resolution statistics or task-completion metrics are included. | GAP-06, GAP-04 |
-| FE-16 | Working Calendar & Meeting Time Search | Each internal user sees their meetings on a working calendar. A user who may create meetings asks others to share their calendar, or is given a share directly; a share shows only busy or free time, never meeting details, and Secret meetings are never shared. From the shared calendars of up to 10 people the system finds common free slots within working hours and creates a Draft Meeting from the chosen slot, which then follows the normal approval flow. There is no AI assistant. | GAP-03 |
+| FE-14 | Reporting & Statistics | Every signed-in internal user views aggregated statistics on the meetings they may read over a chosen period: meetings per month, by status and by sensitivity, the average attendance rate, the average meeting duration and the average time from the end of a meeting to the issue of its minutes. Each table can be exported to Excel. No separate Resolution statistics or task-completion metrics are included. | GAP-06, GAP-04 |
+| FE-15 | Working Calendar & Meeting Time Search | Each internal user sees their meetings on a working calendar. A user who may create meetings asks others to share their calendar, or is given a share directly; a share shows only busy or free time, never meeting details, and Secret meetings are never shared. From the shared calendars of up to 10 people the system finds common free slots within working hours and creates a Draft Meeting from the chosen slot, which then follows the normal approval flow. There is no AI assistant. | GAP-03 |
 
 ### 2. Limitations & Exclusions
 
