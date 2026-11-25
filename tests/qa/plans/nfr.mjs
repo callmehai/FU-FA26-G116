@@ -14,10 +14,15 @@ import {
   PASSWORD,
   PEOPLE,
   RUN,
+  bearerCall,
   bell,
   client,
   closeSeconds,
   dialog,
+  guestInvitedMeeting,
+  guestLink,
+  guestSession,
+  mailedCode,
   meetingAt,
   noSidewaysScroll,
   pdfFile,
@@ -254,12 +259,56 @@ export default {
       role: 'anon',
       title: 'External Guest access scope',
       async run(qa) {
-        const row = sql(
-          `select m.id, g.id from meetings m join meeting_guest_invitations g on g.meeting_id = m.id where m.title like '[SYS]%' order by g.created_at desc limit 1`,
-        )[0]
-        const anon = await qa.api('anon')
-        if (row) actual(qa, `invited meeting read without a verified guest session: ${(await anon.get(`/api/meetings/${row[0]}/agenda`)).status}`)
-        qa.inconclusive('The guest one-time code is sent straight to the invited mailbox and never stored; @trustcabinet.local is never mailed. Needs a real mailbox to open a guest session.')
+        // The guest's codes are read from the local Mailpit inbox (sys-lib guestSession); see sys-lib for the SMTP setup.
+        const g = { name: 'Nguyễn Khách Mời', email: `sys-sec007-guest-${RUN}@trustcabinet.local` }
+        const invited = await guestInvitedMeeting(qa, { title: `[SYS] NFR Họp có khách ${RUN}`, guestName: g.name, guestEmail: g.email })
+        const other = await meetingAt(qa, 'Published', { title: `[SYS] NFR Họp khác ${RUN}` })
+        const link = await guestLink(invited.id, g.email)
+        qa.expect(link, 'no invitation email with a guest link').toBeTruthy()
+        const [, invitationId, linkToken] = /\/guest\/([0-9a-f-]+)#token=([A-Za-z0-9_-]+)/.exec(link)
+        // 1. An expired code: ask for a code, read its lifetime, move its expiry into the past (the local clock cannot
+        //    wait 15 minutes), then verify it.
+        const since = Date.now()
+        const sent = await bearerCall(qa.base, null, 'POST', `/api/guest-access/invitations/${invitationId}/code`, { token: linkToken })
+        qa.expect(sent.status, `code request: ${JSON.stringify(sent.body)}`).toBe(200)
+        const { code: oldCode } = await mailedCode(g.email, since)
+        const lifetime = Number(
+          sql(`select round(extract(epoch from expires_at - created_at)) from guest_verification_challenges where invitation_id = '${invitationId}' order by created_at desc limit 1`)[0][0],
+        )
+        sql(`update guest_verification_challenges set expires_at = now() - interval '1 second' where invitation_id = '${invitationId}' and consumed_at is null`)
+        const expired = await bearerCall(qa.base, null, 'POST', `/api/guest-access/invitations/${invitationId}/verify`, { token: linkToken, code: oldCode })
+        // 2. A fresh code after the 60-second resend interval: the guest's real session in the browser.
+        await new Promise((r) => setTimeout(r, 62_000))
+        try {
+          const { guest, token } = await guestSession(qa, link, {
+            email: g.email,
+            name: g.name,
+            async onCodeScreen(page) {
+              await shotOf(qa, page, 'khach-nhap-ma', 'guest')
+            },
+          })
+          await qa.expect(guest.getByRole('heading', { level: 1, name: invited.title })).toBeVisible({ timeout: 20_000 })
+          await shotOf(qa, guest, 'khach-chi-thay-cuoc-hop-duoc-moi', 'guest')
+          const own = await bearerCall(qa.base, token, 'GET', `/api/meetings/${invited.id}/agenda`)
+          const otherAgenda = await bearerCall(qa.base, token, 'GET', `/api/meetings/${other.id}/agenda`)
+          const otherDetail = await bearerCall(qa.base, token, 'GET', `/api/meetings/${other.id}`)
+          const unknown = await bearerCall(qa.base, token, 'GET', '/api/meetings/00000000-0000-7000-8000-000000000000')
+          const library = await bearerCall(qa.base, token, 'GET', '/api/documents')
+          const accounts = sql(`select count(*) from users where lower(email) = lower('${g.email}')`)[0][0]
+          actual(
+            qa,
+            `code lifetime ${lifetime / 60} min; expired code → ${expired.status} ${expired.body?.code ?? ''}; fresh code verified in the browser; invited meeting agenda ${own.status}; other meeting agenda ${otherAgenda.status}, detail ${otherDetail.status} (unknown id ${unknown.status}); personal library ${library.status}; internal accounts for the guest email ${accounts}`,
+          )
+          qa.expect(lifetime, 'code lifetime').toBe(15 * 60)
+          qa.expect(expired.status, 'an expired code was accepted').toBe(400)
+          qa.expect(own.status).toBe(200)
+          qa.expect([401, 403, 404]).toContain(otherAgenda.status)
+          qa.expect(otherDetail.status, 'another meeting answers differently from an unknown id').toBe(unknown.status)
+          qa.expect([401, 403, 404]).toContain(library.status)
+          qa.expect(accounts).toBe('0')
+        } finally {
+          await closeSeconds(qa)
+        }
       },
     },
     {

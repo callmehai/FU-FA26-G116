@@ -2,14 +2,17 @@
 // docs/08-reports/test-reports/cases/system/WF-04.json describes each case. This plan runs the minutes cases (TC05 to
 // TC08) on the Ended meeting WF-03 left behind; TC01 to TC04 (transcription, AI summary, AI draft) need the speech worker
 // and the local language model, which this machine does not run, and are reported as not run.
+// TC09 (correcting issued minutes) makes its own Ended meeting with issued minutes, so it runs on its own.
 //
 // Never asks for an AI draft: the local server may be set to write Normal meetings through a paid outside API.
 
 import {
   PEOPLE,
+  RUN,
   client,
   closeSeconds,
   dialog,
+  meetingAt,
   noRawCodes,
   noSidewaysScroll,
   person,
@@ -240,6 +243,109 @@ export default {
           await page.goto(`/mgmt/meetings/${state.id}?tab=minutes`)
           await qa.expect(page.getByRole('heading', { name: 'Không tìm thấy trang' }).or(page.getByText(/Không tìm thấy/).first())).toBeVisible()
           await shotOf(qa, page, 'nguoi-ngoai-khong-mo-duoc', 'memberD')
+        } finally {
+          await closeSeconds(qa)
+        }
+      },
+    },
+    {
+      id: 'TC09',
+      role: PEOPLE.memberA,
+      title: 'Issued minutes are corrected; members read the issued version until the correction is issued',
+      async run(qa) {
+        // Precondition (API): a meeting of its own with minutes issued from the fixed template, so this case does not
+        // depend on the TC05–TC08 chain.
+        const title = `[SYS] WF-04 Đính chính biên bản ${RUN}`
+        const m = await meetingAt(qa, 'Ended', { title })
+        const sec = await client(qa, 'memberB')
+        qa.expectStatus(await sec.post(`/api/meetings/${m.id}/minutes`, {}), 201)
+        let st = (await sec.get(`/api/meetings/${m.id}/minutes`)).body
+        qa.expectStatus(await sec.post(`/api/minutes/${st.minutes.id}/submit`, { updatedAt: st.minutes.updatedAt }), 200)
+        st = (await sec.get(`/api/meetings/${m.id}/minutes`)).body
+        qa.expectStatus(await (await client(qa, 'memberA')).post(`/api/minutes/${st.minutes.id}/approve`, { updatedAt: st.minutes.updatedAt }), 200)
+        const original = st.minutes.id
+        const LINE = 'Đính chính: bổ sung ý kiến của phòng Tài chính về số liệu dự toán.'
+        const open = async (page) => {
+          await page.goto(`/mgmt/meetings/${m.id}?tab=minutes`)
+          await qa.expect(page.getByRole('heading', { level: 1, name: title })).toBeVisible()
+          await qa.expect(card(page)).toBeVisible()
+          await qa.expect(card(page)).not.toHaveAttribute('aria-busy', 'true')
+        }
+        const versions = (page) => card(page).getByRole('button', { name: /^Phiên bản biên bản/ })
+        // 1. The Chair starts a correction.
+        await open(qa.page)
+        await qa.expect(badge(qa.page, 'Đã ban hành')).toBeVisible()
+        await btn(qa.page, 'Tạo bản đính chính').click()
+        const d = dialog(qa.page, 'Tạo bản đính chính?')
+        await qa.expect(d).toBeVisible()
+        await qa.shot('hoi-tao-dinh-chinh')
+        await d.getByRole('button', { name: 'Tạo bản đính chính', exact: true }).click()
+        await qa.expect(toast(qa.page, 'Đã tạo bản đính chính.')).toBeVisible()
+        await qa.expect(badge(qa.page, 'Đính chính · bản nháp')).toBeVisible()
+        await qa.expect(paper(qa.page)).toContainText(title)
+        await versions(qa.page).click()
+        const list = qa.page.getByRole('listbox', { name: 'Phiên bản biên bản' })
+        await qa.expect(list.getByRole('option', { name: /Đính chính 1/ })).toBeVisible()
+        await qa.expect(list.getByRole('option', { name: /Bản gốc/ })).toBeVisible()
+        await qa.shot('dinh-chinh-ban-nhap')
+        await qa.page.keyboard.press('Escape')
+        // 2. The Secretary edits and sends the correction.
+        const b = await secondBrowser(qa, 'memberB')
+        const c = await secondBrowser(qa, 'memberC')
+        try {
+          await open(b)
+          await btn(b, 'Sửa').click()
+          const editor = card(b).getByRole('textbox', { name: 'Nội dung biên bản' })
+          await qa.expect(editor).toBeVisible()
+          await editor.evaluate((el) => {
+            el.focus()
+            const p = [...el.querySelectorAll('p')].reverse().find((x) => x.textContent.includes('Cuộc họp kết thúc vào'))
+            const range = document.createRange()
+            range.selectNodeContents(p ?? el)
+            range.collapse(false)
+            const sel = getSelection()
+            sel.removeAllRanges()
+            sel.addRange(range)
+          })
+          await b.keyboard.press('Enter')
+          await b.keyboard.type(LINE)
+          await card(b).getByRole('button', { name: 'Lưu', exact: true }).click()
+          await qa.expect(toast(b, 'Đã lưu biên bản.')).toBeVisible()
+          await btn(b, 'Gửi duyệt').click()
+          await dialog(b, 'Gửi biên bản cho Chủ toạ duyệt?').getByRole('button', { name: 'Gửi duyệt', exact: true }).click()
+          await qa.expect(badge(b, 'Đính chính · chờ duyệt')).toBeVisible()
+          await quiet(b)
+          await shotOf(qa, b, 'thu-ky-gui-dinh-chinh', 'memberB')
+          // 3. A member still reads the issued original.
+          await open(c)
+          await qa.expect(badge(c, 'Đã ban hành')).toBeVisible()
+          await qa.expect(paper(c)).not.toContainText(LINE)
+          await quiet(c)
+          await shotOf(qa, c, 'thanh-vien-van-doc-ban-goc', 'memberC')
+          // 4. The Chair issues the correction; the member reads it, and the original is kept as superseded.
+          await open(qa.page)
+          await qa.expect(paper(qa.page)).toContainText(LINE)
+          await btn(qa.page, 'Duyệt và ban hành').click()
+          await dialog(qa.page, 'Duyệt và ban hành biên bản?').getByRole('button', { name: 'Duyệt và ban hành', exact: true }).click()
+          await qa.expect(toast(qa.page, 'Đã duyệt và ban hành biên bản.')).toBeVisible()
+          await quiet(qa.page)
+          await qa.shot('ban-hanh-dinh-chinh')
+          await open(c)
+          await qa.expect(badge(c, 'Đính chính · đã ban hành').or(badge(c, 'Đã ban hành'))).toBeVisible()
+          await qa.expect(paper(c)).toContainText(LINE)
+          await qa.expect(versions(c)).toHaveAccessibleName(/Đính chính 1/)
+          await quiet(c)
+          await shotOf(qa, c, 'thanh-vien-doc-dinh-chinh', 'memberC')
+          await versions(c).click()
+          await c.getByRole('listbox', { name: 'Phiên bản biên bản' }).getByRole('option', { name: /Bản gốc/ }).click()
+          await qa.expect(badge(c, 'Đã thay thế')).toBeVisible()
+          await qa.expect(paper(c)).not.toContainText(LINE)
+          await quiet(c)
+          await shotOf(qa, c, 'ban-goc-da-thay-the', 'memberC')
+          const notified = await (await client(qa, 'memberC')).get('/api/notifications?page=1&pageSize=50')
+          const issued = (notified.body.items ?? []).filter((n) => n.meetingId === m.id && n.type === 'MinutesIssued')
+          qa.note(`Original ${original}; member C MinutesIssued notifications for this meeting: ${issued.length}`)
+          qa.expect(issued.length, 'member C not notified of the correction').toBeGreaterThan(1)
         } finally {
           await closeSeconds(qa)
         }

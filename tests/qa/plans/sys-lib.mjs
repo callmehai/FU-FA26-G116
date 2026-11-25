@@ -119,6 +119,121 @@ export function emailsTo(address, sinceIso = '1970-01-01') {
 
 export const nowIso = () => new Date().toISOString()
 
+// ---------------------------------------------------------------------------------------------------------------------
+// Guest by email. A guest's one-time code is mailed straight over SMTP and only its hash is stored, so these helpers
+// need the backend's SMTP pointed at the local Mailpit (Email__Smtp__Host=127.0.0.1, Email__Smtp__Port=1025,
+// Email__Smtp__Security=None, empty Username, Email__UndeliverableDomains__0=undeliverable.invalid). Nothing leaves the
+// machine: Mailpit keeps every message it receives.
+
+export const MAILPIT = process.env.QA_MAILPIT ?? 'http://127.0.0.1:8025'
+
+/** The newest 6-digit code mailed to `to` since `sinceMs`, read from Mailpit the way the guest reads their mailbox. */
+export async function mailedCode(to, sinceMs, timeoutMs = 45_000) {
+  const end = Date.now() + timeoutMs
+  while (Date.now() < end) {
+    const res = await fetch(`${MAILPIT}/api/v1/search?query=${encodeURIComponent(`to:"${to}"`)}&limit=10`)
+    for (const m of (await res.json()).messages ?? []) {
+      if (Date.parse(m.Created) < sinceMs - 2000) continue
+      const msg = await (await fetch(`${MAILPIT}/api/v1/message/${m.ID}`)).json()
+      const hit = /(?<!\d)(\d{6})(?!\d)/.exec(msg.Text ?? '')
+      if (hit) return { code: hit[1], subject: m.Subject, id: m.ID }
+    }
+    await new Promise((r) => setTimeout(r, 1500))
+  }
+  throw new Error(`no code mailed to ${to} (is the backend's SMTP pointed at Mailpit?)`)
+}
+
+/** The guest link of an invitation, read from the invitation email in the outbox (waits for the mail worker). */
+export async function guestLink(meetingId, email, timeoutMs = 45_000) {
+  const end = Date.now() + timeoutMs
+  for (;;) {
+    const link = guestLinkNow(meetingId, email)
+    if (link || Date.now() > end) return link
+    await new Promise((r) => setTimeout(r, 1500))
+  }
+}
+function guestLinkNow(meetingId, email) {
+  return sql(
+    `select substring(coalesce(html_body, body) from '(/guest/[0-9a-f-]+#token=[A-Za-z0-9_-]+)') from email_messages where to_address = '${email}' and meeting_id = '${meetingId}' order by created_at desc limit 1`,
+  )[0]?.[0]
+}
+
+/**
+ * Opens the guest link in a fresh browser, enters the mailed code and declares the display name. `onCodeScreen` and
+ * `onProfile` run on those screens (for the shots). Returns the guest page and the guest's access token.
+ */
+export async function guestSession(qa, path, { email, name, onCodeScreen, onProfile } = {}) {
+  const guest = await secondBrowser(qa, 'anon', { signIn: false })
+  const since = Date.now()
+  await guest.goto(path)
+  await qa.expect(guest.getByText(/Nhập mã 6 số đã gửi tới/)).toBeVisible({ timeout: 20_000 })
+  if (onCodeScreen) await onCodeScreen(guest)
+  const { code } = await mailedCode(email, since)
+  await guest.getByRole('textbox', { name: 'Chữ số 1' }).fill(code)
+  await guest.getByRole('button', { name: 'Xác minh', exact: true }).click()
+  const nameBox = guest.getByLabel('Tên hiển thị')
+  await qa.expect(nameBox).toBeVisible({ timeout: 20_000 })
+  await nameBox.fill(name)
+  if (onProfile) await onProfile(guest)
+  await guest.getByRole('button', { name: 'Vào cuộc họp', exact: true }).click()
+  await qa.expect(guest.getByRole('link', { name: /Vào phòng họp/ }).or(guest.getByRole('tablist', { name: 'Cuộc họp' })).first()).toBeVisible({ timeout: 20_000 })
+  const token = await guest.evaluate(() => {
+    const all = JSON.parse(localStorage.getItem('trustcabinet.guest') ?? '{}')
+    return Object.values(all).find((e) => e?.accessToken)?.accessToken ?? null
+  })
+  return { guest, token, code }
+}
+
+/** A Published meeting (precondition) with an agenda item and a guest invited by email; returns the meeting. */
+export async function guestInvitedMeeting(qa, { title, guestName, guestEmail, status = 'Published' }) {
+  const m = await meetingAt(qa, 'Draft', { title })
+  const sec = await client(qa, 'memberB')
+  const roster = await sec.get(`/api/meetings/${m.id}/participants?pageSize=100`)
+  const inv = await fetch(`${qa.base}/api/meetings/${m.id}/guest-invitations`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${await userToken(qa.base, PEOPLE.memberB)}`, 'Content-Type': 'application/json', 'If-Match': roster.headers.etag },
+    body: JSON.stringify({ invitedName: guestName, email: guestEmail }),
+  })
+  qa.expect(inv.status, `guest invitation: ${await inv.text()}`).toBe(201)
+  const approverId = (await person(qa, 'approver')).id
+  const steps = [
+    ['organizer', { action: 'SubmitForApproval', assignedApproverId: approverId }],
+    ['approver', { action: 'Approve' }],
+    ['organizer', { action: 'Publish' }],
+    ...(status === 'InProgress' ? [['memberA', { action: 'Start' }]] : []),
+  ]
+  for (const [who, action] of steps) qa.expectStatus(await (await client(qa, who)).post(`/api/meetings/${m.id}/transitions`, action), 200)
+  await guestLink(m.id, guestEmail)
+  return (await (await client(qa, 'organizer')).get(`/api/meetings/${m.id}`)).body
+}
+
+const USER_TOKENS = {}
+/** An access token of a seeded person, for calls that need a header the API client does not send (If-Match). */
+export async function userToken(base, email) {
+  if (!USER_TOKENS[email]) {
+    const r = await fetch(`${base}/api/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password: PASSWORD }) })
+    USER_TOKENS[email] = (await r.json()).accessToken
+  }
+  return USER_TOKENS[email]
+}
+
+/** A plain HTTP call with a bearer token (the guest's), returning status and parsed body. */
+export async function bearerCall(base, token, method, path, body) {
+  const res = await fetch(`${base}${path}`, {
+    method,
+    headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}), ...(body ? { 'Content-Type': 'application/json' } : {}) },
+    body: body ? JSON.stringify(body) : undefined,
+  })
+  const text = await res.text()
+  let json = null
+  try {
+    json = text ? JSON.parse(text) : null
+  } catch {
+    json = text.slice(0, 200)
+  }
+  return { status: res.status, body: json }
+}
+
 /** Runs every check, then fails once with all the wrong ones. */
 export function checker(qa) {
   const wrong = []

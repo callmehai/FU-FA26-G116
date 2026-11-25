@@ -3,7 +3,21 @@
 // who is in none of the [SYS] meetings; the records are those WF-02 to WF-08 left behind, plus one Draft and one
 // Published meeting made here with bao.dang@ as a plain member.
 
-import { PEOPLE, RUN, client, closeSeconds, meetingAt, secondBrowser, settled, shotOf, sql } from './sys-lib.mjs'
+import {
+  PEOPLE,
+  RUN,
+  bearerCall,
+  client,
+  closeSeconds,
+  guestInvitedMeeting,
+  guestLink,
+  guestSession,
+  meetingAt,
+  secondBrowser,
+  settled,
+  shotOf,
+  sql,
+} from './sys-lib.mjs'
 
 const state = {}
 
@@ -128,15 +142,44 @@ export default {
       title: 'A guest sees only the meeting they were invited to',
       async run(qa) {
         await setup(qa)
-        // Without a verified guest session nothing of the meeting is readable.
-        const anon = await qa.api('anon')
-        const guestMeeting = sql(
-          `select m.id from meetings m join meeting_guest_invitations g on g.meeting_id = m.id where m.title like '[SYS]%' order by m.id desc limit 1`,
-        )[0]?.[0]
-        if (guestMeeting) qa.note(`Unverified guest API on the invited meeting: ${(await anon.get(`/api/meetings/${guestMeeting}/agenda`)).status}`)
-        qa.inconclusive(
-          'A guest session needs the one-time code, which goes straight to the guest mailbox and is never stored; @trustcabinet.local is never mailed, so a real mailbox is needed.',
-        )
+        // A guest session from the code mailed to the guest, read from the local Mailpit inbox (sys-lib guestSession).
+        const g = { name: 'Nguyễn Khách Mời', email: `sys-wf10-guest-${RUN}@trustcabinet.local` }
+        const invited = await guestInvitedMeeting(qa, { title: `[SYS] WF-10 Họp có khách ${RUN}`, guestName: g.name, guestEmail: g.email })
+        const path = await guestLink(invited.id, g.email)
+        qa.expect(path, 'no invitation email with a guest link').toBeTruthy()
+        try {
+          const { guest, token } = await guestSession(qa, path, { email: g.email, name: g.name })
+          await qa.expect(guest.getByRole('heading', { level: 1, name: invited.title })).toBeVisible({ timeout: 20_000 })
+          await guest.getByRole('tab', { name: 'Tài liệu' }).click()
+          await settled(guest)
+          await shotOf(qa, guest, 'khach-xem-cuoc-hop-duoc-moi', 'guest')
+          // Another meeting and the personal library, on the screen and through the API with the guest's token.
+          await guest.goto(`/mgmt/meetings/${state.published.id}`)
+          await guest.waitForLoadState('networkidle', { timeout: 10_000 }).catch(() => undefined)
+          await qa.expect(guest.getByText(state.published.title)).toHaveCount(0)
+          await shotOf(qa, guest, 'khach-mo-cuoc-hop-khac', 'guest')
+          await guest.goto('/mgmt/documents')
+          await guest.waitForLoadState('networkidle', { timeout: 10_000 }).catch(() => undefined)
+          await qa.expect(guest.getByRole('heading', { name: 'Kho tài liệu' })).toHaveCount(0)
+          await shotOf(qa, guest, 'khach-mo-kho-tai-lieu', 'guest')
+          const own = await bearerCall(qa.base, token, 'GET', `/api/meetings/${invited.id}/agenda`)
+          const other = await bearerCall(qa.base, token, 'GET', `/api/meetings/${state.published.id}/agenda`)
+          const otherMeeting = await bearerCall(qa.base, token, 'GET', `/api/meetings/${state.published.id}`)
+          const unknown = await bearerCall(qa.base, token, 'GET', '/api/meetings/00000000-0000-7000-8000-000000000000')
+          const library = await bearerCall(qa.base, token, 'GET', '/api/documents')
+          qa.note(
+            `Guest token: invited agenda ${own.status}; other meeting agenda ${other.status}, detail ${otherMeeting.status} (unknown id ${unknown.status}); personal library ${library.status}`,
+          )
+          // The same answer for a real and an unknown id: the endpoint refuses a guest token, it does not reveal the meeting.
+          qa.expect(otherMeeting.status, 'another meeting answers differently from an unknown id').toBe(unknown.status)
+          qa.expect(own.status, 'the guest cannot read the invited meeting').toBe(200)
+          for (const [label, r] of [['other agenda', other], ['other meeting', otherMeeting], ['personal library', library]])
+            qa.expect([401, 403, 404], `${label} answered ${r.status}`).toContain(r.status)
+          const accounts = sql(`select count(*) from users where lower(email) = lower('${g.email}')`)[0][0]
+          qa.expect(accounts, 'an internal account was created for the guest').toBe('0')
+        } finally {
+          await closeSeconds(qa)
+        }
       },
     },
   ],

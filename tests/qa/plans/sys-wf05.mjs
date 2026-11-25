@@ -3,8 +3,8 @@
 // local LiveKit server and Chromium's fake camera and microphone (a test tone, not a voice).
 //
 // The meeting is made here (precondition): an Online meeting organised by thanhvien@, Chủ toạ duc.hoang@, Thư ký lan.vu@,
-// members bao.dang@ and son.ngo@, and a guest on @trustcabinet.local, published and started. The guest's link and
-// one-time code are read from the outbox (the domain is never mailed), the way the guest would read their mailbox.
+// members bao.dang@ and son.ngo@, and a guest on @trustcabinet.local, published and started. The guest's link is read
+// from the outbox; the one-time code, which is mailed and never stored, from the local Mailpit inbox (see sys-lib).
 
 import { request as playwrightRequest } from '@playwright/test'
 import {
@@ -18,6 +18,8 @@ import {
   person,
   secondBrowser,
   shotOf,
+  guestLink,
+  guestSession,
   slot,
   sql,
 } from './sys-lib.mjs'
@@ -153,37 +155,46 @@ export default {
       title: 'The guest opens the emailed link, verifies the one-time code, gives a name and joins the room',
       async run(qa) {
         await setup(qa)
-        const invite = sql(
-          `select substring(coalesce(html_body, body) from '(/guest/[0-9a-f-]+#token=[A-Za-z0-9_-]+)') from email_messages where to_address = '${GUEST.email}' and meeting_id = '${state.id}' order by created_at desc limit 1`,
-        )
-        const path = invite[0]?.[0]
+        const path = await guestLink(state.id, GUEST.email)
         qa.expect(path, 'no invitation email with a guest link').toBeTruthy()
         await prefs(qa.page, { mic: false, cam: false })
         await enter(qa, qa.page)
-        const guest = await secondBrowser(qa, 'anon', { signIn: false })
         try {
-          const since = new Date().toISOString()
-          await guest.goto(path)
+          // The code is read from the local Mailpit inbox (sys-lib guestSession), the way the guest reads their mailbox.
+          const { guest } = await guestSession(qa, path, {
+            email: GUEST.email,
+            name: GUEST.name,
+            async onCodeScreen(page) {
+              await qa.expect(page.getByRole('heading', { level: 1, name: TITLE })).toBeVisible()
+              await shotOf(qa, page, 'khach-nhap-ma', 'guest')
+            },
+            async onProfile(page) {
+              await shotOf(qa, page, 'khach-khai-ten', 'guest')
+            },
+          })
           await qa.expect(guest.getByRole('heading', { level: 1, name: TITLE })).toBeVisible({ timeout: 20_000 })
-          await qa.expect(guest.getByText(/Nhập mã 6 số đã gửi tới/)).toBeVisible({ timeout: 20_000 })
-          await shotOf(qa, guest, 'khach-nhap-ma', 'guest')
-          qa.inconclusive(
-            'The one-time code goes straight to the guest mailbox over SMTP and only its hash is stored (GuestAccessService); @trustcabinet.local is never mailed, so the code needs a real mailbox. Checked up to the code screen.',
-          )
           await shotOf(qa, guest, 'khach-xem-cuoc-hop', 'guest')
           await prefs(guest, { mic: false, cam: false })
+          // "Vào phòng họp" opens the room in a browser tab of its own (features/calls/meetingTabs.ts).
           const go = guest.getByRole('link', { name: /Vào phòng/ }).or(guest.getByRole('button', { name: /Vào phòng họp/ })).first()
-          await go.click()
-          await qa.expect(lobbyHeading(guest)).toBeVisible({ timeout: 20_000 })
-          await guest.getByRole('button', { name: 'Vào phòng', exact: true }).click()
-          await qa.expect(leaveButton(guest)).toBeVisible({ timeout: 25_000 })
+          const [room] = await Promise.all([guest.context().waitForEvent('page'), go.click()])
+          await qa.expect(lobbyHeading(room)).toBeVisible({ timeout: 20_000 })
+          // A guest confirms the recording notice before joining (SCRUM-59); "Vào phòng" stays disabled until then.
+          const join = room.getByRole('button', { name: 'Vào phòng', exact: true })
+          await qa.expect(join).toBeDisabled()
+          await room.locator('.prejoin-consent input[type="checkbox"]').check()
+          await shotOf(qa, room, 'khach-xac-nhan-ghi-am', 'guest')
+          await join.click()
+          await qa.expect(leaveButton(room)).toBeVisible({ timeout: 25_000 })
           await qa.expect.poll(() => headerCount(qa.page), { timeout: 20_000 }).toBe(2)
           await controls(qa.page).getByRole('button', { name: /Người dự/ }).click()
-          await qa.expect(qa.page.getByRole('complementary', { name: /Người dự/ })).toContainText(GUEST.name)
+          const people = qa.page.getByRole('complementary', { name: /Người dự/ })
+          await qa.expect(people).toContainText(GUEST.name)
+          qa.expect(await people.innerText(), 'the guest email is shown in the room').not.toContain(GUEST.email)
           await qa.page.waitForTimeout(1000)
           await qa.shot('chu-toa-thay-khach')
-          await shotOf(qa, guest, 'khach-trong-phong', 'guest')
-          await noSidewaysScroll(qa, guest)
+          await shotOf(qa, room, 'khach-trong-phong', 'guest')
+          await noSidewaysScroll(qa, room)
         } finally {
           await closeSeconds(qa)
         }
