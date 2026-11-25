@@ -5,7 +5,8 @@ boundary "Meeting Lobby Page" as Page
 control ":Meeting Room Controller" as RoomController
 control ":Meeting Room Service" as RoomService
 participant ":Meeting Repository" as MeetingRepository
-participant ":Room Service" as RoomProvider
+participant ":LiveKit Gateway" as Gateway
+participant ":Room Service (LiveKit SFU)" as RoomProvider
 database ":Database" as Database
 
 Actor->Page: Choose Join room
@@ -47,17 +48,34 @@ else Guest session has ended - EX-3
     Page-->Actor: MSG378 - The guest session has ended.
 
 else Meeting is in progress and actor is eligible
-    RoomService->RoomProvider: Request room connection for the actor (BR-100, UC-46)
-    activate RoomProvider
-    RoomProvider-->RoomService: Room connection
-    deactivate RoomProvider
+    RoomService->Gateway: createJoinTicket(room, identity, name, meeting role, TTL) (BR-100, UC-46)
+    activate Gateway
+    Gateway->Gateway: Sign the JWT access token\n(this room only, no room admin)
+    Gateway-->RoomService: Join ticket (server URL, access token, expiry)
+    deactivate Gateway
 
-    RoomService-->RoomController: Room connection
-    RoomController-->Page: Room connection
-    Page->RoomProvider: Connect to the meeting room
+    RoomService-->RoomController: Join ticket
+    RoomController-->Page: Server URL and access token
+    Page->RoomProvider: Open the signalling WebSocket (/rtc) with the access token
     activate RoomProvider
-    RoomProvider-->Page: People already in the room
+    RoomProvider->RoomProvider: Verify the token\nsignature and grants
+    RoomProvider-->Page: Join response: people already in the room, ICE servers
+    Page->RoomProvider: SDP offer (microphone and camera tracks)
+    RoomProvider-->Page: SDP answer
+    Page->RoomProvider: ICE candidates
+    RoomProvider-->Page: ICE candidates
+    RoomProvider-->Page: WebRTC media connected (DTLS-SRTP)
+    RoomProvider->RoomController: Webhook participant_joined (signed)
     deactivate RoomProvider
+    RoomController->RoomService: Record the join
+    RoomService->MeetingRepository: Start the room session and record the visit
+    activate MeetingRepository
+    MeetingRepository->Database: Insert room session and visit
+    activate Database
+    Database-->MeetingRepository: Saved
+    deactivate Database
+    MeetingRepository-->RoomService: Saved
+    deactivate MeetingRepository
     Page-->Actor: Online Meeting Room - Video Grid
 end
 

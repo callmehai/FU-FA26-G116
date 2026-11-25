@@ -27,7 +27,8 @@ Mỗi góc nhìn là một cặp file cùng tên: `.drawio` là source editable,
 - Mũi tên nét đứt đầu mở là phụ thuộc UML. `«import»` = `ProjectReference`; `«use»` = dùng trực
   tiếp namespace của project khác mà không tham chiếu project đó (ví dụ Web → Domain đi qua
   Application); `«use» HTTP · SignalR` = `api/` gọi `/api` và `/hubs` của backend.
-- Mũi tên không nhãn là phụ thuộc giữa các package trong cùng một project/thư mục.
+- Mũi tên giữa các package trong cùng một project/thư mục cũng ghi `«use»` (dùng namespace hoặc `import` của package
+  kia). Mọi mũi tên đều có nhãn, theo review của GVHD trên Report 4 (25/11/2026).
 - Mũi tên gắn vào khung một package bao gồm mọi package con bên trong.
 - Package vẽ ngoài package chứa nó thì ghi tên đầy đủ `chứa::tên` (ví dụ `backend::TrustCabinet.Web`
   trên trang Frontend).
