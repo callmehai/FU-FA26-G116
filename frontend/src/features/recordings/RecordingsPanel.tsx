@@ -6,14 +6,14 @@ import { Icon } from '../../components/Icon'
 import { InfoTip } from '../../components/InfoTip'
 import { useToast } from '../../components/toastContext'
 import { errorMessage, isApiError } from '../../lib/errors'
-import { formatDate, formatDateTime } from '../../lib/format'
+import { formatDateTime } from '../../lib/format'
 import type { Recording, RecordingList, RecordingSource } from '../../types/recording'
 import type { TranscriptStatus } from '../../types/transcript'
 import { useAccessLost } from '../auth/useAccessLost'
 import { useMeetingEvents } from '../meetings/useMeetingEvents'
 import { useUploadsSettled } from '../uploads/uploadsContext'
 import { ConsentDialog } from './ConsentDialog'
-import { formatDuration, formatSize, probeDuration } from './format'
+import { formatSize, probeDuration } from './format'
 import { PlayerBar } from './PlayerBar'
 import { rememberSpeed, storedSpeed } from './playerSpeed'
 import { formatSpan, processingTime } from './transcribeTime'
@@ -111,7 +111,10 @@ export function RecordingsPanel({
   if (existingOnly && (state.kind === 'loading' || (data?.items.every((r) => r.status === 'Deleted') ?? false))) return null
 
   // An erased recording leaves the tab (PO 29/10/2026); its audit trail stays on the server.
-  const kept = data?.items.filter((r) => r.status !== 'Deleted') ?? []
+  // A take still being recorded has no row (Hải 25/11/2026): the mic card, the chip by the title and the call room
+  // already say the room is being recorded.
+  const kept = data?.items.filter((r) => r.status !== 'Deleted' && r.status !== 'Pending') ?? []
+  const live = data?.items.some((r) => r.status === 'Pending') ?? false
   return (
     <section className="list-panel recordings-panel recordings-page" aria-label="Bản ghi">
       <div className="toolbar">
@@ -173,7 +176,9 @@ export function RecordingsPanel({
           {/* The mic card is in the corner only while the meeting runs (canRecord); before or after it, a file is the
               only way in. ADR-0061: a hybrid meeting's room is recorded live only, so its words keep their time, and
               ADR-0072 moved its switch into the call room: the card shows there only when the call cannot be used. */}
-          {data.canRecord && micInCall ? (
+          {live ? (
+            <p className="field-hint">Có bản ghi khi tắt mic phòng.</p>
+          ) : data.canRecord && micInCall ? (
             <p className="field-hint">Bật mic phòng trong phòng họp trực tuyến.</p>
           ) : data.canRecord && canUpload ? (
             <p className="field-hint">Bật mic phòng ở ô góc màn hình, hoặc tải tệp ghi sẵn lên.</p>
@@ -190,19 +195,15 @@ export function RecordingsPanel({
           {/* Oldest first, each with its transcript under it: the tab reads in the order the meeting went. */}
           {[...kept]
             .reverse()
-            .map((recording) =>
-              recording.status === 'Pending' ? (
-                <OpenTakeRow key={recording.id} take={recording} />
-              ) : (
-                <RecordingRow
-                  key={recording.id}
-                  meetingId={meetingId}
-                  recording={recording}
-                  online={existingOnly}
-                  onErase={() => setErasing(recording)}
-                />
-              ),
-            )}
+            .map((recording) => (
+              <RecordingRow
+                key={recording.id}
+                meetingId={meetingId}
+                recording={recording}
+                online={existingOnly}
+                onErase={() => setErasing(recording)}
+              />
+            ))}
         </ul>
       )}
 
@@ -279,26 +280,6 @@ const TRANSCRIPT_BADGE: Partial<Record<TranscriptStatus, { tone: BadgeTone; labe
   Processing: { tone: 'amber', label: 'Đang chuyển chữ' },
   Completed: { tone: 'emerald', label: 'Có bản gỡ băng' },
   Failed: { tone: 'red', label: 'Lỗi chuyển chữ' },
-}
-
-/** The room mic's take being recorded: everyone sees the room is being recorded, nobody hears it yet. */
-function OpenTakeRow({ take }: { take: Recording }) {
-  return (
-    <li className="recording-row recording-live">
-      <span className="recording-icon" aria-hidden="true">
-        <Icon name="mic" size={18} />
-      </span>
-      <div className="recording-main">
-        <span className="recording-name">Mic phòng đang ghi</span>
-        <span className="recording-meta">
-          <Badge tone="red">Đang ghi</Badge>
-          <span>{take.createdByName}</span>
-          <span>từ {formatDateTime(take.createdAt)}</span>
-          <InfoTip text="Tắt mic thì lượt này được nối vào bản ghi phòng và chuyển chữ lại cả bản." />
-        </span>
-      </div>
-    </li>
-  )
 }
 
 function RecordingRow({
@@ -408,10 +389,9 @@ function RecordingRow({
     }
   }
 
+  // Only who kept it (Hải 25/11/2026): the time is on the line, the purpose was agreed when the mic was switched on.
   const details = [
-    `Lưu bởi ${recording.createdByName} lúc ${formatDateTime(recording.createdAt)}`,
-    recording.consentPurpose && `Mục đích: ${recording.consentPurpose}`,
-    !deleted && recording.retainUntil && `Tự xoá ngày ${formatDate(recording.retainUntil)}`,
+    `Lưu bởi ${recording.createdByName}`,
     deleted && recording.deletedAt && `Đã xoá lúc ${formatDateTime(recording.deletedAt)}`,
   ]
     .filter(Boolean)
@@ -426,10 +406,9 @@ function RecordingRow({
         <span className="recording-name" title={recording.fileName}>
           {recording.fileName}
         </span>
-        {/* Who kept it, why and until when: behind an (i) a tap reaches too, never a hover on the line. */}
+        {/* Who kept it: behind an (i) a tap reaches too, never a hover on the line. */}
         <span className="recording-meta">
           <Badge tone="slate">{SOURCE_LABEL[recording.source]}</Badge>
-          {recording.takes && recording.takes.length > 1 && <span>{recording.takes.length} lượt ghi</span>}
           {deleted ? (
             <Badge tone="red">Đã xoá</Badge>
           ) : (
@@ -440,7 +419,6 @@ function RecordingRow({
                   {percent > 0 && ` ${percent}%`}
                 </Badge>
               )}
-              {recording.durationMs > 0 && <span>{formatDuration(recording.durationMs)}</span>}
               {tookMs !== null && <span>chuyển chữ {formatSpan(tookMs)}</span>}
               <span>{formatSize(recording.byteSize)}</span>
             </>
