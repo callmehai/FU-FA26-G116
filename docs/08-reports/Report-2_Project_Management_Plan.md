@@ -24,7 +24,7 @@ Table of Contents
 | 30/10/2026 | M | HuyNQ | Fix review findings (v1.2): fifteen features in risk R04, EX means Exception, Cancelled lifecycle added, TBDs closed (ADR-0026/0015), R03 lowered, no 'versioning' in Iteration 2, ToC fixed. |
 | 15/11/2026 | M, D | KhanhPG | SCRUM-207 (note 51): drop FE-14 from scope and Iteration 6; account lifecycle ends at deactivation, per-minute sign-in limit kept. |
 | 24/11/2026 | M, A, D | LocHD | Supervisor review: align with Report 1 and the built system: minutes approved, not signed; AI environment decided; in-meeting recording; FE-16 in Iteration 6; app/main branches; Actual metrics to 24/11/2026. |
-| 25/11/2026 | M | LocHD | [PR #548] Constraints: outgoing email is sent through Resend only; SMTP is no longer an alternative. |
+| 25/11/2026 | M | LocHD | [PR #548] Constraints: outgoing email is sent through Resend only; SMTP is no longer an alternative; page breaks moved onto the headings. |
 
 *A - Added M - Modified D - Deleted
 
