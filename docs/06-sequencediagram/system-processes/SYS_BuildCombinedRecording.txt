@@ -1,4 +1,4 @@
-title SYS - Build Combined Recording of a Hybrid or Online Meeting (System, DRAFT awaiting approval - no UC number)
+title SYS - Build Combined Recording of a Hybrid or Online Meeting (System)
 
 actor "System" as System
 control ":Combined Recording Worker" as Worker

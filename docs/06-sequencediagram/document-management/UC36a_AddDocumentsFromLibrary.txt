@@ -1,4 +1,4 @@
-title UC-36a - Add Documents from Personal Library
+title UC-36a - Add Document to Meeting
 
 actor "Chair or Secretary" as Actor
 boundary "Meeting Documents Tab" as DocumentsTab

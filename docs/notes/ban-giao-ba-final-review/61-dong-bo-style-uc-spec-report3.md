@@ -22,7 +22,7 @@ Quy tắc viết ngày 15/10/2026 (commit `1e3db559`). Đánh số lại UC đ�
 Kết luận:
 
 - Câu quy tắc trong README đúng với mẫu gốc: nhãn và tiêu đề AF/EX đậm, **nội dung flow chữ thường**. 88 UC đang in đậm các bước EX (gồm UC-23a hiện tại) là lệch, sửa đồng loạt.
-- Tên AF/EX: mẫu gốc viết hoa từng từ, nhưng hiện 396 tiêu đề viết như câu, 31 viết hoa từng từ. Đề nghị chốt **viết như câu**, theo đa số và UC-23a hiện tại, và ghi rõ trong README. Tiêu đề viết hoa từng từ sửa theo.
+- Tên AF/EX: mẫu gốc viết hoa từng từ, nhưng hiện 396 tiêu đề viết như câu, 31 viết hoa từng từ. **Đã chốt (25/11) viết như câu**, theo đa số và UC-23a hiện tại, và ghi rõ trong README. Tiêu đề viết hoa từng từ sửa theo.
 - Bước kết thúc EX: mẫu gốc cũng không có, nhưng quy tắc README đòi EX nói cách kết thúc hoặc tiếp tục. Chốt theo quy tắc: thêm câu kết vào mọi EX, kể cả UC-23a.
 
 Phần còn lại dùng làm mẫu như cũ: 8 nhãn theo thứ tự, PRE/POST mở đầu bằng `● PRE-n:` / `● POST-n:`, Normal Flow mở đầu bằng một dòng tên luồng (chữ thường) rồi các bước đánh số, mỗi ô là **một đoạn** có ngắt dòng, không italic, không có dòng "Sequence Diagram" trước bảng trong DOCX.
@@ -51,6 +51,8 @@ Không lệch: cả 133 bảng có đủ 8 nhãn theo đúng thứ tự; cỡ ch
 
 ## 3. Cách sửa
 
+Thứ tự làm cùng note 60, quyết định đã chốt và điều kiện xong: [note 60 §6](60-bo-uc-52b-54c-dua-vao-report4-phan-iv.md#6-giao-cho-agent-chốt-25112026).
+
 1. Đưa UC-23a về đúng mẫu gốc (bước EX chữ thường, thêm câu kết EX) trước, rồi mới áp cho cả file.
 2. Phần định dạng (đậm, nghiêng, dấu `–`, `●`, gộp nhiều đoạn thành một đoạn ngắt dòng) làm bằng `scripts/uc_spec_style_report3.py`, một commit riêng, **không đổi chữ**. Chạy không tham số để xem báo cáo; `--apply <out.docx>` để sửa. Đã thử trên bản sao: sau khi áp, chỉ còn ba nhóm phải sửa tay (EX thiếu câu kết, "Main Flow", tên viết hoa từng từ); chữ trong 11.255 ô bảng không đổi ngoài `:` → `–` và `●`; `check_docx.py` OK. Kiểm tra: `check_docx.py`, mở Word, rồi `sync_reports.py --report 3`; diff Markdown snapshot chỉ được khác ở dấu `:` → `–` và `●`.
 3. Phần chữ (thêm bước kết thúc EX, "Main Flow" → "Normal Flow", câu kết, trích MSG) làm tay theo thứ tự UC, cùng lượt với note 60.
@@ -60,11 +62,13 @@ Quy tắc đã bổ sung vào `docs/08-reports/README.md` § Style UC Specificat
 
 ## 4. Góp ý của thầy HungNQ trên Drive (24/11/2026) — sửa cùng đợt
 
+Tình trạng 25/11: comment 1 xong (PR #525, #531, #537), trừ hai chỗ Google AI Provider ghi dưới; comment 2–7 chưa làm (chưa hình nào có caption `Figure n:`, đoạn §3.1 còn nguyên, chưa có sơ đồ tổng thể).
+
 Thầy để 7 comment trên bản Report 3 trên Drive ([link](https://docs.google.com/document/d/1JNNCwt0Yc_KLS9dPB6wtP8HW6x7D1fWl/edit)). Sửa trong DOCX nguồn `docs/08-reports/source/`, không sửa trên Drive; xong thì sync rồi mới push lên Drive.
 
 | # | Mục | Thầy nói | Cần sửa |
 |---|---|---|---|
-| 1 | I.1 Context Diagram (hình + các đoạn chữ I.1) | Vẽ lại, nền trắng, hiện không nhìn thấy; chữ phải đọc được | Vẽ lại nền trắng, chữ đủ lớn; vẽ đúng actor và dịch vụ ngoài theo đoạn chữ và code hiện tại (đối chiếu note 60 §2, API-06: máy AI local hoặc API do Admin chọn): actor ngoài là Member (Chair/Secretary là vai trò trong cuộc họp, ADR-0075), bỏ "AI / Speech Processing Provider" ngoài hệ thống nhận "Meeting audio" (trái BR-121), bỏ phần ký biên bản ("signature status", "signing data" — đã bỏ theo SCRUM-37), bổ sung kho tệp (SeaweedFS; R2 đã bỏ hẳn, cả server demo — PR #529). Sửa mọi chỗ còn ghi Cloudflare R2 thành SeaweedFS, dẫn theo mấy chữ đầu (số đoạn trong DOCX đổi mỗi lần sync): đoạn "TrustCabinet is an Internal Meeting…" (còn liệt kê "Google AI Provider … and Cloudflare R2"), đoạn "Cloudflare R2 stores the files…" (viết lại: SeaweedFS giữ tệp…), mục "17.7 Cloudflare R2 – file storage (API-07)", hàng "Cloudflare R2" trong bảng Actors ("An external object-storage service…", đồng thời sửa mã UC cũ "UC-35 to UC-39" trong cùng ô), hàng "Cloudflare R2 – S3-compatible object storage" trong bảng External Interfaces, ô "Cloudflare R2 over an S3-compatible API…" trong khối URL. Các chỗ "Google AI Provider" (đoạn mở đầu, mục "17.6 Google AI Provider – draft meeting summary (API-06) – planned", bảng External Interfaces, ô "An external generative-AI service…") sửa thành "AI drafting service" theo code (máy AI của nhóm hoặc API do Admin chọn, ADR-0054/0056) như Context Diagram trên app sau PR #525; bỏ chữ "planned"/"not connected yet" đã sai |
+| 1 | I.1 Context Diagram (hình + các đoạn chữ I.1) | Vẽ lại, nền trắng, hiện không nhìn thấy; chữ phải đọc được | **Đã xong** ở PR #525, #531, #537: vẽ lại, actor Member/Approver, File Storage không còn là actor (SeaweedFS trên server app, trong ranh giới hệ thống, ADR-0084), hết Cloudflare R2. **Còn hai chỗ**: dòng 6 bảng External Interfaces "Google AI Provider (planned)" và tiêu đề "17.6 Google AI Provider – draft meeting summary (API-06) – planned": đổi thành AI drafting service (máy AI của nhóm hoặc API do Admin chọn, ADR-0054/0056), bỏ "planned" |
 | 2 | 2.4 Post-Meeting Processing & Formal Records (BF-04) (hình) | Hình gì phải nói rõ; chữ không đọc được; **rà toàn bộ hình**, chữ trong hình phải đọc được, cần thì để link ảnh gốc bên dưới cho hội đồng mở | Thêm caption, xuất lại ảnh nét, thêm link ảnh gốc |
 | 3 | 3.1 Entity Relationship Diagram (hình) | Ghi chú đây là sơ đồ gì; phải nhìn rõ tên trường; không được thì để link ảnh gốc cho hội đồng xem và chấm | Caption, ảnh độ phân giải cao hoặc tách ERD theo module, link ảnh gốc |
 | 4 | 3.1, đoạn "The diagram is drawn from the database model in the code as of 04/11/2026 … 41 tables …" | Đoạn này cho thấy code xong rồi chụp DB làm tài liệu ngược; phải đúng quy trình: **thiết kế trước, lập trình sau**; rà các chỗ mâu thuẫn kiểu này | Viết lại thành mô tả thiết kế, bỏ "drawn from the code", ngày chụp; quét cả file các câu "in the code", "as built", "as of <ngày>" |

@@ -1,6 +1,6 @@
 # Note gửi BA — bỏ UC-52b, UC-54c, rà UC Specification và đưa phần hệ thống tự xử lý sang Report 4 phần IV (24/11/2026)
 
-Mọi số UC, BR trong note này là **số mới** sau PR #519 (bảng ánh xạ UC đợt 1) và PR #522 (đổi mã BR trong code, docs, test). Số dòng là dòng trong bản trích `docs/01-requirements/05-use-case-specifications.md` trên `app` hiện tại (chỉ đọc; sửa ở DOCX Report 3 rồi `sync_reports.py --report 3`).
+Mọi số UC, BR trong note này là **số mới** sau PR #519 (bảng ánh xạ UC đợt 1) và PR #522 (đổi mã BR trong code, docs, test). Số dòng là dòng trong bản trích (theo commit `d56b7960`, đã lệch sau PR #537: **tìm theo chữ, số dòng chỉ là gợi ý**) `docs/01-requirements/05-use-case-specifications.md` trên `app` hiện tại (chỉ đọc; sửa ở DOCX Report 3 rồi `sync_reports.py --report 3`).
 
 ## 1. Đã xong, không còn việc
 
@@ -52,7 +52,7 @@ Thuật ngữ "lượt ghi": lượt còn **tự chia mỗi 30 phút**, cắt �
 - Report 4: 9.2.5 (UC-52b), 10.2.3 (UC-54c) và 10.2.4 (hàng đợi): tiêu đề, hình, chú thích; đánh lại số hình và mục. Nếu vẽ AF chạy gỡ băng của UC-54a thì thêm vào sơ đồ UC-54a.
 - Report 3: danh sách UC, mô tả UC theo actor ở 4.3, spec, bảng quyền.
 - Repo: `docs/06-sequencediagram/TrustCabinet_Sequence_Diagrams.drawio` (xem 3.5), `drawio-png/`, README của `meeting-recording/` và `transcription-voice-id/`, `00-master-use-case-inventory.md`, `docs/uc-map.html` (sinh lại cùng Report 3).
-- Test: `docs/08-reports/test-reports/cases/preview/FE-09/unit-RoomTake.Complete.md`, `FE-10/unit-Transcription.ProcessNext.md`: quyết định giữ làm test chức năng hay bỏ.
+- Test: **bỏ** `docs/08-reports/test-reports/cases/preview/FE-09/unit-RoomTake.Complete.md` và `FE-10/unit-Transcription.ProcessNext.md` (chốt 25/11), gỡ mọi chỗ trỏ tới hai file.
 
 ### 3.4 Chỗ ghi thiết kế: Report 4 phần IV "Other Design Specifications"
 
@@ -60,7 +60,7 @@ Phần này cần có, không bỏ. Hiện chỉ có chữ mẫu. Viết mới t
 
 - hàng đợi gỡ băng (lấy bản chờ cũ nhất và đánh dấu đang xử lý trong một bước; bản bị xoá hoặc có lượt mới thì bỏ kết quả; xong thì màn Bản ghi tải lại), ITN, độ tin cậy từng từ, lọc tiếng đệm, lọc câu ngắn;
 - mang phần sửa tay sang lần gỡ băng lại: bốn ngưỡng 60% thời lượng nói, 2 giây, 500 ms, 80% (`VoiceShare = 0.6`, `MinVoiceOverlapMs = 2000`, `LineToleranceMs = 500`, `LineOverlap = 0.8` trong `TranscriptCarry.cs`, khớp theo thời gian chứ không theo giọng, BR-125, BR-154, ADR-0077);
-- khớp giọng Voice ID và gán nhãn `SPEAKER_NN`: ngưỡng theo ADR-0074;
+- khớp giọng Voice ID và gán nhãn `SPEAKER_NN`: ngưỡng theo ADR-0074; bản ghi mic phòng dài theo ADR-0086 (nhóm dưới 2% thời lượng lời gộp về người gần nhất, chuyển chữ bằng Gipformer fp32), ADR-0086 **đang chờ PO duyệt**: viết vào phần IV, ghi rõ "đề xuất";
 - lưu lượt ghi: cắt chẵn mili giây, tự chia 30 phút ở chỗ ngừng nói, server tự lưu lượt không nhận thêm tiếng trong 12 giờ (`RecordingOptions.IdleTakeHours`, `RoomTakeService.CompleteIdleAsync`), đầy 300 MB thì lượt mới thành bản ghi phòng mới (`RoomTakeService.cs:218`), giữ trên máy và gửi lại trong 7 ngày;
 - bản ghi gộp: dựng sau khi họp xong, rút khoảng lặng trên 2 giây, dài tối đa 12 giờ (`CombinedRecording.MaxLength`, BR-151);
 - tự xoá bản ghi sau 180 ngày; tự huỷ cuộc họp quá giờ (BR-029, ADR-0062); nhắc giờ họp 15 phút;
@@ -156,7 +156,7 @@ Không đụng: **UC-28** (763–765) giữ nguyên, xem 3.1 mục 4.
 - UC-43 (1159–1160): "new browser tab", tab bị chặn, "Join room button".
 - UC-42 (1144): nút "Xác nhận đã đọc", cuộn tới trang cuối. UC-35b (930): nút ✕, Esc, Back, Ctrl-click.
 - UC-44 (1172–1174): nút quay lại, nội dung hộp thoại Stay/Leave, đóng tab; AF-2 (1173) cửa sổ nổi.
-- UC-49 (1277–1282): cả UC là cửa sổ nổi của trình duyệt ("browser supports a floating document window"); cân nhắc hạ xuống mô tả màn hình.
+- UC-49 (1277–1282): cả UC là cửa sổ nổi của trình duyệt ("browser supports a floating document window"); **giữ là UC** (chốt 25/11), chỉ gọt chi tiết giao diện trong luồng.
 - Phím tắt và chi tiết điều khiển: UC-45a bước 1 (1189) Ctrl+D, UC-45b bước 1 (1202) Ctrl+E, nút micro, camera; UC-48 (1267–1268) Enter/Shift+Enter, bộ đếm ký tự, huy hiệu chưa đọc; UC-45c: trình duyệt hỏi chọn màn hình; UC-45b MSG334, UC-45d: "lock icon beside the address bar".
 - UC-50 bước 1 (1293): "Thêm (⋯) → Phát biểu" trên điện thoại.
 - UC-71 (1888–1889): danh sách thanh công cụ, "64 levels".
@@ -169,7 +169,10 @@ Không đụng: **UC-28** (763–765) giữ nguyên, xem 3.1 mục 4.
 
 ### 4.5 Lỗi trong spec (sửa luôn khi sửa DOCX)
 
-- UC-39: POST-2 nói một tệp lỗi không chặn tệp khác, EX-1 lại nói "None of the submitted documents are added". Hai câu ngược nhau: đối chiếu code rồi sửa một bên.
+- UC-39: POST-2 nói một tệp lỗi không chặn tệp khác, EX-1 lại nói "None of the submitted documents are added". Đã đối chiếu code (`frontend/src/features/documents/useFileUpload.ts`, 25/11): mỗi tệp gửi một yêu cầu riêng. **POST-2 đúng, sửa EX-1**:
+  - tệp sai loại, rỗng hoặc quá 10 MB bị loại ngay lúc chọn và được nêu tên, các tệp hợp lệ vẫn tải: EX-1 viết "Các tệp không hợp lệ không được thêm và được nêu tên; các tệp hợp lệ vẫn được tải";
+  - chọn quá 10 tệp, quá 100 MB, hoặc vượt chỗ còn lại của kho: cả lượt bị chặn, không tệp nào gửi. Câu "None… added" chỉ giữ cho ca này (EX-3 và một EX giới hạn lượt chọn);
+  - kiểm lại phía server (`DocumentFileRules`, endpoint tải lên) trước khi viết; server khác thì theo server và ghi vào PR.
 - Phần mở đầu FE-07 (904) ghi 200 MB và BR-315…319; các luồng ghi 100 MB. Phần mở đầu FE-11 (1722) còn trích BR-159, 160, 165, 252, 266, 267, 270 — các mã không còn sau khi gộp BR. Đổi theo số mới.
 - UC-18 bước 7 dẫn tới EX-3, nhưng EX-3 là "lý do quá dài": sửa tham chiếu.
 - UC-63 bước 2 (1763) lặp "(“Không ý kiến” in the app)" ba lần. UC-31 AF-1 (850) dính dòng ("submitted again1. At Step 4"). Câu MSG432 ở UC-75 bước 4 (1940) bị rối.
@@ -192,8 +195,8 @@ Tạo thông báo, gửi thư mời, nhắc giờ họp, tự huỷ cuộc họp
 **UC-52a — đổi thành "Turn Room Microphone On/Off"** (bật là bắt đầu ghi, tắt là lưu lượt; phần tắt của UC-52b gộp vào đây):
 
 - Luồng chính cho **họp trực tiếp**: Thư ký bật/tắt mic phòng trên thẻ ghi âm ở trang cuộc họp (`MeetingDetailPage.tsx`, `recordsRoom`).
-- AF **họp kết hợp**: mic của Thư ký trong phòng trực tuyến chính là mic phòng, một công tắc vừa ghi phòng vừa phát cho người online (ADR-0072, `sendsRoomMic` trong `roomSupport.ts`); trỏ UC-45a. Phòng trực tuyến không dùng được thì thẻ ghi âm trên trang lại là công tắc, như họp trực tiếp.
-- Mic phòng đang bật thì thẻ mic theo mọi trang (PR #528, ADR-0083, `RoomMicProvider.tsx`): UC-52a ghi "thẻ mic hiện trên mọi trang khi mic đang bật", không ghi theo trang cuộc họp.
+- AF **họp kết hợp**: mic của cuộc gọi của Thư ký chính là mic phòng, **một trạng thái** (ADR-0072, ADR-0085, PR #534; `sendsRoomMic` trong `roomSupport.ts`); trỏ UC-45a. Phòng trực tuyến không có thẻ mic nổi và trang cuộc họp ở tab khác không còn thẻ "Đang ghi ở tab khác". **Chủ toạ tắt mic Thư ký là dừng ghi cả phòng** (ADR-0085, Hải chốt 25/11): ghi thành hệ quả nhìn thấy được trong AF này. Phòng trực tuyến không dùng được thì thẻ ghi âm trên trang lại là công tắc, như họp trực tiếp.
+- Mic phòng đang bật thì thẻ mic theo mọi trang (PR #528, ADR-0083, `RoomMicProvider.tsx`), **trừ phòng họp trực tuyến** (ADR-0085): UC-52a ghi "thẻ mic hiện trên các trang khác khi mic đang bật", không ghi theo trang cuộc họp.
 - Người khác trong họp kết hợp/trực tuyến ghi theo mic riêng: UC-45a AF-2, không thuộc UC-52a.
 - AF "lượt bỏ dở ở máy khác": nút "Dừng ghi ở máy kia" trên thẻ ghi âm (`RecorderCard.tsx`, tooltip "Lưu phần máy kia đã ghi để chuyển chữ, rồi bật mic ở máy này", PR #527) — Thư ký dừng lượt đang mở dở từ máy khác để chuyển chữ, rồi bật mic ở máy này.
 - Gắn lại MSG362, 363, 365 (lưu lượt, lượt rỗng) vào bước tắt mic của UC này.
@@ -219,4 +222,48 @@ Tạo thông báo, gửi thư mời, nhắc giờ họp, tự huỷ cuộc họp
 2. Report 3 (DOCX, rồi `sync_reports.py --report 3`): bỏ UC-52b, UC-54c; đổi tên UC-52a thành "Turn Room Microphone On/Off" (cập nhật `10-bang-anh-xa-uc-dot-1.md`, `uc-map.html` và tên trang `.drawio`); thêm AF chạy gỡ băng vào UC-54a; sửa tham chiếu chéo (3.2); bỏ chi tiết tự chia lượt 30 phút khỏi UC-52a bước 5 (sang phần IV, UC chỉ nói "bản ghi gồm các lượt"); xử lý 4.1 đến 4.5 và 4.9 (đổi tên UC-52a, gọt UC-52d và UC-52e, AF ba trường hợp ở UC-54a) theo thứ tự UC; thêm AF lịch sử trạng thái vào UC-15; cập nhật bảng ánh xạ, BR, MSG.
 3. Report 4 (DOCX): xoá 9.2.5, 10.2.3, 10.2.4; viết phần IV (3.4); thêm câu trỏ ở I.1, I.2, I.3; viết lại III.1, III.2.
 4. Repo: sơ đồ `.drawio` theo 3.5 (số UC/BR đã xong ở PR #525, chỉ còn gộp và bỏ trang), README, `00-master-use-case-inventory.md`, `uc-map.html`, hai test case FE-09, FE-10.
-5. Ghi chú vào ticket Jira của UC-52b, UC-54c (skill `jira-deviation-note`).
+5. Ghi chú vào ticket Jira của UC-52b, UC-54c, UC-52a (đổi tên) và UC-39 (skill `jira-deviation-note`; agent được ghi).
+
+## 6. Giao cho agent (chốt 25/11/2026)
+
+Mục này cho agent làm hết việc của note 60 và [note 61](61-dong-bo-style-uc-spec-report3.md) mà không phải hỏi lại. Gặp chỗ chưa chốt thì dừng, ghi vào PR, không tự đoán.
+
+### 6.1 Đã chốt
+
+1. Tên AF/EX **viết như câu** ("Invalid agenda item information"), theo note 61 §1.
+2. **UC-49 giữ là UC**, chỉ gọt chi tiết giao diện trong luồng (§4.4).
+3. **Bỏ** hai test case FE-09 `unit-RoomTake.Complete.md`, FE-10 `unit-Transcription.ProcessNext.md` (§3.3).
+4. **UC-39**: POST-2 đúng, sửa EX-1 theo §4.5. Hạn mức kho 250 GB (§2).
+5. **UC-52a**: họp kết hợp theo ADR-0085 (§4.9).
+6. ADR-0086 (tách người nói mic phòng dài) viết vào phần IV, ghi "đề xuất, chờ PO duyệt" (§3.4).
+7. **Sơ đồ UC tổng thể** (note 61 §4 comment 7): thêm một trang vào `docs/14-uc-diagram/trustcabinet-use-cases.drawio`; actor nối tới các gói chức năng FE-01…FE-13, không vẽ từng UC; actor ngoài như sơ đồ ngữ cảnh (OAuth Provider, AI drafting service, Resend Email). Ảnh đặt đầu Report 3 §4.3, caption "Figure n: System Overview Use Case Diagram".
+8. Agent **được ghi comment Jira** (§5 bước 5).
+
+### 6.2 Thứ tự (hai note cùng sửa một DOCX, làm tuần tự, mỗi bước một commit)
+
+1. §5 bước 1: quy tắc 3.1 vào `docs/01-requirements/README.md` §2.
+2. Note 61 §3 bước 1–2: UC-23a về mẫu, rồi `python scripts/uc_spec_style_report3.py --apply <out.docx>`; commit riêng, không đổi chữ.
+3. §5 bước 2: chữ Report 3 theo thứ tự UC (§3.2, §4.1–4.5, §4.9, UC-15, UC-39).
+4. Note 61 §3 bước 3: câu kết EX, "Main Flow" → "Normal Flow", trích MSG.
+5. Note 61 §4: góp ý của thầy (caption mọi hình, link ảnh gốc hình dày, viết lại đoạn §3.1 ERD, bỏ MinutesSignature, quét "in the code" / "as built" / "as of <ngày>", sơ đồ tổng thể, hai chỗ Google AI Provider).
+6. §5 bước 3: Report 4.
+7. §5 bước 4: `.drawio` theo §3.5, PNG, README, inventory, bỏ hai test case.
+8. Change Log: một dòng mỗi report, khoảng 200 ký tự.
+9. §5 bước 5: Jira.
+
+### 6.3 Quy tắc
+
+- Không sửa tay snapshot (`docs/08-reports/Report-*.md`, `05-use-case-specifications.md`, `06-business-rules.md`): sửa DOCX ở `docs/08-reports/source/`, rồi `sync_reports.py --report 3`.
+- Report 3 viết ngôn ngữ nghiệp vụ: không tên công nghệ/nhà cung cấp, endpoint, mã HTTP, tên trường API.
+- Ảnh màn hình chỉ từ wireframe (`screens/*.png`). `.drawio` theo `DRAWIO_EDITING_RULES.md`, render rồi xem lại.
+- Số dòng trong note là gợi ý; tìm theo chữ.
+- Không push Drive.
+
+### 6.4 Điều kiện xong
+
+- `check_docx.py` OK cho Report 3 và Report 4.
+- Snapshot Report 3 sau sync không còn "UC-52b", "UC-54c", "Google AI Provider", "drawn from", "MinutesSignature", "10 GB" (trừ Change Log).
+- Mọi hình Report 3 có caption `Figure n:`; có sơ đồ UC tổng thể đầu §4.3.
+- `uc_spec_style_report3.py` không tham số: không còn lệch.
+- `MessageCodeCatalogueTests`, `SkillMirrorTests` qua; CI của PR xanh.
+- Mỗi ticket ở §5 bước 5 có một comment.

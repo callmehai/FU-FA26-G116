@@ -573,13 +573,14 @@ deactivate MeetingPage
 | [meeting-participant-management/](meeting-participant-management/README.md) | UC-29, UC-30a → UC-30c, UC-31, UC-32, UC-33, UC-34 |
 | [document-management/](document-management/README.md) | UC-35a, UC-35b, UC-36a (AF-1), UC-38, UC-42 |
 | [voting-management/](voting-management/README.md) | UC-62a → UC-67, UC-68a, UC-68b |
-| [meeting-recording/](meeting-recording/README.md) | UC-51a → UC-51c, UC-52a → UC-52e, UC-53 |
-| [transcription-voice-id/](transcription-voice-id/README.md) | UC-54a → UC-54c (UC-54c có thêm sơ đồ hệ thống xử lý hàng chờ), UC-55a → UC-55d, UC-58 → UC-61 (dự thảo AI), UC-56a → UC-56f |
+| [meeting-recording/](meeting-recording/README.md) | UC-51a → UC-51c, UC-52a, UC-52c → UC-52e, UC-53 |
+| [transcription-voice-id/](transcription-voice-id/README.md) | UC-54a, UC-54b, UC-55a → UC-55d, UC-58 → UC-61 (dự thảo AI), UC-56a → UC-56f |
 | [minutes-management/](minutes-management/README.md) | UC-69, UC-70, UC-71 (bản nháp biên bản) và UC-72, UC-73, UC-74, UC-75 (duyệt và ban hành, theo code PR #297) |
 | [notification-management/](notification-management/README.md) | UC-76, UC-77a, UC-77b, UC-78 |
 | [online-meeting-room/](online-meeting-room/README.md) | UC-43, UC-44, UC-45a → UC-45d (UC-45a AF-2 ghi lời theo micro: `UC45a_RecordSpeechWhileMicrophoneOn`), UC-46, UC-47, UC-48, UC-49, UC-50 |
 | [calendar-sharing/](calendar-sharing/README.md) | UC-80 (UC-80a → UC-80f), UC-81 (UC-81a → UC-81c) gom theo mẫu Report 3 (sơ bộ, SCRUM-137/SCRUM-142) |
 | [reporting/](reporting/README.md) | UC-79a, UC-79b (SCRUM-38) |
+| [system-processes/](system-processes/README.md) | Không phải UC: ba sơ đồ actor System (hàng chờ gỡ băng, bản ghi gộp, tự kết thúc cuộc họp) làm hình cho Report 4 phần IV; không có tab trong file draw.io gộp |
 
 Xuất PNG: `python scripts/export_sequence.py <mã UC hoặc file.txt>` — ra cả ảnh sequencediagram.org cạnh `.txt` (cần truy cập `sequencediagram.org`) lẫn `drawio-png/`; chỉ truyền file đã sửa. Không chạy `sync_sequence_drawio_png.py` cho toàn bộ (draw.io CLI cắt nửa dưới sơ đồ rất dài như UC-80b — xem README của [`calendar-sharing/`](calendar-sharing/README.md)).
 

@@ -1,7 +1,7 @@
 # Sequence Diagram — Gỡ băng, nhận diện người nói và dự thảo AI (FE-10)
 
 Thư mục chứa source SequenceDiagram.org (`.txt`) và ảnh PNG cùng tên cho các UC thuộc FE-10
-(UC-54a → UC-54c, UC-55a → UC-55d, UC-58 → UC-61, UC-56a → UC-56f), đã đối chiếu với code ngày 30/10/2026 và vẽ theo đặc tả **đã sửa** ở
+(UC-54a, UC-54b, UC-55a → UC-55d, UC-58 → UC-61, UC-56a → UC-56f), đã đối chiếu với code ngày 30/10/2026 và vẽ theo đặc tả **đã sửa** ở
 [plan 19 §12](../../notes/ban-giao-ba-final-review/19-plan-fe-09-fe-10-ghi-am-go-bang-voice-id.md#12-review-lượt-13-30102026--việc-phải-sửa);
 UC-58 → UC-61 thêm ngày 05/11/2026 theo PR #260. UC-51 cũ (công bố tóm tắt) chưa có code nên không có sơ đồ.
 
@@ -9,8 +9,6 @@ UC-58 → UC-61 thêm ngày 05/11/2026 theo PR #260. UC-51 cũ (công bố tóm 
 |---|---|
 | UC-54a View Recording Transcript | [UC54a_ViewRecordingTranscript.txt](UC54a_ViewRecordingTranscript.txt) |
 | UC-54b Export Meeting Transcript | [UC54b_ExportMeetingTranscript.txt](UC54b_ExportMeetingTranscript.txt) |
-| UC-54c Transcribe Meeting Recording — Thư ký yêu cầu | [UC54c_TranscribeMeetingRecording.txt](UC54c_TranscribeMeetingRecording.txt) |
-| UC-54c Transcribe Meeting Recording — hệ thống xử lý hàng chờ | [UC54c_ProcessTranscriptionQueue.txt](UC54c_ProcessTranscriptionQueue.txt) |
 | UC-55a Edit Transcript Text | [UC55a_EditTranscriptText.txt](UC55a_EditTranscriptText.txt) |
 | UC-55b Assign Speaker | [UC55b_AssignSpeaker.txt](UC55b_AssignSpeaker.txt) |
 | UC-55c Exclude or Restore a Sentence | [UC55c_ExcludeOrRestoreSentence.txt](UC55c_ExcludeOrRestoreSentence.txt) |
@@ -38,9 +36,11 @@ Quy ước riêng của nhóm này:
   `grant`, `withdraw`, `addSample`, `deleteSample`, `sampleAudio`).
 - `:Speech Recognition Service` là dịch vụ nhận dạng giọng nói chạy trong hệ thống (ADR-0026, BR-121): code là
   `ISpeechEngine` (gỡ băng) và `IVoiceEmbedder` (giọng mẫu), cùng một worker. `:Speaker Matcher` là lớp tĩnh `SpeakerMatcher`.
-- **UC-54c có hai sơ đồ** (quyết định D7): Thư ký yêu cầu chuyển chữ (lần đầu, sau lỗi, hoặc làm lại bản đã xong), và
-  một sơ đồ hệ thống — `TranscriptionWorker` lấy bản chờ lâu nhất trong hàng, chuyển chữ, gợi ý người nói, đánh dấu
-  `Completed` hoặc `Failed` kèm lý do (EX-3). Đây là ngoại lệ của quy ước "một request Actor", như UC-04.
+- **UC-54c "Transcribe Meeting Recording" đã bỏ** (note 60 §3.2, 25/11/2026). Thư ký bấm chuyển chữ (lần đầu, sau lỗi,
+  hoặc làm lại bản đã xong) là khối `opt` AF-2/AF-3 ở cuối UC-54a, giữ MSG295, MSG300, MSG301, MSG479; vì vậy UC-54a có hai
+  request của actor, ngoại lệ như UC-04. Hàng chờ gỡ băng (`TranscriptionWorker` lấy bản chờ lâu nhất, chuyển chữ, gợi ý
+  người nói, đánh dấu `Completed` hoặc `Failed`) là thiết kế ở Report 4 phần IV.1, sơ đồ ở
+  [`system-processes/SYS_ProcessTranscriptionQueue.txt`](../system-processes/SYS_ProcessTranscriptionQueue.txt).
 - UC-54b, UC-55a mỗi UC phủ cả bản ghi phòng (`:Transcript Controller`) và bản ghi theo micro (`:Speech Clip Controller`),
   vẽ bằng `alt` ở đầu sơ đồ.
 - UC-55b AF-1 (gán cả nhóm "cùng giọng") là một vòng `loop`: màn hình gọi `assignSpeaker` cho từng giọng trong nhóm.
@@ -54,7 +54,7 @@ Quy ước riêng của nhóm này:
 - Người dùng không thuộc thành phần hiện tại nhận câu trả lời "không tìm thấy" (không có mã MSG); sơ đồ vẽ nhánh này không
   có số EX. Voice ID chỉ đọc/ghi của chính người gọi: mẫu của người khác trả lời như không tồn tại.
 - Nhánh `alt` **không có số EX** là hành vi code có nhưng đặc tả UC chưa ghi: người không còn trong thành phần (trả lời "không
-  tìm thấy"); UC-54c người không phải Thư ký (MSG295); UC-55b, UC-55c lỗi lưu (MSG304). BA bổ sung EX vào đặc tả hoặc bỏ nhánh khi duyệt.
+  tìm thấy"); UC-55b, UC-55c lỗi lưu (MSG304). BA bổ sung EX vào đặc tả hoặc bỏ nhánh khi duyệt.
 - `ref` sang UC khác viết thành self-message `ref UC-…` để file draw.io cũng hiện.
 
 ## Cập nhật theo kiến trúc
@@ -64,8 +64,7 @@ Quy ước riêng của nhóm này:
 ## Xuất ảnh
 
 ```bash
-node scripts/export-diagrams.js docs/06-sequencediagram/transcription-voice-id
-python scripts/txt_to_sequence_drawio_png.py docs/06-sequencediagram/transcription-voice-id/UC*.txt
+python scripts/export_sequence.py UC54a   # từng file đã sửa: tab drawio, drawio-png/ và ảnh sequencediagram.org
 ```
 
 Giữ `.txt`, `.png`, tab trong `TrustCabinet_Sequence_Diagrams.drawio` và ảnh trong `drawio-png/` đồng bộ.
