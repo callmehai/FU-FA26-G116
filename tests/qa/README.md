@@ -60,3 +60,9 @@ Mỗi ticket một tệp `plans/<ticket>.mjs`, giữ trong repo để chạy l�
 [plans/smoke.mjs](plans/smoke.mjs). Tài khoản seed: `admin` (quantri@), `chair` (chutoa@), `secretary` (thuky@),
 `member` (thanhvien@), mật khẩu dev `TrustCabinet@2026` (đổi bằng `QA_PASSWORD`). Dữ liệu kế hoạch tạo ra đặt tên
 `[QA] …` để tìm và xoá.
+
+Từ ADR-0075, vai trò seed "Thành viên" được tạo cuộc họp. Tiêu chí về người **không** có quyền nào dùng
+`role: 'nocreator'` kèm `prepare: ensureNoCreator` (từ `lib/qa.mjs`). Trước khi đăng nhập, bộ chạy gọi `prepare`, và
+hàm này tạo hoặc dùng lại vai trò "[QA] Không tạo cuộc họp" (không quyền nào) cùng tài khoản
+`qa-khong-tao-hop@trustcabinet.local` giữ vai trò đó. Chạy lại bao nhiêu lần cũng được; hai bản ghi này để lại, không
+xoá. `prepare` lỗi thì tiêu chí tính Lỗi.

@@ -10,7 +10,11 @@ export const ACCOUNTS = {
   chair: 'chutoa@trustcabinet.local',
   secretary: 'thuky@trustcabinet.local',
   member: 'thanhvien@trustcabinet.local',
+  // Not a seed account: ensureNoCreator() makes it, with a role that holds no capability. Since ADR-0075 the seed
+  // "Thành viên" may create meetings, so a criterion about someone who may not signs in as this one (role: 'nocreator').
+  nocreator: 'qa-khong-tao-hop@trustcabinet.local',
 }
+const NO_CREATOR = { fullName: '[QA] Người không tạo họp', roleName: '[QA] Không tạo cuộc họp' }
 const PASSWORD = process.env.QA_PASSWORD ?? 'TrustCabinet@2026'
 
 /** The two screens every UI criterion can run on (check-responsive: phone at 390px with touch, desktop at 1440px). */
@@ -48,10 +52,10 @@ async function login(api, base, role) {
 async function apiClient(base, role) {
   const ctx = await playwrightRequest.newContext({ baseURL: base })
   const token = role === 'anon' ? null : await login(ctx, base, role)
-  const call = async (method, path, body) => {
+  const call = async (method, path, body, headers = {}) => {
     const res = await ctx.fetch(`${base}${path}`, {
       method,
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}), ...headers },
       ...(body === undefined ? {} : { data: body }),
     })
     const text = await res.text()
@@ -65,11 +69,53 @@ async function apiClient(base, role) {
   }
   return {
     get: (path) => call('GET', path),
-    post: (path, body) => call('POST', path, body ?? {}),
-    put: (path, body) => call('PUT', path, body ?? {}),
-    patch: (path, body) => call('PATCH', path, body ?? {}),
-    delete: (path) => call('DELETE', path),
+    post: (path, body, headers) => call('POST', path, body ?? {}, headers),
+    put: (path, body, headers) => call('PUT', path, body ?? {}, headers),
+    patch: (path, body, headers) => call('PATCH', path, body ?? {}, headers),
+    delete: (path, headers) => call('DELETE', path, undefined, headers),
     dispose: () => ctx.dispose(),
+  }
+}
+
+/**
+ * Makes the `nocreator` account ready, as quantri@ through the API, and returns `{ id, email, fullName, roleId }`.
+ * Idempotent, so a rerun reuses both: the role "[QA] Không tạo cuộc họp" is created when missing and stripped back to
+ * no capability when someone gave it one; the account is created when missing, put back on that role and reactivated.
+ * Neither is deleted afterwards: an account is only ever deactivated, and a role cannot go while an account holds it.
+ * A criterion names it as its `prepare`, which the runner calls before signing in as the criterion's role.
+ */
+export async function ensureNoCreator({ base }) {
+  const admin = await apiClient(base, 'admin')
+  const must = (res, what, ok) => {
+    if (res.status !== ok) throw new Error(`${what}: HTTP ${res.status} ${JSON.stringify(res.body).slice(0, 200)}`)
+    return res.body
+  }
+  try {
+    let role = must(await admin.get('/api/roles'), 'GET /api/roles', 200).find((r) => r.name === NO_CREATOR.roleName)
+    if (!role) {
+      const body = {
+        name: NO_CREATOR.roleName,
+        description: 'Kiểm thử QA: không có quyền nào, như vai trò Thành viên trước ADR-0075.',
+        capabilities: [],
+      }
+      role = must(await admin.post('/api/roles', body), 'POST /api/roles', 201).role
+    }
+    const matrix = must(await admin.get('/api/roles/capabilities'), 'GET /api/roles/capabilities', 200)
+    if (matrix.roles.find((r) => r.id === role.id)?.capabilities?.length)
+      must(await admin.put('/api/roles/capabilities', { roleId: role.id, capabilities: [] }), 'PUT /api/roles/capabilities', 200)
+    const email = ACCOUNTS.nocreator
+    let user = must(await admin.get('/api/users'), 'GET /api/users', 200).find((u) => u.email.toLowerCase() === email)
+    if (!user) {
+      const body = { fullName: NO_CREATOR.fullName, email, password: PASSWORD, roleId: role.id }
+      user = must(await admin.post('/api/users', body), 'POST /api/users', 201).user
+    } else {
+      if (user.roleId !== role.id)
+        must(await admin.put(`/api/users/${user.id}`, { fullName: user.fullName, email, roleId: role.id }), 'PUT /api/users/{id}', 200)
+      if (!user.isActive) must(await admin.put(`/api/users/${user.id}/status`, { isActive: true }), 'PUT /api/users/{id}/status', 200)
+    }
+    return { id: user.id, email, fullName: user.fullName, roleId: role.id }
+  } finally {
+    await admin.dispose()
   }
 }
 

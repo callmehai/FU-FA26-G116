@@ -15,6 +15,12 @@
 // - one account "[QA] FE-16 người xem tạm" (qa-fe16-viewer@trustcabinet.local, role Thư ký) to see a share stop when an
 //   account is deactivated (BR-142, BR-143). Accounts are never deleted; the plan leaves it deactivated and re-uses it.
 // CLEANUP cancels every meeting and ends or withdraws every share the plan opened.
+//
+// The seed "Thành viên" holds MeetingCreator since ADR-0075, so AC1, AC20 and AC21 (someone who may not create meetings)
+// sign in as the [QA] account qa-khong-tao-hop@ on the [QA] role with no capability (lib/qa.mjs ensureNoCreator, kept
+// and reused across runs).
+
+import { ensureNoCreator } from '../lib/qa.mjs'
 
 const PASSWORD = process.env.QA_PASSWORD ?? 'TrustCabinet@2026'
 const EMAIL = {
@@ -348,17 +354,20 @@ export default {
     // ------------------------------------------------------------------ UC-80f, the page for everyone
     {
       id: 'AC1',
-      role: 'member',
+      role: 'nocreator',
+      prepare: ensureNoCreator,
       devices: ['desktop', 'phone'],
-      title: 'Thành viên (không có quyền tạo cuộc họp) mở Chia sẻ lịch từ menu tài khoản: chỉ có danh sách người xem lịch của mình',
-      steps: ['Đăng nhập thanhvien@', 'Menu tài khoản → Chia sẻ lịch'],
+      title: 'Người không có quyền tạo cuộc họp mở Chia sẻ lịch từ menu tài khoản: chỉ có danh sách người xem lịch của mình',
+      steps: [
+        'Quản trị tạo (hoặc dùng lại) vai trò "[QA] Không tạo cuộc họp" không có quyền nào và tài khoản qa-khong-tao-hop@ giữ vai trò đó',
+        'Đăng nhập qa-khong-tao-hop@',
+        'Menu tài khoản → Chia sẻ lịch',
+      ],
       expected:
         'Trang "Chia sẻ lịch" có thẻ "Người xem được lịch của tôi" và nút "Chia sẻ lịch"; không có thẻ "Lịch được chia sẻ với tôi", không có nút "Xin xem lịch", không có tab "Lịch được chia sẻ" (UC-80f AF-2, BR-140, BR-141); không cuộn ngang',
       async run(qa) {
-        const caps = await qa.capabilities()
-        if (caps.capabilities.includes('MeetingCreator'))
-          qa.inconclusive(`thanhvien@ giữ vai trò "${caps.roleName}" có MeetingCreator trên database này; trả về vai trò Thành viên rồi chạy lại.`)
-        const user = await me(qa, 'member')
+        const user = await me(qa, 'nocreator')
+        qa.expect(user.capabilities ?? [], 'the [QA] role without capabilities holds one').toEqual([])
         await openSharingFromMenu(qa, user.fullName)
         await qa.expect(qa.page.getByRole('heading', { name: /Người xem được lịch của tôi/ })).toBeVisible()
         await qa.expect(qa.page.getByRole('button', { name: 'Chia sẻ lịch', exact: true })).toBeVisible()
@@ -1285,9 +1294,11 @@ export default {
     // ------------------------------------------------------------------ BR-140, BR-141 on the API
     {
       id: 'AC20',
-      role: 'member',
-      title: 'Thành viên không có quyền tạo cuộc họp: các thao tác của người tổ chức bị từ chối 403 MSG448 ở server',
+      role: 'nocreator',
+      prepare: ensureNoCreator,
+      title: 'Người không có quyền tạo cuộc họp: các thao tác của người tổ chức bị từ chối 403 MSG448 ở server',
       steps: [
+        'Quản trị tạo (hoặc dùng lại) vai trò "[QA] Không tạo cuộc họp" không có quyền nào và tài khoản qa-khong-tao-hop@ giữ vai trò đó',
         'GET /api/calendar/shared-week; GET share-candidates?purpose=request; POST /api/calendar/shares',
         'POST /api/calendar/slots; POST /api/calendar/slots/draft',
         'GET /api/calendar/shares; GET share-candidates?purpose=direct',
@@ -1295,12 +1306,10 @@ export default {
       expected:
         'Năm lời gọi đầu 403 MSG448 "Bạn cần quyền tạo cuộc họp để thực hiện thao tác này."; GET shares 200 với asViewer rỗng; candidates direct 200 chỉ người có quyền tạo cuộc họp, không có chính mình',
       async run(qa) {
-        const caps = await qa.capabilities()
-        if (caps.capabilities.includes('MeetingCreator'))
-          qa.inconclusive(`thanhvien@ giữ "${caps.roleName}" có MeetingCreator trên database này; trả về vai trò Thành viên rồi chạy lại.`)
         const api = await qa.api()
         const admin = await me(qa, 'admin')
-        const self = await me(qa, 'member')
+        const self = await me(qa, 'nocreator')
+        qa.expect(self.capabilities ?? [], 'the [QA] role without capabilities holds one').toEqual([])
         const wrong = []
         for (const [label, res] of [
           ['shared-week', await api.get('/api/calendar/shared-week')],
@@ -1325,8 +1334,7 @@ export default {
         const direct = await api.get('/api/calendar/share-candidates?purpose=direct&pageSize=100')
         if (direct.status !== 200) wrong.push(`candidates direct: ${direct.status}`)
         else {
-          if (direct.body.items.some((p) => p.id === self.id)) wrong.push('candidates direct có chính mình')
-          if (direct.body.items.some((p) => p.email === EMAIL.member)) wrong.push('candidates direct có thanhvien@')
+          if (direct.body.items.some((p) => p.id === self.id || p.email === self.email)) wrong.push('candidates direct có chính mình')
           if (!direct.body.items.some((p) => p.email === EMAIL.chair)) wrong.push('candidates direct thiếu chutoa@')
         }
         qa.expect(wrong, wrong.join('\n')).toEqual([])
@@ -1335,14 +1343,19 @@ export default {
     // ------------------------------------------------------------------ BR-140, BR-141 in the UI
     {
       id: 'AC21',
-      role: 'member',
+      role: 'nocreator',
+      prepare: ensureNoCreator,
       devices: ['desktop', 'phone'],
-      title: 'Thành viên mở Tìm giờ họp thấy 404 như đường dẫn không có; ?tab=week vẫn chỉ hiện danh sách của mình',
-      steps: ['thanhvien@ mở /calendar/find', 'Mở /calendar/sharing?tab=week'],
+      title: 'Người không có quyền tạo cuộc họp mở Tìm giờ họp thấy 404 như đường dẫn không có; ?tab=week vẫn chỉ hiện danh sách của mình',
+      steps: [
+        'Quản trị tạo (hoặc dùng lại) vai trò "[QA] Không tạo cuộc họp" không có quyền nào và tài khoản qa-khong-tao-hop@ giữ vai trò đó',
+        'qa-khong-tao-hop@ mở /calendar/find',
+        'Mở /calendar/sharing?tab=week',
+      ],
       expected: '"Không tìm thấy trang"; không có mục Tìm giờ họp trên menu; /calendar/sharing?tab=week hiện thẻ "Người xem được lịch của tôi", không có lưới tuần',
       async run(qa) {
-        const caps = await qa.capabilities()
-        if (caps.capabilities.includes('MeetingCreator')) qa.inconclusive(`thanhvien@ giữ "${caps.roleName}" có MeetingCreator trên database này.`)
+        const { capabilities } = await qa.capabilities()
+        qa.expect(capabilities, 'the [QA] role without capabilities holds one').toEqual([])
         await qa.goto('/calendar')
         if (qa.device === 'desktop') await qa.expect(qa.page.getByRole('link', { name: 'Tìm giờ họp' })).toHaveCount(0)
         await qa.goto('/calendar/find')

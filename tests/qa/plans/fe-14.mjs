@@ -14,11 +14,15 @@
 // compared with the API response the page itself received, never with a fixed number.
 //
 // Data, all "[QA] FE-14 …", organised by thuky@ with chutoa@ as Chair and approver, thuky@ as Secretary, thanhvien@ as
-// Member; reused across runs (found by exact title and status), never cancelled:
+// Member, plus the [QA] account qa-khong-tao-hop@ (no capability; lib/qa.mjs ensureNoCreator) as Member of the four
+// AC4 reads, since the seed "Thành viên" may create meetings (ADR-0075); reused across runs (found by exact title and
+// status), never cancelled:
 // - today (Vietnam) late: "họp tối nay dd/mm" 22:00–23:00 Published; "họp khuya dd/mm chờ duyệt" 23:05–23:50 WaitingApproval;
 // - 11 weeks ahead: "chờ Chủ toạ duyệt" 08:30 WaitingApproval; "bản nháp" 10:00 Draft; "đã duyệt chờ công bố" 13:30
 //   Approved; "không gian họp" 15:00 InProgress (started early by the Chair) with two agenda items, the first one current,
 //   and one open vote.
+
+import { ensureNoCreator } from '../lib/qa.mjs'
 
 const PASSWORD = process.env.QA_PASSWORD ?? 'TrustCabinet@2026'
 const EMAIL = {
@@ -159,6 +163,29 @@ async function prepareAll(qa) {
   for (const key of Object.keys(MEETINGS)) await (key === 'live' ? liveMeeting(qa) : meeting(qa, key))
 }
 
+/**
+ * Puts the [QA] account without capabilities (role `nocreator`) on the roster of the meetings AC4 reads, as a Member, so
+ * "not shown before Published" is about meetings it is invited to. Done once per meeting and kept. A meeting waiting for
+ * approval has its roster locked: the Chair rejects it, the Secretary adds the account, the organiser submits it again.
+ */
+async function inviteNoCreator(qa) {
+  const self = (await (await client(qa, 'nocreator')).get('/api/auth/me')).body
+  const u = await users(qa)
+  const sec = await client(qa, 'secretary')
+  for (const key of ['tonight', 'lateWaiting', 'waiting', 'draft']) {
+    const m = await meeting(qa, key)
+    const roster = await sec.get(`/api/meetings/${m.id}/participants?pageSize=100`)
+    qa.expectStatus(roster, 200)
+    if (roster.body.items.some((p) => p.userId === self.id)) continue
+    const locked = m.status === 'WaitingApproval'
+    if (locked) await transition(qa, 'chair', m.id, { action: 'Reject', reason: 'QA: thêm người không có quyền tạo họp vào thành phần.' })
+    const fresh = await sec.get(`/api/meetings/${m.id}/participants?pageSize=1`)
+    const etag = fresh.headers.etag ?? `"participants-${fresh.body.revision}"`
+    qa.expectStatus(await sec.post(`/api/meetings/${m.id}/participants`, { userIds: [self.id], role: 'Member' }, { 'If-Match': etag }), 201)
+    if (locked) await transition(qa, 'secretary', m.id, { action: 'SubmitForApproval', assignedApproverId: u.chair.id })
+  }
+}
+
 // ---- screen helpers ----
 async function noSidewaysScroll(qa) {
   const sideways = await qa.page.evaluate(() => document.documentElement.scrollWidth - innerWidth)
@@ -273,11 +300,6 @@ async function search(qa, seen, text) {
   await qa.page.waitForFunction(() => !document.querySelector('.data-table-stale, .row-skeleton'))
 }
 
-async function requireLacks(qa, role, capability) {
-  const { roleName, capabilities } = await qa.capabilities(role)
-  if (capabilities.includes(capability))
-    qa.inconclusive(`${role} giữ vai trò "${roleName}" có ${capability} trên database này. Trả tài khoản về vai trò seed rồi chạy lại.`)
-}
 async function requireHas(qa, role, capability) {
   const { roleName, capabilities } = await qa.capabilities(role)
   if (!capabilities.includes(capability))
@@ -337,27 +359,38 @@ export default {
     },
     {
       id: 'AC4',
-      role: 'member',
+      role: 'nocreator',
+      prepare: ensureNoCreator,
       devices: ['desktop', 'phone'],
-      title: 'Thành viên: không có thẻ Bản nháp, số đúng với API, chỉ thấy cuộc họp hôm nay đã công bố, Cần xử lý trống có câu báo',
+      title: 'Người không có quyền nào: không có thẻ Bản nháp, số đúng với API, chỉ thấy cuộc họp hôm nay đã công bố, Cần xử lý trống có câu báo',
       steps: [
-        'Đăng nhập thanhvien@ (không có quyền nào), mở /mgmt/meetings',
+        'Quản trị tạo (hoặc dùng lại) vai trò "[QA] Không tạo cuộc họp" không có quyền nào và tài khoản qa-khong-tao-hop@ giữ vai trò đó',
+        'Thư ký thêm tài khoản đó làm Thành viên vào bốn cuộc họp FE-14 (tối nay, khuya chờ duyệt, chờ Chủ toạ duyệt, bản nháp)',
+        'Đăng nhập qa-khong-tao-hop@, mở /mgmt/meetings (mở ra không lọc, PR #430)',
+        'Bấm thẻ "Họp hôm nay"',
         'Bấm thẻ "Cần xử lý"',
         'Bấm "Xem mọi cuộc họp"',
       ],
       expected:
-        'Ba thẻ (không Bản nháp — chỉ người có MeetingCreator); số bằng API; danh sách hôm nay có "[QA] FE-14 họp tối nay" (Đã công bố), không có cuộc "chờ duyệt" (Thành viên chỉ thấy từ khi công bố); Cần xử lý = 0 vì không có quyền duyệt/tạo, danh sách "Không có việc chờ bạn xử lý." với nút "Xem mọi cuộc họp"; bấm nút: bỏ chọn mọi thẻ',
+        'Ba thẻ (không Bản nháp — chỉ người có MeetingCreator), mở ra không thẻ nào được chọn; số bằng API; bấm Họp hôm nay: danh sách đúng số của thẻ, có "[QA] FE-14 họp tối nay" (Đã công bố), không có cuộc "chờ duyệt" (Thành viên chỉ thấy từ khi công bố); Cần xử lý = 0 vì không có quyền duyệt/tạo, danh sách "Không có việc chờ bạn xử lý." với nút "Xem mọi cuộc họp"; bấm nút: bỏ chọn mọi thẻ',
       async run(qa) {
-        await requireLacks(qa, 'member', 'MeetingCreator')
-        await requireLacks(qa, 'member', 'MeetingApprover')
+        const { capabilities } = await qa.capabilities()
+        qa.expect(capabilities, 'the [QA] role without capabilities holds one').toEqual([])
         await prepareAll(qa)
+        await inviteNoCreator(qa)
         const seen = await openList(qa)
         await qa.expect(stats(qa).getByRole('button')).toHaveCount(3)
         await qa.expect(card(qa, 'draft')).toHaveCount(0)
         qa.expect(seen.cards.draft ?? [], 'the page asked for a Draft count it does not show').toEqual([])
         for (const key of ['today', 'published', 'todo']) await expectCardMatches(qa, seen, key)
         await expectLiveLine(qa, seen)
+        // PR #430: the list opens unfiltered, so the today list is the one the "Họp hôm nay" card asks for.
+        await qa.expect(stats(qa).locator('[aria-pressed="true"]')).toHaveCount(0)
+        await press(qa, card(qa, 'today'))
+        await qa.expect(card(qa, 'today')).toHaveAttribute('aria-pressed', 'true')
+        const today = parseCount(await card(qa, 'today').locator('.stat-value').innerText())
         const list = await nextList(qa, seen, (p) => p.from && !p.status && p.pageSize !== '1')
+        qa.expect(list.total, `the today list holds ${list.total}, the card says ${today}`).toBe(today)
         if (list.total > 20) await search(qa, seen, 'FE-14')
         await qa.expect(rowLink(qa, made.tonight.title)).toBeVisible()
         await qa.expect(rowLink(qa, made.lateWaiting.title)).toHaveCount(0)
@@ -376,7 +409,7 @@ export default {
         await qa.expect(qa.page).not.toHaveURL(/scope=todo/)
         await qa.expect(stats(qa).locator('[aria-pressed="true"]')).toHaveCount(0)
         // Read rights behind the cards: a member never sees a draft or a meeting waiting for approval.
-        const api = await client(qa, 'member')
+        const api = await client(qa, 'nocreator')
         const drafts = await api.get(`/api/meetings?status=Draft&q=${encodeURIComponent('FE-14')}&pageSize=100`)
         qa.expectStatus(drafts, 200)
         qa.expect(drafts.body.items.map((m) => m.title)).not.toContain(made.draft.title)

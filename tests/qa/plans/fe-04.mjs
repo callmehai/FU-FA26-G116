@@ -9,6 +9,11 @@
 // more days ahead, organised by thuky@ with chutoa@ as Chair and approver, thuky@ as Secretary and thanhvien@ as Member.
 // No meeting the plan did not create is ever edited, cancelled or started. The [QA] meetings stay behind (Draft,
 // Cancelled, Ended…) and are listed in the report.
+//
+// The seed "Thành viên" holds MeetingCreator since ADR-0075, so the "may not create" criterion signs in as the [QA]
+// account qa-khong-tao-hop@ on the [QA] role with no capability (lib/qa.mjs ensureNoCreator, kept and reused).
+
+import { ensureNoCreator } from '../lib/qa.mjs'
 
 const ROLE_LABEL = { admin: 'Quản trị', chair: 'Chủ toạ', secretary: 'Thư ký', member: 'Thành viên' }
 
@@ -173,14 +178,6 @@ async function press(qa, locator) {
   else await locator.click()
 }
 
-/** Skips a denial criterion when the account holds the capability it is denied (a hand-edited local role). */
-async function requireLacks(qa, role, capability) {
-  const { roleName, capabilities } = await qa.capabilities(role)
-  if (capabilities.includes(capability))
-    qa.inconclusive(
-      `${role} giữ vai trò "${roleName}" có ${capability} trên database này, nên không phải vai trò bị chặn. Người kiểm: trả tài khoản về vai trò seed rồi chạy lại.`,
-    )
-}
 
 // ---------------------------------------------------------------------------------------------------------------------
 
@@ -406,13 +403,20 @@ export default {
     },
     {
       id: 'AC4',
-      role: 'member',
+      role: 'nocreator',
+      prepare: ensureNoCreator,
       devices: ['desktop', 'phone'],
-      title: 'Thành viên (không có MeetingCreator) không tạo được cuộc họp: không có nút, ?create không mở form, API 403',
-      steps: ['Đăng nhập thanhvien@', 'Mở Danh sách cuộc họp', 'Mở /mgmt/meetings?create=1', 'POST /api/meetings'],
+      title: 'Người không có MeetingCreator không tạo được cuộc họp: không có nút, ?create không mở form, API 403',
+      steps: [
+        'Quản trị tạo (hoặc dùng lại) vai trò "[QA] Không tạo cuộc họp" không có quyền nào và tài khoản qa-khong-tao-hop@ giữ vai trò đó',
+        'Đăng nhập qa-khong-tao-hop@',
+        'Mở /mgmt/meetings?create=<ngày>',
+        'POST /api/meetings',
+      ],
       expected: 'Không có nút "Tạo cuộc họp", không có form; POST 403',
       async run(qa) {
-        await requireLacks(qa, 'member', 'MeetingCreator')
+        const { capabilities } = await qa.capabilities()
+        qa.expect(capabilities, 'the [QA] role without capabilities holds one').toEqual([])
         await qa.goto(`/mgmt/meetings?create=${dayAhead(3)}`)
         await qa.expect(qa.page.getByRole('heading', { name: 'Danh sách cuộc họp' })).toBeVisible()
         await qa.expect(qa.page.getByRole('link', { name: 'Tạo cuộc họp' })).toHaveCount(0)
@@ -420,7 +424,7 @@ export default {
         await qa.shot('khong-co-nut-tao')
         await noSidewaysScroll(qa)
         if (qa.device !== 'desktop') return
-        const res = await (await client(qa, 'member')).post('/api/meetings', await meetingBody(qa, 'FE-04 thành viên tạo'))
+        const res = await (await client(qa, 'nocreator')).post('/api/meetings', await meetingBody(qa, 'FE-04 người không có quyền tạo'))
         qa.expectStatus(res, 403)
       },
     },

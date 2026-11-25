@@ -75,6 +75,20 @@ for (const criterion of plan.criteria) {
     const t0 = Date.now()
     let verdict = 'PASS'
     let message = ''
+    // A criterion's own data that must exist before it signs in (an account the seed lacks): a setup that fails is a
+    // failure of the criterion, not "could not open", so it is not mistaken for a machine without the right tools.
+    if (criterion.prepare) {
+      const failed = await criterion.prepare({ base, device }).then(
+        () => null,
+        (error) => error,
+      )
+      if (failed) {
+        const message = `prepare: ${String(failed.message ?? failed).slice(0, 1500)}`
+        results.push(record(criterion, device, failed instanceof Inconclusive ? 'INCONCLUSIVE' : 'FAIL', message, t0))
+        console.log(`FAIL  ${criterion.id} [${criterion.role ?? 'anon'}/${device}] ${message}`)
+        continue
+      }
+    }
     const opened = await openCriterion({
       browser,
       base,
