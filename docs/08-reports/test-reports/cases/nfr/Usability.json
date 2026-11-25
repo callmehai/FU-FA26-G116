@@ -10,8 +10,9 @@
       "when": "Each user, unaided after the training, performs the tasks listed in Report 3 for their role",
       "then": "Every user completes their tasks without help",
       "priority": "Medium",
-      "aiNote": "Skip: needs real users; acceptance test (5.5). Skip in Round 1: needs real users timed through guided sessions; planned for the acceptance test (Report 5.5). · Evidence: QA run SYS-NFR 20261122-184514 · Run by the QA runner on a local build of app 6baba24f.",
+      "aiNote": "Skip in Round 1: needs real users timed through guided sessions; planned for the acceptance test (Report 5.5). · Evidence: QA run SYS-NFR 20261122-184514 · Run by the QA runner on a local build of app 6baba24f.",
       "status": "Skip",
+      "reason": "Needs real users; acceptance test (5.5).",
       "date": "2026-11-23",
       "tester": "Nguyễn Trường Huy"
     },
@@ -136,8 +137,9 @@
       "when": "Sign in, open the meeting list, the calendar, a document and the online room",
       "then": "Everything works; where WebRTC or permissions are missing the room says what is missing",
       "priority": "Medium",
-      "aiNote": "Skip: only Chromium browsers on the test PC. Skip in Round 1: only Chromium-based browsers are installed on the Windows test machine.",
+      "aiNote": "Skip in Round 1: only Chromium-based browsers are installed on the Windows test machine.",
       "status": "Skip",
+      "reason": "Only Chromium browsers on the test PC.",
       "date": "2026-11-23",
       "tester": "Nguyễn Trường Huy"
     }

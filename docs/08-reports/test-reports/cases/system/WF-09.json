@@ -44,7 +44,7 @@
           "preconditions": [
             "TC01 passed."
           ],
-          "aiNote": "BF-02 · UC-19 · BR-031, BR-032, UC-19, UC-30a · 5.2: NOTI_FT29 · Local build: rows reach the outbox with status Failed \"Not sent: the recipient's domain never receives mail (Email:UndeliverableDomains)\"; real delivery needs a real mailbox. · Evidence: QA run SYS-WF09 20261123-065506-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
+          "aiNote": "BF-02 · UC-19 · BR-031, BR-032, UC-19, UC-30a · 5.2: NOTI_FT29 · Local build: rows reach the outbox with status Failed \"Not sent: the recipient's domain never receives mail (Email:UndeliverableDomains)\"; real delivery needs a real mailbox. Checked: the recipients and the content of each email in the outbox, not delivery to a mailbox. · Evidence: QA run SYS-WF09 20261123-065506-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
           "round1": "Passed",
           "date1": "2026-11-23",
           "tester1": "Nguyễn Trường Huy"

@@ -17,8 +17,9 @@ Usage (from the repository root):
   python scripts/test_reports/nfr_cases.py build              # check + md, then print what the workbook would hold
   python scripts/test_reports/nfr_cases.py build --overwrite  # ... back up the workbook to .bak-YYYYMMDD-HHMMSS and rebuild it
 
-The visible Notes column is left empty. `aiNote` holds what a note would say (who ran it, measurements, run ids,
-environment, the reason for Blocked or Skip); with the Report 3 requirement, the condition, the date and the tester it
+The visible Notes column holds only `reason`: one short sentence on why a case is Fail, Blocked or Skip, so the
+printed report never shows those statuses without a reason. A Pass leaves Notes empty. `aiNote` holds the detail (who
+ran it, measurements, run ids, environment); with the Report 3 requirement, the condition, the date and the tester it
 goes to a hidden "AI context" column right of Notes, for agents and reviewers, not for the printed report.
 
 The workbook is output: never edit it in Excel. Results (status, actual, date, tester, defect) go into the JSON.
@@ -86,7 +87,7 @@ def ai_of(c):
 
 
 def values_of(layout, c):
-    row = dict(c, status=c.get('status', 'Not Run'), defect=c.get('defect', ''), notes='')
+    row = dict(c, status=c.get('status', 'Not Run'), defect=c.get('defect', ''), notes=c.get('reason', ''))
     return [text(row.get(k)) for k in FIELDS[layout]]
 
 
@@ -134,10 +135,12 @@ def run_checks():
                     errors.append(f'{where} {cid}: status {status} needs tester')
             if status == 'Fail' and not c.get('defect'):
                 errors.append(f'{where} {cid}: Fail needs defect (SCRUM-xxx or a short reason)')
-            if status in ('Blocked', 'Skip') and not c.get('aiNote'):
-                errors.append(f'{where} {cid}: {status} needs the reason in aiNote')
+            if status in ('Fail', 'Blocked', 'Skip') and not c.get('reason'):
+                errors.append(f'{where} {cid}: {status} needs a short reason (shown in Notes)')
+            if status in ('Pass', 'Not Run') and c.get('reason'):
+                errors.append(f'{where} {cid}: reason is only for Fail, Blocked and Skip')
             if c.get('note'):
-                errors.append(f'{where} {cid}: the Notes column stays empty; put it in aiNote')
+                errors.append(f'{where} {cid}: use reason (visible) or aiNote (hidden), not note')
             if layout == 'metric' and status in ('Pass', 'Fail') and not c.get('actual'):
                 errors.append(f'{where} {cid}: {status} needs the measured actual')
             hit = FORBIDDEN.search(json.dumps(c, ensure_ascii=False))

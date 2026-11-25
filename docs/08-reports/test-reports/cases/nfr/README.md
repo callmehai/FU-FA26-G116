@@ -11,9 +11,8 @@ nào*: bảo mật, tốc độ, dễ dùng, độ tin cậy, sẵn sàng. Workb
 | `<Sheet>.json` | Case của một sheet | Người nhận sheet đó |
 | `preview/<Sheet>.md` | Bản Markdown sinh ra để đọc trong PR | Không sửa tay |
 
-Mẫu đã viết: [Security.json](Security.json) (4 case) và [Performance.json](Performance.json) (4 case). Usability, Reliability,
-Availability mới có file rỗng. Maintainability, Portability và Compliance của Report 3 không có sheet: chúng được chứng minh
-bằng CI, tài liệu và cách triển khai, không bằng một lần chạy trên app.
+Năm sheet đã có đủ case: Security 13, Usability 10, Performance 11, Reliability 3, Availability 4 (tổng 41).
+Maintainability, Portability và Compliance của Report 3 không có sheet: chúng được chứng minh bằng CI, tài liệu và cách triển khai, không bằng một lần chạy trên app.
 
 ## Lệnh
 
@@ -82,10 +81,11 @@ Thêm vào JSON của case:
 
 - `status`: `Not Run` (mặc định), `Pass`, `Fail`, `Blocked`, `Skip` — giống dropdown của mẫu.
 - `Pass`/`Fail` cần `date`, `tester`; sheet `metric` cần thêm `actual` (số đo thật, kèm đơn vị).
-- `Fail` cần `defect` (`SCRUM-xxx` hoặc lý do ngắn). `Blocked`/`Skip` ghi lý do trong `aiNote` (ví dụ chưa có k6, chưa
-  có môi trường 100 người dùng).
-- **Cột Notes để trống**; không có trường `note` (`check` chặn nếu có). Mọi điều cần ghi — ai chạy, số đo, mã lượt chạy,
-  môi trường, lý do — vào `aiNote`; đạt khi điều kiện test chưa đủ thì mở đầu bằng `Partial pass: …`. Cùng dòng Report 3,
+- `Fail` cần `defect` (`SCRUM-xxx` hoặc lý do ngắn).
+- `Fail`, `Blocked`, `Skip` cần `reason`: một câu ngắn vì sao (ví dụ "Needs 30 real devices."), in ra ở cột **Notes**
+  để báo cáo in ra không có trạng thái nào thiếu lý do. `Pass` và `Not Run` để Notes trống (`check` chặn `reason` ở đó);
+  không có trường `note`.
+- Chi tiết — ai chạy, số đo, mã lượt chạy, môi trường — vào `aiNote`; đạt khi điều kiện test chưa đủ thì mở đầu bằng `Partial pass: …`. Cùng dòng Report 3,
   `condition`, ngày và người test, `aiNote` nằm ở cột **AI context** bị ẩn ngay bên phải Notes: để agent và reviewer đọc,
   không hiện khi in báo cáo.
 - Chạy trên server test hoặc bản local cùng commit `app`; ghi môi trường vào `aiNote`. Ảnh để trong `tests/qa/out/`

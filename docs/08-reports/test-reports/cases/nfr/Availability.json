@@ -10,8 +10,9 @@
       "when": "Collect four working weeks (Mon–Fri 08:00–18:00 UTC+7)",
       "then": "Uptime ≥ 99% excluding announced maintenance",
       "priority": "Medium",
-      "aiNote": "Skip: needs weeks of monitoring of the server. Skip in Round 1: needs weeks of monitoring of the deployed server.",
+      "aiNote": "Skip in Round 1: needs weeks of monitoring of the deployed server.",
       "status": "Skip",
+      "reason": "Needs weeks of monitoring of the server.",
       "date": "2026-11-23",
       "tester": "Nguyễn Trường Huy"
     },
@@ -24,8 +25,9 @@
       "when": "Restore onto a clean host following deploy/README.md",
       "then": "Service back within 4 hours, losing at most 24 hours of data",
       "priority": "High",
-      "aiNote": "Blocked: no restore drill yet (SCRUM-215). Blocked: no restore drill has been done; backups are taken per deploy and kept on the same server, and the files and recordings volumes are not backed up (TC-SEC-009, SCRUM-215), so a lost server loses its backups and the RPO cannot be guaranteed. Stays Blocked until one restore drill is run.",
+      "aiNote": "Blocked: no restore drill has been done; backups are taken per deploy and kept on the same server, and the files and recordings volumes are not backed up (TC-SEC-009, SCRUM-215), so a lost server loses its backups and the RPO cannot be guaranteed. Stays Blocked until one restore drill is run.",
       "status": "Blocked",
+      "reason": "No restore drill yet (SCRUM-215).",
       "date": "2026-11-23",
       "tester": "Nguyễn Trường Huy",
       "defect": "SCRUM-215"
