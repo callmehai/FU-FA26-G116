@@ -484,6 +484,20 @@ const SPEC = {
 }
 const MEETINGS = {}
 /** Meeting `key` (A–D) in its target state with its recordings / sentences, built the first time. */
+/**
+ * The meeting's summary once no draft is queued or being written (up to 15 minutes): an earlier criterion (AC36
+ * "Tạo lại") may have just queued one, and a draft still Running is not "missing".
+ */
+async function settledSummary(api, meetingId) {
+  const until = Date.now() + 900_000
+  for (;;) {
+    const body = (await api.get(`/api/meetings/${meetingId}/summary`)).body
+    const status = body?.summary?.status
+    if ((status !== 'Queued' && status !== 'Running') || Date.now() > until) return body
+    await new Promise((r) => setTimeout(r, 5000))
+  }
+}
+
 async function meeting(qa, key) {
   if (MEETINGS[key]) return MEETINGS[key]
   const u = await users(qa)
@@ -491,7 +505,17 @@ async function meeting(qa, key) {
   const title = qa.name(TITLES[key])
   const sec = as(qa, 'secretary')
   const found = await sec.get(`/api/meetings?q=${encodeURIComponent(title)}&pageSize=50`)
-  let m = (found.body.items ?? []).find((x) => x.title === title && x.status !== 'Cancelled')
+  let m
+  for (const x of (found.body.items ?? []).filter((i) => i.title === title && i.status !== 'Cancelled')) {
+    // AC21/AC33 still send sentences to C after it ended: the API takes them for 7 days after the actual end
+    // (SpeechClipRules.LateUpload), so a C that ended 6+ days ago is left alone and a new one is made.
+    if (key === 'C' && x.status === 'Ended') {
+      const ended = (await sec.get(`/api/meetings/${x.id}`)).body?.actualEndedAt
+      if (ended && Date.now() - Date.parse(ended) > 6 * 86_400_000) continue
+    }
+    m = x
+    break
+  }
   if (!m) {
     const created = await sec.post('/api/meetings', {
       title,
@@ -1679,8 +1703,15 @@ export default {
           await qa.shot('xoa-mau-thu-ho-hoi-truoc')
           await press(qa, askProxy.getByRole('button', { name: 'Xoá', exact: true }))
           await qa.expect(toast(qa, MSG.MSG311)).toBeVisible()
-          const v = await voice(qa, 'a')
-          c.fact('both sets gone', v.samples.length === 0 && v.proxy.samples.length === 0)
+          // The first delete's toast (same words) can still be up, so it does not prove the second request landed:
+          // poll the API instead of reading it once.
+          await qa.expect
+            .poll(async () => {
+              const v = await voice(qa, 'a')
+              return v.samples.length + v.proxy.samples.length
+            }, { timeout: 15_000 })
+            .toBe(0)
+          c.fact('both sets gone', true)
           await noSidewaysScroll(qa)
           await noRawCodes(qa)
           c.done()
@@ -3140,7 +3171,7 @@ export default {
         const m = await meeting(qa, 'D')
         const sec = as(qa, 'secretary')
         const c = checker(qa)
-        let state = (await sec.get(`/api/meetings/${m.id}/summary`)).body
+        let state = await settledSummary(sec, m.id)
         if (!state.summary || state.summary.status !== 'Ready') qa.inconclusive('Cuộc họp Mật chưa có dự thảo Ready để duyệt.')
         if (state.summary.reviewedAt) {
           c.fact('re-ask to get an unreviewed draft', (await sec.post(`/api/meetings/${m.id}/summary`, {})).status === 202)
@@ -3203,7 +3234,7 @@ export default {
         const m = await meeting(qa, 'D')
         const sec = as(qa, 'secretary')
         const c = checker(qa)
-        let state = (await sec.get(`/api/meetings/${m.id}/summary`)).body
+        let state = await settledSummary(sec, m.id)
         if (!state.summary || state.summary.status !== 'Ready') qa.inconclusive('Cuộc họp Mật chưa có dự thảo Ready để sửa.')
         if (!state.summary.reviewedAt) {
           c.fact('review via API first', (await sec.post(`/api/meetings/${m.id}/summary/review`, {})).status === 200)
@@ -3252,7 +3283,7 @@ export default {
         const m = await meeting(qa, 'D')
         const sec = as(qa, 'secretary')
         const c = checker(qa)
-        let state = (await sec.get(`/api/meetings/${m.id}/summary`)).body
+        let state = await settledSummary(sec, m.id)
         if (!state.summary || state.summary.status !== 'Ready') qa.inconclusive('Cuộc họp Mật chưa có dự thảo Ready để duyệt.')
         if (state.summary.reviewedAt) {
           c.fact('re-ask to get an unreviewed draft', (await sec.post(`/api/meetings/${m.id}/summary`, {})).status === 202)
@@ -3970,7 +4001,7 @@ export default {
       role: 'admin',
       title: 'Tài khoản thiếu "Thu giọng mẫu hộ" mà vẫn quản trị người dùng: dòng người dùng không nút "Giọng nói", gọi thẳng 403 (TRANS_FT57)',
       steps: [
-        'QA lead gỡ "Thu giọng mẫu hộ" khỏi vai Quản trị viên (API ma trận), khôi phục cuối bài; admin mở "/mgmt/admin/users"',
+        'QA lead gỡ "Thu giọng mẫu hộ" khỏi vai trò của quantri@ (seed: Quản trị viên; API ma trận), khôi phục cuối bài; admin mở "/mgmt/admin/users"',
         'Gọi thẳng GET /api/users/{id}/voice-collection (403); trả quyền, đọc lại sổ thu hộ',
       ],
       expected:
@@ -3980,7 +4011,11 @@ export default {
         const admin = as(qa, 'admin')
         const c = checker(qa)
         const matrix = (await admin.get('/api/roles/capabilities')).body
-        const adminRole = matrix.roles.find((r) => r.name === 'Quản trị viên')
+        // The admin's own role: the seed gives "Quản trị viên", but a shared dev database may have moved
+        // quantri@ to another role (Hải's holds "All-in-one"); taking the capability off a role it does not hold
+        // would test nothing.
+        const myRoleId = (await admin.get('/api/auth/me')).body.roleId
+        const adminRole = matrix.roles.find((r) => r.id === myRoleId) ?? matrix.roles.find((r) => r.name === 'Quản trị viên')
         const kept = adminRole.capabilities.filter((x) => x !== 'VoiceCollector')
         try {
           c.fact('VoiceCollector removed', (await admin.put('/api/roles/capabilities', { roleId: adminRole.id, capabilities: kept })).status === 200)
