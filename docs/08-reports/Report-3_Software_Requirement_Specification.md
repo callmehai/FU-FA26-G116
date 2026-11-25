@@ -83,6 +83,7 @@ Table of Contents
 | 24/11/2026 | M | LocHD | [BF review] BF-02 to BF-04 aligned with the built system: BF-02 adds finding a common time (UC-81) and cancelling (UC-22); BF-03 adds room recording (UC-52); BF-04 adds summary approval (UC-61) and minutes from the fixed template (UC-70). |
 | 24/11/2026 | M | HuyNQ | [PR #531] UC diagrams follow strict UML: only 8 real <<extend>> kept, the rest connect to the actor; actors renamed Member/Approver, Cloudflare R2 → File Storage (ADR-0084); §1, §4.1 and §4.3 updated. |
 | 25/11/2026 | M | HuyNQ | [PR #537] File Storage is no longer an actor (SeaweedFS runs on the app server, ADR-0084): §1, §4.1, context and UC diagrams; §17.7 says SeaweedFS; UC-42 to the actor (7 <<extend>>); AI Drafting Service drawn on UC-58. |
+| 25/11/2026 | M, A, D | KhanhPG | [note 60, note 61] UC-52b and UC-54c removed: UC-52a renamed Turn Room Microphone On/Off, UC-54a gains AF-2/AF-3; system-run steps moved to Report 4 part IV, JOB-03–JOB-10 added; UC tables in one style; every figure captioned, overview UC diagram in §4.3. |
 
 *A - Added M - Modified D - Deleted
 
