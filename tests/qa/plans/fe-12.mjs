@@ -1513,7 +1513,7 @@ export default {
       devices: ['desktop', 'phone'],
       title: 'Tạo bản nháp từ dự thảo chưa duyệt: báo "Dự thảo AI chưa duyệt…", "Duyệt dự thảo" cuộn tới nút Duyệt, bản nháp giữ mục I–III của AI (MIN_FT02)',
       steps: [
-        'Cần dự thảo AI đã viết xong, chưa duyệt, chưa có biên bản trên "[QA] FE-12 dùng lại dự thảo AI (Nội bộ)" (chạy --only AC21 trước)',
+        'Tạo một cuộc họp Nội bộ đã kết thúc mới cho mỗi màn hình, tải bản ghi giọng máy, xin dự thảo AI (máy local) và chờ Ready',
         'Mở tab Biên bản, đọc cảnh báo, bấm "Duyệt dự thảo"',
         'Bấm "Tạo bản nháp", đọc bản nháp và thông báo',
       ],
@@ -1522,8 +1522,9 @@ export default {
       async run(qa) {
         const S = (id) => `/api/meetings/${id}/summary`
         const sec = await client(qa, 'secretary')
-        // Mỗi màn hình một cuộc họp riêng: lượt desktop đã tạo biên bản thì lượt phone vẫn còn chỗ làm.
-        const ai = await reused(qa, qa.device === 'phone' ? 'aiPhone' : 'ai')
+        // Mỗi màn hình một cuộc họp mới mỗi lượt chạy: AC24 cần dự thảo Ready chưa duyệt và chưa có biên bản, mà cuộc họp
+        // dùng lại thì AC22 đã duyệt + tạo biên bản (desktop), lượt trước đã tạo biên bản (phone) — chạy lại là inconclusive.
+        const ai = await fresh(qa, `ai24-${qa.device}`, 'Ended', `dự thảo AI chưa duyệt ${qa.device === 'phone' ? 'điện thoại' : 'máy tính'}`, 'Internal')
         qa.expect(ai.sensitivity, 'never ask for a draft of a Normal meeting (it would call the paid API)').toBe('Internal')
         let state = (await sec.get(S(ai.id))).body
         if (state.summary?.status !== 'Ready' || !state.summary?.draft) {

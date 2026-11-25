@@ -45,9 +45,9 @@
 // voice pitched down as a second speaker, converted to 16 kHz WAV with ffmpeg, written to QA_AUDIO_DIR (default:
 // <tmp>/trustcabinet-qa-fe10). No recording of a real person is used.
 
-import { execFileSync } from 'node:child_process'
+import { execFileSync, spawn } from 'node:child_process'
 import { randomBytes, randomUUID } from 'node:crypto'
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, openSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -94,14 +94,57 @@ const MSG = {
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..')
 
+const WINDOWS = process.platform === 'win32'
+
+/** PID listening on `port`, or NaN. A port can list several connections: take the first owner. */
+function portPid(port) {
+  try {
+    const out = WINDOWS
+      ? execFileSync(
+          'powershell',
+          ['-NoProfile', '-Command', `Get-NetTCPConnection -LocalPort ${port} -State Listen -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess | Select-Object -Unique | Select-Object -First 1`],
+          { encoding: 'utf8' },
+        )
+      : execFileSync('lsof', ['-t', `-iTCP:${port}`, '-sTCP:LISTEN'], { encoding: 'utf8' })
+    const n = Number(String(out).trim().split(/\s+/)[0])
+    return Number.isFinite(n) && n > 0 ? n : NaN
+  } catch {
+    return NaN
+  }
+}
+/** Stops a process (and its children on Windows). */
+function killPid(pid) {
+  try {
+    if (WINDOWS) execFileSync('taskkill', ['/PID', String(pid), '/T', '/F'], { stdio: 'ignore' })
+    else process.kill(pid, 'SIGTERM')
+  } catch { /* already stopped */ }
+}
+/** True when the speech worker is the `trustcabinet-speech` container and it is running. */
+function speechContainerRunning() {
+  try {
+    return execFileSync('docker', ['inspect', '-f', '{{.State.Running}}', 'trustcabinet-speech'], { encoding: 'utf8' }).trim() === 'true'
+  } catch {
+    return false
+  }
+}
+/**
+ * Stopping and starting the AI machine is only automated on the QA lead's Windows laptop, where ollama is the plan's
+ * own. Anywhere else the AI machine is shared (macOS: one ollama serves every checkout), so the criterion stops here
+ * and names the manual step instead of killing someone else's server.
+ */
+function requireOwnAiMachine(qa) {
+  if (!WINDOWS) qa.inconclusive('Cần tắt máy AI local giữa chừng: chỉ tự động trên máy Windows của QA lead; ở máy khác máy AI dùng chung, QA lead tắt tay rồi chạy lại.')
+}
 /** Stops the local AI server (ollama) so the next draft fails; the QA lead's "stop the AI server" step. */
-function stopOllama() {
+function stopOllama(qa) {
+  requireOwnAiMachine(qa)
   try {
     execFileSync('taskkill', ['/IM', 'ollama.exe', '/F'], { stdio: 'ignore' })
   } catch { /* already stopped */ }
 }
 /** Starts the local AI server again and waits until it answers. */
 async function startOllama(qa, timeoutMs = 120_000) {
+  requireOwnAiMachine(qa)
   execFileSync(
     'powershell',
     ['-NoProfile', '-Command', "$env:OLLAMA_HOST='127.0.0.1:11434'; Start-Process -FilePath 'C:\\Users\\admin\\AppData\\Local\\Programs\\Ollama\\ollama.exe' -ArgumentList 'serve'"],
@@ -117,32 +160,28 @@ async function startOllama(qa, timeoutMs = 120_000) {
     await new Promise((r) => setTimeout(r, 3000))
   }
 }
+const STUB_PORT = 11439
+const STUB_PFX = join(tmpdir(), 'opencode', 'qa-ai-stub.pfx')
 /** PID holding the QA AI stub (:11439), or NaN. */
-function stubPid() {
-  try {
-    const out = execFileSync(
-      'powershell',
-      ['-NoProfile', '-Command', "Get-NetTCPConnection -LocalPort 11439 -State Listen -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess | Select-Object -Unique | Select-Object -First 1"],
-      { encoding: 'utf8' },
-    )
-    const n = Number(String(out).trim().split(/\s+/)[0])
-    return Number.isFinite(n) && n > 0 ? n : NaN
-  } catch {
-    return NaN
-  }
-}
+const stubPid = () => portPid(STUB_PORT)
 /** Starts the QA OpenAI-compatible stub (trusted per-user HTTPS cert) and waits for it. */
 async function startStub(qa, timeoutMs = 60_000) {
   if (Number.isFinite(stubPid())) return
-  execFileSync(
-    'powershell',
-    ['-NoProfile', '-Command', `Start-Process -FilePath 'node' -ArgumentList 'ai-stub.mjs' -WorkingDirectory '${join(ROOT, 'tests', 'qa')}'`],
-    { stdio: 'ignore' },
-  )
+  // The backend only calls an https API, so the stub's certificate must be trusted by this user (Windows: the
+  // per-user store; macOS: the login keychain). Without it every call fails on TLS, which says nothing about the app.
+  if (!existsSync(STUB_PFX))
+    qa.inconclusive(`Thiếu chứng chỉ stub API QA (${STUB_PFX}) được tin cho người dùng này: máy này chưa dựng stub https :${STUB_PORT}.`)
+  if (WINDOWS)
+    execFileSync(
+      'powershell',
+      ['-NoProfile', '-Command', `Start-Process -FilePath 'node' -ArgumentList 'ai-stub.mjs' -WorkingDirectory '${join(ROOT, 'tests', 'qa')}'`],
+      { stdio: 'ignore' },
+    )
+  else spawn('node', ['ai-stub.mjs'], { cwd: join(ROOT, 'tests', 'qa'), detached: true, stdio: 'ignore' }).unref()
   const until = Date.now() + timeoutMs
   for (;;) {
     try {
-      execFileSync('curl.exe', ['-k', '-s', '-o', 'NUL', '-w', '%{http_code}', 'https://127.0.0.1:11439/chat/completions'], { encoding: 'utf8', timeout: 10000 })
+      execFileSync(WINDOWS ? 'curl.exe' : 'curl', ['-k', '-s', '-o', WINDOWS ? 'NUL' : '/dev/null', '-w', '%{http_code}', `https://127.0.0.1:${STUB_PORT}/chat/completions`], { encoding: 'utf8', timeout: 10000 })
       if (Number.isFinite(stubPid())) return
     } catch { /* not up yet */ }
     if (Date.now() > until) qa.inconclusive('Stub API QA không mở được sau 60 giây.')
@@ -152,39 +191,25 @@ async function startStub(qa, timeoutMs = 60_000) {
 /** Stops the QA AI stub. */
 function stopStub() {
   const pid = stubPid()
-  if (!Number.isFinite(pid)) return
-  try {
-    execFileSync('taskkill', ['/PID', String(pid), '/T', '/F'], { stdio: 'ignore' })
-  } catch { /* already stopped */ }
+  if (Number.isFinite(pid)) killPid(pid)
 }
-/** PID holding :5225, or NaN. A port can list several connections: take the first owner. */
-function backendPid() {
-  try {
-    const out = execFileSync(
-      'powershell',
-      ['-NoProfile', '-Command', "Get-NetTCPConnection -LocalPort 5225 -State Listen -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess | Select-Object -Unique | Select-Object -First 1"],
-      { encoding: 'utf8' },
-    )
-    const n = Number(String(out).trim().split(/\s+/)[0])
-    return Number.isFinite(n) && n > 0 ? n : NaN
-  } catch {
-    return NaN
-  }
-}
-/** Restarts the backend (a config change needs it: IOptions snapshot) and waits for health. */
-async function restartBackend(qa, timeoutMs = 180_000) {
-  const oldPid = backendPid()
-  if (Number.isFinite(oldPid)) {
-    try {
-      execFileSync('taskkill', ['/PID', String(oldPid), '/T', '/F'], { stdio: 'ignore' })
-    } catch { /* already stopped */ }
-  }
-  let freeUntil = Date.now() + 60_000
-  for (;;) {
-    const p = backendPid()
-    if (!Number.isFinite(p) || p !== oldPid) break
-    if (Date.now() > freeUntil) qa.inconclusive('Backend cũ trên :5225 không dừng sau 60 giây.')
-    await new Promise((r) => setTimeout(r, 2000))
+/** PID holding :5225, or NaN. */
+const backendPid = () => portPid(5225)
+/**
+ * Starts the backend again the way this machine runs it. Windows (QA lead): its own database through `.env`.
+ * Elsewhere: `dotnet run` from backend/TrustCabinet.Web (the content root, so wwwroot is served), inheriting this
+ * process's environment, so whatever the backend was started with (connection, AI and speech addresses) carries over.
+ */
+function startBackend(qa) {
+  if (!WINDOWS) {
+    const log = process.env.QA_BACKEND_LOG ? openSync(process.env.QA_BACKEND_LOG, 'a') : 'ignore'
+    spawn('dotnet', ['run', '--no-build', '--no-launch-profile'], {
+      cwd: join(ROOT, 'backend', 'TrustCabinet.Web'),
+      env: { ASPNETCORE_ENVIRONMENT: 'Development', ASPNETCORE_URLS: 'http://localhost:5225', ...process.env },
+      detached: true,
+      stdio: ['ignore', log, log],
+    }).unref()
+    return
   }
   const env = readFileSync(join(ROOT, '..', 'TrustCabinet', '.env'), 'utf8')
   const pw = /^POSTGRES_PASSWORD=(.*)$/m.exec(env)?.[1]?.trim()
@@ -200,6 +225,19 @@ async function restartBackend(qa, timeoutMs = 180_000) {
     ],
     { stdio: 'ignore' },
   )
+}
+/** Restarts the backend (a config change needs it: IOptions snapshot) and waits for health. */
+async function restartBackend(qa, timeoutMs = 180_000) {
+  const oldPid = backendPid()
+  if (Number.isFinite(oldPid)) killPid(oldPid)
+  let freeUntil = Date.now() + 60_000
+  for (;;) {
+    const p = backendPid()
+    if (!Number.isFinite(p) || p !== oldPid) break
+    if (Date.now() > freeUntil) qa.inconclusive('Backend cũ trên :5225 không dừng sau 60 giây.')
+    await new Promise((r) => setTimeout(r, 2000))
+  }
+  startBackend(qa)
   const until = Date.now() + timeoutMs
   let newPid = NaN
   for (;;) {
@@ -2895,6 +2933,9 @@ export default {
         const sec = as(qa, 'secretary')
         const c = checker(qa)
         await clearNames(qa, d.rec.id)
+        // D is reused by title, so an earlier run may have left a draft: then the sheet offers "Tạo lại dự thảo" behind
+        // the "Tạo lại dự thảo?" confirmation, and "Để sau" must leave that draft as it was (not "no draft at all").
+        const prior = (await sec.get(`/api/meetings/${d.id}/summary`)).body.summary
         try {
           await qa.goto(`/mgmt/meetings/${d.id}?tab=minutes`)
           await qa.expect(qa.page.getByRole('heading', { level: 1, name: d.title })).toBeVisible({ timeout: 15_000 })
@@ -2910,7 +2951,12 @@ export default {
           // "Để sau" đóng sheet mà không tạo dự thảo (kiểm trước khi gán, vì gán xong nút mở sheet không còn).
           await press(qa, sheet.getByRole('button', { name: 'Để sau' }))
           await qa.expect(sheet).toHaveCount(0)
-          c.fact('no draft queued by "Để sau"', ((await sec.get(`/api/meetings/${d.id}/summary`)).body.summary) == null)
+          const after = (await sec.get(`/api/meetings/${d.id}/summary`)).body.summary
+          c.fact(
+            'no draft queued by "Để sau"',
+            prior == null ? after == null : after?.status === prior.status && after?.generatedAt === prior.generatedAt,
+            JSON.stringify({ before: prior?.status ?? null, after: after?.status ?? null }),
+          )
           // Chủ toạ chỉ đọc: còn 1 giọng chưa tên nên gợi ý hiện.
           await qa.signIn('chair')
           await qa.goto(`/mgmt/meetings/${d.id}?tab=minutes`)
@@ -2935,7 +2981,9 @@ export default {
           await qa.expect(sheet2.getByText('Mọi giọng đã có tên.')).toBeVisible({ timeout: 15_000 })
           await settled(qa)
           await qa.shot('moi-giong-da-co-ten')
-          await press(qa, sheet2.getByRole('button', { name: 'Tạo dự thảo' }))
+          await press(qa, sheet2.getByRole('button', { name: prior?.draft ? 'Tạo lại dự thảo' : 'Tạo dự thảo', exact: true }))
+          if (prior?.draft)
+            await press(qa, qa.page.getByRole('dialog', { name: 'Tạo lại dự thảo?' }).getByRole('button', { name: 'Tạo lại' }))
           await qa.expect(toast(qa, MSG.MSG384)).toBeVisible()
           const queued = (await sec.get(`/api/meetings/${d.id}/summary`)).body.summary
           c.fact('the draft is queued', ['Queued', 'Running', 'Ready'].includes(queued?.status), queued?.status)
@@ -3310,6 +3358,7 @@ export default {
       expected:
         'Xác nhận xong toast MSG384, chip "Đang chờ"/"AI đang viết". Máy tắt → chip "Lỗi", dòng đỏ nêu lý do máy đưa (hoặc "AI không viết được dự thảo."), kèm "Đang giữ bản trước." vì bản cũ còn, nút "Tạo lại" bấm được. Máy mở lại + "Tạo lại" → bản Ready mới.',
       async run(qa) {
+        requireOwnAiMachine(qa)
         const m = await meeting(qa, 'A')
         const sec = as(qa, 'secretary')
         const c = checker(qa)
@@ -3322,7 +3371,7 @@ export default {
         await press(qa, card.locator('#summary-ask', { hasText: 'Tạo lại' }))
         await press(qa, qa.page.getByRole('dialog', { name: 'Tạo lại dự thảo?' }).getByRole('button', { name: 'Tạo lại' }))
         await qa.expect(toast(qa, MSG.MSG384)).toBeVisible({ timeout: 15_000 })
-        stopOllama()
+        stopOllama(qa)
         try {
           const until = Date.now() + 300_000
           for (;;) {
@@ -3376,6 +3425,9 @@ export default {
         const sec = as(qa, 'secretary')
         const c = checker(qa)
         const st = (await sec.get(`/api/meetings/${m.id}/summary`)).body
+        // The dirty half edits a section of the draft: AC34 writes it. Without one there is nothing to edit.
+        if (st.summary?.status !== 'Ready' || !st.summary?.draft)
+          qa.inconclusive('Cuộc họp trực tiếp chưa có dự thảo Ready để sửa (AC34 tạo nó): chạy AC34 trước rồi chạy lại.')
         c.fact('the Secretary manages and the AI is ready', st.canManage === true && st.aiReady === true)
         await qa.goto(`/mgmt/meetings/${m.id}?tab=minutes`)
         await qa.expect(qa.page.getByRole('heading', { level: 1, name: m.title })).toBeVisible({ timeout: 15_000 })
@@ -3537,6 +3589,7 @@ export default {
       async run(qa) {
         const u = await users(qa)
         const c = checker(qa)
+        let stoppedSpeech = false
         await enrolled(qa, 'a', 0)
         try {
           try {
@@ -3568,6 +3621,13 @@ export default {
           await qa.shot('mau-bi-tu-choi')
           await dialog.getByRole('button', { name: /Đóng/ }).first().click().catch(() => qa.page.keyboard.press('Escape'))
           c.fact('still nothing kept', (await voice(qa, 'a')).samples.length === 0)
+          // The worker-down half stops the speech container. A machine whose worker runs outside Docker (macOS: launchd,
+          // shared by every checkout) must not have it stopped, nor an idle container started in its place.
+          if (!speechContainerRunning()) {
+            c.done()
+            qa.inconclusive('Máy nhận dạng giọng nói không chạy trong container trustcabinet-speech: nửa "máy tắt → 503 MSG312" cần QA lead tắt worker tay rồi tải mẫu.')
+          }
+          stoppedSpeech = true
           execFileSync('docker', ['stop', 'trustcabinet-speech'], { stdio: 'ignore' })
           try {
             const down = await as(qa, 'a').form('/api/me/voice/samples', sampleForm(qa, 'enrol', 'giong-mau.wav'))
@@ -3588,9 +3648,10 @@ export default {
           await noRawCodes(qa)
           c.done()
         } finally {
-          try {
-            execFileSync('docker', ['start', 'trustcabinet-speech'], { stdio: 'ignore' })
-          } catch { /* already running */ }
+          if (stoppedSpeech)
+            try {
+              execFileSync('docker', ['start', 'trustcabinet-speech'], { stdio: 'ignore' })
+            } catch { /* already running */ }
           await withdrawn(qa, 'a')
         }
       },
