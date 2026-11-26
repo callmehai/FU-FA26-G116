@@ -16,15 +16,16 @@ Một phiên bản mới (ví dụ v5 → v6) nộp đủ ba phần:
 
 Chỉ sửa HTML bằng tay. Plugin và ảnh luôn sinh ra từ HTML bằng script trong `_tools/`. Giữ file HTML và thư mục `figma-v<N>` của bản cũ.
 
-## Bản hiện có — v15
+## Bản hiện có — v16
 
 | Thành phần | Đường dẫn | Vai trò |
 |---|---|---|
-| HTML | [TrustCabinet-wireframe-v15.html](TrustCabinet-wireframe-v15.html) | Bản thiết kế gốc. |
-| Plugin Figma | [figma-v15/](figma-v15/) (`manifest.json`, `code.js`, `README.md`) | Dựng lại màn trong Figma Desktop. |
-| Ảnh | [screens/](screens/) | PNG từng màn của v15. |
+| HTML | [TrustCabinet-wireframe-v16.html](TrustCabinet-wireframe-v16.html) | Bản thiết kế gốc. |
+| Plugin Figma | [figma-v16/](figma-v16/) (`manifest.json`, `code.js`, `README.md`) | Dựng lại màn trong Figma Desktop. |
+| Ảnh | [screens/](screens/) | PNG từng màn của v16. |
 | Tool | [_tools/](_tools/) | Sinh plugin và ảnh từ HTML. |
 
+Bản v15 giữ nguyên để đối chiếu: [TrustCabinet-wireframe-v15.html](TrustCabinet-wireframe-v15.html), [figma-v15/](figma-v15/).
 Bản v14 giữ nguyên để đối chiếu: [TrustCabinet-wireframe-v14.html](TrustCabinet-wireframe-v14.html), [figma-v14/](figma-v14/).
 Bản v13 giữ nguyên để đối chiếu: [TrustCabinet-wireframe-v13.html](TrustCabinet-wireframe-v13.html), [figma-v13/](figma-v13/).
 Bản v12 giữ nguyên để đối chiếu: [TrustCabinet-wireframe-v12.html](TrustCabinet-wireframe-v12.html), [figma-v12/](figma-v12/).
@@ -364,5 +365,7 @@ LAYOUT = [ { code: 'FE-11', name: 'FE-11 · Biểu quyết',
 | v12 | 13/11/2026 | Thêm nhóm FE-16 Lịch làm việc & tìm giờ họp (SCRUM-142, SCRUM-137, ADR-0058): Chia sẻ lịch vẽ theo web đang chạy (16.1, 16.1b, 16.2, 16.2b, 16.3, 16.4, 16.4b, 16.5, 16.6) và Tìm giờ họp theo contract BE, mục sidebar riêng hai tab, bố cục tham khảo AI-eCabinet: cột cài đặt, người dự chính có trạng thái chia sẻ, kết quả là ô giờ bắt đầu theo ngày, chọn ô mở chi tiết và Tạo nháp (16.7, 16.7b, 16.7c, 16.7d, 16.7e trước khi tìm, 16.8, 16.9, 16.10 điện thoại). Màn cũ giữ nguyên. Plugin: section FE-16 trước đây là dấu hiệu "file Figma còn số FE cũ" (v2/v3); từ v12 chỉ section FE-16 mang tên khác "FE-16 · Lịch làm việc & tìm giờ họp" mới tính là số cũ, nếu không chạy plugin lần hai sẽ dịch số màn |
 | v13 | 19/11/2026 | Đối chiếu với web đang chạy sau UI audit 16/11 (PR #396–#399, BR-420) và gộp tồn đọng note 1–53: MSG480 dưới nút Vào phòng (8.1), thiết bị micro và camera (8.1/8.1b), thanh trả lời chỉ ở Published (4.5b), thẻ Dự thảo 3 câu theo vai trò + nhãn đính chính (12.1, thêm 12.1b), nút Tải PDF + luồng duyệt thay luồng ký (12.2–12.4), email ellipsis + responsive (6.1), 4 thẻ summary + sort tăng dần (4.3), nhãn Cách họp khác / Làm tròn giờ (16.7), gom chia sẻ đã kết thúc sau nút (16.1/16.1b), trang Người dùng + phân trang client 20/50/100 (2.1/2.2), lỗi từng ô đăng nhập (1.1). Tồn đọng: câu cảnh báo + bộ lọc Nhật ký (3.3), tab Thư ký thu hộ (9.4, thêm 9.4d), nhãn Tổng hợp (9.1b), màn Khách (1.3/6.4), nút kẹp giấy (7.3), huỷ họp + kết luận (4.10/5.3), giơ tay trong phòng (8.3), empty-state báo cáo (15.1). Sửa 39 màn, thêm 9.4d, 12.1b |
 | v14 | 25/11/2026 | Bám sát audit đối chiếu v13 với code app ngày 25/11/2026: shared + FE-01/02/03 + FE-04/05 + FE-06/07 + FE-08/09/10 + FE-11/12/13/15/16; xóa 10.2. Sửa hàng loạt màn (header đổi + builder dùng chung), thêm 20 màn: 1.3b, 1.3c, 2.1b, 3.1d, 3.4, 4.1f, 4.1p, 4.5e, 4.5f, 4.5g, 4.11b, 5.4, 7.2d, 7.2e, 7.5c, 7.6, 8.1c, 13.2b, 15.1b, 16.6b |
+| v15 | 25/11/2026 | Đánh số lại nhóm chức năng theo Report 1–4: FE-15 Báo cáo thành FE-14, FE-16 Lịch làm việc & tìm giờ họp thành FE-15; màn 15.1, 15.1b thành 14.1, 14.1b và 16.1 → 16.10 thành 15.1 → 15.10. Nội dung các màn không đổi |
+| v16 | 26/11/2026 | Đối chiếu từng màn với web đang chạy (app.trustcabinet.workspace-hub.space). Trang chi tiết: cột phải 360px ở mọi tab kể cả Biên bản, thẻ Ghi chú dưới Lịch sử trạng thái (Chủ toạ “Xem ghi chú”, Thư ký “Mở ghi chú”, khi đang họp hoặc đã kết thúc), Thông tin chung một cột. Thanh lịch dùng nút biểu tượng (4.1–4.2, sửa chip “undefined” ở 4.2); điện thoại thanh trên màu xanh, 4.1p lịch ngày dạng lưới giờ. Vẽ lại 2.1, 3.3, 3.4, 7.3 (nhóm Biểu quyết), 9.1 (trình phát, người nói, lời thoại, nguồn Tổng hợp), 9.4 (lời đồng ý theo VoiceEnrol), 12.1, 13.1, 14.1, 14.1b (khoảng tháng, dải số liệu, bảng theo tháng, Xuất Excel), 15.6, 15.6b, 15.9 (lịch tuần lưới giờ), 15.7 (bộ đếm người dự /10). Thêm 10.2 Dự thảo nội dung (AI) – sửa và duyệt. Sửa 77 màn, thêm 1 màn. Chưa đối chiếu: phòng họp FE-08, màn khách, 6.4 |
 
 Ra bản mới thì thêm một dòng vào bảng này.

@@ -89,6 +89,7 @@ Table of Contents
 | 25/11/2026 | M | LocHD | Email via Resend only (16.3, API-03); features FE-01–FE-15; no Vietnamese or decision-record references; one font size in the permission matrix; entity and UC descriptions rewritten, UC-28 row added; 3.3 and IV checked against the code. |
 | 25/11/2026 | M | KhanhPG | IV.2.3 Audit logging: event list matched to the events the system records; meeting status changes, summary approval, vote closing and rate-limited sign-ins are not audit events (status changes stay in the status history). BR-011: adding or removing a meeting document is not an audit event, deleting a voice sample is; UC-36a POST-1 no longer cites BR-011. |
 | 26/11/2026 | M | LocHD | Participants: additional Meeting permissions removed from the entity table, permission matrix, MSG table and Participants screen; FE-07 intro without dated notes, storage quota stated; 9.4 and 15.4 images fit one page. |
+| 26/11/2026 | M | LocHD | Section III screens matched to wireframe v16 and the running app: 47 images replaced; 2.1, 3.3, 4.1, 4.2, 4.5, 4.12, 9.1, 9.4, 10.1, 10.2, 12.1, 13.1, 14.1, 15.5 and 15.6 rewritten where they differ; detail tabs without Summary. |
 
 *A - Added M - Modified D - Deleted
 
@@ -2791,7 +2792,7 @@ The User List screen is the System Admin’s account management page, reached fr
 
 This screen allows the System Admin to:
 
-- View User List: view all user accounts with full name, email, system role, sign-in method, status and creation date (UC-05).
+- View User List: view all user accounts with full name, email, system role, sign-in method and status (UC-05).
 
 - Search Users: enter a keyword to search accounts by full name or email (UC-05).
 
@@ -2820,7 +2821,6 @@ Field Description
 | Role | Column chip: name of the system role held by the account. |
 | Sign-in method | Column: Password, Google, or Password · Google (account linked to Google). Passwords and tokens are never displayed. |
 | Status | Column chip: Active (green) or Deactivated (grey). |
-| Created date | Column, format dd/mm/yyyy. |
 | Actions | Three icon buttons: Edit · Deactivate / Reactivate · Send password reset link. A button is greyed out when not applicable and its tooltip gives the reason: the System Admin cannot change the status of his/her own account; a Google-only or deactivated account cannot receive a password reset link. |
 | Deactivate / Reactivate confirmation | Dialog: deactivation signs the user out of all devices and keeps meeting history (BR-001); reactivation restores sign-in with the current role. Success shows MSG11 “User account status changed successfully.”; deactivating the last active account holding the User administration permission is blocked with MSG12. |
 | No-result message | “No accounts match the filter.” shown in the table when search/filter returns nothing; “No accounts yet.” when the list is empty. |
@@ -2980,13 +2980,13 @@ Field Description
 | Actor filter | Dropdown; default All actors; lists users. |
 | Event type filter | Dropdown; default All event types (e.g. change role permissions, approve meeting, failed sign-in, download document, send password reset link). |
 | Search | Text input, optional; matches the target object name or id, or the recorded details, ignoring case and Vietnamese marks — except the name of anything of a Secret meeting, which never matches. All criteria must match. |
-| Time | Column, format dd/mm hh:mm, newest first. |
-| Actor | Column: avatar initials and full name of the user who performed the action. |
+| Time | Column, format hh:mm dd/mm/yyyy (e.g. 09:42 06/10/2026), newest first. |
+| Actor | Column: full name of the user who performed the action, with the email below. |
 | Event | Column chip with the event type, e.g. “Changed role permissions”, “Approved meeting”, “Downloaded document”, “Sent password reset link”. Security events such as “Failed sign-in” use a red chip and the whole row is highlighted in red. |
-| Object | Column: the object name — meeting title, document file name, vote title, voice owner name, and so on — or the last 8 characters of its id when it has no name, or only “Secret meeting” for anything of a Secret meeting. |
+| Object | Column: the object type and the object name — meeting title, document file name, vote title, voice owner name, and so on — or the last 8 characters of its id when it has no name, or only “Secret meeting” for anything of a Secret meeting. |
 | IP address | Column: IP address of the request. |
-| Detail panel | Right-side drawer opened by clicking a row; shows the actor, event code, object with its id, IP address and the details recorded with the entry, field by field. Read-only. |
-| Pagination | “Showing 1–5 of 1,284” with previous/next and page-number buttons. No matching entries shows an empty-result message so the filters can be revised. |
+| Detail panel | Right-side drawer opened by the eye button at the end of a row or by clicking the row; shows the actor, event code, object with its id, IP address and the details recorded with the entry, field by field. Read-only. |
+| Pagination | “Showing 1–20 of 1,284 events”, a rows-per-page selector (20 by default) and page-number buttons. No matching entries shows “No events match the filters.” so the filters can be revised; an empty log shows “No events have been recorded yet.” |
 
 ### 4. FE-04 – Meeting Management
 
@@ -3019,8 +3019,9 @@ Field Description
 | Today | Button; jumps to the current week. |
 | Previous / Next week (‹ ›) | Buttons; move one week back or forward. |
 | Week label | Read-only date range of the displayed week, e.g. 12/10 – 16/10/2026. |
-| View toggle | Segmented control Calendar (selected) / List. The selected mode is kept in the URL. |
-| Week range | Dropdown: Work week (default, Monday–Friday) or Full week. |
+| View toggle | Two icon-only buttons, Calendar (selected) and List; the name shows in the tooltip. The selected mode is kept in the URL. |
+| Week range | Dropdown: Work week (default, Monday–Friday), Full week or Month. |
+| Filter | Icon-only button; opens the filter by status and confidentiality level (UC-16). While a filter is applied the button shows the number of conditions. |
 | Create meeting | Primary button; visible only to users with the create-meeting permission (Member). Opens the Create Meeting dialog over the calendar. |
 | Day header | Weekday name and date (dd/mm) for each column, e.g. “Monday 12/10”; the current day is highlighted and labelled “Today”. |
 | Time grid | Hour rows covering 24 hours; the grid scrolls inside its frame. For the current week it scrolls automatically to a red line marking the current time, with the time shown in a red badge on the hour axis (e.g. 13:47). |
@@ -3054,7 +3055,7 @@ Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Toolbar | Same controls as the Calendar View: Today, ‹ ›, week label, Calendar / List toggle (List selected, kept in the URL as ?mode=list), Work week dropdown and Create meeting button (Member only; opens the Create Meeting dialog). |
+| Toolbar | Same controls as the Calendar View: Today, ‹ ›, week label, the icon-only Calendar / List buttons (List selected, kept in the URL as ?mode=list), the Work week dropdown, the icon-only Filter button and the Create meeting button (Member only; opens the Create Meeting dialog). |
 | Day group header | Weekday and full date (dd/mm/yyyy), e.g. “Monday 12/10/2026”, with the number of Meetings that day on the right (e.g. “1 meeting”). The current day carries a “Today” badge. |
 | Time column | Planned start time (bold) and planned end time below it (hh:mm), with a dot coloured by the Meeting status. |
 | Meeting title | Name of the Meeting; struck through when the Meeting is Rejected. |
@@ -3164,7 +3165,7 @@ This screen allows any signed-in internal user related to a meeting (Member, App
 
 - View Status History: view the timeline of lifecycle actions with actor and time (UC-15).
 
-- Navigate Detail Tabs: switch to the Participants, Meeting Content (agenda), Documents, Voting, Recordings, Summary and Minutes tabs.
+- Navigate Detail Tabs: switch to the Participants, Meeting Content (agenda), Documents, Voting, Recordings and Minutes tabs.
 
 On the screen, s/he can also:
 
@@ -3184,7 +3185,7 @@ Field Description
 | Action buttons | Change with status and role: Draft/Rejected – Edit and Submit for approval (Member); Pending Approval – Reject and Approve (assigned Approver); Approved – Publish (Member); Published – Reschedule (Member) and Start meeting (Chair or Secretary); In Progress – red End meeting (Chair), which asks for confirmation and remains available with open Votes or incomplete attendance. Buttons the user may not use are hidden. |
 | Lifecycle bar | Read-only steps Draft · Pending Approval · Approved · Published · In Progress · Ended; the current step is highlighted. |
 | Attendance question | Bar under the lifecycle bar and above the tabs, with the buttons Attend and Not attending. Shown only while the server says the user may answer: the user has a current invitation, is not the Chair, has not answered, and the Meeting is Published. From InProgress on, the detail no longer asks (attendance takes its place); the server still accepts an answer in InProgress. One click sends the answer; the bar then disappears and the response chip appears beside the title. There is no way to change the answer. Choosing Not attending adds “The meeting no longer appears on your calendar.” to the toast. Messages: MSG105 (recorded), MSG154 (same answer again), MSG285 (already answered), MSG286 (Chair), MSG107 (no longer answerable). (UC-31, BR-046, BR-047, BR-048) |
-| Tabs | General Information (selected), Participants, Meeting Content, Documents, Voting, Recordings, Summary, Minutes. The Recordings tab stays locked until the Meeting starts (“Opens when the meeting starts”) and the Minutes tab until it has Ended (“Opens when the meeting ends”); a Cancelled Meeting locks both (“The meeting was cancelled”). The Secretary collecting voice samples keeps Recordings open before the start. |
+| Tabs | General Information (selected), Participants, Meeting Content, Documents, Voting, Recordings, Minutes. The Recordings tab stays locked until the Meeting starts (“Opens when the meeting starts”) and the Minutes tab until it has Ended (“Opens when the meeting ends”); a Cancelled Meeting locks both (“The meeting was cancelled”). The Secretary collecting voice samples keeps Recordings open before the start. |
 | Time | Read-only planned date and time range of the Meeting; once the Meeting has started, the actual start/end times are also shown (UC-15). |
 | Mode / Location | Read-only: In-person / Online / Hybrid and the in-person location (e.g. “Room 2.1, floor 2”). |
 | Online link | Read-only external link, or “TrustCabinet online meeting room” when the internal online room is used. |
@@ -3193,7 +3194,8 @@ Field Description
 | Approver | Read-only name of the assigned Approver; shows “Chosen when submitting for approval” before submission. |
 | Description | Read-only multi-line text. |
 | Readiness checklist | Shown to the Member while Draft or Rejected. Each item is marked Complete (green) or Missing (amber) with a hint where to fix it: time, mode and location set (required for submission); Secretary assigned; Chair assigned (“assigned by the Secretary on the Participants tab”); number of Meeting Content items. Chair and Secretary are mandatory at publication (BR-021). |
-| History | Read-only timeline of lifecycle actions, e.g. “Draft created – Nguyen Minh Anh · 09/10 15:02”, followed by submission, approval/rejection (with reason), publication, rescheduling, start and end, each with actor and time. History records cannot be changed (BR-022, BR-023). |
+| History | Read-only card “Status history” in the right column, which stays on every tab of the detail page: the timeline of lifecycle actions, e.g. “Draft created – Nguyen Minh Anh · 09/10 15:02”, followed by submission, approval/rejection (with reason), publication, rescheduling, start and end, each with actor and time. History records cannot be changed (BR-022, BR-023). |
+| Notes card | Card under Status history, shown to the Chair and the Secretary while the Meeting is In Progress or Ended: “Open notes” for the Secretary, “View notes” for the Chair (UC-28). |
 | Error states | A missing or inaccessible Meeting shows a not-found page without revealing whether it exists (BR-016, BR-017); load failure shows MSG37 “Unable to load meeting details. Please try again.” |
 
 #### 4.6 Submit Meeting for Approval
@@ -3388,7 +3390,7 @@ Field Description
 | Message | “‹Meeting name› will end and cannot be reopened. The online room closes and everyone is disconnected.” For an In-person Meeting the sentence about the online room is left out. |
 | Cancel | Secondary button; closes the dialog. |
 | End meeting | Red button; shows MSG111. Open Votes, unmarked attendance and pending Agenda Items do not block the end; if the actor is no longer the Chair or the Meeting is no longer In Progress, MSG114 is shown. (BR-025, BR-026) |
-| Notes card | On the General Information tab of an In Progress Meeting: “View notes” for the Chair, “Open notes” for the Secretary. |
+| Notes card | Card in the right column under Status history, on every tab of an In Progress or Ended Meeting: “View notes” for the Chair, “Open notes” for the Secretary (UC-28). |
 
 ### 5. FE-05 – Agenda Management
 
@@ -3421,7 +3423,7 @@ Field Description
 | Field Name | Description |
 | --- | --- |
 | Meeting header | Read-only: back link “‹ Meetings”, meeting title with status chip (e.g. Draft, In Progress) and confidentiality chip (e.g. Normal); second line: planned date and time and mode · location (e.g. “Thursday, 15/10/2026 · 08:30–09:30 · Hybrid · Room 2.1, floor 2”). |
-| Tabs | Meeting Content is selected. Other tabs: General Information, Participants, Documents, Voting, Recordings, Summary, Minutes. |
+| Tabs | Meeting Content is selected. Other tabs: General Information, Participants, Documents, Voting, Recordings, Minutes. |
 | Add content | Primary button; opens the Add / Edit Agenda Item Drawer. Visible only to the assigned Secretary and only while the Meeting is Draft, WaitingApproval, Rejected, Approved, Published or InProgress (BR-058, BR-059). |
 | Drag handle | Shown on every row, including Done Items, to the active assigned Secretary while Agenda planning is permitted. Items of any execution status can be reordered; the new order is saved as one change (UC-23d). MSG63 confirms success; MSG143 reports invalid or outdated order; MSG71 reports a save failure. |
 | # (Order number) | The saved position of the Item in the Meeting agenda. Deleting a Pending Item does not renumber remaining positions; gaps are permitted. New Items are appended after the last position. |
@@ -3549,7 +3551,7 @@ Field Description
 | Field Name | Description |
 | --- | --- |
 | Meeting header | Read-only: back link “‹ Meetings”, meeting title with status chip (e.g. Draft, In Progress) and confidentiality chip (e.g. Normal); second line: planned date and time and mode · location (e.g. “Thursday, 15/10/2026 · 08:30–09:30 · Hybrid · Room 2.1, floor 2”). |
-| Tabs | Participants is selected. Other tabs: General Information, Meeting Content, Documents, Voting, Recordings, Summary, Minutes. |
+| Tabs | Participants is selected. Other tabs: General Information, Meeting Content, Documents, Voting, Recordings, Minutes. |
 | Search | Text input, optional, empty by default; filters the roster by full name or email. |
 | Invite external guest | Secondary button; opens the Add Participant Dialog on the External guests tab. Secretary only. |
 | Add participants | Primary button; opens the Add Participant Dialog. Shown to the Secretary; when the Meeting has no Secretary it is replaced for the Member by “Add Secretary” (BR-036, BR-037). Hidden while the Meeting is Pending Approval or Ended (BR-036, BR-037, BR-016, BR-017, BR-030). |
@@ -3761,7 +3763,7 @@ Field Description
 | Field Name | Description |
 | --- | --- |
 | Meeting header | Read-only: back link “‹ Meetings”, meeting title with status chip (e.g. Draft, In Progress) and confidentiality chip (e.g. Normal); second line: planned date and time and mode · location (e.g. “Thursday, 15/10/2026 · 08:30–09:30 · Hybrid · Room 2.1, floor 2”). |
-| Tabs | Documents is selected. Other tabs: General Information, Participants, Meeting Content, Voting, Recordings, Summary, Minutes. |
+| Tabs | Documents is selected. Other tabs: General Information, Participants, Meeting Content, Voting, Recordings, Minutes. |
 | Grouping | Segmented control: By meeting content (default), Voting and General documents; each segment shows its number of documents, a document counted once even when it is under several items (UC-35a). On a phone the labels shorten to “Content” and “General”. |
 | Agenda Item block | Collapsible block per Agenda Item, numbered by its place in the agenda list rather than the stored position, with title and number of documents; a block that has documents is open and an empty one is folded. Tooltip: “A document can be attached to several items.”. |
 | Attach to item | Paperclip button on each Agenda Item block, Chair and Secretary only, tooltip “Add documents to this item”; opens the Add Document to Meeting Dialog (7.4) for that item, with the sources In the meeting, From the computer and From my library (UC-36b). |
@@ -4061,43 +4063,40 @@ Field Description
 
 Figure 68: Meeting Detail – Recordings Tab
 
-The Meeting Detail – Recordings tab is the media library of a meeting. TrustCabinet never records meetings itself: after the meeting has Ended, the Secretary uploads the audio file(s) recorded outside the system, the system transcribes each file and shows the speaker-attributed transcript here, and the Secretary then generates the meeting summary from it. Authorized users of the meeting can view the media library and play the audio; the transcript and the upload controls are available only to the assigned Secretary (UC-51a, UC-51b, UC-52, UC-54, UC-55, UC-58).
+The Meeting Detail – Recordings tab holds the audio of a Meeting and its speaker-attributed transcript. Audio comes from the room microphone that the Secretary records (9.3), from the microphone of each participant in the online room, or from a file recorded elsewhere that the Secretary uploads (9.2); the system also builds a Combined recording that lines up the room microphone and every online microphone by real time. Each recording is transcribed in-house and its sentences are shown by time and speaker. Everyone who may view the Meeting listens and reads here; uploading, correcting the transcript and deleting are for the assigned Secretary (UC-51a, UC-51b, UC-52, UC-54, UC-55).
 
-This screen allows the Secretary to:
+This screen allows everyone who can view the Meeting to:
 
-- View Media Library: see the audio files uploaded for the meeting with duration, size and uploader (UC-51a).
+- Listen to Meeting Audio: play the whole Meeting or one recording, from any sentence (UC-51a, UC-51b).
 
-- Upload Meeting Audio: drag and drop an audio file or click “Choose file” to open the Upload Audio Dialog (UC-52).
+- View Speaker-Attributed Transcript: read the sentences with time, speaker and text, and show the turns of one speaker only (UC-54).
 
-- View Processing Status: see whether the transcript of a file is being processed, processed or failed, and reprocess a failed file (UC-54).
+- View Recordings: see each recording with its source, transcription status, size and save time (UC-51a).
 
-- View Speaker-Attributed Transcript: read the transcript segments with time, speaker and text (UC-54).
+On the screen, the Secretary can also:
 
-- Correct Speaker Attribution: change the speaker of a segment directly in its dropdown (UC-55).
+- Upload Meeting Audio: click “Upload file” to open the Upload Audio Dialog (UC-52).
 
-- Generate Meeting Summary: click “Generate summary from transcript” to have AI create a draft summary (UC-58).
+- Correct Transcript: edit the text of a sentence, exclude it from the minutes or delete it (UC-55).
 
-On the screen, s/he can also:
-
-- Open the Full Transcript Editor: go to the Speaker-Attributed Transcript screen to play the audio, search, edit text and assign unknown speakers (UC-51b, UC-54, UC-55).
-
-- Navigate Detail Tabs: switch to the other meeting detail tabs.
+- Delete Recording: delete a recording after confirming.
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
 | Meeting header | Back link “‹ Meetings”, meeting title with status chip (e.g. Ended) and confidentiality chip (e.g. Normal); second line: actual time and date “08:32–09:41 · 15/10/2026” and mode · location “Hybrid · Room 2.1, floor 2”. |
-| Tabs | General Information, Participants, Meeting Content, Documents, Voting, Recordings (selected), Summary, Minutes. |
-| Transcript panel header | “Transcript · hop-sprint6.m4a”: the file whose transcript is shown, with a processing status chip: Processing, Processed (green) or Failed with a “Reprocess” button. |
-| Transcript segment | One row per segment: start time (hh:mm:ss, e.g. 00:00:12), speaker dropdown and the transcribed text. Transcription runs on the uploaded file after upload; there is no real-time transcription and no translation. |
-| Speaker dropdown | Lists the meeting’s internal participants and Guests; changing it re-assigns that segment (UC-55). A voice not yet identified is shown as “Speaker 3” with an amber border. |
-| Transcript footer | Read-only: “Segments 1–5 of 214” and “Last edited 15/10 10:20”. |
-| Upload drop zone | Dashed area “Drag and drop an audio file here”, hint “MP3, M4A, WAV · up to 300 MB”, button “Choose file” that opens the Upload Audio Dialog. Shown only to the Secretary and only after the meeting has Ended (UC-52). |
-| Uploaded files | Media library list; each file shows the name (e.g. hop-sprint6.m4a) and “1 h 09 min · 64 MB · Do Hai Yen” (duration · size · uploaded by) (UC-51a). Audio files only – the system stores no video. |
-| Rejected file message | Red inline box for a file that failed validation, e.g. “ghi-am-phong.wma: unsupported format. Choose an MP3, M4A or WAV file.”; files over 300 MB are rejected in the same way. The user can choose another file. |
-| Generate summary from transcript | Primary button, enabled when at least one transcript is Processed. Sends the edited transcript to the AI provider to create a Draft summary and opens the Meeting Summary tab (UC-58). |
-| Visibility rule | Other authorized users of the meeting (Member, Approver, Chair, Participant, System Admin) see only the media library and can play the audio (UC-51a, UC-51b); the transcript, upload and summary actions are shown only to the assigned Secretary. |
+| Tabs | General Information, Participants, Meeting Content, Documents, Voting, Recordings (selected), Minutes. The right column keeps the Status history and, for the Chair and the Secretary, the Notes card. |
+| Meeting recording | Card over the sentences of the whole Meeting, with an icon button that downloads the transcript as a .txt file. |
+| Player | Back, play/pause, forward and playback speed (1×), elapsed and total time (e.g. 0:00 / 1:09:12) and a waveform. Every sentence can also be played on its own. |
+| Speakers | “Speakers n”: one box per speaker with a coloured dot, the name and an “n turns” button that shows only that speaker’s sentences; “Clear filter” shows all again. |
+| Transcript sentence | Start time, speaker name in the speaker’s colour, a play button with the length of the sentence, and the text. A sentence corrected by the Secretary is marked “edited”, with who corrected it in a tooltip. A voice the system is not sure of carries the suggestion “Could be <name>”. Transcription runs on the recorded audio; there is no translation. |
+| Sentence actions | Secretary only: Edit text; Exclude from minutes, which can be restored; Delete sentence, which removes the sentence and its audio from the Meeting after confirmation (UC-55). |
+| Recordings | Card listing each recording: file name, source chip — Room mic, Combined (“The room mic and the mic of each online participant, lined up by real time for listening back.”) or the microphone of one participant — transcription status Waiting for transcription, Transcribing, Transcribed or Transcription failed, size and save time; further details in an (i) tooltip. Audio only – the system stores no video. |
+| Recording actions | Listen and view the transcript (expands the row); Download MP3 when the user may export the Meeting’s audio; Delete recording for the Secretary, after confirmation. |
+| Upload file | Button, shown only to the Secretary while the Meeting takes uploads; opens the Upload Audio Dialog (9.2) for a file recorded outside the system (UC-52). |
+| Empty state | “No recordings yet.” with the hint to turn on the room microphone or upload a recorded file. |
+| Visibility rule | Everyone who may view the Meeting listens to the recordings and reads the transcript (UC-51a, UC-51b); uploading, correcting sentences and deleting are shown only to the assigned Secretary. |
 
 #### 9.2 Upload Audio Dialog
 
@@ -4172,7 +4171,7 @@ Field Description
 | Field Name | Description |
 | --- | --- |
 | Page header | Title “My voice” with the note “Voice ID helps the Secretary know who is speaking in the transcript of meetings you attend.” |
-| Consent card | Shown before consent: the notice (purpose, data kept, rights, sensitive data), an unticked checkbox and “Turn on Voice ID”, enabled only once ticked. MSG305 after consent. |
+| Consent card | Shown before consent: the notice written in the first person — Purpose, Who records, What is kept, Where it is used, My rights and Data controller — an unticked checkbox and “Turn on Voice ID”, enabled only once ticked. Before consent the page shows only this card, without tabs. MSG305 after consent. |
 | Tabs | “Recorded by me” and “Recorded for me by others”, each with its count. |
 | Notice changed | Yellow banner when the notice version changed: open it to read and accept again. |
 | Voice samples | Card with the status chip On, the date since, the count n/5 and a tip to record one more sample; each sample has Play and Delete (MSG311). |
@@ -4185,72 +4184,75 @@ Field Description
 
 Figure 72: Speaker-Attributed Transcript
 
-The Speaker-Attributed Transcript screen is the transcript editor inside the Recordings tab, used by the Secretary after the system has transcribed an uploaded audio file. The transcript is split into timed segments; the system separates the voices as “Speaker 1, 2, …” and may suggest a name for each voice, but never assigns a person by itself: the Secretary confirms the suggestion or assigns each unknown voice to a person from the meeting attendee list – once for all segments of that voice – and corrects the wording before generating the summary. There is no real-time transcription and no translation (UC-51b, UC-54, UC-55, UC-58).
+The Speaker-Attributed Transcript opens under a recording on the Recordings tab once the system has transcribed it. The transcript is split into timed sentences grouped into turns; the system separates the voices as “Speaker 1, 2, …”, suggests a name when a voice matches a consented voice sample, and fills the name in by itself only when the match is clear. The Secretary names each voice from the attendee list – once for all sentences of that voice – corrects the wording and can transcribe the recording again. Everyone who may view the Meeting reads the transcript and listens to it. There is no real-time transcription and no translation (UC-51b, UC-54, UC-55).
 
-This screen allows the Secretary to:
+This screen allows everyone who can view the Meeting to:
 
-- Select Audio File: choose which uploaded file’s transcript to work on (UC-54).
+- Play Meeting Audio: play the whole file, or the whole Meeting for the Combined recording, skip 5 seconds back or forward, change the speed, or click a sentence to listen from it (UC-51b).
 
-- Play Meeting Audio: play, pause and seek the audio, or click a segment time to listen to exactly that segment (UC-51b).
+- View Speaker-Attributed Transcript: read the turns with start time, speaker and text, and download the transcript as a .txt file (UC-54).
 
-- View Speaker-Attributed Transcript: read the segments with start time, speaker and text, and search the transcript (UC-54).
+On the screen, the Secretary can also:
 
-- Edit Transcript Text: click a segment to correct its text (UC-55).
+- Name a Voice: choose a person for a speaker, once for all sentences of that voice; accept the suggested name or remove it (UC-55).
 
-- Assign Speaker: confirm the name the system suggests for a voice, assign an unknown voice to an attendee for all of its segments, or change the speaker of a single segment (UC-55).
+- Change Speaker of One Sentence: give a single sentence another speaker (UC-55).
 
-- Generate Meeting Summary: click “Generate summary” to create the AI draft summary from the edited transcript (UC-58).
+- Edit Transcript Text: click a sentence to correct its text; Enter saves, Esc cancels (UC-55).
+
+- Delete Turn: delete the audio and text of a turn for good, after confirming.
+
+- Transcribe Again: run the transcription again, e.g. after a voice sample was enrolled; corrected text and names are kept where the new transcript still matches (UC-54).
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Audio file selector | Dropdown listing the uploaded audio files of the meeting, e.g. “hop-sprint6.m4a”; default the latest file. |
-| Processing status chip | Processing / Processed / Failed. Editing is possible only when the file is Processed. |
-| Search in transcript | Text input; filters or highlights segments containing the keyword. |
-| Generate summary | Primary button; sends the current edited transcript to the AI provider and opens the Meeting Summary tab with a new Draft (UC-58). |
-| Audio player | Play/pause button, current position (e.g. 00:14:02), seek bar and total duration (e.g. 01:09:12) (UC-51b). |
-| Segment time | Start time of the segment (hh:mm:ss); clicking it moves the player to that point and plays it. The segment being played is highlighted. |
-| Speaker dropdown | Per segment; lists the meeting’s internal participants and Guests. Changing it affects only that segment. A name the system filled in automatically is shown as assigned and marked as filled in by the system, and the Secretary may change or clear it. An unassigned voice is shown as “Speaker 3” with an amber border (UC-55). |
-| Segment text | Transcribed text; click to edit inline, saved when leaving the field. The last-edit time is updated (UC-55). |
-| Assign “Speaker 3” card | Opened when an unassigned voice is selected; hint “Choose from the attendee list. Applies to all segments of this voice (12 segments).” Radio list of attendees, e.g. “Ngo Thanh Van · guest”, “Pham Duc Long”, “Le Thu Ha”; one must be selected. |
-| Assign to 12 segments | Primary button; assigns the selected attendee to every segment of that voice in one step and refreshes the transcript (UC-55). |
-| Visibility rule | Viewing and editing the transcript is limited to the assigned Secretary of the meeting (permission matrix, Transcript – View / Edit). |
+| Recording row | The recording on the Recordings tab, opened with “Listen and view the transcript”: file name, source chip, transcription status chip (e.g. Transcribed), length, size and save time. |
+| Transcription status | While waiting or running: “Waiting for a transcription slot” and a progress line with the time already spent. On failure: “Could not transcribe: <reason>” with Run again (Secretary). A recording without speech says “No speech was heard in the recording.” |
+| Audio player | Listen to the whole file (the whole Meeting for the Combined recording), back 5 seconds, play/pause, forward 5 seconds, playback speed, volume and mute, and a position bar with the current and total time (UC-51b). |
+| Machine label | Chip “Speech recognition” with the hint “Machine-made text may be wrong — click a sentence to listen again.”, and the icon buttons Download transcript (.txt) and Transcribe again (Secretary). |
+| Speakers row | One entry per voice: colour dot, the name or “Speaker N”, and the total speaking time. For the Secretary the name is a dropdown: the best-matching person first (“Best voice match: <name>”), “All <name> (n segments of the same voice)”, the attendees, invited Guests labelled “Guest”, and “Remove name”. A name the system filled in says “Assigned by the system because the voice clearly matches <name>” (UC-55). |
+| Turn | Start time, the speaker’s name with a dropdown “Change the speaker of this sentence only” (Secretary), and the sentences of the turn read as one paragraph; a long turn folds with Open / Collapse this turn. A corrected sentence is marked “edited”, with who corrected it in a tooltip. |
+| Edit text | Secretary: clicking a sentence opens an inline box with Cancel and Save; Enter saves, Esc cancels (UC-55). |
+| Delete turn | Secretary: after confirmation the audio and text of the turn are deleted for good; the other turns keep their corrected text and assigned names. |
+| Transcribe again | Secretary: asks first, then the machine redoes the transcript from the start, e.g. to use a new model or a voice sample just enrolled; corrected text and assigned names are kept on the sentences and voices that still match. |
+| Visibility rule | Everyone who may view the Meeting reads the transcript and listens; naming voices, correcting text, deleting turns and transcribing again are only for the assigned Secretary. Names are suggested only from voice samples given under Voice ID consent (9.4), never for Guests. |
 
 #### 10.2 Meeting Summary
 
 Figure 73: Meeting Summary
 
-The Meeting Summary card on the Minutes tab shows the AI draft of the Meeting's content, written from the Meeting's own record, and the review that makes it usable. The draft always has three sections — I. Objectives and scope of the meeting, II. Discussion and assessment, III. Conclusions and assignments — and is always labelled as written by AI. Only the current Chair and Secretary see and correct it; after they approve it the other participants read it. Correcting it withdraws the approval, and the minutes use only an approved draft. Vote results are copied from the data and are never written by the model; action items stay plain text with no assignee or deadline. There is no publish step (UC-58, UC-59, UC-60, UC-61).
+The Meeting Summary is the “Content draft” card at the top of the Minutes tab: the AI draft of the Meeting’s content, written by the local language model from the agenda, the Votes and the transcript, and the review that makes it usable. The draft always has three sections — I. Objectives and scope of the meeting, II. Discussion and assessment, III. Conclusions and assignments — and is always labelled as written by AI. Only the current Chair and Secretary see and correct it; after they approve it the other participants read it. Correcting it withdraws the approval, and the minutes use the draft as it stands. Vote results are copied from the data and are never written by the model; action items stay plain text with no assignee or deadline. There is no publish step (UC-58, UC-59, UC-60, UC-61).
 
 This screen allows the current Chair and the current Secretary to:
 
-- View Meeting Summary: read the three sections, the label saying the text was written by AI, the model and time, who asked for it, who approved it and who last corrected it (UC-59).
+- View Meeting Summary: read the three sections, each folded to a one-line preview and opened in place, the AI label, the model and time, who approved it and who last corrected it (UC-59).
 
-- Generate Meeting Summary: click “Generate summary”, or “Regenerate” over an existing draft, to queue a new draft from the Meeting's transcript (UC-58). The page asks again every 5 seconds while the AI writes.
+- Generate Meeting Summary: click “Create draft”, or “Regenerate” over an existing draft after confirming, to have the AI write a new draft once the Meeting has Ended (UC-58). The draft appears by itself when the AI has finished.
 
-- Edit Meeting Summary: correct the text of the three sections before approving it (UC-60).
+- Edit Meeting Summary: open a section and correct its text in place, then “Save draft” or “Undo” in the bar at the bottom of the screen (UC-60).
 
-- Approve Meeting Summary: click “Approve draft” to vouch for the content; the other participants can read it from then on (UC-61).
+- Approve Meeting Summary: click “Approve” to vouch for the content; the other participants can read it from then on (UC-61).
+
+- Assign Speaker Names: open “Assign speaker names” to listen to each voice that has no name yet and choose the person, before the draft is written (Secretary).
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Meeting header | Read-only: back link, Meeting title, status chip Ended, confidentiality chip, actual time and place. |
-| AI label | Read-only chip “AI-written — needs review” on every draft, reviewed or not. |
-| Draft status | Read-only: Queued, Running, Ready, Failed with the reason, and an empty state when there is none. |
-| Generate summary / Regenerate | Primary button, shown to the current Chair and Secretary while the Meeting is InProgress or Ended. Queues the request; the earlier draft stays readable while the AI writes, and the page asks again every 5 seconds. |
-| Sections | Three text boxes — I. Objectives and scope of the meeting, II. Discussion and assessment, III. Conclusions and assignments — limited to 2,000, 12,000 and 8,000 characters. |
-| Edit draft | Secondary button on a finished draft; saving withdraws the review. |
-| Save | Saves the three sections and withdraws the review, so the other participants stop seeing the draft until it is approved again. |
-| Approve draft | Secondary button on a finished draft; records the reviewer and the time. From then on everyone who may read the Meeting reads the draft. |
-| Reviewer and editor | Read-only: who approved the draft and when, and who last corrected it and when. |
-| Model and time | Read-only: the model name, the time the draft was written and the person who asked for it. |
-| Sources | Read-only, for each part of section II: the agenda item title and the stretch of the Meeting the part was written from, e.g. “09:12–09:31 · 42 sentences”, to check against the Recordings tab. |
-| What the draft is based on | Read-only, shown to the current Chair and Secretary before asking: sentences recorded, voices not yet named, transcripts running or failed, agenda items and how many were timed, closed votes. |
-| Visibility rule | Read-only note: before approval only the current Chair and Secretary see the draft; after approval everyone who may read the Meeting sees it read-only; correcting it withdraws the approval. |
-| No publish step | No Publish button: the summary is not published outside the Meeting. |
+| Meeting header | Read-only: back link, Meeting title, status chip Ended, confidentiality chip, actual time and place. The right column keeps the Status history and the Notes card. |
+| Draft status | Chip beside the title: Queued, AI writing, Failed (the earlier draft is kept), Not approved (amber) or Approved (green, with who approved it and when in a tooltip). With no draft yet: “No draft yet. Click “Create draft” to have the AI summarise the agenda, the votes and the transcript.” |
+| Create draft / Regenerate | Button for the current Chair and Secretary once the Meeting has Ended. It is blocked, with the reason in a tooltip, while a recording is still being transcribed, when nothing was said in the Meeting or when the AI is not available. Regenerate asks first: the new draft replaces the current one, corrections and approval included. |
+| Readiness notes | Shown before asking: “n recordings are being transcribed; the draft can be created when they finish.”; “n voices without a name will appear as “Speaker N” in the draft.” with the button Assign speaker names; failed transcripts that are left out; agenda items that were never started, so the transcript cannot be split by item. When the transcript was corrected after the draft was written, a line says so with Regenerate. |
+| AI label | Read-only chip “AI-generated content — review required” on every draft, reviewed or not. |
+| Sections | I. Objectives and scope of the meeting, II. Discussion and assessment, III. Conclusions and assignments, each folded to its heading and first line and opened in place; limited to 2,000, 12,000 and 8,000 characters, with a counter and the flag “Too long”. |
+| Sources | Under section II: “From the recording:” with each agenda item and the stretch of the Meeting its part was written from, e.g. “Sprint 5 results: 08:35–08:58”, the number of sentences in a tooltip, to check against the Recordings tab. |
+| Save bar | Appears at the bottom of the screen when a section has changed: “Unsaved changes” with Undo and Save draft. Saving an approved draft asks first, because it withdraws the approval. Approve is blocked until the changes are saved or undone. |
+| Approve | Primary button while the draft is not approved; records the reviewer and the time. From then on everyone who may read the Meeting reads the draft. |
+| Model and editor | Read-only line under the sections: “AI wrote at <time> (<model>), <name> edited at <time>”. |
+| Assign speaker names | Side sheet (Secretary only) listing the voices that have no name, each with a sample sentence to listen to and a choice of person; it ends with Create draft or Regenerate draft. |
+| Visibility rule | Before approval only the current Chair and Secretary see the draft; after approval everyone who may read the Meeting sees it read-only; correcting it withdraws the approval. There is no Publish button: the summary is not published outside the Meeting. |
 
 #### 10.3 Collect Voice Samples for Attendees
 
@@ -4413,33 +4415,39 @@ Field Description
 
 Figure 79: Minutes Editor
 
-The Minutes Editor is the Minutes tab of an InProgress or Ended Meeting as seen by its current Chair or Secretary. The draft is filled from one fixed template — meeting minutes, Form 1.4 of Decree 30/2020/ND-CP — with the Meeting's information, attendance, each agenda item's recorded conclusion, the Vote results and conclusions, and the three sections of the approved AI draft when there is one. The Secretary edits the HTML text in the word-processor editor with a live preview of the paper, saves explicitly, and downloads the same text as a Word file; the minutes of a Secret Meeting cannot be downloaded. The Secretary sends the finished minutes to the Chair for approval (UC-72); the Chair approves and issues them (UC-73), or returns them with a reason (UC-74).
+The Minutes Editor is the Minutes tab of an InProgress or Ended Meeting as seen by its current Chair or Secretary. It has two cards. “Content draft” holds sections I–III that the local language model writes from the transcript, for the Chair or the Secretary to review and approve. “Minutes” is filled from one fixed template — meeting minutes, Form 1.4 of Decree 30/2020/ND-CP — with the Meeting’s information, attendance, each agenda item’s recorded conclusion, the Vote results and conclusions, and the content draft as it stands; a notice warns when that draft is not approved yet. The text is edited in a word-processor editor and saved explicitly; the Secretary sends the minutes to the Chair for approval (UC-72); the Chair approves and issues them (UC-73), or returns them with a reason (UC-74). The right column keeps the Status history and the Notes card.
 
 This screen allows the current Chair and the current Secretary to:
 
-- View Meeting Minutes: read the latest revision as the paper that will be printed, with its revision number, status and last save time (UC-69).
+- View Content Draft: read the AI draft of sections I–III, each folded to a one-line preview, with its review state and who wrote and edited it when (UC-59).
 
-- Generate Meeting Minutes: click “Create minutes”, or “Fill from meeting data” over an existing draft, to fill the fixed template from the Meeting's records and the approved AI draft (UC-70).
+- Generate Content Draft: click “Create draft”, or “Regenerate” over an existing draft after confirming, to have the AI write sections I–III from the transcript (UC-58).
 
-- Edit Meeting Minutes: correct the text in the word-processor editor; the preview on the right follows the text (UC-71).
+- Approve Content Draft: click “Approve” so that other readers see the draft and the minutes can use it (UC-61).
 
-- Save: click “Save” to save the text; the draft is not saved automatically.
+- View Meeting Minutes: read the latest revision as the paper that will be printed, with its status and last save time (UC-69).
 
-Download Word: click “Download Word” to save a Word file named after the Meeting; not available for a Secret Meeting (UC-71).
+- Generate Meeting Minutes: click “Create draft minutes”, or “Rebuild” over an existing draft, to fill the fixed template from the Meeting’s records and the content draft (UC-70).
+
+- Edit Meeting Minutes: click “Edit” to correct the text in the word-processor editor, then Save or Cancel (UC-71).
+
+- Download: open “Download” to save the minutes as a Word or PDF file; not available for a Secret Meeting (UC-71).
+
+- Submit for Approval: the Secretary clicks “Submit for approval” to send the minutes to the Chair (UC-72).
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
 | Meeting header | Read-only: Meeting title, status chip, confidentiality chip, actual time and place. |
-| Template | Read-only: one fixed template, meeting minutes, Form 1.4 of Decree 30/2020/ND-CP. There is no template chooser. |
-| Status and revision | Read-only: revision number, status Draft, who created the minutes and when, and when they were last saved. A correction that is not issued yet is labelled “Correction · draft / waiting for approval / returned”. |
-| Create minutes / Rebuild | Button; fills the template from the Meeting's records and the approved AI draft. Building again replaces all corrections after confirmation, and is not offered once the minutes are submitted or issued. |
-| HTML editor | Word-processor area: toolbar with paragraph style, font size, colour, alignment, lists, tables, page break, find and replace; switches to a plain-text view and back, and the preview follows the text. The server filters the HTML before saving. Template marks: “## ” section heading, “### ” sub-heading, “@@ left \| right” two-column line, “**bold**”, “- ” bullet, “^ ” centred and “~ ” small line. |
-| Preview | Read-only paper that follows the text as it is typed and is laid out as it will print: heading, two-column opening, sections I–III, closing line and the Secretary and Chair name block with space to sign the printed copy by hand. |
-| Save | Saves the text with the time the draft was read. If someone else saved first, the page says so and the newer text is not overwritten. |
-| Download Word | Downloads a Word file, named after the Meeting, built from the same text. Not available for a Secret Meeting, where the minutes are read on the screen only. |
-| Visibility rule | Read-only note: only the current Chair and Secretary see and correct a draft; everyone else sees the minutes only after they are issued; someone who is neither receives no draft at all. |
+| Content draft | Card titled “Content draft” with the chip Not approved (amber) or Approved (green) and the label “AI-generated content — review required”. Sections I. Purpose and scope of the meeting, II. Discussion and assessment and III. Conclusions and assignments are folded, each with a one-line preview, and open on click. Footer: “AI wrote at <time> (<model>), <name> edited at <time>”. |
+| Approve / Create draft / Regenerate | Buttons of the Content draft card. Approve is shown while the draft is not approved. Create draft writes the first draft; Regenerate asks before overwriting the current one (UC-58, UC-61). |
+| Assign speaker names | Button that opens a side sheet to put a name on each voice the transcript could not identify. |
+| Minutes | Card titled “Minutes” with the status chip Draft, Waiting for approval, Returned or Issued; a correction that is not issued yet is labelled “Correction · draft / waiting for approval / returned”. With more than one revision, a version dropdown chooses the revision to read. |
+| Minutes toolbar | In order: Download ▾ (Word, PDF; hidden for a Secret Meeting), Rebuild, Edit and Submit for approval. Rebuild fills the template again from the Meeting’s records and the content draft and replaces all corrections after confirmation; it is not offered once the minutes are submitted or issued. With no minutes yet only “Create draft minutes” is shown. |
+| Paper | Read-only page laid out as it will print: the two-column heading (agency and national motto), the title “MINUTES”, sections I–III, the closing line and the Secretary and Chair name block with space to sign the printed copy by hand. Footer “Last saved <time>”. With no AI draft the card notes “There is no AI draft, so sections I–III are empty.” |
+| Editor | Edit replaces the paper with the word-processor editor: paragraph style, font size, colour, alignment, lists, tables, page break, find and replace; Cancel and Save, with no auto-save. The server filters the HTML before saving. If someone else saved first, the page says so and the newer text is not overwritten. |
+| Visibility rule | Only the current Chair and Secretary see and correct a draft; everyone else sees the minutes only after they are issued, and the content draft only once it is approved. |
 | Task note | Read-only: “2. Tasks, deliverables and deadlines” is text in the minutes; no assignee, due date or progress is tracked. |
 
 #### 12.2 Finalized Meeting Minutes
@@ -4493,11 +4501,12 @@ Field Description
 | Panel header | Title with “n new” chip = unread count. Opening the panel does not change any read status. |
 | Mark all as read | Link button; applies to all unread notifications of the user, including those not displayed (BR-033, BR-034); with no unread items the count simply stays 0. |
 | Notification icon | Icon at the left of each item indicating the event type. |
-| Notification title | Event name, e.g. Meeting published, Meeting approved, Meeting rejected; shown bold while unread. |
+| Notification title | Event name, e.g. Meeting published, Meeting approved, Meeting rejected, Meeting starting soon, Meeting cancelled automatically; shown bold while unread. |
 | Notification message | Detail text including the meeting name, e.g. “You are invited to the meeting ‘Q4 Board of Directors meeting’.” |
-| Time | Relative time, e.g. “51 minutes ago”, “3 hours ago”, “Yesterday”. |
+| Time | Relative for recent items, e.g. “51 minutes ago”, “3 hours ago”; “Yesterday at 08:15”; older items show the full time, e.g. “09:14 12/10/2026”. |
 | Unread indicator | Blue dot and tinted background on unread items; removed when the item is read. Marking an already-read item leaves the count unchanged. |
 | Notification item (click) | Marks the item as read if unread and opens the linked meeting after re-checking the user’s access; protected content is not shown if access is denied (BR-016, BR-017, BR-033, BR-034). A failure to save the read status does not block opening an authorized meeting. |
+| View older notifications | Link at the end of the list; loads the next page of older notifications. |
 | Messages | MSG40 “Unable to load notifications. Please try again.”; MSG39 “The requested notification page is unavailable.” |
 
 #### 13.2 Meeting Invitation Email
@@ -4535,30 +4544,31 @@ Field Description
 
 Figure 83: Reports & Statistics
 
-The Reports & Statistics screen is reached from Reports in the sidebar. It shows key figures on Meetings for a selected period, a monthly chart and a breakdown by Meeting status, and exports the same report as an Excel file. Every signed-in internal user sees only the Meetings they may read, the System Admin as for anyone else (BR-149, BR-150, PO 09/11/2026 Q1). (UC-79a, UC-79b).
+The Reports & Statistics screen is reached from Reports in the sidebar. For a period of months it shows the key figures of the Meetings the user may read and a query table that counts one kind of data, grouped one way, and it exports that table as an Excel file. Every signed-in internal user sees only the Meetings they may read, the System Admin as for anyone else (BR-149, BR-150, PO 09/11/2026 Q1). (UC-79a, UC-79b).
 
 This screen allows the System Admin, Member, Approver, Chair, Secretary and Participant (within their own scope) to:
 
-- View Reports & Statistics: view the key figures, the meetings-per-month chart and the status breakdown for the selected period (UC-79a).
+- View Key Figures: view the seven key figures for the selected period (UC-79a).
+
+- Query Report Table: choose the data, the grouping, how many groups to show and the filters, and sort by any column (UC-79a).
 
 - Change Report Period: pick a start and end month; all figures are recalculated (UC-79a).
 
-- Export Report: click “Export Excel” to download the report for the current period as an Excel file (UC-79b).
+- Export Report: click “Export Excel” to download the current table as an Excel file (UC-79b).
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Page header | Title “Reports & Statistics” with the period covered, e.g. “Data 05/2026 – 10/2026”. |
-| Period | Month pickers (From month, To month), required; the start month must not be after the end month, at most 24 months. A Meeting belongs to the month of its planned start. (BR-149, BR-150) |
-| Export Excel | Button; downloads the report for the current period and scope as an Excel file (UC-79b). |
-| Meetings | KPI tile: number of Meetings in the period, e.g. 75. |
-| Attendance rate | KPI tile: share of invitees recorded Present in attendance of Ended Meetings, e.g. 87%; based on attendance, not on invitation responses (BR-043). Unmarked invitees are not Absent; display an unmarked count so incomplete attendance is visible. |
-| Average duration | KPI tile: average meeting duration in minutes with one decimal, from the actual start to the actual end; meetings missing either time are left out, e.g. 95.5 (BR-151). |
-| Average turnaround | KPI tile: average time in hours from the actual end of a Meeting to the first issue of its minutes, e.g. 30.5 (BR-151). |
-| Meetings per month | Bar chart, one bar per month of the period (T5…T10) with the value above each bar; the current, incomplete month is drawn lighter with the note “October counted up to the 14th.” |
-| By status | Table with columns Status (chip, e.g. Ended, Published, Pending Approval, Draft), Count and % of all Meetings in the period. |
-| Scope and errors | Figures and exports include only Meetings the user may access, for the System Admin as for anyone else (BR-149, BR-150). If statistics cannot be loaded or the export fails, an error message with a retry option is shown and no file is produced. |
+| Page header | Title “Reports” with the primary button “Export Excel” (“Exporting…” while working), which downloads the current table for the period and scope as an Excel file (UC-79b). |
+| Period | “From [month] to [month]” month pickers, required; by default the 12 months up to the current month. The start month must not be after the end month, at most 24 months (MSG463). A Meeting belongs to the month of its planned start. The time the figures were read is shown on the same line, e.g. “Data at 14:52 26/10/2026”. (BR-149, BR-150) |
+| Key figures | One card of seven figures: Held · Upcoming · Cancelled · Attendance rate · Passed (out of n Votes) · Minutes issued (n waiting for approval) · Recording hours (n transcribed). A figure with no data shows “None yet”. The attendance rate counts invitees recorded Present in attendance of Ended Meetings, not invitation responses (BR-043). |
+| Data | Dropdown: Meetings (default), Attendees, Votes, Documents, Minutes, Recordings. |
+| Group by | Dropdown that depends on the data, e.g. Month, Chair or Creator for Meetings; Person, Role, Attendance or Response for Attendees. |
+| Show | Dropdown: All, or only the first n groups. |
+| Filters | Meeting status, Mode and Confidentiality, plus filters of the chosen data (e.g. Role and Attendance for Attendees); “Clear filters” appears while a filter is applied. |
+| Result table | Columns #, the group and the counts of the chosen data — for Meetings: Meetings, Held, Cancelled, Meeting hours, Attendance rate — with a horizontal bar for the sorted column and a Total row. Click a column heading to sort. |
+| Scope and errors | Figures and exports include only Meetings the user may access, for the System Admin as for anyone else (BR-149, BR-150). With no readable Meeting in the period the table shows MSG466 “There are no meetings you can view in this period.”; with nothing to count, “No data in this period.” If statistics cannot be loaded or the export fails, an error message is shown and no file is produced. |
 
 ### 15. FE-15 – Working Calendar & Meeting Time Search
 
@@ -4668,9 +4678,9 @@ Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Week navigation | This week, previous, next and the date range; the working hours on the right, e.g. 08:00 – 17:00. |
-| People | One coloured chip per person; click to show or hide. A stopped share keeps its chip with “Stopped” and no hours; opening it shows MSG439. |
-| Week grid | Hours × 7 days; busy blocks coloured by person. Days outside a share’s period show “?” (unknown), never as free. |
+| Week navigation | Today, previous, next and the date range, with an (i) tooltip “Only busy hours are shown, never a meeting’s name or content. Secret meetings are never shown.” |
+| People | One bordered chip per person above the grid: colour, name and the shared level · until date; click to show or hide. A stopped share keeps its chip with “Stopped” and no hours; opening it shows MSG439. |
+| Week grid | Vertical hour grid × 7 days, as in the work calendar; each busy block sits at its real time in the person’s colour, and two people busy at the same time are drawn side by side. Days outside a share’s period are greyed and labelled “Unknown”, never shown as free. |
 | Empty state | “Nobody shares a calendar with you yet.” with Request calendar. On a phone one day is shown at a time. |
 
 #### 15.6 Find Meeting Time
@@ -4696,7 +4706,7 @@ Field Description
 | Date range / Weekdays | Starts today, at most 31 days long and 365 days ahead; weekday toggles Mon–Sun. |
 | Working hours / Avoid lunch break | Start–end time; optional lunch break range. |
 | Meeting buffer (i) / Round start time | Buffer kept before and after every busy period: none, 15, 30, 45 minutes, 1–4 hours (default 30 minutes). Rounding: 5, 10, 15, 30 minutes, 1 or 2 hours. |
-| Main attendees | Required; at most 10 people besides the user. Each row shows the shared level, or “Calendar not shared” with Request calendar sharing. Chips “+ Name” add people who share with the user. |
+| Main attendees | Required; at most 10 people besides the user, counted next to the label (e.g. 3/10). Each row shows the shared level, or “Calendar not shared” with Request calendar sharing. Chips “+ Name” add people who share with the user. |
 | Include my calendar | Checkbox, unticked by default. |
 | Find | Button (“Finding…” while working); errors in the search values are shown on the fields; MSG448 if the user may no longer create meetings. |
 | Results | Number of slots, then one row of start times per day (at most 200). Choosing a time shows who is Free, Busy or Unknown and the Create draft button. |
