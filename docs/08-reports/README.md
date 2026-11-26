@@ -386,3 +386,7 @@ migration, ERD hoặc class diagram đã được cập nhật.
 
 Nêu file và vùng đã sửa, các kiểm tra bảo toàn nội dung/ảnh đã chạy, kết quả đồng bộ Markdown/Drive
 (nếu được yêu cầu), và giới hạn kiểm tra hiển thị nếu không mở hoặc render DOCX thực tế.
+
+## Ảnh bằng chứng
+
+`evidence/` giữ ảnh chụp cho slide (không phải nguồn báo cáo); xem [evidence/README.md](evidence/README.md).
