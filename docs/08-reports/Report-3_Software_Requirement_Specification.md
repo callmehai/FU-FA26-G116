@@ -88,6 +88,7 @@ Table of Contents
 | 25/11/2026 | M | LocHD | Audio uploads limited to 300 MB with no duration limit; audit log (UC-12) without CSV export or before/after values; the server never records on its own; CPU-only speech worker. |
 | 25/11/2026 | M | LocHD | Email via Resend only (16.3, API-03); features FE-01–FE-15; no Vietnamese or decision-record references; one font size in the permission matrix; entity and UC descriptions rewritten, UC-28 row added; 3.3 and IV checked against the code. |
 | 25/11/2026 | M | KhanhPG | IV.2.3 Audit logging: event list matched to the events the system records; meeting status changes, summary approval, vote closing and rate-limited sign-ins are not audit events (status changes stay in the status history). BR-011: adding or removing a meeting document is not an audit event, deleting a voice sample is; UC-36a POST-1 no longer cites BR-011. |
+| 26/11/2026 | M | LocHD | Participants: additional Meeting permissions removed from the entity table, permission matrix, MSG table and Participants screen; FE-07 intro without dated notes, storage quota stated; 9.4 and 15.4 images fit one page. |
 
 *A - Added M - Modified D - Deleted
 
@@ -286,12 +287,6 @@ An internal user on a Meeting's roster, with the meeting role, the invitation re
 | 9 | RemovedAt | timestamptz |  | Yes | Date and time the participant was removed from the meeting. |
 | 10 | AttendanceRecordedById | uuid | FK | Yes | Secretary who saved the official attendance (references User). Empty until recorded. |
 | 11 | AttendanceRecordedAt | timestamptz |  | Yes | Time official attendance was last saved. Empty until recorded. |
-| No | Field | Data Type | Key | Nullable | Description |
-| 1 | Id | uuid | PK | No | Unique identifier of the additional meeting permission. |
-| 2 | MeetingParticipantId | uuid | FK | No | Current internal participant assignment receiving the permission; the permission applies only to that assignment’s Meeting. |
-| 3 | PermissionCode | string |  | No | Identifier from the system-defined Meeting permission catalogue. ViewParticipants and ViewResponses are examples, not the only possible additional permissions. The catalogue and grant matrix have not been finalized. |
-| 4 | GrantedById | uuid | FK | No | Assigned Secretary who granted the additional permission (references User). |
-| 5 | GrantedAt | timestamptz |  | No | Time the additional permission was granted. |
 
 Entity 8: MeetingGuestInvitation
 
@@ -979,7 +974,7 @@ Full = unrestricted  ·  Restricted = conditions apply (see footnotes)  ·  No =
 | Agenda item | View | Full | Restricted ³ | Restricted ³ | Restricted ³ | Restricted ³ | Restricted ³ | Restricted ¹¹: Member rules within the invited Meeting |
 | Agenda item | Create / Update / Delete / Reorder | No | No | No | No | Restricted ⁸ | No | No |
 | Agenda item | Set current / Complete | No | No | No | Restricted ⁹ | No | No | No |
-| Participant | View participants / response status | No | No | No | Full from Published onward | Restricted ³: roster under existing rules; responses from Published onward | Restricted ³: from Published, each view requires its matching additional permission | Restricted ¹¹: from Published, each view requires its matching additional permission |
+| Participant | View participants / response status | No | No | No | Full from Published onward | Restricted ³: roster under existing rules; responses from Published onward | Restricted ³: roster and responses from Published onward | Restricted ¹¹: names and responses from Published onward; other people’s email addresses hidden |
 | Participant | Add participant / Invite Guest | Restricted ³ | Restricted ³ | Restricted ³ | No | Restricted ³ | No | No |
 | Participant | Manage meeting role | No | No | No | No | Restricted ³ | No | No |
 | Participant | Remove participant / Revoke Guest | No | No | No | No | Restricted ³ | No | No |
@@ -1018,7 +1013,7 @@ Full = unrestricted  ·  Restricted = conditions apply (see footnotes)  ·  No =
 | Online meeting room | View room participants / In-room chat | No | Restricted ¹⁹ | Restricted ¹⁹ | Restricted ¹⁹ | Restricted ¹⁹ | Restricted ¹⁹ | Restricted ¹¹ |
 | Online meeting room | Moderate | No | No | No | Restricted ¹⁹ | No | No | No |
 
-Additional Meeting permissions supplement the permissions provided by an existing Meeting role. ViewParticipants and ViewResponses are examples, not a closed set. The final permission catalogue and grant matrix remain to be specified. Guest grants follow the same principle subject to the approved Guest exclusions. (BR-055)
+There are no per-participant additional Meeting permissions: what a participant may do follows from the Meeting role alone. A Guest has the rights of a participant except moderating the room, a personal library and sharing documents. (BR-055)
 
 Notes:
 
@@ -1663,7 +1658,7 @@ Delivery scope: UC-33 attendance is delivered separately from the roster, invita
 
 ### 7. FE-07 – Personal Document Library & Meeting Document Management
 
-15/10/2026: Sixteen detailed Document use cases. UC-36b links an existing Meeting document to an Agenda Item; UC-36d removes only one Item link. Meeting-document reading follows Meeting viewing access. Document additions, removals and Item-link changes stop when the Meeting ends; Agenda Item status does not lock document links. PO follow-up: Meeting documents and comments are read-only after the Meeting ends. Deleting an Agenda Item keeps its documents in the Meeting. Readding a removed document does not restore previous comments. Personal-library quotas remain undecided.
+Sixteen detailed Document use cases. UC-36b links an existing Meeting document to an Agenda Item; UC-36d removes only one Item link. Meeting-document reading follows Meeting viewing access. Document additions, removals and Item-link changes stop when the Meeting ends; Agenda Item status does not lock document links. Meeting documents and comments are read-only after the Meeting ends. Deleting an Agenda Item keeps its documents in the Meeting. Readding a removed document does not restore previous comments. There is no per-user quota; personal documents count toward the system-wide 250 GB storage limit.
 
 #### 7.1 UC-35 – View Meeting Documents
 
@@ -3571,7 +3566,7 @@ Figure 46: Change Role dialog – the Chair hands over the Chair role
 
 Figure 47: Change Role dialog – the Secretary changes a role
 
-The Meeting Detail – Participants tab shows current internal participants and external Guests. The assigned Secretary manages the roster, roles and additional permissions; the Organizer may assign the missing Secretary. From Published onward, the Chair may view the roster and invitation responses by default, while a Member or verified Guest needs the relevant additional permission. A Member or verified Guest with View Invitation Responses can see invitee names and email in response rows without gaining roster browsing or search access. View-only access does not permit changes.
+The Meeting Detail – Participants tab shows current internal participants and external Guests. The assigned Secretary manages the roster and roles; the Organizer may assign the missing Secretary. Everyone who can open the Meeting sees the roster and the invitation responses; a verified Guest sees names but not other people’s email addresses. View-only access does not permit changes.
 
 This screen allows the Secretary to:
 
@@ -3614,7 +3609,6 @@ Field Description
 | Response label | Response label “Attending” or “Not attending” beside the name; shown after publication to viewers who may see responses. |
 | Pagination | Paging info with page-size choices 20, 50 and 100. |
 | Error states | Not-found page for an unauthorized meeting, or an inline error when the roster cannot be loaded. |
-| Additional permissions | Additional meeting permissions the Secretary may grant or revoke without changing the role. |
 
 Change Role Dialog. The Change Role dialog opens from the “Change role” button on one internal participant’s row. The Secretary (Draft, Rejected, Approved, Published, InProgress) and the Chair of a Published or InProgress Meeting use it. A person is given exactly one role; there is no list of recipients and no separate Hand over Chair button.
 
@@ -3629,7 +3623,7 @@ Change Role Dialog. The Change Role dialog opens from the “Change role” butt
 
 #### 6.2 Add Participant Dialog
 
-For a Guest invitation, enter name/email and optional additional Meeting permissions. Secret shows inline warning: “The guest may access the documents and take part as a Member of this meeting.” No extra confirmation/approval step. Guest has no Chair/Secretary role selector.
+For a Guest invitation, enter name and email. Secret shows inline warning: “The guest may access the documents and take part as a Member of this meeting.” No extra confirmation/approval step. Guest has no Chair/Secretary role selector.
 
 Figure 48: Add Participant Dialog
 
@@ -3662,7 +3656,6 @@ Field Description
 | Guest email | Required email input for the guest on the External guests tab; one current invitation per email per meeting. |
 | Cancel | Text button “Cancel” that closes the dialog. |
 | Add <n> people | Primary button “Add <n> people” showing the number selected that adds everyone together, or no one when anything is invalid. |
-| Additional permissions | Additional permissions for the selected people, supplementing their role for this meeting. |
 
 #### 6.3 Attendance Check
 
@@ -5363,16 +5356,16 @@ The quality attributes below are stated as measurable targets for a single-organ
 | 103 | MSG97 | Field error / Form error | UC-30a – Add Meeting Participant / Exception Flows | Invalid meeting participant information.Field messages:- The selected user is not available.- This user is already a meeting participant.- A valid meeting role is required.- The Member may only assign a missing Secretary during preparation.- Guest name and email are required.- Guest email is invalid.- This guest email is already invited to the meeting.- This email is already represented by an internal meeting participant. |
 | 104 | MSG98 | Dialog | UC-30a, UC-30b, UC-30c / Exception Flows | The meeting participant list cannot be modified in its current status. |
 | 105 | MSG99 | Toast | UC-30a – Add Meeting Participant / Exception Flows | Unable to add the meeting participant. Please try again. |
-| 106 | MSG100 | Toast | UC-30b – Manage Meeting Role & Additional Permissions / Normal Flow | Meeting role updated successfully. |
-| 107 | MSG101 | Field error | UC-30b – Manage Meeting Role & Additional Permissions / Exception Flows | A valid meeting role is required. |
-| 108 | MSG102 | Toast | UC-30b – Manage Meeting Role & Additional Permissions / Exception Flows; UC-34 / EX-3 | Unable to update the meeting role. Please try again. |
+| 106 | MSG100 | Toast | UC-30b – Manage Meeting Role / Normal Flow | Meeting role updated successfully. |
+| 107 | MSG101 | Field error | UC-30b – Manage Meeting Role / Exception Flows | A valid meeting role is required. |
+| 108 | MSG102 | Toast | UC-30b – Manage Meeting Role / Exception Flows; UC-34 / EX-3 | Unable to update the meeting role. Please try again. |
 | 109 | MSG103 | Toast | UC-30c – Remove Meeting Participant / Normal Flow | Meeting participant removed successfully. |
 | 110 | MSG104 | Toast | UC-30c – Remove Meeting Participant / Exception Flows | Unable to remove the meeting participant. Please try again. |
 | 111 | MSG105 | Toast | UC-31 – Respond to Meeting Invitation / Normal Flow | Meeting invitation response recorded successfully. |
 | 112 | MSG106 | Field error / Form error | UC-31 – Respond to Meeting Invitation / Exception Flows | Invalid meeting invitation response. |
 | 113 | MSG107 | Dialog | UC-31 – Respond to Meeting Invitation / Exception Flows | This meeting invitation can no longer be answered. |
 | 114 | MSG108 | Toast | UC-31 – Respond to Meeting Invitation / Exception Flows | Unable to save the meeting invitation response. Please try again. |
-| 115 | MSG109 | Dialog | UC-30b – Manage Meeting Role & Additional Permissions / Exception Flows; UC-30c – Remove Meeting Participant / Exception Flows | The meeting must retain its required Chair and Secretary. Assign a replacement first. |
+| 115 | MSG109 | Dialog | UC-30b – Manage Meeting Role / Exception Flows; UC-30c – Remove Meeting Participant / Exception Flows | The meeting must retain its required Chair and Secretary. Assign a replacement first. |
 | 116 | MSG110 | Toast | UC-20 – Start Meeting / Normal Flow | Meeting started successfully. |
 | 117 | MSG111 | Toast | UC-21 – End Meeting / Normal Flow | Meeting ended successfully. |
 | 118 | MSG112 | Dialog | UC-20 – Start Meeting / Exception Flows | This meeting cannot be started. |
