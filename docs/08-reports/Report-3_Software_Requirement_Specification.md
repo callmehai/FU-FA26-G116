@@ -2693,61 +2693,65 @@ Scope: the current Chair or the current Secretary may prepare Vote drafts while 
 
 Figure 16: Sign In
 
-The Sign In screen is the entry point of the system for every internal user (System Admin, Member, Approver, Chair, Secretary and Participant). It is displayed when a signed-out user opens the application or a meeting link, or when the sign-in session has expired, and supports signing in with email and password or with a Google account; signing out is confirmed from the account menu (UC-01, UC-02, UC-03).
+The Sign In screen is the entry point of the system for every internal user (System Admin, Member, Approver, Chair, Secretary and Participant). It is displayed when a signed-out user opens the application or a meeting link, or when the sign-in session has expired, and supports signing in with email and password or with a Google account; signing out is confirmed from the account menu.
 
 This screen allows the System Admin, Member, Approver, Chair, Secretary and Participant to:
 
-- Sign in with Email and Password: enter the registered email and password and click “Sign in with password” to access the system (UC-01). Each field is checked under its own input (empty email, malformed email, empty password) and focus moves to the first invalid field; the backend still answers every email/password failure with the same generic MSG01.
+- Sign in with Email and Password: enter the registered email and password and click “Sign in with password” to access the system. Each field is checked under its own input (empty email, malformed email, empty password) and focus moves to the first invalid field; the backend still answers every email/password failure with the same generic MSG01.
 
-- Sign in with Google: click “Continue with Google” and choose the Google account whose email is registered in the system (UC-02).
+- Sign in with Google: click “Continue with Google” and choose the Google account whose email is registered in the system.
 
 - View Redirect Reason: see why s/he was sent to the sign-in page (a meeting link opened while signed out, or an expired sign-in session).
 
-- View Sign-in Errors: see the reason a sign-in attempt failed, with a hint to choose the registered Google email when the Google account is not linked (UC-01, UC-02).
+- View Sign-in Errors: see the reason a sign-in attempt failed, with a hint to choose the registered Google email when the Google account is not linked.
 
-- Sign Out: choose Sign Out from the account menu at the bottom of the sidebar and confirm in the dialog to end the sign-in session and return to this screen (UC-03).
+- Sign Out: choose Sign Out from the account menu at the bottom of the sidebar and confirm in the dialog to end the sign-in session and return to this screen.
+
+Related UC: UC-01, UC-02, UC-03
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Application header | Read-only: TrustCabinet logo and name with the subtitle “Sign in to the paperless meeting room system”. |
-| Information banner | Read-only blue box, shown only when there is a reason: “Sign in to open the meeting.” when a meeting link was opened while signed out, or “Your session has expired. Please sign in again.” (MSG140) after the sign-in session ended. Hidden otherwise. |
-| Error box | Red box displayed above the form when sign-in fails: MSG01 “Invalid email or password.”, MSG02 (account deactivated/unavailable), MSG03 (Google sign-in unsuccessful), MSG04 (Google account cannot be verified), MSG05 (Google account not granted access) followed by a hint to choose the Google account with the registered email. Messages never reveal whether an email exists (BR-004). |
-| Email | Text input, required, email format. No initial value. Each field is checked under its own input — empty email, malformed email, empty password — and focus moves to the first invalid field. |
-| Password | Password input (masked), required. No initial value; the password is never displayed or stored in plain text. |
-| Sign in with password | Primary button. Validates the credentials; a deactivated account cannot sign in (BR-001). On success the user is redirected to the authenticated home page, or to the meeting whose link was opened. |
+| Application header | Read-only header with the TrustCabinet logo, name and the subtitle “Sign in to the paperless meeting room system”. |
+| Information banner | Read-only blue box shown only when there is a reason to sign in, e.g. opening a meeting link while signed out or an expired session. |
+| Error box | Red box above the form shown when sign-in fails, with a hint to choose the Google account with the registered email. |
+| Email | Text input for the registered email; each field is checked under its own input and focus moves to the first invalid field. |
+| Password | Masked password input; the password is never displayed or stored in plain text. |
+| Sign in with password | Primary button that signs the user in and opens the home page, or the meeting whose link was opened. |
 | Divider “or” | Read-only separator between the password form and the Google option. |
-| Continue with Google | Button with the Google icon that opens Google sign-in. The verified Google email must be linked to an existing active internal account; no new account is created automatically (BR-003). If the Google sign-in service cannot be loaded, an error text replaces the button. |
-| Sign Out confirmation dialog | Opened from the account menu: “Are you sure you want to sign out? The session on this device will end.” with Cancel / Sign Out buttons. On failure shows MSG06 “Unable to sign out. Please try again.” After sign-out protected functions are no longer accessible. |
+| Continue with Google | Button with the Google icon that opens Google sign-in; the verified email must be linked to an existing active internal account. |
+| Sign Out confirmation dialog | Dialog “Are you sure you want to sign out? The session on this device will end.” with “Cancel” / “Sign Out” buttons. |
 
 #### 1.2 Reset Password
 
 Figure 17: Reset Password
 
-The Reset Password screen is opened by the account owner from the one-time link in the password-reset email that the System Admin sent from the Send Password Reset Link Dialog. The link is valid once, for 60 minutes, and lets the user set a new password without signing in; this is the completion part of Reset User Password (UC-07).
+The Reset Password screen is opened by the account owner from the one-time link in the password-reset email that the System Admin sent from the Send Password Reset Link Dialog. The link is valid once, for 60 minutes, and lets the user set a new password without signing in; this is the completion part of Reset User Password.
 
 This screen allows the account owner (System Admin, Member, Approver, Chair, Secretary or Participant) to:
 
-- Enter New Password: type a new password that satisfies the password rule shown under the field (UC-07).
+- Enter New Password: type a new password that satisfies the password rule shown under the field.
 
-- Confirm New Password: re-type the new password to avoid typing mistakes (UC-07).
+- Confirm New Password: re-type the new password to avoid typing mistakes.
 
-- Set New Password: submit the new password; the old password is replaced and every device signed in to the account is signed out (UC-07).
+- Set New Password: submit the new password; the old password is replaced and every device signed in to the account is signed out.
 
-- View Invalid Link Notice: see an error page when the link has expired, has already been used or has been replaced by a newer link (UC-07).
+- View Invalid Link Notice: see an error page when the link has expired, has already been used or has been replaced by a newer link.
+
+Related UC: UC-07
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Page title | Read-only: “Reset password” under the TrustCabinet logo. |
-| Instruction text | Read-only: “Choose a new password for your account.” |
-| New password | Password input (masked), required (*). Hint below: “Password must be at least 12 characters.”; a shorter value shows the same text as a field error (MSG94). |
-| Confirm password | Password input (masked), required (*). Must be identical to New password; otherwise the field is outlined in red with the error “The re-entered password does not match.” |
-| Sign-out notice | Read-only text: “After the reset, every device currently signed in to this account will be signed out.” (UC-07 POST-5). |
-| Set new password | Primary button. Saves the new password as a salted hash, ends all sign-in sessions of the account, invalidates the link, records the reset in the audit log (BR-009, BR-010, BR-011) and redirects to Sign In with MSG92 “Password reset successfully. Please sign in with your new password.” If this browser is still signed in, it is signed out first; if that fails MSG06 is also shown. |
-| Invalid link page | Shown instead of the form when the link is expired (older than 60 minutes), already used or superseded: “This link can no longer be used.” (MSG93) with guidance to contact the System Admin. When the link has no reset code, MSG129 is displayed. |
+| Page title | Read-only title “Reset password” under the TrustCabinet logo. |
+| Instruction text | Read-only text “Choose a new password for your account.” |
+| New password | Masked password input with the hint “Password must be at least 12 characters.” |
+| Confirm password | Masked password input that must be identical to the new password. |
+| Sign-out notice | Read-only text stating that every device signed in to the account will be signed out after the reset. |
+| Set new password | Primary button that saves the new password, ends all sign-in sessions of the account and returns to Sign In. |
+| Invalid link page | Read-only error page shown instead of the form when the link has expired, was already used or was replaced by a newer link. |
 
 #### 1.3 Guest Verification
 
@@ -2755,36 +2759,38 @@ After OTP verification, Guest enters display name and job title. State that only
 
 Figure 18: Guest Verification
 
-Guest opens the invitation and verifies the invited email by OTP, then enters self-declared display name and job title. The Guest can use Member participation functions only in the invited Meeting. Only email control is verified; display information is not a verified legal identity. (UC-04, BR-055)
+Guest opens the invitation and verifies the invited email by OTP, then enters self-declared display name and job title. The Guest can use Member participation functions only in the invited Meeting. Only email control is verified; display information is not a verified legal identity.
 
 This screen allows the Guest to:
 
-- View Invitation: see that TrustCabinet has invited him/her and the title of the invited meeting (UC-04).
+- View Invitation: see that TrustCabinet has invited him/her and the title of the invited meeting.
 
-- Enter Verification Code: type the 6-digit code sent to the invited email address (UC-04).
+- Enter Verification Code: type the 6-digit code sent to the invited email address.
 
-- Verify: submit the code; on success a meeting-scoped Guest session is established and the Guest continues to the invited meeting and the Invitation Response screen (UC-04, UC-31).
+- Verify: submit the code; on success a meeting-scoped Guest session is established and the Guest continues to the invited meeting and the Invitation Response screen.
 
-- Resend Code: request a new code to the invited email when the code was not received or has expired (UC-04).
+- Resend Code: request a new code to the invited email when the code was not received or has expired.
 
 On the screen, s/he can also:
 
 - Read scope and recording notices: this invitation grants Member participation only in this Meeting. Display name and job title are self-declared; email is verified. Existing audio notice/consent requirements remain independent of profile entry.
 
+Related UC: UC-04, UC-31
+
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Application header | Read-only bar with the TrustCabinet logo and name; no sign-in menu, as the Guest has no internal account (BR-052). |
+| Application header | Read-only bar with the TrustCabinet logo and name and no sign-in menu. |
 | Invitation caption | Read-only uppercase caption “TrustCabinet invites you to a meeting”. |
-| Meeting title | Read-only: title of the invited meeting, e.g. “Sprint 6 planning meeting”. Only the invited meeting is shown (BR-052). |
-| Code destination | Read-only text “Enter the 6-digit code just sent to v***@doitac.vn to view the meeting.” showing the invited email partially masked. |
-| Verification code | Six single-digit input boxes, required, digits only, exactly 6 digits; the cursor moves to the next box after each digit. A wrong, expired or already-used code shows MSG126 “Unable to verify the guest invitation. Check the code and try again.” |
-| Verify | Primary button. Verifies control of the invited email (BR-053, BR-054) and establishes a Guest session limited to the invited meeting that expires according to the configured validity period (BR-052, BR-053, BR-054); no internal account sign-in is needed (BR-052). A missing, expired or revoked invitation cannot be verified and the Guest is told the invitation is no longer valid (BR-044). If the verification service is unavailable no Guest session is created. |
-| Resend code | Text link next to Verify; sends a new one-time code to the invited email address. |
-| Recording notice | Read-only yellow info box: “The meeting may be recorded to prepare the minutes. Your information is used only for this meeting.” |
-| Guest scope notice | Read-only scope notice: “Guests may access only the meeting they are invited to and all documents attached to it, with Member rights. The email has been verified; the display name and position are self-declared.” (BR-055) |
-| Already verified | When the Guest reopens a valid link during an active verified Guest session, this screen is skipped and the invited meeting opens directly (UC-04 AF-1). |
+| Meeting title | Read-only title of the invited meeting; only that meeting is shown. |
+| Code destination | Read-only text showing the invited email partially masked. |
+| Verification code | Six single-digit input boxes for the 6-digit code; the cursor moves to the next box after each digit. |
+| Verify | Primary button that verifies the invited email and opens the invited meeting as a Guest. |
+| Resend code | Text link that sends a new one-time code to the invited email address. |
+| Recording notice | Read-only yellow info box stating the meeting may be recorded to prepare the minutes. |
+| Guest scope notice | Read-only scope notice stating Guests may access only the invited meeting and its documents. |
+| Already verified | When the Guest reopens a valid link during an active verified session, this screen is skipped and the meeting opens directly. |
 
 ### 2. FE-02 – User & Profile Management
 
@@ -2792,102 +2798,108 @@ Field Description
 
 Figure 19: User List
 
-The User List screen is the System Admin’s account management page, reached from Administration › Users in the sidebar. It lists all user accounts, one per row, and provides the per-account actions edit (including the system role), deactivate/reactivate and send password reset link (UC-05, UC-06a–UC-06c, UC-07, UC-08).
+The User List screen is the System Admin’s account management page, reached from Administration › Users in the sidebar. It lists all user accounts, one per row, and provides the per-account actions edit (including the system role), deactivate/reactivate and send password reset link.
 
 This screen allows the System Admin to:
 
-- View User List: view all user accounts with full name, email, system role, sign-in method, status and creation date (UC-05).
+- View User List: view all user accounts with full name, email, system role, sign-in method, status and creation date.
 
-- Search Users: enter a keyword to search accounts by full name or email (UC-05).
+- Search Users: enter a keyword to search accounts by full name or email.
 
-- Filter User List: filter accounts by system role and by account status (UC-05).
+- Filter User List: filter accounts by system role and by account status.
 
-- Edit Account: open the Edit Account dialog to change full name, email or system role (UC-06b, UC-08).
+- Edit Account: open the Edit Account dialog to change full name, email or system role.
 
-- Deactivate / Reactivate Account: change the status of an account after confirming in a dialog (UC-06c).
+- Deactivate / Reactivate Account: change the status of an account after confirming in a dialog.
 
-- Send Password Reset Link: open the Send Password Reset Link Dialog for an active account that signs in with a password (UC-07).
+- Send Password Reset Link: open the Send Password Reset Link Dialog for an active account that signs in with a password.
 
 On the screen, s/he can also:
 
-- Create Account: click “Create account” to open the Create / Edit User Account Dialog in create mode (UC-06a).
+- Create Account: click “Create account” to open the Create / Edit User Account Dialog in create mode.
+
+Related UC: UC-05, UC-06a, UC-06b, UC-06c, UC-07, UC-08
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Page header | Read-only breadcrumb “Administration”, title “Users” and summary “Manage users and system permissions · 7 accounts, 6 active.” |
-| Create account | Primary button; opens the Create / Edit User Account Dialog in create mode. |
-| Search | Text input, optional, empty by default. Matches full name or email. |
-| Role filter | Dropdown. Values: All roles (default) and every system role, e.g.,,, and custom roles such as. |
-| Status filter | Dropdown. Values: All statuses (default), Active, Deactivated. Combined filters must all match. |
-| Full name | Column: avatar initials, full name and email below, one account per row; a long name or email is cut with “…” and shows a tooltip only when cut. The signed-in System Admin’s own row is tagged “You”. |
-| Role | Column chip: name of the system role held by the account. |
-| Sign-in method | Column: Password, Google, or Password · Google (account linked to Google). Passwords and tokens are never displayed. |
-| Status | Column chip: Active (green) or Deactivated (grey). |
-| Created date | Column, format dd/mm/yyyy. |
-| Actions | Three icon buttons: Edit · Deactivate / Reactivate · Send password reset link. A button is greyed out when not applicable and its tooltip gives the reason: the System Admin cannot change the status of his/her own account; a Google-only or deactivated account cannot receive a password reset link. |
-| Deactivate / Reactivate confirmation | Dialog: deactivation signs the user out of all devices and keeps meeting history (BR-001); reactivation restores sign-in with the current role. Success shows MSG11 “User account status changed successfully.”; deactivating the last active account holding the User administration permission is blocked with MSG12. |
-| No-result message | “No accounts match the filter.” shown in the table when search/filter returns nothing; “No accounts yet.” when the list is empty. |
-| Pagination | Client-side paging 20/50/100 over the full GET /api/users response (temporary decision; the server does not page yet, so this is not a server paging contract). |
+| Page header | Read-only breadcrumb “Administration”, title “Users” and a summary with the account counts. |
+| Create account | Primary button that opens the Create / Edit User Account Dialog in create mode. |
+| Search | Optional text input that matches full name or email. |
+| Role filter | Dropdown filtering by role; default All roles. |
+| Status filter | Dropdown filtering by status: All statuses, Active, Deactivated. |
+| Full name | Column showing avatar initials, full name and email; the signed-in admin’s own row is tagged “You”. |
+| Role | Column chip showing the system role held by the account. |
+| Sign-in method | Column showing the sign-in method: Password, Google, or both when linked. |
+| Status | Column chip showing Active or Deactivated. |
+| Created date | Column showing the creation date in dd/mm/yyyy format. |
+| Actions | Three icon buttons per row: Edit, Deactivate / Reactivate, Send password reset link; unavailable actions are greyed out with a tooltip. |
+| Deactivate / Reactivate confirmation | Confirmation dialog for deactivation, which signs the user out of all devices and keeps meeting history, and for reactivation with the current role. |
+| No-result message | Read-only empty-state message shown when the search or filter matches nothing, or when the list is empty. |
+| Pagination | Paging controls with page-size choices 20, 50 and 100. |
 
 #### 2.2 Create / Edit User Account Dialog
 
 Figure 20: Create / Edit User Account Dialog
 
-The Create / Edit User Account Dialog opens over the User List when the System Admin clicks “Create account” or the Edit action of an account. In create mode it collects full name, email, an initial password and the system role; in edit mode it changes full name, email and system role only (UC-06a, UC-06b, UC-08).
+The Create / Edit User Account Dialog opens over the User List when the System Admin clicks “Create account” or the Edit action of an account. In create mode it collects full name, email, an initial password and the system role; in edit mode it changes full name, email and system role only.
 
 This screen allows the System Admin to:
 
-- Create User Account: enter full name, email, password and role to create a new active account (UC-06a).
+- Create User Account: enter full name, email, password and role to create a new active account.
 
-- Generate Password: click “Generate password” to fill a random password, then show or copy it (UC-06a).
+- Generate Password: click “Generate password” to fill a random password, then show or copy it.
 
-- Update User Account: change the full name and email of an existing account (UC-06b).
+- Update User Account: change the full name and email of an existing account.
 
-- Assign System Role: select or change the system role of the account (UC-08).
+- Assign System Role: select or change the system role of the account.
+
+Related UC: UC-06a, UC-06b, UC-08
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Dialog title | “Create account” in create mode, “Edit account” in edit mode. |
-| Information note | Create mode: “The new account is active and can sign in immediately with this email and password. If the email is a Google account, the user can also sign in with Google.” (BR-006). Edit mode: first Google sign-in with the same email links automatically; passwords are not changed here. |
-| Full name | Text input, required (*), max 200 characters. Errors: “Full name is required.”, “Full name must not exceed 200 characters.” (MSG09). |
-| Email | Text input, required (*), valid email format, unique among accounts (BR-005). Errors: “Email is required.”, “Email is invalid.” (MSG09); “Email is already in use.” (MSG08). |
-| Password | Create mode only. Masked input, required (*), minimum 12 characters (MSG09 “Password must be at least 12 characters.”). Has an eye button to show/hide and a copy button. Hint: “Minimum 12 characters. Send the password to the user through a private channel, not a shared group chat.” |
-| Generate password | Button next to Password; fills the field with a random password that satisfies the rule. |
-| Role | Dropdown, required (*); initial value in create mode, current role in edit mode. Lists existing roles only (MSG09 “The role does not exist.” otherwise). Changing another user’s role signs that user out of all devices; changing the role of the last active account holding the User administration permission is blocked (MSG12). |
-| Self-edit warning | Edit mode only. Shown when the System Admin changes his/her own role or email: after saving s/he will be signed out and must sign in again. |
-| Cancel | Secondary button; closes the dialog without saving. |
-| Create account / Save | Primary button. Validates all fields, saves and records the change in the audit log (BR-009, BR-010, BR-011). Success toast MSG07 “User account created successfully.” or MSG10 “User account updated successfully.” |
+| Dialog title | Dialog title “Create account” in create mode and “Edit account” in edit mode. |
+| Information note | Read-only note: “The new account is active and can sign in immediately with this email and password. If the email is a Google account, the user can also sign in with Google.” In edit mode, the first Google sign-in with the same email links automatically. |
+| Full name | Required text input for the full name, at most 200 characters. |
+| Email | Required text input for the email in valid format, unique among accounts. |
+| Password | Masked password input shown in create mode only, minimum 12 characters, with show/hide and generate buttons. |
+| Generate password | Button that fills the password field with a random password. |
+| Role | Required dropdown listing the existing roles; changing another user’s role signs that user out of all devices. |
+| Self-edit warning | Warning shown when the admin changes their own role or email: saving signs them out. |
+| Cancel | Secondary button “Cancel” that closes the dialog without saving. |
+| Create account / Save | Primary button “Create account” / “Save” that validates all fields and saves the account. |
 
 #### 2.3 Send Password Reset Link Dialog
 
 Figure 21: Send Password Reset Link Dialog
 
-The Send Password Reset Link Dialog opens when the System Admin clicks the reset-password action of an account in the User List. It confirms sending a one-time reset link to the user’s registered email; the user then completes the reset on the Reset Password screen (UC-07). The same dialog style is used to confirm deactivating an account (UC-06c).
+The Send Password Reset Link Dialog opens when the System Admin clicks the reset-password action of an account in the User List. It confirms sending a one-time reset link to the user’s registered email; the user then completes the reset on the Reset Password screen. The same dialog style is used to confirm deactivating an account.
 
 This screen allows the System Admin to:
 
-- Confirm Password Reset: check the email address the link will be sent to and click “Send link” (UC-07).
+- Confirm Password Reset: check the email address the link will be sent to and click “Send link”.
 
 - Cancel: close the dialog without sending anything.
 
 On the screen, s/he can also:
 
-- Confirm Account Deactivation: in the Deactivate account dialog of the same style, confirm that the user will be signed out of all devices while meeting history is kept (UC-06c).
+- Confirm Account Deactivation: in the Deactivate account dialog of the same style, confirm that the user will be signed out of all devices while meeting history is kept.
+
+Related UC: UC-06c, UC-07
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
 | Dialog title | “Reset password”. |
-| Confirmation text | Read-only: “Send a password reset link to <email>?” with the registered email of the selected account in bold. |
-| Validity note | Read-only, in the same paragraph: the link can be used once within 60 minutes; any link sent earlier becomes invalid; the current password keeps working until the user (named in the text) sets a new one (UC-07 POST-4). |
-| Cancel | Secondary button; closes the dialog, no link is created. |
-| Send link | Primary button. Allowed only for an active account that signs in with a password, otherwise MSG14 “Password reset is not available for this account.” Success closes the dialog and shows toast MSG13 “Password reset email sent successfully.”; email failure shows MSG15 “Unable to send the password reset email. Please try again.” and no new link becomes usable. The request is recorded in the audit log (BR-009, BR-010, BR-011). |
-| Deactivate account dialog | Same layout: “Deactivate <full name>’s account? This person will be signed out of all devices… Their meeting history is kept.” with Cancel / Deactivate buttons (BR-001); success MSG11, blocked change MSG12. |
+| Confirmation text | Confirmation text “Send a password reset link to <email>?” with the registered email in bold. |
+| Validity note | Validity note: the link can be used once within 60 minutes and the current password keeps working until a new one is set. |
+| Cancel | Secondary button “Cancel” that closes the dialog without sending a link. |
+| Send link | Primary button “Send link” that sends the reset link to the shown email address. |
+| Deactivate account dialog | Same-style dialog “Deactivate <full name>’s account?” with “Cancel” / “Deactivate” buttons; deactivating signs the user out of all devices while meeting history is kept. |
 
 ### 3. FE-03 – Role-Based Access Control
 
@@ -2895,103 +2907,109 @@ Field Description
 
 Figure 22: Role List
 
-The Role List screen is reached from Administration › Roles in the sidebar and is the first tab of the role management page. The System Admin views the system roles with the number of accounts holding each, creates custom roles, and edits or deletes custom roles; predefined (Default) roles are protected (UC-09, UC-11a, UC-11b, UC-11c).
+The Role List screen is reached from Administration › Roles in the sidebar and is the first tab of the role management page. The System Admin views the system roles with the number of accounts holding each, creates custom roles, and edits or deletes custom roles; predefined (Default) roles are protected.
 
 This screen allows the System Admin to:
 
-- View Role List: view every role with its name, description and number of accounts (UC-09).
+- View Role List: view every role with its name, description and number of accounts.
 
-- Create Role: click “Create role” and enter a name, description and initial permissions (UC-11a).
+- Create Role: click “Create role” and enter a name, description and initial permissions.
 
-- Update Role: edit the name and description of a custom role (UC-11b).
+- Update Role: edit the name and description of a custom role.
 
-- Delete Role: delete a custom role that is no longer held by any account, after confirmation (UC-11c).
+- Delete Role: delete a custom role that is no longer held by any account, after confirmation.
 
 On the screen, s/he can also:
 
-- Open Permission Matrix: switch to the “Permission matrix” tab to configure the permissions of each role (UC-09, UC-10).
+- Open Permission Matrix: switch to the “Permission matrix” tab to configure the permissions of each role.
+
+Related UC: UC-09, UC-10, UC-11a, UC-11b, UC-11c
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Page header | Breadcrumb “Administration”, title “Roles” and description: “Each role is a group of permissions; assign roles to accounts on the User screen.” |
-| Tabs | “Role list” with the role count, e.g. 5 (default tab), and “Permission matrix”. |
-| Create role | Primary button; opens the role form in create mode. |
-| Role name | Column. Predefined roles (,,,) carry the “Default” badge; the role of the signed-in System Admin carries the “Your role” badge. |
-| Description | Column: short description of the role. |
-| Accounts | Column: number of accounts holding the role, including deactivated accounts. |
-| Actions | Edit and Delete icon buttons for custom roles only (e.g.); Default roles show no actions and cannot be renamed or deleted (MSG24). |
-| Role form – Name | Text input, required, max 64 characters after trimming, unique (case-insensitive) among all roles. Errors: MSG20 “Invalid role information.” (“Role name is required.”, “Role name must not exceed 64 characters.”), MSG21 “A role with this name already exists. Please choose a different name.” |
-| Role form – Description | Textarea, optional, max 256 characters (MSG20). |
-| Role form – Initial permissions | Create mode only. Checkboxes of the system permissions, optional; an empty set gives the same access as the role. Success MSG19 “Role created successfully.”; edit success MSG22 “Role updated successfully.” |
-| Delete role dialog | Confirmation dialog “Cannot delete role ‘<name>’ yet.” when accounts still hold the role, with a yellow warning: “This role is still held by {n} account(s), including deactivated accounts. Move them to another role before deleting.” (MSG25); the Delete role button is then disabled. Buttons: Close, Delete role. Success MSG23 “Role deleted successfully.”; failure MSG28. |
+| Page header | Read-only breadcrumb “Administration”, title “Roles” and a short description of what roles are. |
+| Tabs | Tabs “Role list” with the role count and “Permission matrix”. |
+| Create role | Primary button that opens the role form in create mode. |
+| Role name | Column showing the role name; predefined roles carry the “Default” badge and the signed-in admin’s role the “Your role” badge. |
+| Description | Column showing the short description of the role. |
+| Accounts | Column showing the number of accounts holding the role, including deactivated accounts. |
+| Actions | Edit and Delete icon buttons shown for custom roles only. |
+| Role form – Name | Required text input for the role name, at most 64 characters, unique among all roles. |
+| Role form – Description | Optional textarea for the role description, at most 256 characters. |
+| Role form – Initial permissions | Checkboxes of the system permissions granted to the new role; shown in create mode only. |
+| Delete role dialog | Confirmation dialog “Cannot delete role ‘<name>’ yet.” with the warning “This role is still held by {n} account(s), including deactivated accounts. Move them to another role before deleting.”; buttons “Close” and “Delete role”, disabled while accounts still hold the role. |
 
 #### 3.2 Permission Matrix
 
 Figure 23: Permission Matrix
 
-The Permission Matrix screen is the second tab of the Roles page. It shows every role against every system permission as a matrix of toggles so that the System Admin can grant or revoke permissions, saving or undoing changes role by role (UC-09, UC-10).
+The Permission Matrix screen is the second tab of the Roles page. It shows every role against every system permission as a matrix of toggles so that the System Admin can grant or revoke permissions, saving or undoing changes role by role.
 
 This screen allows the System Admin to:
 
-- View Role & Permission Matrix: view which permissions each role holds, grouped by area (UC-09).
+- View Role & Permission Matrix: view which permissions each role holds, grouped by area.
 
-- Grant / Revoke Permission: click a cell to switch a permission on or off for a role (UC-10).
+- Grant / Revoke Permission: click a cell to switch a permission on or off for a role.
 
-- Save Role Permissions: click “Save” on a changed row to apply that role’s new permission set (UC-10).
+- Save Role Permissions: click “Save” on a changed row to apply that role’s new permission set.
 
-- Undo Changes: click “Undo” on a changed row to restore its saved permissions (UC-10).
+- Undo Changes: click “Undo” on a changed row to restore its saved permissions.
 
 On the screen, s/he can also:
 
-- Create Role: click “Create role” in the page header, which stays available on this tab (UC-11a).
+- Create Role: click “Create role” in the page header, which stays available on this tab.
+
+Related UC: UC-09, UC-10, UC-11a
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Page header and tabs | Same header as the Role List (title “Roles”, Create role button); the “Permission matrix” tab is selected. |
-| Role | Row header: role name with “Default” or “Your role” badge; custom roles such as have no badge. |
-| Meeting group | Permission columns: Create meeting, Approve meeting. |
-| Minutes group | Permission column: Prepare minutes. |
-| Administration group | Permission column: User administration. |
-| Permission cell | Toggle (checked = granted). Initial value = saved configuration. A changed cell is highlighted in yellow and its row is tinted until saved or undone. Only permissions defined by the system can be set (BR-007). |
-| Actions | “Undo” and “Save” appear only on a row that has unsaved changes; each row is saved independently. Success toast MSG16 “Role permissions updated successfully.”; the change is audit-logged (BR-009, BR-010, BR-011). |
-| Inline row error | Removing “User administration” from the last role that holds it for an active account is blocked and an error is shown under the row (MSG17 “Invalid permission configuration.”); save failure shows MSG18 “Unable to update role permissions. Please try again.” |
+| Page header and tabs | Same header as the Role List with the “Permission matrix” tab selected. |
+| Role | Row header showing the role name with its badge. |
+| Meeting group | Permission columns of the Meeting group: Create meeting, Approve meeting. |
+| Minutes group | Permission column of the Minutes group: Prepare minutes. |
+| Administration group | Permission column of the Administration group: User administration. |
+| Permission cell | Toggle per cell, checked when granted; a changed cell is highlighted until saved or undone. |
+| Actions | “Undo” and “Save” buttons appearing on a row with unsaved changes; each row is saved independently. |
+| Inline row error | Inline error shown under the row when the change is blocked or the save fails. |
 
 #### 3.3 System Audit Log
 
 Figure 24: System Audit Log
 
-The System Audit Log screen is reached from Administration › Audit Log in the sidebar. It shows the read-only log of business and security events (not technical logs) so that the System Admin can trace who did what and when, and open the details recorded with each entry (UC-12).
+The System Audit Log screen is reached from Administration › Audit Log in the sidebar. It shows the read-only log of business and security events (not technical logs) so that the System Admin can trace who did what and when, and open the details recorded with each entry.
 
 This screen allows the System Admin to:
 
-- View Audit Log: view events, newest first, with time, actor, event type, target object — shown with its name, or only as “Secret meeting” for anything of a Secret meeting — and IP address (UC-12).
+- View Audit Log: view events, newest first, with time, actor, event type, target object — shown with its name, or only as “Secret meeting” for anything of a Secret meeting — and IP address.
 
-- Filter Audit Log: filter by date range, actor and event type (UC-12).
+- Filter Audit Log: filter by date range, actor and event type.
 
-- Search by Object: enter a keyword to find events of a target object by its name or id, or by the recorded details, ignoring case and Vietnamese marks; the name of anything of a Secret meeting never matches (UC-12).
+- Search by Object: enter a keyword to find events of a target object by its name or id, or by the recorded details, ignoring case and Vietnamese marks; the name of anything of a Secret meeting never matches.
 
-- View Event Details: click a row to open a right-side panel with the actor, event code, object, IP address and the details recorded with the entry (UC-12).
+- View Event Details: click a row to open a right-side panel with the actor, event code, object, IP address and the details recorded with the entry.
+
+Related UC: UC-12
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Page header | Breadcrumb “Administration”, title “Audit Log” and note “Business and security events. Cannot be edited or deleted.” |
-| Date range | Date range picker dd/mm/yyyy – dd/mm/yyyy (e.g. 01/10/2026 – 06/10/2026); limits events to the selected period. An invalid range is reported and not applied. |
-| Actor filter | Dropdown; default All actors; lists users. |
-| Event type filter | Dropdown; default All event types (e.g. change role permissions, approve meeting, failed sign-in, download document, send password reset link). |
-| Search | Text input, optional; matches the target object name or id, or the recorded details, ignoring case and Vietnamese marks — except the name of anything of a Secret meeting, which never matches. All criteria must match. |
-| Time | Column, format dd/mm hh:mm, newest first. |
-| Actor | Column: avatar initials and full name of the user who performed the action. |
-| Event | Column chip with the event type, e.g. “Changed role permissions”, “Approved meeting”, “Downloaded document”, “Sent password reset link”. Security events such as “Failed sign-in” use a red chip and the whole row is highlighted in red. |
-| Object | Column: the object name — meeting title, document file name, vote title, voice owner name, and so on — or the last 8 characters of its id when it has no name, or only “Secret meeting” for anything of a Secret meeting. |
-| IP address | Column: IP address of the request. |
-| Detail panel | Right-side drawer opened by clicking a row; shows the actor, event code, object with its id, IP address and the details recorded with the entry, field by field. Read-only. |
-| Pagination | “Showing 1–5 of 1,284” with previous/next and page-number buttons. No matching entries shows an empty-result message so the filters can be revised. |
+| Page header | Read-only breadcrumb “Administration”, title “Audit Log” and the note that events cannot be edited or deleted. |
+| Date range | Date range picker limiting events to the selected period. |
+| Actor filter | Dropdown filtering by actor; default All actors. |
+| Event type filter | Dropdown filtering by event type; default All event types. |
+| Search | Optional text input matching the object name, id or recorded details; Secret meeting names never match. |
+| Time | Column showing the event time, newest first. |
+| Actor | Column showing the avatar and full name of the user who performed the action. |
+| Event | Column chip showing the event type; security events use a red chip. |
+| Object | Column showing the object name, its id when it has no name, or only “Secret meeting” for Secret meetings. |
+| IP address | Column showing the IP address of the request. |
+| Detail panel | Read-only drawer opened by clicking a row, showing the details recorded with the entry. |
+| Pagination | Paging controls with previous/next and page-number buttons. |
 
 ### 4. FE-04 – Meeting Management
 
@@ -2999,78 +3017,82 @@ Field Description
 
 Figure 25: Meeting Calendar – Calendar View
 
-The Meeting Calendar – Calendar View is the work-schedule page reached from “Calendar” in the sidebar. The toolbar is the first line of the page (there is no page title). It places every Meeting the user is allowed to see on a weekly day/hour grid according to the Meeting’s own planned start and end time, colours each Meeting by its lifecycle status, and opens the Meeting detail when a block is clicked (UC-16, UC-15).
+The Meeting Calendar – Calendar View is the work-schedule page reached from “Calendar” in the sidebar. The toolbar is the first line of the page (there is no page title). It places every Meeting the user is allowed to see on a weekly day/hour grid according to the Meeting’s own planned start and end time, colours each Meeting by its lifecycle status, and opens the Meeting detail when a block is clicked.
 
 This screen allows any signed-in internal user related to a meeting (Member, Approver, Chair, Secretary, Participant) to:
 
-- View Weekly Calendar: view the accessible Meetings of the selected week as blocks on a day/hour grid, positioned by their planned start and end time (UC-16). A Meeting the user has declined is not shown. (BR-047, BR-048)
+- View Weekly Calendar: view the accessible Meetings of the selected week as blocks on a day/hour grid, positioned by their planned start and end time. A Meeting the user has declined is not shown.
 
-- Navigate Weeks: go to the current week with “Today” or move to the previous/next week (UC-16).
+- Navigate Weeks: go to the current week with “Today” or move to the previous/next week.
 
-- Switch View Mode: switch between the Calendar and List views of the same week (UC-16).
+- Switch View Mode: switch between the Calendar and List views of the same week.
 
-- Change Week Range: switch between the work week (Monday–Friday) and the full week (UC-16).
+- Change Week Range: switch between the work week (Monday–Friday) and the full week.
 
-- Open Meeting Detail: click a Meeting block to open the Meeting Detail – General Information screen (UC-15).
+- Open Meeting Detail: click a Meeting block to open the Meeting Detail – General Information screen.
 
 On the screen, s/he can also:
 
-- Create Meeting: click “Create meeting” to open the Create Meeting dialog (4.4); the button is shown only to the Member, i.e. a user holding the create-meeting permission (UC-13).
+- Create Meeting: click “Create meeting” to open the Create Meeting dialog (4.4); the button is shown only to the Member, i.e. a user holding the create-meeting permission.
+
+Related UC: UC-13, UC-15, UC-16, UC-31
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Today | Button; jumps to the current week. |
-| Previous / Next week (‹ ›) | Buttons; move one week back or forward. |
-| Week label | Read-only date range of the displayed week, e.g. 12/10 – 16/10/2026. |
-| View toggle | Segmented control Calendar (selected) / List. The selected mode is kept in the URL. |
-| Week range | Dropdown: Work week (default, Monday–Friday) or Full week. |
-| Create meeting | Primary button; visible only to users with the create-meeting permission (Member). Opens the Create Meeting dialog over the calendar. |
-| Day header | Weekday name and date (dd/mm) for each column, e.g. “Monday 12/10”; the current day is highlighted and labelled “Today”. |
-| Time grid | Hour rows covering 24 hours; the grid scrolls inside its frame. For the current week it scrolls automatically to a red line marking the current time, with the time shown in a red badge on the hour axis (e.g. 13:47). |
-| Meeting block | One block per Meeting, placed by its planned start and end time (BR-013): time range (hh:mm – hh:mm), Meeting title and mode · location (e.g. “In person · Meeting room A1”; Online Meetings show only “Online”). A “Secret” chip is shown for Secret Meetings. The block is coloured by status: Pending Approval has a dashed amber border and a Rejected Meeting is red with its title struck through. Only Meetings the user may access are shown (BR-016, BR-017), and a Meeting the user has declined through UC-31 is left out of the user’s own calendar; the Chair’s Meeting is never hidden (BR-047, BR-048). Clicking opens a quick view with the title, status, time, place, Chair and participants; an invitee who may still answer finds “Confirm attendance?” with the buttons Attend and Not attending there, and “View details” opens the Meeting detail; Back returns to the same week and mode. |
-| Status legend | Read-only colour legend below the grid: In Progress, Published, Approved, Pending Approval, Draft, Ended, Rejected. |
-| Error state | If the Meetings cannot be loaded the grid shows MSG38 “Unable to load meetings. Please try again.” |
+| Today | Button that jumps to the current week. |
+| Previous / Next week (‹ ›) | Buttons that move one week back or forward. |
+| Week label | Read-only date range of the displayed week. |
+| View toggle | Segmented control switching between Calendar and List views; the choice is kept in the URL. |
+| Week range | Dropdown choosing Work week (Monday–Friday) or Full week. |
+| Create meeting | Primary button that opens the Create Meeting dialog; visible only to users who may create meetings. |
+| Day header | Weekday name and date of each column; the current day is highlighted and labelled “Today”. |
+| Time grid | Hour rows of the week grid with a red line marking the current time. |
+| Meeting block | One block per Meeting placed by its planned start and end time, showing time range, title, mode and location; coloured by status, with a “Secret” chip for Secret Meetings. |
+| Status legend | Read-only colour legend of the meeting statuses below the grid. |
+| Error state | Inline error shown in the grid when the meetings cannot be loaded. |
 
 #### 4.2 Meeting Calendar – List View
 
 Figure 26: Meeting Calendar – List View
 
-The Meeting Calendar – List View shows the same weekly Meetings as the Calendar View, but as cards grouped by day in chronological order. It is opened with the List toggle of the calendar toolbar and uses the same data and access rules as the calendar (UC-16, UC-15). A Meeting the user has declined is not listed (BR-047, BR-048). On a card of a Published or In Progress Meeting the invitee may also answer the invitation once (UC-31).
+The Meeting Calendar – List View shows the same weekly Meetings as the Calendar View, but as cards grouped by day in chronological order. It is opened with the List toggle of the calendar toolbar and uses the same data and access rules as the calendar. A Meeting the user has declined is not listed. On a card of a Published or In Progress Meeting the invitee may also answer the invitation once.
 
 This screen allows any signed-in internal user related to a meeting (Member, Approver, Chair, Secretary, Participant) to:
 
-- View Weekly Meeting List: view the accessible Meetings of the selected week grouped by day, each with planned start/end time, mode, location, status and confidentiality level (UC-16).
+- View Weekly Meeting List: view the accessible Meetings of the selected week grouped by day, each with planned start/end time, mode, location, status and confidentiality level.
 
-- Navigate Weeks: go to the current week or to the previous/next week (UC-16).
+- Navigate Weeks: go to the current week or to the previous/next week.
 
-- Switch View Mode: return to the Calendar view of the same week (UC-16).
+- Switch View Mode: return to the Calendar view of the same week.
 
-- Open Meeting Detail: click “View details” on a card to open the Meeting Detail – General Information screen (UC-15).
+- Open Meeting Detail: click “View details” on a card to open the Meeting Detail – General Information screen.
 
-- Respond to Invitation: on a card that shows “Confirm attendance?”, click Attend or Not attending; the answer is recorded once and cannot be changed (UC-31). The Chair has no buttons.
+- Respond to Invitation: on a card that shows “Confirm attendance?”, click Attend or Not attending; the answer is recorded once and cannot be changed. The Chair has no buttons.
 
 On the screen, s/he can also:
 
-- Create Meeting: click “Create meeting” to open the Create Meeting dialog; shown only to the Member (UC-13).
+- Create Meeting: click “Create meeting” to open the Create Meeting dialog; shown only to the Member.
+
+Related UC: UC-13, UC-15, UC-16, UC-31, UC-32
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Toolbar | Same controls as the Calendar View: Today, ‹ ›, week label, Calendar / List toggle (List selected, kept in the URL as ?mode=list), Work week dropdown and Create meeting button (Member only; opens the Create Meeting dialog). |
-| Day group header | Weekday and full date (dd/mm/yyyy), e.g. “Monday 12/10/2026”, with the number of Meetings that day on the right (e.g. “1 meeting”). The current day carries a “Today” badge. |
-| Time column | Planned start time (bold) and planned end time below it (hh:mm), with a dot coloured by the Meeting status. |
-| Meeting title | Name of the Meeting; struck through when the Meeting is Rejected. |
-| Mode · location | Meeting mode In-person / Online / Hybrid followed by the location; Online Meetings show the mode only. |
-| Status chip | Meeting status: Draft, Pending Approval, Approved, Rejected, Published, In Progress, Ended (green). The time dot and the card’s left border keep the status tone, muted for a past meeting. |
-| Confidentiality chip | Normal / Internal / Secret. |
-| Response chip | Shown on a card once the user has answered: “Attending” or “Not attending”. Nothing is shown while the user has not answered and for the Chair. (UC-31, UC-32) |
-| Attendance question | Shown on a card of a Published or In Progress Meeting that the user may still answer, with the buttons Attend (primary, green) and Not attending (outline). One click sends the answer without a confirmation step; after it the buttons disappear and the card shows the Response chip. Choosing Not attending also removes the Meeting from the user’s calendar and the toast adds “The meeting no longer appears on your calendar.” Messages: MSG105 on success, MSG154 when the same answer is sent again, MSG285 when the invitation was already answered, MSG286 for the Chair, MSG107 when the Meeting no longer accepts answers (BR-046, BR-047, BR-048). |
-| View details | Button on each card; opens the Meeting detail. Only Meetings the user may access are listed (BR-016, BR-017). |
-| Empty day | A day without Meetings shows a dashed box “No meetings”. The list scrolls within the page. |
-| Error state | If the Meetings cannot be loaded the list shows MSG38 “Unable to load meetings. Please try again.” |
+| Toolbar | Same toolbar as the Calendar View with the List mode selected. |
+| Day group header | Weekday and full date with the number of meetings that day; the current day carries a “Today” badge. |
+| Time column | Planned start time in bold with the planned end time below it, and a dot coloured by status. |
+| Meeting title | Name of the meeting; struck through when Rejected. |
+| Mode · location | Meeting mode followed by the location; online meetings show the mode only. |
+| Status chip | Chip showing the meeting status; the time dot and card border keep the status tone. |
+| Confidentiality chip | Chip showing Normal, Internal or Secret. |
+| Response chip | Chip “Attending” or “Not attending” shown once the user has answered. |
+| Attendance question | Attend and Not attending buttons on a card the user may still answer; one click sends the answer without confirmation. |
+| View details | Button on each card that opens the meeting detail. |
+| Empty day | Dashed box “No meetings” shown for a day without meetings. |
+| Error state | Inline error shown when the meetings cannot be loaded. |
 
 #### 4.3 Meeting List
 
@@ -3078,44 +3100,46 @@ Figure 27: Meeting List
 
 Figure 28: Meeting List – time filter open
 
-The Meeting List screen is reached from “Meetings” in the sidebar. It lists only the Meetings the user has an authorized relationship with – Meetings s/he created (any status), Meetings assigned to him/her for approval from Pending Approval onward, and Meetings where s/he is active assigned Secretary before publication (BR-016, BR-017, BR-030), or Chair at any status, or Participant from Published onward; Guests do not use the internal list – with search, filters and paging. Visibility is enforced on the server (UC-16, UC-15).
+The Meeting List screen is reached from “Meetings” in the sidebar. It lists only the Meetings the user has an authorized relationship with – Meetings s/he created (any status), Meetings assigned to him/her for approval from Pending Approval onward, and Meetings where s/he is active assigned Secretary before publication, or Chair at any status, or Participant from Published onward; Guests do not use the internal list – with search, filters and paging. Visibility is enforced on the server.
 
 This screen allows any signed-in internal user related to a meeting (Member, Approver, Chair, Secretary, Participant) to:
 
-- View Meeting List: view the accessible Meetings with name, Chair, planned time, mode · location, confidentiality level and status (UC-16).
+- View Meeting List: view the accessible Meetings with name, Chair, planned time, mode · location, confidentiality level and status.
 
-- Search Meetings: enter a Meeting name to search within the accessible Meetings (UC-16).
+- Search Meetings: enter a Meeting name to search within the accessible Meetings.
 
-- Filter Meetings: filter the list by status, confidentiality level and time; the list opens unfiltered (every status, any time), and the time filter offers Today, This week, Not yet held and Already held (UC-16).
+- Filter Meetings: filter the list by status, confidentiality level and time; the list opens unfiltered (every status, any time), and the time filter offers Today, This week, Not yet held and Already held.
 
-- Open Meeting Detail: click a row to open the Meeting Detail – General Information screen (UC-15).
+- Open Meeting Detail: click a row to open the Meeting Detail – General Information screen.
 
 On the screen, s/he can also:
 
-- Create Meeting: click “Create meeting” to open the Create / Edit Meeting screen; shown only to the Member (UC-13).
+- Create Meeting: click “Create meeting” to open the Create / Edit Meeting screen; shown only to the Member.
 
-- Change Page: move between pages of the result with the pager (UC-16).
+- Change Page: move between pages of the result with the pager.
+
+Related UC: UC-13, UC-15, UC-16
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Page header | Title “Meetings” with the subtitle “Meetings you organize, are invited to or need to approve”. |
-| Create meeting | Primary button; visible only to users with the create-meeting permission (Member). |
-| Search | Text input, optional, empty by default; matches the Meeting name. |
-| Status filter | Dropdown, with “All statuses” (default, showing every status) and no “Today” choice — “Today” lives in the Time filter, not here. Options: Draft, Pending Approval, Approved, Rejected, Published, In Progress, Ended, Cancelled. The status is kept in the URL (status=all means every status). |
-| Confidentiality filter | Dropdown: “Any level” (default), Normal, Internal, Secret. |
-| Time filter | Dropdown opening with “Any time” (no time criterion). Other choices: This week, Not yet held, Already held. There is no date-range or month input. Today and This week match a Meeting whose own planned start/end interval overlaps that day or week; Not yet held matches a Meeting whose planned start time is later than now; Already held matches a Meeting whose planned start time is now or earlier, so a Meeting in progress counts as Already held. Combined criteria must all match. Selecting a status in the Status dropdown keeps the current Time criterion (PO 16/11/2026, note 52 Q1). |
-| Meeting name | Column: Meeting name in bold; second line shows the Chair (“Chair: <name>”), “No Chair yet” when none is assigned, or the rejection reason (“Rejection reason: …”) for a Rejected Meeting. |
-| Time | Column: planned start–end time (hh:mm–hh:mm) with weekday and date (dd/mm/yyyy) below. |
-| Mode · Location | Column: In-person / Online / Hybrid and the location; Online Meetings show the mode only. |
-| Confidentiality | Column chip: Normal / Internal / Secret. |
-| Status | Column chip: Draft, Pending Approval, Approved, Rejected, Published, In Progress, Ended (green). |
-| Row link | The whole row is a link to the Meeting detail. Only Meetings the user may access are returned (BR-016, BR-017). |
-| Pagination | “Showing 1–6 of 23 meetings” with ‹, page numbers and ›. Search, filter and sort criteria are kept when moving between pages. |
-| Messages | “There are no meetings today” with the button “View all Meetings” when the opening Today filter finds nothing; “No meetings match the filter.” when other criteria match no row; MSG38 “Unable to load meetings. Please try again.” on load failure; MSG32 “The meeting list criteria are invalid.” for invalid criteria. A Meeting the user has declined still appears in the list (BR-047, BR-048). |
-| Summary cards | Four cards above the list: Meetings today, Published, To do, Drafts. Meetings today reads “N in progress” or “No meeting in progress” and counts only today’s In-Progress meetings. Choosing a card filters the list to that card; choosing it again clears the filter. |
-| Sort | Default planned start time, newest first — except the Meetings today and To do views, which default to planned start time, oldest first. A manual sort choice is kept in the URL (sortSet) and when moving between pages. |
+| Page header | Read-only title “Meetings” with the subtitle “Meetings you organize, are invited to or need to approve”. |
+| Create meeting | Primary button that opens the Create Meeting dialog; visible only to users who may create meetings. |
+| Search | Optional text input matching the meeting name. |
+| Status filter | Dropdown filtering by status; the choice is kept in the URL. |
+| Confidentiality filter | Dropdown filtering by confidentiality level; default Any level. |
+| Time filter | Dropdown filtering by time: Any time, This week, Not yet held, Already held. |
+| Meeting name | Column showing the meeting name in bold with the Chair or rejection reason below. |
+| Time | Column showing the planned start–end time with weekday and date. |
+| Mode · Location | Column showing the mode and location; online meetings show the mode only. |
+| Confidentiality | Column chip showing Normal, Internal or Secret. |
+| Status | Column chip showing the meeting status. |
+| Row link | The whole row opens the meeting detail. |
+| Pagination | Paging controls keeping the search, filter and sort criteria between pages. |
+| Messages | Empty-state and error messages of the list, e.g. no meetings today or no match for the filter. |
+| Summary cards | Four summary cards above the list: Meetings today, Published, To do, Drafts; choosing a card filters the list. |
+| Sort | Sort control defaulting to planned start time; the choice is kept in the URL and between pages. |
 
 #### 4.4 Create / Edit Meeting
 
@@ -3123,33 +3147,35 @@ Figure 29: Create Meeting dialog
 
 Figure 30: Edit Meeting dialog
 
-The Create / Edit Meeting dialog opens over the current page with “Create meeting” from the calendar or the Meeting List, or with “Edit” on the detail of a Draft or Rejected Meeting. It is a dialog, not a separate page. The planned schedule (date, start and end time) is entered directly on the Meeting, which represents one sitting. A new Meeting is saved as Draft and is visible only to its Member until it is submitted for approval (UC-13, UC-14). Rescheduling a Published Meeting is done in the Reschedule Meeting dialog (4.9).
+The Create / Edit Meeting dialog opens over the current page with “Create meeting” from the calendar or the Meeting List, or with “Edit” on the detail of a Draft or Rejected Meeting. It is a dialog, not a separate page. The planned schedule (date, start and end time) is entered directly on the Meeting, which represents one sitting. A new Meeting is saved as Draft and is visible only to its Member until it is submitted for approval. Rescheduling a Published Meeting is done in the Reschedule Meeting dialog (4.9).
 
 This screen allows the Member to:
 
-- Create Meeting: enter Meeting name, description, meeting date, start and end time, mode, confidentiality level, location and optional online link, choose the initial participants with a Meeting Role for each (exactly one Chair), then save the Meeting as Draft (UC-13).
+- Create Meeting: enter Meeting name, description, meeting date, start and end time, mode, confidentiality level, location and optional online link, choose the initial participants with a Meeting Role for each (exactly one Chair), then save the Meeting as Draft.
 
-- Update Meeting: change the information of a Draft or Rejected Meeting without changing its status (UC-14). The edit dialog has no participant section; participants are changed on the Participants tab.
+- Update Meeting: change the information of a Draft or Rejected Meeting without changing its status. The edit dialog has no participant section; participants are changed on the Participants tab.
 
 - Cancel: leave the form; if there are unsaved inputs a dialog asks to discard the changes or keep editing.
+
+Related UC: UC-13, UC-14
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Dialog title | “Create meeting” for a new Meeting, “Edit meeting” when editing. A new Meeting is saved as Draft and only its Organizer sees it until it is submitted for approval (BR-013). |
-| Meeting name * | Text input, required, max 300 characters; e.g. “Sprint 6 planning meeting”. Errors under MSG31: “Meeting title is required.”, “Meeting title must not exceed 300 characters.” |
-| Description | Textarea, optional, max 4,000 characters (MSG31 “Description must not exceed 4000 characters.”). |
-| Meeting date * | Date picker (dd/mm/yyyy), required; the date of the sitting. |
-| Start * | Time picker (hh:mm), required. Together with the date it forms the Planned Start Time (BR-013); for a new Meeting it must be later than the current time (BR-013). |
-| End * | Time picker (hh:mm), required; forms the Planned End Time, which must be later than the Planned Start Time (BR-013). |
-| Mode * | Segmented control: In-person, Online, Hybrid. Invalid values are rejected (MSG31 “Invalid meeting mode.”). |
-| Confidentiality level | Segmented control: Normal (default), Internal, Secret. |
-| Location | Text input, max 300 characters, e.g. “Room 2.1, floor 2”, hint “Meeting room or address.”; shown for In-person and Hybrid Meetings and required for them (BR-013); labelled “In-person location” for a Hybrid Meeting. Error MSG31 “Location must not exceed 300 characters.” |
-| Online link | Text/URL input, optional, max 1,000 characters (hint “Optional, up to 1,000 characters.”); shown for Online and Hybrid Meetings. When left blank, the TrustCabinet online meeting room is used by default and the field shows the placeholder “Leave blank: TrustCabinet meeting room”. |
-| Participants * | Only when creating. Search box “Search by name or email to add participants” lists active internal users who are not chosen yet (“No one matches, or that person is already chosen.” when none); picking a person adds one row with the person’s name and email (“me” beside the signed-in user), a Meeting Role dropdown (Chair, Secretary, Member; Member by default) and a remove button “Remove from list”. Choosing Chair for one person turns the previous Chair into Member, so there is exactly one Chair; a Secretary is optional; the Organizer need not be on the list; Guests cannot be added here. “No one chosen yet” when empty. Invalid list (nobody chosen, no Chair, a person listed twice, an inactive user) shows MSG277 “The meeting participant list is not valid.” under the field. Participants are saved with the Meeting in one save, each with a Pending response, and no invitation is sent while the Meeting is Draft. |
-| Cancel | Outline button; with unsaved inputs shows the confirm dialog “Discard the Meeting being drafted?” (edit: “Discard unsaved changes?”) with the buttons “Discard meeting” / “Discard changes” and “Keep drafting” / “Keep editing”. |
-| Create meeting / Save changes | Primary button (“Create meeting” when creating, “Save changes” when editing). Validates the fields and the participant list (BR-013); invalid input shows MSG31 “Invalid meeting information.” and highlights the fields, an invalid participant list shows MSG277. Create: the Meeting is saved with status Draft, the creator is recorded as Member and the chosen participants are saved with it (BR-013), toast MSG29 “Meeting created successfully.”, and the Meeting detail opens; a Secretary can still be assigned later on the Participants tab; failure shows MSG35. Edit: allowed only in Draft or Rejected and does not change the status (BR-014); toast MSG30 “Meeting updated successfully.”; MSG33 “This meeting can no longer be edited.” if the status has changed; failure MSG36. |
+| Dialog title | Dialog title “Create meeting” for a new meeting and “Edit meeting” when editing. |
+| Meeting name * | Required text input for the meeting name, at most 300 characters. |
+| Description | Optional textarea for the description, at most 4,000 characters. |
+| Meeting date * | Required date picker for the meeting date. |
+| Start * | Required time picker for the planned start; for a new meeting it must be later than the current time. |
+| End * | Required time picker for the planned end, which must be later than the planned start. |
+| Mode * | Segmented control choosing In-person, Online or Hybrid. |
+| Confidentiality level | Segmented control choosing Normal, Internal or Secret; default Normal. |
+| Location | Text input for the in-person location, at most 300 characters; required for in-person and hybrid meetings. |
+| Online link | Optional URL input for the online link, at most 1,000 characters; blank means the TrustCabinet online meeting room. |
+| Participants * | Participant search and list shown when creating: search by name or email, pick people with a meeting role each; exactly one Chair and no Guests. |
+| Cancel | Outline button that closes the dialog, asking to discard unsaved inputs first. |
+| Create meeting / Save changes | Primary button that validates the fields and creates the meeting as Draft, or saves the changes when editing. |
 
 #### 4.5 Meeting Detail – General Information
 
@@ -3159,241 +3185,257 @@ Figure 32: Meeting Detail – General Information of a Published Meeting with th
 
 Figure 33: Meeting Detail – General Information after accepting the invitation
 
-The Meeting Detail – General Information tab is the default tab of the Meeting detail page, opened from the calendar, the Meeting List or a notification. Only users with an authorized relationship to the Meeting can open it. The header shows the Meeting name, status, confidentiality, the user’s own invitation response and schedule, a lifecycle bar and the action buttons allowed for the current status and the user’s role; from publication onward an invitee other than the Chair who has not answered also sees the attendance question under the lifecycle bar; the tab itself shows the Meeting information, a readiness checklist and the status history (UC-15, UC-31).
+The Meeting Detail – General Information tab is the default tab of the Meeting detail page, opened from the calendar, the Meeting List or a notification. Only users with an authorized relationship to the Meeting can open it. The header shows the Meeting name, status, confidentiality, the user’s own invitation response and schedule, a lifecycle bar and the action buttons allowed for the current status and the user’s role; from publication onward an invitee other than the Chair who has not answered also sees the attendance question under the lifecycle bar; the tab itself shows the Meeting information, a readiness checklist and the status history.
 
 This screen allows any signed-in internal user related to a meeting (Member, Approver, Chair, Secretary, Participant) to:
 
-- View Meeting Details: view the planned time, mode, location, online link, confidentiality level, Member, Approver and description of the Meeting (UC-15).
+- View Meeting Details: view the planned time, mode, location, online link, confidentiality level, Member, Approver and description of the Meeting.
 
-- View Lifecycle Progress: see the current stage of the Meeting on the lifecycle bar Draft – Pending Approval – Approved – Published – In Progress – Ended (UC-15).
+- View Lifecycle Progress: see the current stage of the Meeting on the lifecycle bar Draft – Pending Approval – Approved – Published – In Progress – Ended.
 
-- View Status History: view the timeline of lifecycle actions with actor and time (UC-15).
+- View Status History: view the timeline of lifecycle actions with actor and time.
 
 - Navigate Detail Tabs: switch to the Participants, Meeting Content (agenda), Documents, Voting, Recordings, Summary and Minutes tabs.
 
 On the screen, s/he can also:
 
-- View Readiness Checklist: (Member, Draft or Rejected Meeting) see which required items are complete and which are still missing, with where to complete them (UC-17).
+- View Readiness Checklist: (Member, Draft or Rejected Meeting) see which required items are complete and which are still missing, with where to complete them.
 
-- Run Status-dependent Actions: use the header buttons allowed for the current status and role: Edit and Submit for approval (Member, Draft/Rejected – UC-14, UC-17), Approve / Reject (assigned Approver – UC-18), Publish (Member, Approved – UC-19), Reschedule (Member, Published – UC-14), Start Meeting (Chair or Secretary, Published – UC-20) and End Meeting (Chair, In Progress – UC-21).
+- Run Status-dependent Actions: use the header buttons allowed for the current status and role: Edit and Submit for approval (Member, Draft/Rejected), Approve / Reject (assigned Approver), Publish (Member, Approved), Reschedule (Member, Published), Start Meeting (Chair or Secretary, Published) and End Meeting (Chair, In Progress).
 
-- Respond to Invitation: (invitee other than the Chair, Published Meeting, not yet answered) answer “Will you attend this meeting?” with Attend or Not attending; the answer is recorded once and cannot be changed (UC-31).
+- Respond to Invitation: (invitee other than the Chair, Published Meeting, not yet answered) answer “Will you attend this meeting?” with Attend or Not attending; the answer is recorded once and cannot be changed.
 
 - Back to Meetings: click “‹ Meetings” to return to the previous list or calendar.
+
+Related UC: UC-14, UC-15, UC-17, UC-18, UC-19, UC-20, UC-21, UC-31
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Meeting header | Meeting name with status chip (e.g. Draft), confidentiality chip (e.g. Normal) and, once the user has answered the invitation, a response chip “Attending” or “Not attending”; second line: weekday, date and planned time range (e.g. “Thursday, 15/10/2026 · 08:30–09:30”) and mode · location. |
-| Action buttons | Change with status and role: Draft/Rejected – Edit and Submit for approval (Member); Pending Approval – Reject and Approve (assigned Approver); Approved – Publish (Member); Published – Reschedule (Member) and Start meeting (Chair or Secretary); In Progress – red End meeting (Chair), which asks for confirmation and remains available with open Votes or incomplete attendance. Buttons the user may not use are hidden. |
-| Lifecycle bar | Read-only steps Draft · Pending Approval · Approved · Published · In Progress · Ended; the current step is highlighted. |
-| Attendance question | Bar under the lifecycle bar and above the tabs, with the buttons Attend and Not attending. Shown only while the server says the user may answer: the user has a current invitation, is not the Chair, has not answered, and the Meeting is Published. From InProgress on, the detail no longer asks (attendance takes its place); the server still accepts an answer in InProgress. One click sends the answer; the bar then disappears and the response chip appears beside the title. There is no way to change the answer. Choosing Not attending adds “The meeting no longer appears on your calendar.” to the toast. Messages: MSG105 (recorded), MSG154 (same answer again), MSG285 (already answered), MSG286 (Chair), MSG107 (no longer answerable). (UC-31, BR-046, BR-047, BR-048) |
-| Tabs | General Information (selected), Participants, Meeting Content, Documents, Voting, Recordings, Summary, Minutes. The Recordings tab stays locked until the Meeting starts (“Opens when the meeting starts”) and the Minutes tab until it has Ended (“Opens when the meeting ends”); a Cancelled Meeting locks both (“The meeting was cancelled”). The Secretary collecting voice samples keeps Recordings open before the start. |
-| Time | Read-only planned date and time range of the Meeting; once the Meeting has started, the actual start/end times are also shown (UC-15). |
-| Mode / Location | Read-only: In-person / Online / Hybrid and the in-person location (e.g. “Room 2.1, floor 2”). |
-| Online link | Read-only external link, or “TrustCabinet online meeting room” when the internal online room is used. |
-| Confidentiality | Read-only chip: Normal / Internal / Secret. |
-| Organizer | Read-only name of the Member. |
-| Approver | Read-only name of the assigned Approver; shows “Chosen when submitting for approval” before submission. |
-| Description | Read-only multi-line text. |
-| Readiness checklist | Shown to the Member while Draft or Rejected. Each item is marked Complete (green) or Missing (amber) with a hint where to fix it: time, mode and location set (required for submission); Secretary assigned; Chair assigned (“assigned by the Secretary on the Participants tab”); number of Meeting Content items. Chair and Secretary are mandatory at publication (BR-021). |
-| History | Read-only timeline of lifecycle actions, e.g. “Draft created – Nguyen Minh Anh · 09/10 15:02”, followed by submission, approval/rejection (with reason), publication, rescheduling, start and end, each with actor and time. History records cannot be changed (BR-022, BR-023). |
-| Error states | A missing or inaccessible Meeting shows a not-found page without revealing whether it exists (BR-016, BR-017); load failure shows MSG37 “Unable to load meeting details. Please try again.” |
+| Meeting header | Read-only meeting name with status, confidentiality and response chips, date, time range, mode and location. |
+| Action buttons | Action buttons changing with status and role, e.g. Edit and Submit for approval on a Draft; unavailable actions are hidden. |
+| Lifecycle bar | Read-only steps of the meeting lifecycle with the current step highlighted. |
+| Attendance question | Bar with Attend and Not attending buttons, shown only while the user may still answer; one click sends the answer. |
+| Tabs | Tabs of the meeting detail; the Recordings tab opens when the meeting starts and Minutes when it ends. |
+| Time | Read-only planned date and time range; actual start and end times are added once started. |
+| Mode / Location | Read-only mode and in-person location. |
+| Online link | Read-only external online link, or “TrustCabinet online meeting room” for the internal room. |
+| Confidentiality | Read-only chip showing Normal, Internal or Secret. |
+| Organizer | Read-only name of the organizer. |
+| Approver | Read-only name of the assigned approver, or a hint that it is chosen when submitting for approval. |
+| Description | Read-only multi-line description. |
+| Readiness checklist | Checklist shown to the organizer on a Draft or Rejected meeting, marking each submission requirement Complete or Missing. |
+| History | Read-only timeline of lifecycle actions with actor and time; history records cannot be changed. |
+| Error states | Not-found page for a missing or inaccessible meeting, or an inline error when the detail cannot be loaded. |
 
 #### 4.6 Submit Meeting for Approval
 
 Figure 34: Submit Meeting for Approval
 
-The Submit Meeting for Approval dialog opens over the Meeting detail when the Member clicks “Submit for approval” on a Draft Meeting, or resubmits a Rejected Meeting after correcting it. The Organizer chooses the Approver and may leave a message; after submission the Meeting becomes Pending Approval and locks general Meeting information until a decision is made; the assigned Secretary can still manage Agenda Items under BR-059 (UC-17).
+The Submit Meeting for Approval dialog opens over the Meeting detail when the Member clicks “Submit for approval” on a Draft Meeting, or resubmits a Rejected Meeting after correcting it. The Organizer chooses the Approver and may leave a message; after submission the Meeting becomes Pending Approval and locks general Meeting information until a decision is made; the assigned Secretary can still manage Agenda Items under.
 
 This screen allows the Member to:
 
-- Select Approver: choose the Approver from the list of eligible active approvers (UC-17).
+- Select Approver: choose the Approver from the list of eligible active approvers.
 
-- Add Message to Approver: optionally write a message to the Approver (UC-17).
+- Add Message to Approver: optionally write a message to the Approver.
 
-- Submit for Approval: confirm to send the Meeting for approval; the status becomes Pending Approval and the approver is notified (UC-17).
+- Submit for Approval: confirm to send the Meeting for approval; the status becomes Pending Approval and the approver is notified.
 
-- Resubmit a Rejected Meeting: after correcting a Rejected Meeting according to the rejection reason, open the same dialog and submit it again (UC-17).
+- Resubmit a Rejected Meeting: after correcting a Rejected Meeting according to the rejection reason, open the same dialog and submit it again.
 
 On the screen, s/he can also:
 
 - Cancel: click “Cancel” to close the dialog without submitting.
 
+Related UC: UC-17
+
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Submit for approval (header) | Primary button on the detail of a Draft or Rejected Meeting, visible to its Member; opens the dialog. Submission requires the mandatory Meeting information and a valid planned schedule (BR-013); otherwise the Meeting stays Draft/Rejected and the missing items are shown in the readiness checklist. |
-| Dialog title | “Submit meeting for approval”. |
-| Approver * | Dropdown, required; each option shows name · position, e.g. “Vo Thi Lan · Head of Engineering”. Hint: “Only users who may approve meetings are listed, excluding you.”. Lists active accounts holding the approve-meeting permission, never the Member (BR-019). |
-| Message to approver | Textarea, optional (placeholder “Optional”); delivered to the Approver together with the approval request. |
-| Information notice | Read-only blue box: “After submitting, you cannot edit general Meeting information until the meeting is approved or rejected; the assigned Secretary may still manage Agenda Items.” (BR-018). |
-| Cancel | Text button; closes the dialog without changes. |
-| Submit | Primary button. Re-checks that the Meeting is still Draft or Rejected and the approver is eligible, assigns the approver, changes the status to Pending Approval, records the submission in the history and notifies the approver (BR-018, BR-019, BR-022, BR-023); a success toast is shown. Errors: MSG41 “This meeting can no longer be submitted for approval.”, MSG42 “Unable to submit the meeting for approval. Please try again.”; an ineligible approver must be replaced by another eligible one. |
+| Submit for approval (header) | Primary button on a Draft or Rejected meeting, visible to its organizer; opens the dialog. |
+| Dialog title | Dialog title “Submit meeting for approval”. |
+| Approver * | Required dropdown with name · position per option, e.g. “Vo Thi Lan · Head of Engineering”; hint “Only users who may approve meetings are listed, excluding you.” |
+| Message to approver | Optional textarea with the placeholder “Optional”; delivered to the approver with the request. |
+| Information notice | Read-only blue box: “After submitting, you cannot edit general Meeting information until the meeting is approved or rejected; the assigned Secretary may still manage Agenda Items.” |
+| Cancel | Text button “Cancel” that closes the dialog without changes. |
+| Submit | Primary button “Submit” that assigns the approver and moves the meeting to Pending Approval. |
 
 #### 4.7 Approve / Reject Meeting
 
 Figure 35: Approve / Reject Meeting
 
-The Approve / Reject Meeting function appears on the Meeting detail of a Pending Approval Meeting for its assigned Approver, who usually reaches it from the “pending approval” notification. The approver reviews all tabs in read-only mode and either approves the Meeting or rejects it with a reason. Approval does not publish the Meeting; a rejected Meeting goes back to the Member for correction and resubmission (UC-18).
+The Approve / Reject Meeting function appears on the Meeting detail of a Pending Approval Meeting for its assigned Approver, who usually reaches it from the “pending approval” notification. The approver reviews all tabs in read-only mode and either approves the Meeting or rejects it with a reason. Approval does not publish the Meeting; a rejected Meeting goes back to the Member for correction and resubmission.
 
 This screen allows the Approver to:
 
-- Review Meeting: read the Meeting information on all tabs in read-only mode, together with who submitted it and when (UC-18).
+- Review Meeting: read the Meeting information on all tabs in read-only mode, together with who submitted it and when.
 
-- Approve Meeting: click “Approve” to move the Meeting from Pending Approval to Approved (UC-18).
+- Approve Meeting: click “Approve” to move the Meeting from Pending Approval to Approved.
 
-- Reject Meeting: click “Reject”, enter a mandatory reason and confirm to move the Meeting to Rejected (UC-18).
+- Reject Meeting: click “Reject”, enter a mandatory reason and confirm to move the Meeting to Rejected.
 
 On the screen, s/he can also:
 
 - Cancel Rejection: click “Cancel” in the reject dialog to return to the Meeting without a decision.
 
+Related UC: UC-18
+
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Meeting header | Meeting name with the Pending Approval chip and confidentiality chip; second line: planned date and time and “Submitted by <Member> · dd/mm hh:mm”. |
-| Approve | Primary button, visible only to the Approver assigned to the current approval cycle (BR-019). Re-checks authorization and Pending Approval status, changes the status to Approved and records the decision with actor and time (BR-020, BR-022, BR-023); toast MSG43 “Meeting approved successfully.” |
-| Reject | Red outlined button, visible only to the assigned Approver; opens the reject dialog. |
-| Dialog title | “Reject meeting”. |
-| Rejection reason * | Textarea, required, trimmed, max 1,000 characters; e.g. “Item 3 has no signing procedure document yet. Add it and resubmit.” Errors: MSG83 “Rejection reason is required.” (BR-020), MSG84 “Rejection reason must not exceed 1000 characters.” |
+| Meeting header | Read-only meeting name with the Pending Approval chip, confidentiality chip, planned time and the submitter. |
+| Approve | Primary button “Approve” visible only to the assigned approver; approves the meeting and records the decision. |
+| Reject | Red outlined button “Reject” visible only to the assigned approver; opens the reject dialog. |
+| Dialog title | Dialog title “Reject meeting”. |
+| Rejection reason * | Required textarea for the rejection reason, at most 1,000 characters, e.g. “Item 3 has no signing procedure document yet. Add it and resubmit.” |
 | Warning notice | Read-only amber box: “The meeting moves to Rejected. The organizer is notified with the reason.” |
-| Cancel | Text button; closes the dialog without a decision. |
-| Reject (dialog) | Red primary button. Changes the status to Rejected and stores the reason in the status history (BR-020, BR-022, BR-023); toast MSG44 “Meeting rejected successfully.” |
-| Error messages | “This meeting is no longer awaiting approval.” when the status has changed; “Unable to complete the approval decision. Please try again.” when the decision cannot be saved; a notice when the user is no longer authorized to review the Meeting (BR-019). In each case the status is unchanged. |
+| Cancel | Text button “Cancel” that closes the dialog without a decision. |
+| Reject (dialog) | Red primary button “Reject” that rejects the meeting and stores the reason in the status history. |
+| Error messages | Inline notices: “This meeting is no longer awaiting approval.” when the status has changed, or “Unable to complete the approval decision. Please try again.” when the save fails; the status is unchanged. |
 
 #### 4.8 Publish Meeting
 
 Figure 36: Publish Meeting
 
-The Publish Meeting dialog opens over the Meeting detail when the Member clicks “Publish” on an Approved Meeting. It checks that the Meeting has an active Chair and an active Secretary, states how many internal participants and external Guests will be invited, and warns that after publication the Organizer may change only planned time, location and link; the assigned Secretary may still manage Agenda Items under BR-059. Confirming moves the Meeting to Published and starts invitation delivery (UC-19).
+The Publish Meeting dialog opens over the Meeting detail when the Member clicks “Publish” on an Approved Meeting. It checks that the Meeting has an active Chair and an active Secretary, states how many internal participants and external Guests will be invited, and warns that after publication the Organizer may change only planned time, location and link; the assigned Secretary may still manage Agenda Items under. Confirming moves the Meeting to Published and starts invitation delivery.
 
 This screen allows the Member to:
 
-- Check Publication Readiness: see whether the required Chair and Secretary are assigned and active, and who is still missing (UC-19).
+- Check Publication Readiness: see whether the required Chair and Secretary are assigned and active, and who is still missing.
 
-- Review Invitation Recipients: see how many internal participants and external Guests will receive the invitation (UC-19).
+- Review Invitation Recipients: see how many internal participants and external Guests will receive the invitation.
 
-- Publish Meeting: click “Publish and send invitations” to change the status to Published and send the invitations (UC-19).
+- Publish Meeting: click “Publish and send invitations” to change the status to Published and send the invitations.
 
 On the screen, s/he can also:
 
 - Cancel: click “Cancel” to close the dialog; the Meeting stays Approved.
 
+Related UC: UC-19
+
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Meeting header | Meeting name with the Approved chip and confidentiality chip; second line: planned date and time and “Approved by <Approver> · dd/mm hh:mm”. |
-| Publish (header) | Primary button, visible only to the Member of an Approved Meeting (BR-021); opens the dialog. |
-| Dialog title | “Publish meeting”. |
-| Chair check | Read-only item marked Complete with the Chair’s name (e.g. “Chair: Tran Quoc Bao”), or Missing with a hint that the Secretary must assign the Chair on the Participants tab. Exactly one current Chair with an active account is required (BR-021). |
-| Secretary check | Read-only item marked Complete with the Secretary’s name (e.g. “Secretary: Do Hai Yen”), or Missing. At least one current Secretary with an active account is required (BR-021). Invitation responses do not affect these checks (BR-024). |
-| Information notice | Read-only blue box, e.g. “Invitations will be sent to 4 internal people and 1 external guest. After publishing, only the time, location and link can be rescheduled.” (BR-015). |
-| Cancel | Text button; closes the dialog without changes. |
-| Publish and send invitations | Primary button; disabled while a check is Missing. Re-checks that the Meeting is still Approved with a valid planned schedule and the required Chair/Secretary (BR-021), changes the status to Published and records the action in the history (BR-022, BR-023). Invitations are sent asynchronously: in-app notification and email to internal participants, an email with a secure meeting-specific guest invitation to external Guests (BR-031, BR-032, BR-052); a delivery failure is retried and does not revert the Published status. Messages: MSG45 “Meeting published successfully.”, MSG46 “This meeting can no longer be published.”, MSG47 “Unable to publish the meeting. Please try again.” |
+| Meeting header | Read-only meeting name with the Approved chip, confidentiality chip, planned time and the approver. |
+| Publish (header) | Primary button visible only to the organizer of an Approved meeting; opens the dialog. |
+| Dialog title | Dialog title “Publish meeting”. |
+| Chair check | Read-only Chair check, Complete with the name, e.g. “Chair: Tran Quoc Bao”, or Missing with a hint that the Secretary assigns the Chair on the Participants tab. |
+| Secretary check | Read-only Secretary check, Complete with the name, e.g. “Secretary: Do Hai Yen”, or Missing; invitation responses do not affect the checks. |
+| Information notice | Read-only blue box, e.g. “Invitations will be sent to 4 internal people and 1 external guest. After publishing, only the time, location and link can be rescheduled.” |
+| Cancel | Text button “Cancel” that closes the dialog without changes. |
+| Publish and send invitations | Primary button “Publish and send invitations”, disabled while a check is Missing, that publishes the meeting and sends the invitations. |
 
 #### 4.9 Reschedule Meeting
 
 Figure 37: Reschedule Meeting
 
-The Reschedule Meeting dialog opens over the detail of a Published Meeting when the Member clicks “Reschedule”. It is the reschedule path of Update Meeting: only the planned date and time, the location and the online link can be changed, while the Meeting name and confidentiality level are locked. Saving keeps the Meeting Published and notifies every invitee of the new schedule (UC-14). The same header carries “Start meeting” for the Chair (UC-20).
+The Reschedule Meeting dialog opens over the detail of a Published Meeting when the Member clicks “Reschedule”. It is the reschedule path of Update Meeting: only the planned date and time, the location and the online link can be changed, while the Meeting name and confidentiality level are locked. Saving keeps the Meeting Published and notifies every invitee of the new schedule. The same header carries “Start meeting” for the Chair.
 
 This screen allows the Member to:
 
-- Change Planned Time: choose a new meeting date and new start and end times for the Published Meeting (UC-14).
+- Change Planned Time: choose a new meeting date and new start and end times for the Published Meeting.
 
-- Change Location and Online Link: change the in-person location and the optional online link (UC-14).
+- Change Location and Online Link: change the in-person location and the optional online link.
 
-- Save and Notify Invitees: click “Save and notify” to save the new schedule and send the update to all invitees (UC-14).
+- Save and Notify Invitees: click “Save and notify” to save the new schedule and send the update to all invitees.
 
 On the screen, s/he can also:
 
 - Cancel: click “Cancel” to close the dialog; the existing schedule is kept.
 
-- Start Meeting: (Chair or Secretary) click “Start meeting” on the header of the Published Meeting to change its status to In Progress and record the actual start time (UC-20).
+- Start Meeting: (Chair or Secretary) click “Start meeting” on the header of the Published Meeting to change its status to In Progress and record the actual start time.
+
+Related UC: UC-14, UC-20
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Meeting header | Meeting name with the Published chip and confidentiality chip; second line: current planned date and time and mode · location. |
-| Reschedule (header) | Secondary button, visible only to the Member while the Meeting is Published and has not started (BR-015); opens the dialog. |
-| Start meeting (header) | Primary button for the assigned Chair or Secretary of a Published Meeting. Requires exactly one active Chair and at least one active Secretary (BR-024); sets status In Progress, records the actual start time and notifies invited internal participants in-app (BR-022, BR-023); the Meeting Content tab switches to the running mode. Messages: MSG110 “Meeting started successfully.”, MSG112 “This meeting cannot be started.”, MSG115 “Unable to start the meeting. Please try again.” |
-| Meeting date | Date picker (dd/mm/yyyy), pre-filled with the current date of the Meeting. |
-| Start / End | Time pickers (hh:mm), pre-filled. The new planned start must be later than the current time (BR-015) and the end must be later than the start (BR-013). |
-| Location | Text input, max 300 characters, pre-filled, e.g. “Room 3.2, floor 3”. |
-| Online link | Text/URL input, optional, max 1,000 characters; blank means the TrustCabinet online meeting room. |
-| Meeting name | Read-only (greyed) with the hint “Published, cannot be changed” (BR-015). |
-| Confidentiality level | Read-only (greyed) with the hint “Published, cannot be changed” (BR-015). |
+| Meeting header | Read-only meeting name with the Published chip, confidentiality chip, current date, time, mode and location. |
+| Reschedule (header) | Secondary button visible only to the organizer while the meeting is Published and has not started; opens the dialog. |
+| Start meeting (header) | Primary button for the assigned Chair or Secretary that starts the meeting immediately. |
+| Meeting date | Date picker pre-filled with the current meeting date. |
+| Start / End | Time pickers for the new planned start and end; the start must be later than now and the end later than the start. |
+| Location | Text input for the location, at most 300 characters, pre-filled. |
+| Online link | Optional URL input for the online link, at most 1,000 characters; blank means the TrustCabinet online meeting room. |
+| Meeting name | Read-only greyed field with the hint “Published, cannot be changed”. |
+| Confidentiality level | Read-only greyed field with the hint “Published, cannot be changed”. |
 | Information notice | Read-only blue box, e.g. “5 invitees will receive a notification and an email with the new schedule.” Existing invitation responses are kept. |
-| Cancel | Text button; closes the dialog without changes. |
-| Save and notify | Primary button. Validates the fields (BR-013, BR-015, MSG31 for invalid input), saves the new schedule, keeps the Published status, records the change in the history (BR-022, BR-023) and queues notifications and emails to all current invitees; a delivery failure does not undo the change. Success: MSG138 “Meeting rescheduled successfully. Invitees will be notified.” If the Meeting is no longer Published or has started: MSG33 “This meeting can no longer be edited.”; save failure: MSG36 “Unable to update the meeting. Please try again.” |
+| Cancel | Text button “Cancel” that closes the dialog without changes. |
+| Save and notify | Primary button “Save and notify” that saves the new schedule and notifies all current invitees. |
 
 #### 4.10 Cancel Meeting
 
 Figure 38: Cancel Meeting
 
-The Cancel Meeting dialog opens from the red “Cancel meeting” button in the header of the Meeting details, shown only to the Member who organizes the Meeting and only before it starts. It asks for a reason and says who will be informed; a Cancelled Meeting stays as a read-only record (UC-22, BR-028).
+The Cancel Meeting dialog opens from the red “Cancel meeting” button in the header of the Meeting details, shown only to the Member who organizes the Meeting and only before it starts. It asks for a reason and says who will be informed; a Cancelled Meeting stays as a read-only record.
 
 This screen allows the Member to:
 
-- Cancel Meeting: enter the required reason and confirm; the Meeting becomes Cancelled and the reason is kept in its status history (UC-22).
+- Cancel Meeting: enter the required reason and confirm; the Meeting becomes Cancelled and the reason is kept in its status history.
 
-- Keep Meeting: close the dialog with “Keep meeting”; nothing changes (UC-22).
+- Keep Meeting: close the dialog with “Keep meeting”; nothing changes.
+
+Related UC: UC-22
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Title | “Cancel meeting?” with the Meeting name below it. |
-| Cancellation reason | Text area, required, at most 1,000 characters with a live counter, e.g. 41/1,000. Blank shows MSG262; too long shows MSG345. (BR-028) |
-| Who is informed | Sentence that depends on the status: Published – every invitee gets a notification and an email with the reason; Pending Approval – the Approver is told there is nothing left to review; otherwise nobody is notified. Each ends with “This cannot be undone.” (BR-031) |
-| Keep meeting | Secondary button; closes the dialog. |
-| Cancel meeting | Red button; shows “Cancelling…” while saving, then MSG261 and the Meeting shows as Cancelled. A Meeting that has already started or ended shows MSG263. |
+| Title | Dialog title “Cancel meeting?” with the meeting name below it. |
+| Cancellation reason | Required textarea for the cancellation reason, at most 1,000 characters with a live counter, e.g. 41/1,000. |
+| Who is informed | Read-only sentence depending on status, each ending with “This cannot be undone.”, e.g. Published – every invitee gets a notification and an email with the reason. |
+| Keep meeting | Secondary button “Keep meeting” that closes the dialog. |
+| Cancel meeting | Red button “Cancel meeting” that cancels the meeting; it shows “Cancelling…” while saving. |
 
 #### 4.11 Start Meeting
 
 Figure 39: Start Meeting
 
-The Chair or the Secretary starts a Published Meeting with “Start meeting” in the header of the Meeting details. At or after the planned time the Meeting starts at once; earlier, a confirmation asks first. A Meeting without an active Secretary cannot start (UC-20, BR-024).
+The Chair or the Secretary starts a Published Meeting with “Start meeting” in the header of the Meeting details. At or after the planned time the Meeting starts at once; earlier, a confirmation asks first. A Meeting without an active Secretary cannot start.
 
 This screen allows the Chair and the Secretary to:
 
-- Start Meeting: start the Published Meeting; it becomes In Progress and its actual start time is recorded (UC-20).
+- Start Meeting: start the Published Meeting; it becomes In Progress and its actual start time is recorded.
 
-- Start Early: confirm starting before the planned time (UC-20).
+- Start Early: confirm starting before the planned time.
+
+Related UC: UC-20
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Start earlier than scheduled | Confirmation dialog shown only before the planned start, with the planned time; buttons Cancel and Start now. |
-| Cannot start yet | Information dialog shown when the Meeting has no active Secretary: “The meeting needs at least one Secretary.” with a single Close button. (BR-024) |
-| Result | MSG110 on success; the status changes to In Progress and the participants are notified. If the Meeting can no longer be started, MSG112 is shown. (BR-035) |
+| Start earlier than scheduled | Confirmation dialog shown only before the planned start, with the planned time and “Cancel” / “Start now” buttons. |
+| Cannot start yet | Information dialog “The meeting needs at least one Secretary.” with a single “Close” button. |
+| Result | Inline result of starting: the status changes to In Progress and the participants are notified. |
 
 #### 4.12 End Meeting
 
 Figure 40: End Meeting
 
-The Chair ends an In Progress Meeting with “End meeting” in the header of the Meeting details. A confirmation explains that the Meeting cannot be reopened and that the online room closes (UC-21, BR-025).
+The Chair ends an In Progress Meeting with “End meeting” in the header of the Meeting details. A confirmation explains that the Meeting cannot be reopened and that the online room closes.
 
 This screen allows the Chair to:
 
-- End Meeting: confirm; the Meeting becomes Ended, its actual end time is recorded and the online room closes (UC-21).
+- End Meeting: confirm; the Meeting becomes Ended, its actual end time is recorded and the online room closes.
+
+Related UC: UC-21
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Title | “End meeting?” |
-| Message | “‹Meeting name› will end and cannot be reopened. The online room closes and everyone is disconnected.” For an In-person Meeting the sentence about the online room is left out. |
-| Cancel | Secondary button; closes the dialog. |
-| End meeting | Red button; shows MSG111. Open Votes, unmarked attendance and pending Agenda Items do not block the end; if the actor is no longer the Chair or the Meeting is no longer In Progress, MSG114 is shown. (BR-025, BR-026) |
-| Notes card | On the General Information tab of an In Progress Meeting: “View notes” for the Chair, “Open notes” for the Secretary. |
+| Title | Dialog title “End meeting?” |
+| Message | Read-only message “<Meeting name> will end and cannot be reopened. The online room closes and everyone is disconnected.”; for an in-person meeting the online-room sentence is left out. |
+| Cancel | Secondary button “Cancel” that closes the dialog. |
+| End meeting | Red button “End meeting”; open votes, unmarked attendance and pending agenda items do not block it. |
+| Notes card | Card on the General Information tab: “View notes” for the Chair, “Open notes” for the Secretary. |
 
 ### 5. FE-05 – Agenda Management
 
@@ -3401,19 +3443,19 @@ Field Description
 
 Figure 41: Meeting Detail – Meeting Content tab
 
-The Meeting Detail – Meeting Content tab shows the agenda of the selected Meeting. Agenda items belong directly to the Meeting and are listed in order with presenter and the number of attached documents; an item has no duration or planned time. Every user related to the meeting can view the agenda; the Secretary builds it (add, edit, delete, drag-and-drop reorder) while the Meeting is Draft, WaitingApproval, Rejected, Approved, Published or InProgress. When the Meeting is InProgress, the same tab switches to the Meeting Facilitation screen (5.3) for the Chair (UC-26, UC-23a, UC-23b, UC-23c, UC-23d). Title, Presenter, Description and document links can be edited, and Items can be reordered, whatever their execution status, Done Items included; only Pending Items can be deleted. The complete Agenda automatically reflects successfully saved changes for its authorized viewers.
+The Meeting Detail – Meeting Content tab shows the agenda of the selected Meeting. Agenda items belong directly to the Meeting and are listed in order with presenter and the number of attached documents; an item has no duration or planned time. Every user related to the meeting can view the agenda; the Secretary builds it (add, edit, delete, drag-and-drop reorder) while the Meeting is Draft, WaitingApproval, Rejected, Approved, Published or InProgress. When the Meeting is InProgress, the same tab switches to the Meeting Facilitation screen (5.3) for the Chair. Title, Presenter, Description and document links can be edited, and Items can be reordered, whatever their execution status, Done Items included; only Pending Items can be deleted. The complete Agenda automatically reflects successfully saved changes for its authorized viewers.
 
 This screen allows users related to the meeting (Member, Approver, Chair, Secretary, Participant) to:
 
-- View Meeting Agenda: view the complete Agenda in its saved order with Item information, planning and actual execution data. The complete view automatically refreshes after a successful Agenda change (UC-26).
+- View Meeting Agenda: view the complete Agenda in its saved order with Item information, planning and actual execution data. The complete view automatically refreshes after a successful Agenda change.
 
-- Add Agenda Item: (Secretary) click “Add item” to open the Add / Edit Agenda Item Drawer (UC-23a).
+- Add Agenda Item: (Secretary) click “Add item” to open the Add / Edit Agenda Item Drawer.
 
-- Edit Agenda Item: (Secretary) edit Title, Presenter, Description and document links of an Item whatever its status, Pending, InProgress or Done (UC-23b).
+- Edit Agenda Item: (Secretary) edit Title, Presenter, Description and document links of an Item whatever its status, Pending, InProgress or Done.
 
-- Delete Agenda Item: (Secretary) delete only a Pending Item after confirmation. Remaining Item positions are preserved (UC-23c).
+- Delete Agenda Item: (Secretary) delete only a Pending Item after confirmation. Remaining Item positions are preserved.
 
-- Reorder Agenda Items: (Secretary) drag any Item, including InProgress and Done Items, to a new position (UC-23d).
+- Reorder Agenda Items: (Secretary) drag any Item, including InProgress and Done Items, to a new position.
 
 On the screen, s/he can also:
 
@@ -3421,97 +3463,103 @@ On the screen, s/he can also:
 
 - Back to Meetings: click “‹ Meetings” to return to the meeting list or calendar.
 
+Related UC: UC-23a, UC-23b, UC-23c, UC-23d, UC-26
+
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Meeting header | Read-only: back link “‹ Meetings”, meeting title with status chip (e.g. Draft, In Progress) and confidentiality chip (e.g. Normal); second line: planned date and time and mode · location (e.g. “Thursday, 15/10/2026 · 08:30–09:30 · Hybrid · Room 2.1, floor 2”). |
-| Tabs | Meeting Content is selected. Other tabs: General Information, Participants, Documents, Voting, Recordings, Summary, Minutes. |
-| Add content | Primary button; opens the Add / Edit Agenda Item Drawer. Visible only to the assigned Secretary and only while the Meeting is Draft, WaitingApproval, Rejected, Approved, Published or InProgress (BR-058, BR-059). |
-| Drag handle | Shown on every row, including Done Items, to the active assigned Secretary while Agenda planning is permitted. Items of any execution status can be reordered; the new order is saved as one change (UC-23d). MSG63 confirms success; MSG143 reports invalid or outdated order; MSG71 reports a save failure. |
-| # (Order number) | The saved position of the Item in the Meeting agenda. Deleting a Pending Item does not renumber remaining positions; gaps are permitted. New Items are appended after the last position. |
-| Content | Column: agenda item title in bold. The Documents column shows the number of attached meeting documents (e.g. “2 documents”, “None yet”). While the Meeting is InProgress a Status column shows the execution chips Done, In discussion and Concluded. |
-| Presenter | Column: name of the presenter; an external Guest is marked “(guest)”. Empty when no presenter is set. Editable whatever the Item’s status. |
-| Row action | Secretary only, while Agenda planning is permitted. Edit is offered on every row and permits Title, Presenter, Description and document links whatever the Item’s status (UC-23b). Delete is offered only on Pending rows (UC-23c, BR-063); MSG142 reports an attempted deletion of an Item that has started. MSG67 applies when planning is no longer permitted; MSG61/MSG62 confirm success and MSG69/MSG70 report save failure. |
-| Empty and error states | When the Meeting has no agenda items an empty agenda message is shown (UC-26 AF-1). A meeting the user may not access shows the not-found page and no agenda data (BR-016, BR-017); load failure shows MSG128 “Unable to load the meeting agenda. Please try again.” |
+| Meeting header | Read-only meeting header with back link, title, status and confidentiality chips, date, time, mode and location. |
+| Tabs | Tabs of the meeting detail with Meeting Content selected. |
+| Add content | Primary button that opens the Add / Edit Agenda Item Drawer; visible only to the assigned Secretary while agenda planning is permitted. |
+| Drag handle | Drag handle on every row that reorders the agenda; the new order is saved as one change. |
+| # (Order number) | Column showing the saved position of the item; gaps after deletion are permitted. |
+| Content | Column showing the item title in bold with presenter, status and the number of attached documents. |
+| Presenter | Column showing the presenter name, marked “(guest)” for an external guest. |
+| Row action | Row actions for the Secretary: Edit on every row, Delete on Pending rows only. |
+| Empty and error states | Empty-state and error messages of the agenda, e.g. no agenda items yet. |
 
 5.1b Meeting Content Tab – Meeting InProgress
 
 Figure 42: Meeting Content tab while the Meeting is InProgress (Secretary view)
 
-Once the Meeting is InProgress the agenda list gains a Status column (Done, Concluded, In discussion) and the Secretary keeps full control of it. Every row, including Done and InProgress Items, has a drag handle and an Edit action; Delete appears only on Pending rows (UC-23b, UC-23c, UC-23d, BR-063). The Chair’s execution controls are on the Meeting Facilitation screen (5.3).
+Once the Meeting is InProgress the agenda list gains a Status column (Done, Concluded, In discussion) and the Secretary keeps full control of it. Every row, including Done and InProgress Items, has a drag handle and an Edit action; Delete appears only on Pending rows. The Chair’s execution controls are on the Meeting Facilitation screen (5.3).
 
 #### 5.2 Add / Edit Agenda Item Drawer
 
 Figure 43: Add / Edit Agenda Item Drawer
 
-The Add / Edit Agenda Item Drawer slides in from the right of the Meeting Content tab, so the agenda stays visible behind it, when the Secretary clicks “Add content” or chooses Edit on an item. It collects the content to discuss (title), an optional presenter, a note and a checklist of the Meeting’s documents linked to the item, with Cancel and Save buttons. Items can be added or edited only while the Meeting is Draft, WaitingApproval, Rejected, Approved, Published or InProgress (UC-23a, UC-23b). All four fields stay editable whatever the Item’s status.
+The Add / Edit Agenda Item Drawer slides in from the right of the Meeting Content tab, so the agenda stays visible behind it, when the Secretary clicks “Add content” or chooses Edit on an item. It collects the content to discuss (title), an optional presenter, a note and a checklist of the Meeting’s documents linked to the item, with Cancel and Save buttons. Items can be added or edited only while the Meeting is Draft, WaitingApproval, Rejected, Approved, Published or InProgress. All four fields stay editable whatever the Item’s status.
 
 This screen allows the Secretary to:
 
-- Create Agenda Item: enter the item information and click “Add item” to add it in Pending status at the end of the Meeting agenda (UC-23a).
+- Create Agenda Item: enter the item information and click “Add item” to add it in Pending status at the end of the Meeting agenda.
 
-- Update Agenda Item: edit Title, Presenter, Description and document links of an Item whatever its status (UC-23b).
+- Update Agenda Item: edit Title, Presenter, Description and document links of an Item whatever its status.
 
-- Choose Presenter: optionally choose an internal participant or external Guest; the Presenter can be left empty and chosen later (UC-23a, UC-23b, BR-064, BR-065).
+- Choose Presenter: optionally choose an internal participant or external Guest; the Presenter can be left empty and chosen later.
 
-- Attach Item Documents: tick the documents of this Meeting in the checklist; documents are uploaded in the Documents tab, not here (UC-23a, UC-23b, UC-36b).
+- Attach Item Documents: tick the documents of this Meeting in the checklist; documents are uploaded in the Documents tab, not here.
 
 On the screen, s/he can also:
 
 - Cancel: click “Cancel” to close the drawer without saving.
 
+Related UC: UC-23a, UC-23b, UC-36b
+
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Drawer title | “Add content” in create mode; the edit mode reuses the drawer with the current values. |
-| Content to discuss * | Text input, required (*); the title of the agenda item. Empty shows the field error “Agenda item title is required.” (MSG66). |
-| Presenter | Dropdown, optional; the hint “Optional, can be chosen later.” is shown under it. Lists the current internal participants and external Guests of the Meeting; a Guest is shown with “(guest)”, e.g. “Ngo Thanh Van (guest)”. Editable whatever the Item’s status. (BR-064, BR-065) |
-| Note | Textarea, optional; description of what will be presented or discussed. Editable whatever the Item’s status. |
-| Documents | Checklist of the documents already uploaded to this Meeting (file type badge and file name); the ticked ones are linked to the item (FE-07, UC-36b). The drawer has no “+ Add document” menu and no upload: files are uploaded in the Documents tab. A document not available to the Meeting gives “One or more selected documents are not available to this meeting.” (MSG66). Editable whatever the Item’s status. |
-| Cancel | Text button; closes the drawer without saving. |
-| Save | Primary button. Validates the fields and saves. Create: a Pending item is added at the end of the Meeting agenda, toast MSG60; Edit: toast MSG61. MSG67 if the Meeting is no longer Draft, WaitingApproval, Rejected, Approved, Published or InProgress or the user is no longer its Secretary (BR-058, BR-059); failure MSG68 / MSG69. Successful changes automatically refresh the complete Agenda for authorized viewers. |
+| Drawer title | Drawer title “Add content” in create mode; edit mode reuses the drawer with the current values. |
+| Content to discuss * | Required text input for the agenda item title. |
+| Presenter | Optional dropdown choosing the presenter; hint “Optional, can be chosen later.” A guest is shown with “(guest)”. |
+| Note | Optional textarea describing what will be presented or discussed. |
+| Documents | Checklist of the meeting documents linked to the item; there is no “+ Add document” menu and no upload here – files are uploaded in the Documents tab. |
+| Cancel | Text button “Cancel” that closes the drawer without saving. |
+| Save | Primary button “Save” that validates the fields and saves the item. |
 
 #### 5.3 Meeting Facilitation
 
 Figure 44: Meeting Facilitation
 
-The Meeting Facilitation screen is the Meeting Content tab of a Meeting that is InProgress, after the Chair or the Secretary has started the Meeting (UC-20). It shows the agenda with the execution status and actual times of each item, a card for the current agenda item and a preview of the online room. The Chair sets which item is being discussed, completes it and moves to the next one, may create a vote for the current item and finally ends the Meeting; the assigned Secretary may continue to create, update, delete and reorder Agenda Items, while agenda execution remains Chair-only; other authorized viewers follow the same progress read-only and in real time (UC-24, UC-25, UC-26, UC-21). The Chair must start the first Pending Item in the current order and may complete it regardless of Planned Duration; the next Item never starts automatically. Pending Items stay Pending when the Meeting ends.
+The Meeting Facilitation screen is the Meeting Content tab of a Meeting that is InProgress, after the Chair or the Secretary has started the Meeting. It shows the agenda with the execution status and actual times of each item, a card for the current agenda item and a preview of the online room. The Chair sets which item is being discussed, completes it and moves to the next one, may create a vote for the current item and finally ends the Meeting; the assigned Secretary may continue to create, update, delete and reorder Agenda Items, while agenda execution remains Chair-only; other authorized viewers follow the same progress read-only and in real time. The Chair must start the first Pending Item in the current order and may complete it regardless of Planned Duration; the next Item never starts automatically. Pending Items stay Pending when the Meeting ends.
 
 This screen allows the Chair to:
 
-- Follow Meeting Progress: view the actual start time, elapsed time and attendance count of the Meeting, and the status and actual times of every agenda item (UC-26).
+- Follow Meeting Progress: view the actual start time, elapsed time and attendance count of the Meeting, and the status and actual times of every agenda item.
 
-- Set Current Agenda Item: start only the first Pending Item in the current order, when no Item is InProgress. Its actual start time is recorded (UC-24).
+- Set Current Agenda Item: start only the first Pending Item in the current order, when no Item is InProgress. Its actual start time is recorded.
 
-- Complete Agenda Item: complete the current Item regardless of its planned duration; record actual end time and duration. The next Item does not start automatically (UC-25).
+- Complete Agenda Item: complete the current Item regardless of its planned duration; record actual end time and duration. The next Item does not start automatically.
 
-- Create Vote for Current Item: click “Create a vote for this item” to open the Create & Open Vote Dialog for the current agenda item (UC-63).
+- Create Vote for Current Item: click “Create a vote for this item” to open the Create & Open Vote Dialog for the current agenda item.
 
-- End Meeting: click the red End button to end the Meeting regardless of open Votes or incomplete attendance, complete any current InProgress Item and leave remaining Pending Items Pending (UC-21).
+- End Meeting: click the red End button to end the Meeting regardless of open Votes or incomplete attendance, complete any current InProgress Item and leave remaining Pending Items Pending.
 
 On the screen, s/he can also:
 
-- Join Online Room: click “Join online room” to open the online room of an Online or Hybrid Meeting in a new browser tab (UC-43).
+- Join Online Room: click “Join online room” to open the online room of an Online or Hybrid Meeting in a new browser tab.
 
 - View Room Preview: see who is currently connected to the online room in the small video grid.
+
+Related UC: UC-20, UC-21, UC-24, UC-25, UC-26, UC-43, UC-63
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Meeting header | Read-only: title with status chip In Progress and confidentiality chip; second line “Started 08:32 · 21 minutes elapsed” and “Present 4/5” taken from attendance (6.3). |
-| Join online room | Secondary button; shown for Online or Hybrid Meetings; opens the Meeting Lobby (8.1). |
-| End meeting | Chair-only End Meeting confirmation; available while InProgress regardless of open Votes, attendance completeness or remaining Pending Items. End records actual time/history and completes only the InProgress Agenda Item; it closes room access but preserves Votes and ballots without automatically closing them. No new ballots after Ended. MSG111 success; MSG114/MSG116 on authority/status/save failure. (BR-024, BR-025, BR-026) |
-| Agenda list | One row per agenda item: order number, title, presenter, number of documents and a status/action cell; there is no duration column. A Done item shows its actual time range (e.g. 08:32–08:44); the current item is highlighted and shows “In discussion since 08:44 · 9 minutes”. The panel is 360px wide and has no drag handles; reordering is done in the Meeting Content tab (5.1). |
-| Item status | Done or InProgress status is shown read-only. Only the first Pending Item offers Set as Current to the active assigned Chair when no Item is InProgress. |
-| Set as current | Chair only, while Meeting is InProgress. Starts only the first Pending Item in the current order and records actual start time. MSG72 reports another current Item; MSG144 reports selecting a later Pending Item; MSG73 reports other ineligible conditions; MSG75 reports save failure; MSG64 confirms success. (BR-060, BR-061, BR-062) |
-| Current item card | Read-only: order number and title of the current item and its attached documents (e.g. “2 documents · De-xuat-bieu-quyet.docx, So-sanh-eCabinet.pdf”); file names open the Document Viewer (7.5). |
-| Create a vote for this item | Secondary button in the current item card; Chair only, while the Meeting is InProgress (BR-090, BR-092, BR-093); opens the Create & Open Vote Dialog (11.2) linked to the current item. |
-| Complete item | Chair only, for the current InProgress Item. Completion is allowed regardless of Planned Duration and records actual end time and elapsed duration. The Meeting stays InProgress and the next Item does not start automatically. MSG65 confirms success; MSG74 reports ineligible conditions; MSG76 reports save failure. (BR-060, BR-061, BR-062) |
-| Online room preview | Read-only grid of tiles with the names of users connected to the online room; a tile such as “Room 2.1” shows the in-person room of a Hybrid Meeting, and “Waiting to join” marks an empty slot. |
-| Real-time update | The complete Agenda automatically refreshes for authorized users viewing the Meeting after successful creation, editing, deletion, reordering, start, completion or completion of the current Item when the Meeting ends. Failed changes do not produce a successful Agenda update. |
+| Meeting header | Read-only title with the In Progress chip, elapsed time and present count. |
+| Join online room | Secondary button for online or hybrid meetings that opens the Meeting Lobby. |
+| End meeting | Chair-only button that ends the meeting; available regardless of open votes or pending items. |
+| Agenda list | One row per agenda item with order number, title, presenter, documents and status; the current item is highlighted. |
+| Item status | Read-only Done or InProgress status; only the first Pending item offers Set as Current. |
+| Set as current | Chair-only button that starts the first Pending item and records its actual start time. |
+| Current item card | Read-only card of the current item with its attached documents. |
+| Create a vote for this item | Chair-only button in the current item card that opens the vote dialog linked to it. |
+| Complete item | Chair-only button that completes the current item and records its actual end time. |
+| Online room preview | Read-only grid of tiles naming the users connected to the online room. |
+| Real-time update | Read-only note that the agenda refreshes automatically for authorized viewers after each change. |
 
 ### 6. FE-06 – Meeting Participant Management
 
@@ -3523,59 +3571,61 @@ Figure 46: Change Role dialog – the Chair hands over the Chair role
 
 Figure 47: Change Role dialog – the Secretary changes a role
 
-The Meeting Detail – Participants tab shows current internal participants and external Guests. The assigned Secretary manages the roster, roles and additional permissions; the Organizer may assign the missing Secretary. From Published onward, the Chair may view the roster and invitation responses by default, while a Member or verified Guest needs the relevant additional permission. A Member or verified Guest with View Invitation Responses can see invitee names and email in response rows without gaining roster browsing or search access. View-only access does not permit changes. (UC-29, UC-30a–UC-32, BR-039, BR-016, BR-017)
+The Meeting Detail – Participants tab shows current internal participants and external Guests. The assigned Secretary manages the roster, roles and additional permissions; the Organizer may assign the missing Secretary. From Published onward, the Chair may view the roster and invitation responses by default, while a Member or verified Guest needs the relevant additional permission. A Member or verified Guest with View Invitation Responses can see invitee names and email in response rows without gaining roster browsing or search access. View-only access does not permit changes.
 
 This screen allows the Secretary to:
 
-- View Meeting Participants: view the internal participants and external Guests with name, email and meeting role or Guest access (UC-29).
+- View Meeting Participants: view the internal participants and external Guests with name, email and meeting role or Guest access.
 
-- Search Participants: type a name or email to filter the roster (UC-29).
+- Search Participants: type a name or email to filter the roster.
 
-- Manage Meeting Role: click the pencil button “Change role” on the row of a current internal participant, choose one role in the Change Role dialog and click Save; before publication the Secretary may also make the person Chair, and the former Chair becomes Member in the same save (UC-30b).
+- Manage Meeting Role: click the pencil button “Change role” on the row of a current internal participant, choose one role in the Change Role dialog and click Save; before publication the Secretary may also make the person Chair, and the former Chair becomes Member in the same save.
 
-- Hand Over Chair: (Chair, from publication onward) click “Change role” on the row of the person who will take over, choose Chair and click “Hand over Chair”; there is no separate hand-over button and no list of recipients (UC-34).
+- Hand Over Chair: (Chair, from publication onward) click “Change role” on the row of the person who will take over, choose Chair and click “Hand over Chair”; there is no separate hand-over button and no list of recipients.
 
-- Remove Participant: click “Remove” and confirm to remove an internal participant from the Meeting (UC-30c).
+- Remove Participant: click “Remove” and confirm to remove an internal participant from the Meeting.
 
-- Revoke Guest Invitation: click “Revoke invitation” and confirm to revoke the invitation of an external Guest (UC-30c).
+- Revoke Guest Invitation: click “Revoke invitation” and confirm to revoke the invitation of an external Guest.
 
-- View Response Status: after the Meeting is Published, view each invitee’s invitation response as a label beside the name; there are no totals (UC-32).
+- View Response Status: after the Meeting is Published, view each invitee’s invitation response as a label beside the name; there are no totals.
 
 On the screen, s/he can also:
 
-- Add Participants: click “Add participants” to open the Add Participant Dialog on the Internal users tab (UC-30a).
+- Add Participants: click “Add participants” to open the Add Participant Dialog on the Internal users tab.
 
-- Invite External Guest: click “Invite external guest” to open the Add Participant Dialog on the External guests tab (UC-30a).
+- Invite External Guest: click “Invite external guest” to open the Add Participant Dialog on the External guests tab.
 
-- Assign or Restore Secretary: in Draft/Rejected/Approved with no current Secretary, Organizer selects an active new user or an existing Member to assign Secretary; no duplicate participant is created (UC-30a).
+- Assign or Restore Secretary: in Draft/Rejected/Approved with no current Secretary, Organizer selects an active new user or an existing Member to assign Secretary; no duplicate participant is created.
+
+Related UC: UC-29, UC-30a, UC-30b, UC-30c, UC-32, UC-34
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Meeting header | Read-only: back link “‹ Meetings”, meeting title with status chip (e.g. Draft, In Progress) and confidentiality chip (e.g. Normal); second line: planned date and time and mode · location (e.g. “Thursday, 15/10/2026 · 08:30–09:30 · Hybrid · Room 2.1, floor 2”). |
-| Tabs | Participants is selected. Other tabs: General Information, Meeting Content, Documents, Voting, Recordings, Summary, Minutes. |
-| Search | Text input, optional, empty by default; filters the roster by full name or email. |
-| Invite external guest | Secondary button; opens the Add Participant Dialog on the External guests tab. Secretary only. |
-| Add participants | Primary button; opens the Add Participant Dialog. Shown to the Secretary; when the Meeting has no Secretary it is replaced for the Member by “Add Secretary” (BR-036, BR-037). Hidden while the Meeting is Pending Approval or Ended (BR-036, BR-037, BR-016, BR-017, BR-030). |
-| Participant | Column: internal full name, with “me” after the name of the signed-in user, or Guest self-declared display name, optional Guest job title and invited email; the response label of UC-32 sits beside the name; each email is shown on one line cut with “…” when too long, and a long email wraps before “@” or “.” rather than in the middle of a word. On a phone the attendance and the role chip share one row; use invitation name before profile completion. Mark Guest explicitly; do not represent display information as verified identity. |
-| Meeting role | Internal participants have Chair, Secretary or Member; Guests have fixed Guest access. Change role opens the Change Role dialog (6.1b, 6.1c). Giving the Chair role changes both roles together: the current Chair becomes Member and the selected person becomes Chair, as the Chair option itself states “You will become Member.” A Secretary must remain in Published/InProgress; preparation may temporarily have none. Success MSG100; replacement failure MSG146; required-role restriction MSG109. (BR-039, BR-040, BR-041, BR-042) |
-| Row action | Secretary and Chair: pencil button “Change role” and trash button “Remove from the meeting” for internal participants; trash button “Revoke invitation” only for Guests (a Guest has no role to change). The Chair’s own row has no actions: to move the Chair role, use Change role on the recipient’s row. View-only users see no management actions. Removal ends the assignment’s additional permissions and access, while independent valid access remains. Required-role restriction MSG109; removal success MSG103; failure MSG104; status restriction MSG98. (BR-036, BR-037, BR-044, BR-041, BR-042) |
-| Response label | Shown beside the name after publication to the assigned Secretary and current Chair by default, and to a Member or verified Guest with View Invitation Responses. Shows “Attending” or “Not attending” for each current invitee who answered; an invitee who has not answered and the Chair have no label. There are no totals, and nobody answers on this tab. This permission displays identity in response rows but does not grant roster browsing or search. Responses do not set attendance. (UC-32, BR-043, BR-016, BR-017, BR-047, BR-048) |
-| Pagination | “Showing 1–6 of 6 participants” with page-size choices 20, 50 and 100 (invitations are still sent when the Meeting is published, BR-031, BR-032). |
-| Error states | A Meeting the user is not authorized for shows the not-found page without roster data (BR-016, BR-017); load failure shows MSG95 “Unable to load meeting participants. Please try again.” |
-| Additional permissions | The Secretary may grant or revoke additional Meeting permissions on current internal participants or Guest invitations without changing their role. Available grants are not limited to View Participants and View Responses; the final catalogue and grant matrix are pending. These two views continue to check their respective permission. (BR-016, BR-017) |
+| Meeting header | Read-only meeting header with back link, title, status and confidentiality chips, date, time, mode and location. |
+| Tabs | Tabs of the meeting detail with Participants selected. |
+| Search | Optional text input filtering the roster by name or email. |
+| Invite external guest | Secondary button that opens the Add Participant Dialog on the External guests tab; Secretary only. |
+| Add participants | Primary button that opens the Add Participant Dialog; replaced by “Add Secretary” for the organizer when the meeting has none. |
+| Participant | Column showing the participant name, email, guest details and invitation response. |
+| Meeting role | Meeting role of internal participants: Chair, Secretary or Member; guests have fixed guest access. |
+| Row action | Row action buttons for the Secretary and Chair: Change role and Remove from the meeting, or Revoke invitation for guests. |
+| Response label | Response label “Attending” or “Not attending” beside the name; shown after publication to viewers who may see responses. |
+| Pagination | Paging info with page-size choices 20, 50 and 100. |
+| Error states | Not-found page for an unauthorized meeting, or an inline error when the roster cannot be loaded. |
+| Additional permissions | Additional meeting permissions the Secretary may grant or revoke without changing the role. |
 
-Change Role Dialog. The Change Role dialog opens from the “Change role” button on one internal participant’s row (UC-30b, UC-34). The Secretary (Draft, Rejected, Approved, Published, InProgress) and the Chair of a Published or InProgress Meeting use it. A person is given exactly one role; there is no list of recipients and no separate Hand over Chair button.
+Change Role Dialog. The Change Role dialog opens from the “Change role” button on one internal participant’s row. The Secretary (Draft, Rejected, Approved, Published, InProgress) and the Chair of a Published or InProgress Meeting use it. A person is given exactly one role; there is no list of recipients and no separate Hand over Chair button.
 
 | Field Name | Description |
 | --- | --- |
-| Dialog title | “Change role”. |
+| Dialog title | Dialog title “Change role”. |
 | Person | Read-only avatar, full name and email of the participant whose role changes. |
-| Role | One radio per role, each with a short description of what the role allows: Chair “Runs the meeting, moves between agenda items, mutes attendees.”; Secretary “Prepares the agenda, manages the participants.”; Member “Views the meeting and joins the meeting room.” The person’s current role is selected when the dialog opens. |
-| Chair option | Offered only when the signed-in user may move the Chair role and this person may take it: the person is a current active internal Member (not a Guest, not the Secretary, account not locked) (BR-041, BR-042), and either the signed-in user is the Chair of a Published or InProgress Meeting, or the Meeting is not yet Published, or the Chair’s account is locked and the signed-in user is the Secretary (BR-041, BR-042). When it is not offered (6.1c) the list shows only Secretary and Member. The line under Chair adds “You will become Member.” when the signed-in user is the Chair handing over, or “<name> will become Member.” naming the Chair who steps down. If nobody on the roster can take the Chair role, no row offers it; MSG258 is returned by the API but never shown. |
-| Cancel | Outline button; closes the dialog without changes. |
-| Save / Hand over Chair | Primary button, disabled until a role different from the current one is chosen; labelled “Hand over Chair” when Chair is chosen and “Save” otherwise; shows “Saving…” while sending. Success closes the dialog and shows a toast: MSG257 “Chair role handed over successfully.” after a hand-over, MSG100 “Meeting role updated successfully.” for other changes, MSG154 when nothing changed. Refusals show a toast after the dialog closes: MSG256 (a Secretary tried to move the Chair role while the Chair’s account is active), MSG259 (the recipient is not an eligible active internal Member), MSG260 (the user is no longer the Chair), MSG109 (the Meeting would lose its required Chair or Secretary); MSG102 “Unable to update the meeting role. Please try again.” appears inside the dialog when saving fails. The roster is then read again. |
+| Role | One radio per role: Chair “Runs the meeting, moves between agenda items, mutes attendees.”; Secretary “Prepares the agenda, manages the participants.”; Member “Views the meeting and joins the meeting room.”; the current role is selected. |
+| Chair option | Chair option offered only when the signed-in user may move the Chair role and the person may take it. The line under Chair reads “You will become Member.” when the signed-in user hands over, or “<name> will become Member.” otherwise. |
+| Cancel | Outline button “Cancel” that closes the dialog without changes. |
+| Save / Hand over Chair | Primary button labelled “Hand over Chair” when Chair is chosen and “Save” otherwise, showing “Saving…” while sending; disabled until a different role is chosen. |
 
 #### 6.2 Add Participant Dialog
 
@@ -3583,34 +3633,36 @@ For a Guest invitation, enter name/email and optional additional Meeting permiss
 
 Figure 48: Add Participant Dialog
 
-The Add Participant Dialog opens from the Participants tab with “Add participants” (Internal users tab) or “Invite external guest” (External guests tab). The Secretary searches active internal users, ticks the people to add and chooses their meeting role, or invites an external Guest by name and email. When the Meeting has no Secretary yet, the Member uses the same dialog to add the missing Secretary (UC-30a).
+The Add Participant Dialog opens from the Participants tab with “Add participants” (Internal users tab) or “Invite external guest” (External guests tab). The Secretary searches active internal users, ticks the people to add and chooses their meeting role, or invites an external Guest by name and email. When the Meeting has no Secretary yet, the Member uses the same dialog to add the missing Secretary.
 
 This screen allows the Secretary (or the Member when adding the missing Secretary) to:
 
-- Search Internal Users: type a name or email to find active internal users (UC-30a).
+- Search Internal Users: type a name or email to find active internal users.
 
-- Add Internal Participants: tick one or more users, choose the meeting role and click “Add <n> people” (UC-30a).
+- Add Internal Participants: tick one or more users, choose the meeting role and click “Add <n> people”.
 
-- Invite External Guest: on the External guests tab enter the Guest’s name and email and submit the invitation (UC-30a).
+- Invite External Guest: on the External guests tab enter the Guest’s name and email and submit the invitation.
 
 On the screen, s/he can also:
 
 - Cancel: click “Cancel” to close the dialog without adding anyone.
 
+Related UC: UC-30a
+
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Dialog title | “Add participants”. |
-| Tabs | Internal users (default) / External guests. |
-| User search | Text input on the Internal users tab, e.g. “Pham”; filters active internal users by name or email. |
-| User result list | Select one or more active internal accounts by checkbox. Current participants cannot be added again. Organizer recovery may instead assign Secretary to one existing active Member without creating a duplicate. All selected users are added together, or none are added if any selection is invalid. No organisational-unit invitation. For the missing Secretary, select exactly one user. (BR-038) |
-| Meeting role | Required; Member by default, Chair or Secretary. One shared role applies to the entire selection. The missing Secretary assignment is one user as Secretary, without additional permissions. A selection must not create a second Chair; use Edit Role & Permissions to replace the current Chair. (BR-039, BR-040, BR-041, BR-042) |
-| Guest name | External guests tab. Text input, required. |
-| Guest email | External guests tab. Email input, required, valid format. One current invitation per email per Meeting and the email must not belong to a current internal participant (BR-049, BR-050, BR-051). The Guest receives an email with a verification link once the Meeting is Published or InProgress (BR-052). |
-| Cancel | Text button; closes the dialog. |
-| Add <n> people | Shows the number selected and submits the entire selection. New invitations start Pending. All selected people are saved together; no one is added when validation or saving fails. Success MSG96 and the number added; invalid participant information MSG97/MSG145; invalid additional permissions MSG152; status restriction MSG98; save failure MSG99. Invitation delivery failure does not cancel successful additions. (BR-031, BR-032) |
-| Additional permissions | Additional permissions for current internal participants and Guest invitations supplement existing role permissions for this Meeting. Display the grantable permissions from the agreed catalogue; do not hardcode a two-option ceiling. View Participants and View Responses are examples. The catalogue and grant matrix are pending. |
+| Dialog title | Dialog title “Add participants”. |
+| Tabs | Tabs Internal users and External guests. |
+| User search | Text input filtering active internal users by name or email, e.g. “Pham”. |
+| User result list | Checkbox list of active internal accounts; current participants cannot be added again. For the missing Secretary, select exactly one user. |
+| Meeting role | Required meeting role shared by the entire selection; default Member, never creating a second Chair. |
+| Guest name | Required text input for the guest name on the External guests tab. |
+| Guest email | Required email input for the guest on the External guests tab; one current invitation per email per meeting. |
+| Cancel | Text button “Cancel” that closes the dialog. |
+| Add <n> people | Primary button “Add <n> people” showing the number selected that adds everyone together, or no one when anything is invalid. |
+| Additional permissions | Additional permissions for the selected people, supplementing their role for this meeting. |
 
 #### 6.3 Attendance Check
 
@@ -3618,25 +3670,27 @@ Figure 49: Attendance Check – the Secretary records attendance
 
 Figure 50: Attendance Check – participant view
 
-Attendance Check is the Attendance column of the participant table on the Participants tab of the Meeting detail, shown while the Meeting is InProgress or Ended; it is not a separate screen. The assigned Secretary marks each current internal participant and external Guest Present or Absent by choosing a value in the cell; choosing a value saves it at once, and there is no Save button and no Present/Absent total. Other participants read the attendance. A person not yet recorded has no official attendance value and is shown as “Not recorded”, which is not Absent. Invitation responses and online-room presence never determine attendance. Saved attendance is available for the meeting minutes. In the online meeting room the same attendance is also available in the Attendance panel (8.7). (UC-33, BR-043, BR-056, BR-057)
+Attendance Check is the Attendance column of the participant table on the Participants tab of the Meeting detail, shown while the Meeting is InProgress or Ended; it is not a separate screen. The assigned Secretary marks each current internal participant and external Guest Present or Absent by choosing a value in the cell; choosing a value saves it at once, and there is no Save button and no Present/Absent total. Other participants read the attendance. A person not yet recorded has no official attendance value and is shown as “Not recorded”, which is not Absent. Invitation responses and online-room presence never determine attendance. Saved attendance is available for the meeting minutes. In the online meeting room the same attendance is also available in the Attendance panel (8.7).
 
 This screen allows the Secretary to:
 
-- View Attendance: view every participant and Guest of the Meeting with meeting role, invitation response label and current attendance in the participant table (UC-33).
+- View Attendance: view every participant and Guest of the Meeting with meeting role, invitation response label and current attendance in the participant table.
 
-- Record Attendance: (Secretary) choose Present or Absent in the Attendance cell of a person; each choice is saved immediately (UC-33).
+- Record Attendance: (Secretary) choose Present or Absent in the Attendance cell of a person; each choice is saved immediately.
 
-- Revise Attendance: (Secretary) choose another value for the same person while attendance editing is still permitted (UC-33).
+- Revise Attendance: (Secretary) choose another value for the same person while attendance editing is still permitted.
+
+Related UC: UC-32, UC-33
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Meeting header | Read-only: title with status chip In Progress and confidentiality chip; second line actual start time (e.g. “Started 08:32”) and mode · location. |
-| Save result | There is no Save button: choosing a value sends that person’s attendance at once, and the cell shows the chosen value while the request runs. Success MSG147 “Meeting attendance saved successfully.”; invalid value MSG148; status restriction MSG149. MSG151 “The participant or attendance data has changed. Please reload and review before saving.” when someone else changed the same person’s attendance or the person is no longer on the roster: nothing is saved, the table is reloaded and the Secretary chooses again, no unsaved choice is kept. MSG150 “Unable to confirm the attendance save result. Please reload the data before trying again.” when the result cannot be confirmed; the Secretary reloads to see what was saved. MSG289 “Unable to load attendance data.” with a Retry button when the attendance cannot be read; a failed load is never shown as an empty roster. Attendance completeness never blocks End Meeting. (BR-056, BR-057) |
-| Participant | Column: avatar initials, full name (with “(me)” for the signed-in user) and email of each current internal participant and external Guest, with the response label of UC-32 beside the name. |
-| Role | Read-only column: Chair, Secretary, Member or Guest, each as a square chip of its own tint. |
-| Attendance | For the Secretary a small dropdown: dot and text Present (green dot) or Absent (grey dot); a dashed empty dropdown reading “Record attendance” while the person has never been recorded. For everyone else a read-only dot and text, or “Not recorded” when never recorded. The tooltip reads “<name> recorded attendance at <hh:mm dd/mm/yyyy>” (who recorded it and when). Each person’s attendance has its own version. Invitation responses and online-room connections never select or save official attendance automatically. Revision is allowed only while InProgress. (BR-043, BR-056, BR-057) On a phone the attendance control and the role chip share one row. |
+| Meeting header | Read-only title with the In Progress chip, actual start time, mode and location. |
+| Save result | No Save button: choosing a value sends that person’s attendance at once. |
+| Participant | Column showing avatar, full name and email of each participant and guest. |
+| Role | Read-only column showing the meeting role as a tinted chip. |
+| Attendance | Attendance control: a Present/Absent dropdown for the Secretary, read-only text for everyone else. |
 
 #### 6.4 Invitation Response
 
@@ -3644,30 +3698,32 @@ Figure 51: Invitation Response – before answering
 
 Figure 52: Invitation Response – after answering
 
-The Invitation Response screen is a mobile-friendly page opened from the invitation email; an external Guest reaches it after Guest Verification (1.3). Internal users normally answer on the card in the calendar list (4.2) or at the top of the Meeting detail (4.5); this page gives the same answer from a phone. The invitee sees the meeting title, status, confidentiality level, planned time, mode and location, his/her own meeting role and the Chair, and answers Accept or Decline once; after that the answer is shown and cannot be changed. The Chair does not answer. An invitee who never answers is treated as attending (UC-31, UC-04, BR-046, BR-047, BR-048).
+The Invitation Response screen is a mobile-friendly page opened from the invitation email; an external Guest reaches it after Guest Verification (1.3). Internal users normally answer on the card in the calendar list (4.2) or at the top of the Meeting detail (4.5); this page gives the same answer from a phone. The invitee sees the meeting title, status, confidentiality level, planned time, mode and location, his/her own meeting role and the Chair, and answers Accept or Decline once; after that the answer is shown and cannot be changed. The Chair does not answer. An invitee who never answers is treated as attending.
 
 This screen allows an invited Secretary, Participant or a verified external Guest to:
 
-- View Invitation: view the meeting title, status, confidentiality level, planned time, mode and location, his/her meeting role and the Chair (UC-31).
+- View Invitation: view the meeting title, status, confidentiality level, planned time, mode and location, his/her meeting role and the Chair.
 
-- Accept Invitation: click “Attend” to record the response Accepted (UC-31).
+- Accept Invitation: click “Attend” to record the response Accepted.
 
-- Decline Invitation: click “Not attending” to record the response Declined (UC-31).
+- Decline Invitation: click “Not attending” to record the response Declined.
+
+Related UC: UC-04, UC-31
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| App bar | TrustCabinet logo and name; the page needs no sidebar so it works on a phone. |
-| Invitation header | Read-only: eyebrow “Meeting invitation”, meeting title, status chip (e.g. Published) and confidentiality chip (e.g. Normal). |
-| Time | Read-only planned start and end of the Meeting, e.g. “Thursday, 15/10/2026 · 08:30–09:30”. |
-| Mode | Read-only mode and location, e.g. “Hybrid · Room 2.1”. |
-| Your role | Read-only meeting role of the invitee: Chair, Secretary, Participant or Guest. |
-| Chair | Read-only name of the Chair of the Meeting. |
-| Attend | Button; records Accepted. Shown only while the invitation has no answer. Only the owner of a current invitation can respond (BR-046). |
-| Not attending | Button; records Declined; the Meeting then disappears from the invitee’s own calendar. Shown only while the invitation has no answer. A Guest may answer only Accept or Decline (BR-046). |
-| Answer note | While unanswered, an info box: “You answer only once and cannot change it. If you do not answer you are still counted as attending.” After answering, the buttons are replaced by a green box, e.g. “You chose: Attend · 10/10 09:02. The answer cannot be changed.” The response and time are recorded once (BR-046). |
-| Messages | Success MSG105 “Meeting invitation response recorded successfully.”; MSG154 “No changes to save.” when the same answer is sent again; MSG285 “You have already answered this invitation. Your answer cannot be changed.” when a different answer is sent after answering; MSG286 for the Chair; MSG106 invalid response; MSG107 “This meeting invitation can no longer be answered.” when the Meeting is no longer Published/InProgress or the invitation was revoked or expired (BR-053, BR-054, BR-044); MSG108 save failure. |
+| App bar | App bar with the TrustCabinet logo and name and no sidebar, so the page works on a phone. |
+| Invitation header | Read-only eyebrow “Meeting invitation”, meeting title, status and confidentiality chips. |
+| Time | Read-only planned start and end of the meeting. |
+| Mode | Read-only meeting mode and location. |
+| Your role | Read-only meeting role of the invitee. |
+| Chair | Read-only name of the Chair. |
+| Attend | Button that records Accepted; shown only while the invitation has no answer. |
+| Not attending | Button that records Declined and removes the meeting from the invitee’s calendar; shown only while the invitation has no answer. |
+| Answer note | Info box “You answer only once and cannot change it. If you do not answer you are still counted as attending.”; after answering, a green box confirms the recorded answer. |
+| Messages | Success and error notices of answering, e.g. the invitation was already answered or can no longer be answered. |
 
 ### 7. FE-07 – Personal Document Library & Meeting Document Management
 
@@ -3675,174 +3731,184 @@ Field Description
 
 Figure 53: Document Library – Empty State
 
-The Document Library – Empty State screen is what a signed-in internal user sees on opening Document Library from the sidebar before he/she has created any folder or uploaded any file. The folder panel holds only All documents with 0 files, and the file area shows an empty-state panel explaining how the library is used. The New folder and Upload buttons inside the panel do the same as those at the top of the page; a file uploaded while All documents is selected is stored at the root of the library. Once the library holds folders or files, the page is the Personal Document Library (7.2). External Guests have no personal library (UC-37, UC-39, UC-41a).
+The Document Library – Empty State screen is what a signed-in internal user sees on opening Document Library from the sidebar before he/she has created any folder or uploaded any file. The folder panel holds only All documents with 0 files, and the file area shows an empty-state panel explaining how the library is used. The New folder and Upload buttons inside the panel do the same as those at the top of the page; a file uploaded while All documents is selected is stored at the root of the library. Once the library holds folders or files, the page is the Personal Document Library (7.2). External Guests have no personal library.
 
 This screen allows any signed-in internal user (Member, Approver, System Admin, Chair, Secretary, Participant) to:
 
-- Open Document Library: click Document Library in the sidebar to open his/her own library page (UC-37).
+- Open Document Library: click Document Library in the sidebar to open his/her own library page.
 
-- View Empty Library: see that his/her library has no folders or files yet and read how it is used (UC-37).
+- View Empty Library: see that his/her library has no folders or files yet and read how it is used.
 
-- Upload Document: click “Upload” at the top of the page or in the empty-state panel to store a file at the root of the library (UC-39).
+- Upload Document: click “Upload” at the top of the page or in the empty-state panel to store a file at the root of the library.
 
-- Create Folder: click “New folder” at the top of the page or in the empty-state panel to create a folder at the root of the library (UC-41a).
+- Create Folder: click “New folder” at the top of the page or in the empty-state panel to create a folder at the root of the library.
+
+Related UC: UC-37, UC-39, UC-41a
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Sidebar item | Navigation item in the Business group; highlighted when this page is open. |
-| Page title | Read-only “Document Library”. |
-| Page subtitle | Read-only: “Your private documents — only you can see and manage what is here.” |
-| New folder / Upload | Shown both in the page header and inside the empty-state panel; both pairs do the same. New folder creates a folder at the root of the library (UC-41a); Upload opens the file picker and stores the chosen file at the root of the library (UC-39, BR-069). |
-| Folder panel | Shows only All documents with the count 0, selected; no folder exists yet. |
-| Empty-state panel | Dashed panel with a document icon in the file area, holding the title, explanation text, file hint and the New folder and Upload buttons. |
-| Empty-state title | Read-only: “No documents yet”. |
-| Explanation text | Read-only: “Upload documents to the library, put them into folders, then attach them to meetings where you are Chair or Secretary. A document not attached to any meeting can be read only by you.” |
-| File hint | Read-only small text: “Accepts PDF and DOCX, up to 10 MB per file.” (BR-069) |
+| Sidebar item | Navigation item of the Document Library in the Business group. |
+| Page title | Read-only title “Document Library”. |
+| Page subtitle | Read-only subtitle “Your private documents — only you can see and manage what is here.” |
+| New folder / Upload | New folder and Upload buttons in the page header and in the empty-state panel; both pairs do the same. |
+| Folder panel | Folder panel showing only All documents with count 0. |
+| Empty-state panel | Dashed panel holding the title, explanation, file hint and action buttons. |
+| Empty-state title | Read-only title “No documents yet”. |
+| Explanation text | Read-only explanation of uploading to the library and attaching to meetings. |
+| File hint | Read-only small text “Accepts PDF and DOCX, up to 10 MB per file.” |
 
 #### 7.2 Personal Document Library
 
 Figure 54: Personal Document Library
 
-The Personal Document Library is the Document Library page once the user’s library holds folders or files; an empty library shows the empty state (7.1). Each internal user has a private library: folders on the left and the file table on the right, with size, upload date and the number of meetings that use each file. Files have no versions; to change a document the user uploads a new file. Uploading a file to the library does not attach it to a meeting; files are attached through the Add Document to Meeting Dialog (7.4). A file uploaded straight into a meeting lands in a folder named after that meeting. External Guests have no personal library (UC-37, UC-39, UC-40, UC-41).
+The Personal Document Library is the Document Library page once the user’s library holds folders or files; an empty library shows the empty state (7.1). Each internal user has a private library: folders on the left and the file table on the right, with size, upload date and the number of meetings that use each file. Files have no versions; to change a document the user uploads a new file. Uploading a file to the library does not attach it to a meeting; files are attached through the Add Document to Meeting Dialog (7.4). A file uploaded straight into a meeting lands in a folder named after that meeting. External Guests have no personal library.
 
 This screen allows any signed-in internal user (Member, Approver, System Admin, Chair, Secretary, Participant) to:
 
-- View Personal Document Library: view his/her own documents with file name, size, upload date and meeting usage (UC-37).
+- View Personal Document Library: view his/her own documents with file name, size, upload date and meeting usage.
 
-- Browse Folders: select All documents or a folder in the left panel to list the files and sub-folders it contains (UC-37).
+- Browse Folders: select All documents or a folder in the left panel to list the files and sub-folders it contains.
 
-- Search and Filter Documents: search by file name and filter by file type (UC-37).
+- Search and Filter Documents: search by file name and filter by file type.
 
-- Upload Document: click “Upload” and choose a file from the computer to store it in the selected folder (UC-39).
+- Upload Document: click “Upload” and choose a file from the computer to store it in the selected folder.
 
-- Organise Documents: rename a file, move it to another folder or delete it from the library; meetings that already use the file keep it (UC-40).
+- Organise Documents: rename a file, move it to another folder or delete it from the library; meetings that already use the file keep it.
 
-- Manage Folders: click “New folder” to create a folder, and rename, move or delete an empty folder from its menu; folders nest at most five levels (UC-41).
+- Manage Folders: click “New folder” to create a folder, and rename, move or delete an empty folder from its menu; folders nest at most five levels.
 
 On the screen, s/he can also:
 
 - Use Row Actions: use the icon buttons of a row to work with that file.
 
+Related UC: UC-37, UC-39, UC-40, UC-41, UC-41a
+
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Page header | Read-only title “Document Library” with the subtitle “Your private documents — only you can see and manage what is here.” Only the owner’s own documents are listed. |
-| New folder | Secondary button; creates a folder inside the selected folder, or at the root when All documents is selected. Nesting is limited to five levels (UC-41a). |
-| Upload | Primary button; opens the file picker and uploads the chosen file into the selected folder (UC-39). Only PDF and DOCX files up to 10 MB are accepted (BR-069); a file that cannot be stored is rejected with an error and nothing is saved. |
-| Folder panel | Tree of All documents (default, selected) and the user’s folders, each with the number of files. A folder named after a meeting (e.g. “Sprint 6 planning meeting - 15/10/2026”) holds files uploaded straight into that meeting. Each folder has a menu: Rename, Move, Delete (only when empty) (UC-41). |
-| Search | Text input, optional, empty by default; matches the file name within the selected folder. |
-| File type filter | Dropdown. Values: All file types (default), PDF and Word (DOCX). |
-| File name | Column: file icon and file name, e.g. “Ke-hoach-kinh-doanh-2027.docx”. |
-| Size | Column: file size, e.g. 1,2 MB / 640 KB. |
-| Uploaded | Column: upload date, format dd/mm/yyyy. |
-| Used in | Column: number of meetings the file has been attached to, e.g. “2 meetings”, or “Not used” in italics. A file not attached to any meeting can be read only by its owner. |
-| Actions | Icon buttons per row: open preview, download, rename, move to another folder and delete from the library (UC-40). Delete asks for confirmation and states that meetings using the file keep it (BR-074, BR-075, BR-076). |
+| Page header | Read-only title “Document Library” with its subtitle; only the owner’s own documents are listed. |
+| New folder | Secondary button that creates a folder inside the selected folder; nesting is limited to five levels. |
+| Upload | Primary button that uploads the chosen file into the selected folder; only PDF and DOCX up to 10 MB. |
+| Folder panel | Tree of All documents and the user’s folders with file counts; each folder has Rename, Move and Delete. |
+| Search | Optional text input matching the file name within the selected folder. |
+| File type filter | Dropdown filtering by file type: All file types, PDF, Word. |
+| File name | Column showing the file icon and file name. |
+| Size | Column showing the file size. |
+| Uploaded | Column showing the upload date. |
+| Used in | Column showing how many meetings the file is attached to, or “Not used”. |
+| Actions | Icon buttons per row: preview, download, rename, move and delete. |
 
 #### 7.3 Meeting Detail – Documents Tab
 
 Figure 55: Meeting Detail – Documents Tab
 
-The Meeting Detail – Documents tab lists the documents attached to the selected Meeting in three groups: By meeting content, with one block per Agenda Item in agenda order; Voting, with the documents of each Vote the user can see and the user's own read state; and General documents, linked to no Agenda Item. A file linked to several Agenda Items appears under each of them and is uploaded only once; a document linked to a Vote appears only in the Voting group, and a document linked only to a Draft Vote is not shown to a Member or Guest at all (BR-079, BR-080). The Meeting keeps its own reference to each file, so deleting the file from a personal library does not remove it from the Meeting. Anyone who can view the Meeting reads its documents; until the Meeting ends the Chair and the Secretary add documents from the computer or their personal library, attach them to an Agenda Item, unlink them from an item and remove them from the Meeting (UC-35a, UC-35b, UC-36a, UC-36b, UC-36c, UC-36d, BR-079, BR-080).
+The Meeting Detail – Documents tab lists the documents attached to the selected Meeting in three groups: By meeting content, with one block per Agenda Item in agenda order; Voting, with the documents of each Vote the user can see and the user's own read state; and General documents, linked to no Agenda Item. A file linked to several Agenda Items appears under each of them and is uploaded only once; a document linked to a Vote appears only in the Voting group, and a document linked only to a Draft Vote is not shown to a Member or Guest at all. The Meeting keeps its own reference to each file, so deleting the file from a personal library does not remove it from the Meeting. Anyone who can view the Meeting reads its documents; until the Meeting ends the Chair and the Secretary add documents from the computer or their personal library, attach them to an Agenda Item, unlink them from an item and remove them from the Meeting.
 
 This screen allows users who can view the meeting (Member, Approver, Chair, Secretary, Participant, and a verified Guest) to:
 
-- View Meeting Documents: view the documents grouped by Agenda Item, by Vote or general, each with file name, page count when known and number of comments (UC-35a).
+- View Meeting Documents: view the documents grouped by Agenda Item, by Vote or general, each with file name, page count when known and number of comments.
 
-- Switch Grouping: choose By meeting content, Voting or General documents (UC-35a).
+- Switch Grouping: choose By meeting content, Voting or General documents.
 
-- Open Document: click a document to open it in the Document Viewer with preview and comments (UC-35b).
+- Open Document: click a document to open it in the Document Viewer with preview and comments.
 
 On the screen, the Chair and the Secretary can also:
 
-- Add Document: click “Add general document” to add files from the computer or the personal library through the Add Document to Meeting Dialog (UC-36a).
+- Add Document: click “Add general document” to add files from the computer or the personal library through the Add Document to Meeting Dialog.
 
-- Attach to Agenda Item: click the paperclip of an Agenda Item block to attach Meeting documents, files from the computer or files from the personal library to that item (UC-36b).
+- Attach to Agenda Item: click the paperclip of an Agenda Item block to attach Meeting documents, files from the computer or files from the personal library to that item.
 
-- Unlink or Remove Document: use the row buttons Remove from this item, shown under an Agenda Item, and Remove from the meeting; both ask for confirmation (UC-36d, UC-36c).
+- Unlink or Remove Document: use the row buttons Remove from this item, shown under an Agenda Item, and Remove from the meeting; both ask for confirmation.
+
+Related UC: UC-35a, UC-35b, UC-36a, UC-36b, UC-36c, UC-36d, UC-42, UC-68
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Meeting header | Read-only: back link “‹ Meetings”, meeting title with status chip (e.g. Draft, In Progress) and confidentiality chip (e.g. Normal); second line: planned date and time and mode · location (e.g. “Thursday, 15/10/2026 · 08:30–09:30 · Hybrid · Room 2.1, floor 2”). |
-| Tabs | Documents is selected. Other tabs: General Information, Participants, Meeting Content, Voting, Recordings, Summary, Minutes. |
-| Grouping | Segmented control: By meeting content (default), Voting and General documents; each segment shows its number of documents, a document counted once even when it is under several items (UC-35a). On a phone the labels shorten to “Content” and “General”. |
-| Agenda Item block | Collapsible block per Agenda Item, numbered by its place in the agenda list rather than the stored position, with title and number of documents; a block that has documents is open and an empty one is folded. Tooltip: “A document can be attached to several items.”. |
-| Attach to item | Paperclip button on each Agenda Item block, Chair and Secretary only, tooltip “Add documents to this item”; opens the Add Document to Meeting Dialog (7.4) for that item, with the sources In the meeting, From the computer and From my library (UC-36b). |
-| Document row | File type badge, file name, page count and number of comments, e.g. “Ke-hoach-kinh-doanh-2027.pdf · 14 pages · 4 comments”. The page count is shown only when it is known (a PDF whose page count was recorded) and is left out otherwise. Who added the document and when are shown in a tooltip on the name. Clicking the row opens the Document Viewer (7.5). A Download button follows the name unless the Meeting is Secret (BR-081); on a phone the row buttons move under the name together. |
-| Vote documents | In the Voting group, one block per Vote with its title and status chip, in the order the Votes were created; a Draft Vote is listed only for the Chair and the Secretary (BR-086, BR-087). Each document shows Read, with the confirmation time in a tooltip, once the user has confirmed reading it, and Not read only while the user can still confirm it as a voter of the Open Vote in an In Progress Meeting (UC-42). Documents are attached to a Vote on the Voting tab (UC-68), not here. Empty state: “No Vote has documents yet.” |
-| Row actions | Icon buttons for the Chair and the Secretary until the Meeting ends: Remove from this item, under an Agenda Item only, unlinks the document from that item (UC-36d); Remove from the meeting removes the document from every item. Both ask for confirmation; its comments are kept as history but no longer listed (UC-36c, BR-074, BR-075, BR-076). |
-| Add document | Button “Add general document”, Chair and Secretary only; opens the Add Document to Meeting Dialog (7.4) to add files from the computer or the personal library. |
-| Access rules | Anyone who can currently view the Meeting reads its documents, including the Approver and a verified Guest while the Meeting is Published or In Progress (BR-055). There is no separate reading permission (BR-079, BR-080). After the Meeting ends every add, link and remove control is hidden and the documents are read-only (BR-070, BR-071, BR-079, BR-080). |
+| Meeting header | Read-only meeting header with back link, title, status and confidentiality chips, date, time, mode and location. |
+| Tabs | Tabs of the meeting detail with Documents selected. |
+| Grouping | Segmented control grouping documents by meeting content, votes or general documents, with counts. |
+| Agenda Item block | Collapsible block per agenda item with its title and number of documents. |
+| Attach to item | Paperclip button on each agenda item block that opens the Add Document to Meeting Dialog for that item. |
+| Document row | Row showing file badge, file name, page count and comment count; clicking opens the Document Viewer. |
+| Vote documents | Block per vote in the Voting group with its documents and read status. |
+| Row actions | Icon buttons for the Chair and Secretary: Remove from this item and Remove from the meeting. |
+| Add document | Button “Add general document” for the Chair and Secretary that opens the Add Document to Meeting Dialog. |
+| Access rules | Read-only note that anyone who may view the meeting reads its documents; after the meeting ends everything is read-only. |
 
 #### 7.4 Add Document to Meeting Dialog
 
 Figure 56: Add Document to Meeting Dialog
 
-The Add Document to Meeting Dialog opens from “Add general document” on the Documents tab, from the paperclip of an Agenda Item block, or for a Draft Vote on the Voting tab. Its source switch offers From the computer and From my library, and also In the meeting when it was opened for an Agenda Item or a Vote. A document selected from the personal library stays in that library; a file uploaded from the computer is also stored in the uploader’s personal library, in the folder of the meeting. Files from the computer are queued and sent one at a time, so the dialog closes at once and a tray in the corner follows the uploads; documents chosen from the library or the meeting are added together, or none is added (UC-36a, UC-36b, UC-68a, BR-070, BR-071).
+The Add Document to Meeting Dialog opens from “Add general document” on the Documents tab, from the paperclip of an Agenda Item block, or for a Draft Vote on the Voting tab. Its source switch offers From the computer and From my library, and also In the meeting when it was opened for an Agenda Item or a Vote. A document selected from the personal library stays in that library; a file uploaded from the computer is also stored in the uploader’s personal library, in the folder of the meeting. Files from the computer are queued and sent one at a time, so the dialog closes at once and a tray in the corner follows the uploads; documents chosen from the library or the meeting are added together, or none is added.
 
 This screen allows the Chair or the Secretary to:
 
-- Select Documents from Library: on From my library, open the folders and tick one or more files of his/her personal library (UC-36a).
+- Select Documents from Library: on From my library, open the folders and tick one or more files of his/her personal library.
 
-- Upload from Computer: drop or choose up to 10 PDF or DOCX files at a time (UC-36a). The extension must be .pdf or .docx and must match the file’s content; a file of the wrong type, an empty file, a file over 10 MB or a file name that cannot be used is named in the error and that file is not added (MSG164). A PDF must also open without a password and contain at least one page; the system counts its pages itself.
+- Upload from Computer: drop or choose up to 10 PDF or DOCX files at a time. The extension must be.pdf or.docx and must match the file’s content; a file of the wrong type, an empty file, a file over 10 MB or a file name that cannot be used is named in the error and that file is not added (MSG164). A PDF must also open without a password and contain at least one page; the system counts its pages itself.
 
-- Add Documents: click “Add <n> documents” to attach the selected files to the Meeting (UC-36a).
+- Add Documents: click “Add <n> documents” to attach the selected files to the Meeting.
 
 On the screen, s/he can also:
 
 - Cancel: click “Cancel” to close the dialog without adding anything; when files are already chosen, the dialog asks before discarding them.
 
+Related UC: UC-36a, UC-36b, UC-68a
+
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Dialog title | “Add general document”, “Add documents to item n” or “Add documents to the Vote”. |
-| Tabs | Segmented control “Take documents from”: In the meeting (for an Agenda Item or a Vote only), From the computer and From my library. |
-| Library file list | From my library: one folder at a time with a breadcrumb back to the library root; rows with checkbox, file type badge, file name, page count and size. Only the user’s own library files are listed, and the choice is kept while moving between folders. At least one file must be selected (MSG249); a file already in this Meeting is refused with MSG165. The note under the list says the Meeting uses the document’s current name, and renaming it in the library later does not rename it in the Meeting. |
-| Upload area | Drop zone “Drag files here or click to choose”. Only PDF or DOCX, at most 10 MB each, and at most 10 files totalling 100 MB per submission; the extension must be .pdf or .docx and must match the file’s content. Before reading any file the system checks the user’s authority: a user who is no longer the Chair or Secretary receives MSG162 whatever the files are, and one who can no longer view the Meeting receives MSG174. A submission of more than 10 files or more than 100 MB, or a request that declares more than 101 MB, shows MSG288 before the files are received; a missing file, an invalid request, a file name that cannot be used, a file of the wrong type, or a PDF that needs a password, has no page or cannot be read shows MSG164 naming the files at fault; in every case nothing is added (MSG162, MSG164, MSG174, MSG288, BR-069). |
-| Access notice | Info box: “Anyone who can view the Meeting can read the added documents.” (BR-079, BR-080) |
-| Cancel | Text button “Cancel”; closes the dialog, after asking when files are already chosen. |
-| Add <n> documents | Primary button showing the number of selected files, e.g. “Add 1 document”, or “Attach 1 document” for In the meeting. Files from the computer go to the upload tray and are sent one at a time; a file that fails is reported in the tray, with “Retry” when retrying can help, and does not stop the others. Documents from the library or the meeting are added together or not at all. |
+| Dialog title | Dialog title depending on the target: general document, agenda item or vote. |
+| Tabs | Segmented control choosing the source: In the meeting, From the computer or From my library. |
+| Library file list | Library file list with breadcrumb, checkboxes, file badge, name, page count and size. |
+| Upload area | Drop zone for uploading: only PDF or DOCX, at most 10 MB each and 10 files totalling 100 MB per submission. |
+| Access notice | Info box stating anyone who may view the meeting can read the added documents. |
+| Cancel | Text button “Cancel” that closes the dialog, asking first when files are already chosen. |
+| Add <n> documents | Primary button showing the number selected that adds the documents together. |
 
 #### 7.5 Document Viewer – Preview & Comments
 
 Figure 57: Document Viewer – Preview & Comments
 
-The Document Viewer opens when a user clicks a document on the Documents tab, on an Agenda Item or in the Documents panel of the online room; opened from the room, it opens in a new browser tab so the call continues. It renders the document in the browser – a PDF page by page, a DOCX as one continuous scrollable document – with zoom, next to the comments panel. Users who can view the Meeting preview the document and download it unless the Meeting is Secret (UC-35b), and comment and reply until the Meeting ends (UC-38). Opened from a Vote the user has still to cast, it also offers read confirmation once the last page is reached (UC-42).
+The Document Viewer opens when a user clicks a document on the Documents tab, on an Agenda Item or in the Documents panel of the online room; opened from the room, it opens in a new browser tab so the call continues. It renders the document in the browser – a PDF page by page, a DOCX as one continuous scrollable document – with zoom, next to the comments panel. Users who can view the Meeting preview the document and download it unless the Meeting is Secret, and comment and reply until the Meeting ends. Opened from a Vote the user has still to cast, it also offers read confirmation once the last page is reached.
 
 This screen allows users who can view the meeting (Member, Approver, Chair, Secretary, Participant, verified Guest) to:
 
-- Preview Meeting Document: read the document (a PDF page by page) and zoom in or out (UC-35b).
+- Preview Meeting Document: read the document (a PDF page by page) and zoom in or out.
 
-- View Comments: read the comments with author, page and time, each followed by its replies (UC-38).
+- View Comments: read the comments with author, page and time, each followed by its replies.
 
-- Comment on Document: type a comment and click “Send”; for a PDF it refers to the page being viewed (UC-38).
+- Comment on Document: type a comment and click “Send”; for a PDF it refers to the page being viewed.
 
-- Reply to Comment: click “Reply” under a comment; a reply to a reply joins the same thread, one level deep (UC-38).
+- Reply to Comment: click “Reply” under a comment; a reply to a reply joins the same thread, one level deep.
 
-- Download Document: click “Download” to save the original file; not available in a Secret Meeting, where documents can only be viewed online (UC-35b).
+- Download Document: click “Download” to save the original file; not available in a Secret Meeting, where documents can only be viewed online.
 
 On the screen, s/he can also:
 
 - Back to Documents: click “‹ Documents” to return to the Documents tab of the Meeting, or to close the tab opened from the room.
 
+Related UC: UC-35b, UC-38, UC-42
+
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Back link | Returns to the Documents tab of the Meeting; in a tab opened from the room it closes that tab. |
-| Document header | Read-only: file type badge, file name (e.g. “Du-thao-nghi-quyet-HDQT.pdf”), confidentiality chip of the Meeting (e.g. Secret in red) and the meeting title. |
-| Page indicator [Trang 2 / 6] | Read-only current page and total number of pages; updates while scrolling. Shown for PDF documents only. |
-| Zoom − / + | Two square buttons that decrease or increase the zoom level of the preview. |
-| Download | Secondary button; downloads the original file. In a Secret Meeting it is replaced by the chip “View online only” (BR-081). |
-| Preview pane | Read-only rendering made in the browser with no server conversion – PDF pages, or a DOCX as one continuous scrollable document; a comment refers to a page, not to a highlighted passage. A file the browser cannot draw shows MSG383 and a file no longer in storage shows MSG382, both without a retry button (UC-35b). No name or time is stamped on the document, and a Secret document is not given a watermark. Each view of a Secret Meeting’s document is recorded in the audit log (BR-009, BR-010, BR-011). |
-| Comments panel | Panel beside the document with refresh and close buttons. Each comment shows the author, the page of a PDF comment and the time, the text and a “Reply” link; replies are indented under it, one level deep. A Guest’s comment shows the name the Guest gave with the label Guest. Empty state: “No comments yet.” (UC-38) |
-| Comment box | Textarea, required to send, at most 4,000 characters (MSG348); for a PDF the option “Attach page n” links the comment to the page being viewed, a DOCX comment has no page. Ctrl+Enter sends. Hidden after the Meeting ends, when comments are read-only (BR-079, BR-080, MSG251). |
-| Send | Primary button; posts the comment or reply, which appears in the list and increases the comment count on the Documents tab (UC-38). |
+| Back link | Back link returning to the Documents tab, or closing the tab opened from the room. |
+| Document header | Read-only file badge, file name, meeting confidentiality chip and meeting title. |
+| Page indicator [Trang 2 / 6] | Read-only current page and total pages, shown for PDF only. |
+| Zoom − / + | Two square buttons decreasing or increasing the preview zoom. |
+| Download | Secondary button downloading the original file; replaced by “View online only” in a Secret meeting. |
+| Preview pane | Read-only preview rendered in the browser: PDF pages, or a DOCX as one continuous scrollable document. |
+| Comments panel | Comments panel beside the document with author, page, time, text and one level of replies. |
+| Comment box | Required textarea for a comment, at most 4,000 characters; a PDF comment may link a page. |
+| Send | Primary button posting the comment or reply. |
 
 ### 8. FE-08 – Online Meeting Room Management
 
@@ -3852,35 +3918,37 @@ Figure 58: Meeting Lobby
 
 Figure 59: Meeting Lobby – microphone list open
 
-The Meeting Lobby is the pre-join screen of the Online Meeting Room, laid out like Google Meet. It opens when a user clicks “Join online room” on an In Progress Online or Hybrid meeting, or when a verified Guest continues to the room. The page has its own top bar with the TrustCabinet mark and the signed-in account; the left side shows the camera preview with the microphone and camera switches and the device pickers, the right side the meeting and the Join button (UC-43, UC-45a, UC-45b, UC-45d, UC-04). The second image shows the open device tray (UC-45d) and, when recording applies to the Meeting, the notice that the meeting is recorded for the minutes and the recording is deleted automatically after 180 days.
+The Meeting Lobby is the pre-join screen of the Online Meeting Room, laid out like Google Meet. It opens when a user clicks “Join online room” on an In Progress Online or Hybrid meeting, or when a verified Guest continues to the room. The page has its own top bar with the TrustCabinet mark and the signed-in account; the left side shows the camera preview with the microphone and camera switches and the device pickers, the right side the meeting and the Join button. The second image shows the open device tray and, when recording applies to the Meeting, the notice that the meeting is recorded for the minutes and the recording is deleted automatically after 180 days.
 
 This screen allows the Chair, Secretary, Participant and a verified Guest to:
 
-- Preview Camera and Microphone: see the camera preview and a voice level indicator while the microphone is on (UC-45a, UC-45b).
+- Preview Camera and Microphone: see the camera preview and a voice level indicator while the microphone is on.
 
-- Set Initial Microphone and Camera State: switch the microphone (on by default) and the camera (off by default) before entering; the browser remembers the choice for the next time (UC-45a, UC-45b).
+- Set Initial Microphone and Camera State: switch the microphone (on by default) and the camera (off by default) before entering; the browser remembers the choice for the next time.
 
-- Select Devices: choose the microphone, speaker and camera (UC-45d).
+- Select Devices: choose the microphone, speaker and camera.
 
-- Join Meeting Room: click “Join room” to enter the Online Meeting Room – Video Grid (UC-43).
+- Join Meeting Room: click “Join room” to enter the Online Meeting Room – Video Grid.
 
 On the screen, s/he can also:
 
 - Back to the Meeting: click “‹ Back to the meeting page”.
 
+Related UC: UC-04, UC-43, UC-45a, UC-45b, UC-45d
+
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Top bar | TrustCabinet mark on the left; full name, email and initials avatar of the signed-in user on the right. |
-| Camera preview | Dark rounded area showing the selected camera; “Camera is off” when the camera is off or not permitted by the browser. |
-| Microphone / Camera switches | Two round icon buttons on the bottom edge of the preview, with tooltips such as “Turn off microphone”; a switched-off device is shown in light red. A voice level indicator shows while the microphone receives sound. |
-| Device pickers [Micro / Loa / Camera] | Three pill buttons under the preview, each opening the devices detected by the browser (e.g. “MacBook Pro Microphone”). Without browser permission they read e.g. “No permission to use the microphone, or no microphone” and are disabled; the Speaker picker is hidden in browsers that cannot choose an audio output. In the room the same pickers open from the arrow beside the microphone and camera buttons (UC-45d). |
-| Heading | “Ready to join?” followed by the meeting title. |
-| Confidentiality chip | Shown only for a Secret Meeting. |
-| Room presence | e.g. “6 people in the room”, or “No one else is here”. |
-| Join room | Primary pill button; reads “Joining…” while connecting. The system re-checks that the user can still view the Meeting, that it is In Progress and that it has an online room (BR-025, BR-052, BR-053, BR-054, BR-044). On success the user enters the Video Grid with the chosen devices. Pressing Join while the room cannot be reached (never entered) keeps the lobby and shows MSG480 under the button; pressing Join tries again (UC-43 EX-11). |
-| Room unavailable message | When the Meeting has not started, the page waits with “The room opens only while the meeting is in progress.” and opens the lobby by itself when the Meeting starts. When the Meeting has ended or was cancelled, or is held in person only, the page shows only a message and “Back to the meeting page”; after a dropped connection it also offers “Rejoin”. Device-permission messages show once in the lobby; {device} is “microphone and camera” when both are blocked; the listen sentence is omitted when only the camera is blocked (MSG334–MSG337). |
+| Top bar | Top bar with the TrustCabinet mark and the signed-in user’s name, email and avatar. |
+| Camera preview | Dark rounded area showing the selected camera, or “Camera is off” when unavailable. |
+| Microphone / Camera switches | Two round buttons on the preview edge switching the microphone and camera. |
+| Device pickers [Micro / Loa / Camera] | Three pill buttons opening the detected microphones, speakers and cameras. |
+| Heading | Heading “Ready to join?” followed by the meeting title. |
+| Confidentiality chip | Chip shown only for a Secret meeting. |
+| Room presence | Read-only presence text, e.g. “6 people in the room” or “No one else is here”. |
+| Join room | Primary pill button that joins the room with the chosen devices. |
+| Room unavailable message | Waiting message when the meeting has not started, or the ended/cancelled message with “Back to the meeting page”. |
 
 #### 8.2 Online Meeting Room – Video Grid
 
@@ -3888,44 +3956,46 @@ Figure 60: Online Meeting Room – Video Grid
 
 Figure 61: Online Meeting Room – call in a floating window
 
-The Online Meeting Room – Video Grid is the full-screen main view of the online room, laid out like Google Meet: a one-line blue header with a gold bottom edge, a navy stage with the video tiles, the call controls centred at the bottom as icons with tooltips, and the People and Chat panel buttons at the bottom right. The header back button opens the Meeting detail without leaving the call. Leaving the room does not change the meeting lifecycle; only the Chair ends the meeting (UC-43, UC-44, UC-45a, UC-45b, UC-46, UC-49, UC-50). The second image shows the call in the floating window (UC-49): the main window says that the meeting is in the floating window and offers to bring it back.
+The Online Meeting Room – Video Grid is the full-screen main view of the online room, laid out like Google Meet: a one-line blue header with a gold bottom edge, a navy stage with the video tiles, the call controls centred at the bottom as icons with tooltips, and the People and Chat panel buttons at the bottom right. The header back button opens the Meeting detail without leaving the call. Leaving the room does not change the meeting lifecycle; only the Chair ends the meeting. The second image shows the call in the floating window: the main window says that the meeting is in the floating window and offers to bring it back.
 
 This screen allows the Chair, Secretary, Participant and a verified Guest connected to the room to:
 
-- View Video Grid: see the camera image or initials of the people in the room, with the current speaker highlighted, muted people marked and the Chair tagged; the grid pages when more people are connected than fit (UC-46).
+- View Video Grid: see the camera image or initials of the people in the room, with the current speaker highlighted, muted people marked and the Chair tagged; the grid pages when more people are connected than fit.
 
-- Manage Microphone: turn his/her own microphone on or off (Ctrl+D) and choose the microphone and speaker (UC-45a, UC-45d).
+- Manage Microphone: turn his/her own microphone on or off (Ctrl+D) and choose the microphone and speaker.
 
-- Manage Camera: turn his/her own camera on or off (Ctrl+E) and choose the camera (UC-45b, UC-45d).
+- Manage Camera: turn his/her own camera on or off (Ctrl+E) and choose the camera.
 
-- Leave Meeting Room: click “Leave” and confirm to disconnect, close the room browser tab and show the Meeting detail, without ending the meeting (UC-44).
+- Leave Meeting Room: click “Leave” and confirm to disconnect, close the room browser tab and show the Meeting detail, without ending the meeting.
 
 On the screen, s/he can also:
 
-- Share Screen: present a screen, window or tab to everyone (8.4, UC-45c).
+- Share Screen: present a screen, window or tab to everyone (8.4).
 
-- Open Floating Window: move the call into a small picture-in-picture window to work in other tabs while staying in the room (UC-49).
+- Open Floating Window: move the call into a small picture-in-picture window to work in other tabs while staying in the room.
 
-- Raise Hand: ask for the floor and, when the Chair invites the person, start and finish speaking (UC-50).
+- Raise Hand: ask for the floor and, when the Chair invites the person, start and finish speaking.
 
 - Open Side Panels: open the Participants panel (8.3) or the Chat panel (8.4).
+
+Related UC: UC-43, UC-44, UC-45a, UC-45b, UC-45c, UC-45d, UC-46, UC-47, UC-49, UC-50
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Room header | Back button ‹ (asks for confirmation, as Leave does), meeting title, chip “6 people in the room” and the confidentiality chip for a Secret Meeting. |
-| Video tile | Camera image, or a circle with the user’s initials when the camera is off; name label with a crossed microphone when muted, “You” for the local user and the gold tag “Chair”. |
+| Room header | Room header with back button, meeting title, people count and the Secret chip. |
+| Video tile | Video tile showing the camera image or initials, name label, mute icon, “You” and the gold “Chair” tag. |
 | Active speaker highlight | Blue border around the tile of the person currently speaking. |
-| Pager ‹ 1 / 2 › | Shown when more people are connected than the stage can display. |
-| Microphone | Icon button, red when off; the arrow ⌃ beside it opens the microphone and speaker pickers. A user muted by the Chair is told so and may turn the microphone on again (UC-45a, UC-47). |
-| Camera | Icon button, red when off; the arrow ⌃ opens the camera picker (UC-45b). |
-| Share screen | Icon button, highlighted while sharing (8.4, UC-45c). |
-| Floating window | Icon button in browsers that support it; while the call is in the floating window the stage shows “The meeting is in a floating window” with “Bring the meeting back to this window”. |
-| Raise hand | Icon button; the raised hand shows on the person’s tile and in the Participants panel. The Chair sees the queue of raised hands in order and invites one person at a time to speak (UC-50). |
-| Leave | Red button. Confirmation “Leave the meeting room – The meeting continues with the others. You can rejoin while the meeting is in progress.” with Stay and Leave. The meeting stays In Progress; when the Chair ends the meeting every connected user is disconnected (UC-44, BR-025). |
-| Participants / Chat | Icon buttons at the bottom right that open the side panels (8.3, 8.4); Chat shows the number of unread messages. |
-| Connection banners | “Connection lost, reconnecting…” while reconnecting (MSG333); when the connection cannot be restored the room shows MSG332 with Rejoin — only for a drop while already in the room (a Join press that never connected stays in the lobby with MSG480). A banner with a button appears when the browser blocks audio playback. |
+| Pager ‹ 1 / 2 › | Pager shown when more people are connected than the stage can display. |
+| Microphone | Icon button switching the microphone; the arrow beside it opens the microphone and speaker pickers. |
+| Camera | Icon button switching the camera; the arrow opens the camera picker. |
+| Share screen | Icon button for screen sharing, highlighted while sharing. |
+| Floating window | Icon button moving the call to a floating window in supported browsers. |
+| Raise hand | Icon button raising the hand; the Chair sees the queue in order and invites one person at a time. |
+| Leave | Red button “Leave” with the confirmation “Leave the meeting room – The meeting continues with the others. You can rejoin while the meeting is in progress.” and “Stay” / “Leave”. |
+| Participants / Chat | Icon buttons opening the Participants and Chat side panels; Chat shows the unread count. |
+| Connection banners | Banners for lost connection with Rejoin, or for blocked audio playback. |
 
 #### 8.3 In-Room Participants Panel
 
@@ -3933,134 +4003,144 @@ Figure 62: In-Room Participants Panel
 
 Figure 63: In-Room Participants Panel – attendance
 
-The In-Room Participants Panel is the white 360 px panel on the right of the online room, opened with the Participants icon at the bottom right. It lists the users currently connected to the room with their meeting role. Every connected user can view the list; only the Chair can mute another user (UC-46, UC-47). A separate Attendance panel beside Participants and Chat lets the Secretary record attendance without leaving the room (UC-33).
+The In-Room Participants Panel is the white 360 px panel on the right of the online room, opened with the Participants icon at the bottom right. It lists the users currently connected to the room with their meeting role. Every connected user can view the list; only the Chair can mute another user. A separate Attendance panel beside Participants and Chat lets the Secretary record attendance without leaving the room.
 
 This screen allows users connected to the room (Chair, Secretary, Participant, Guest) to:
 
-- View Meeting Room Participants: see the number and the list of users in the room, sorted by meeting role (Chair, Secretary, Member, Guest) and then by name, with who is speaking and whose microphone is off (UC-46).
+- View Meeting Room Participants: see the number and the list of users in the room, sorted by meeting role (Chair, Secretary, Member, Guest) and then by name, with who is speaking and whose microphone is off.
 
 On the screen, the Chair can also:
 
-- Mute a Participant: click “Mute” next to a user whose microphone is on (UC-47).
+- Mute a Participant: click “Mute” next to a user whose microphone is on.
 
 On the screen, the Secretary can also:
 
-- Record Attendance: open the Attendance panel and choose Present or Absent for a person; each choice is saved at once (UC-33). Other users read the attendance in the same panel.
+- Record Attendance: open the Attendance panel and choose Present or Absent for a person; each choice is saved at once. Other users read the attendance in the same panel.
+
+Related UC: UC-33, UC-46, UC-47, UC-50
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Panel title | Title with the number of users currently connected (UC-46). |
-| Participant row | Initials avatar, full name with “You” for the local user, and the meeting role below: Chair, Secretary, Member, Guest. |
-| Speaking indicator | Green dot while the user is speaking. |
-| Microphone state | Microphone icon; shown red and crossed out when the microphone is off. |
-| Mute | Outline button shown only to the Chair, on other users whose microphone is on. The user is told “The Chair has muted your microphone. You can turn it back on when you need to speak.” (UC-47). |
-| Not provided | Muting everyone and removing a user from the room are not provided; raising a hand is UC-50. |
-| Attendance panel | Opened with its own icon at the bottom right, beside Participants and Chat. One row per current internal participant and Guest, ordered Chair, Secretary, Member, Guest and then by name: avatar, full name, meeting role and the Attendance cell. The Secretary sees the dashed dropdown “Record attendance” (never recorded), “Present” or “Absent”; everyone else reads a dot and text, or “Not recorded”. Same data, same cell and same rules as the Attendance column of the Participants tab (III.6.3): no Save button, no Present/Absent totals, joining the room never marks anyone Present; MSG151, MSG150 and MSG289 as in III.6.3. “You can no longer view the attendance of this meeting.” when access is lost. |
+| Panel title | Panel title with the number of users currently connected. |
+| Participant row | Row showing avatar, full name with “You”, and the meeting role below. |
+| Speaking indicator | Green dot shown while the user is speaking. |
+| Microphone state | Microphone icon, red and crossed out when the microphone is off. |
+| Mute | Outline button shown only to the Chair on users whose microphone is on; mutes that user. |
+| Not provided | Read-only note that muting everyone and removing a user from the room are not provided. |
+| Attendance panel | Attendance panel with one row per participant and the same attendance rules as the Participants tab. |
 
 #### 8.4 Screen Sharing & Chat
 
 Figure 64: Screen Sharing & Chat
 
-The Screen Sharing & Chat layout appears when a connected user presents his/her screen and/or opens the Chat panel. The shared screen takes the main stage and the video tiles move to a strip beside it. Chat lives only in the room: messages are seen by the people currently in the room and are not kept after the meeting (UC-45c, UC-48).
+The Screen Sharing & Chat layout appears when a connected user presents his/her screen and/or opens the Chat panel. The shared screen takes the main stage and the video tiles move to a strip beside it. Chat lives only in the room: messages are seen by the people currently in the room and are not kept after the meeting.
 
 This screen allows the Chair, Secretary, Participant and a verified Guest connected to the room to:
 
-- Manage Screen Sharing: start or stop presenting a screen, window or tab; one person presents at a time, and when someone else starts, the previous presenter’s share stops and that user is told (UC-45c).
+- Manage Screen Sharing: start or stop presenting a screen, window or tab; one person presents at a time, and when someone else starts, the previous presenter’s share stops and that user is told.
 
-- View Shared Screen: follow the screen shared by another user on the main stage (UC-45c).
+- View Shared Screen: follow the screen shared by another user on the main stage.
 
-- Use In-room Chat: read the messages sent since joining and send a text message to everyone currently in the room (UC-48).
+- Use In-room Chat: read the messages sent since joining and send a text message to everyone currently in the room.
 
 On the screen, s/he can also:
 
 - Close the Chat Panel: click the Chat icon again to return to the full stage.
 
+Related UC: UC-45c, UC-48
+
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Shared screen stage | Main area showing the shared screen; caption “Pham Thi Lan is presenting”; the presenter sees “You are presenting to everyone”. |
+| Shared screen stage | Main area showing the shared screen with the presenter caption. |
 | Video tile strip | Video tiles beside the shared screen, as in the Video Grid. |
-| Share screen | Toolbar toggle, highlighted while sharing; the browser asks which screen, window or tab to share (UC-45c). |
-| Chat panel title | “Chat”. |
-| Chat notice | “Messages are visible only to people in the room and are not kept after the meeting.” |
-| Message list | Messages in time order with sender (“You” for the user’s own messages) and time hh:mm; “No messages yet.” when empty. A user who joins later does not see earlier messages. |
-| Message box | Textarea “Type a message — Enter to send, Shift+Enter for a new line”, at most 1,000 characters with a counter (e.g. “0/1000”). |
-| Send | Primary button, enabled when the message is not blank. If sending fails: “Could not send the message. Please try again.” |
+| Share screen | Toolbar toggle for screen sharing; the browser asks which screen, window or tab to share. |
+| Chat panel title | Panel title “Chat”. |
+| Chat notice | Read-only notice that messages are visible only to people in the room and are not kept after the meeting. |
+| Message list | Messages in time order with sender and time; later joiners do not see earlier messages. |
+| Message box | Textarea with placeholder and a 1,000-character counter. |
+| Send | Primary button sending the message, enabled when the message is not blank. |
 
 #### 8.5 In-Room Voting Panel
 
 Figure 65: In-Room Voting Panel
 
-The In-Room Voting Panel opens from the Voting icon next to Participants and Chat and shows the Voting tab of the meeting detail page in a side panel. When the Chair opens a Vote, everyone in the room who has not voted in it sees a notice with “Vote” that opens the panel (UC-62b, UC-65).
+The In-Room Voting Panel opens from the Voting icon next to Participants and Chat and shows the Voting tab of the meeting detail page in a side panel. When the Chair opens a Vote, everyone in the room who has not voted in it sees a notice with “Vote” that opens the panel.
 
 This screen allows users connected to the room (Chair, Secretary, Participant, Guest) to:
 
-- View Vote Status: see the open Vote, when it opened, whether the ballot is secret and how many eligible voters have voted (UC-62b).
+- View Vote Status: see the open Vote, when it opened, whether the ballot is secret and how many eligible voters have voted.
 
-- Cast Vote: choose one option and submit the ballot once; available only to users on the eligible list fixed when the Vote opened, i.e. current holders of the meeting roles the Chair selected, verified Guests included when Guest is selected (UC-65, BR-091).
+- Cast Vote: choose one option and submit the ballot once; available only to users on the eligible list fixed when the Vote opened, i.e. current holders of the meeting roles the Chair selected, verified Guests included when Guest is selected.
+
+Related UC: UC-62b, UC-65
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Panel title | Title of the panel; label “Planned” in the wireframe. |
-| Vote status line | Status chip “Open” (green) followed by “Opened at 13:58 · secret ballot”. A Vote belongs to the Meeting, not to an Agenda Item. |
-| Vote question | Read-only bold text, e.g. “Approve the 2027 business plan”. |
-| Ballot progress | “Voted 7/11”: ballots cast out of eligible voters; no option results while the Vote is open, and for a secret ballot no indication of who has just voted. |
-| Vote options | Radio cards, exactly one may be selected: Agree, Disagree, Abstain. |
-| Submit vote | Primary button, shown only to eligible users who still have access and have not voted. Hint: “A submitted ballot cannot be changed or withdrawn.” After submission the panel only confirms the ballot (BR-090, BR-092, BR-093, BR-091). |
+| Panel title | Panel title. |
+| Vote status line | Status chip “Open” with opening time and ballot type; a vote belongs to the meeting, not to an agenda item. |
+| Vote question | Read-only bold text of the vote question. |
+| Ballot progress | Ballot progress “Voted n/m” with no option results while open and no voter names for a secret ballot. |
+| Vote options | Radio cards for the options, exactly one may be selected. |
+| Submit vote | Primary button “Submit vote” shown only to eligible voters who have not voted; a submitted ballot cannot be changed. |
 
 #### 8.6 In-Room Documents Panel
 
 Figure 66: In-Room Documents Panel
 
-The In-Room Documents Panel opens from the Documents icon in the bottom bar of the online room. It shows the Documents tab in a room layout and is read-only: the current Agenda Item comes first with its documents open and the other items folded, and a document opens in the Document Viewer in a new browser tab so the call is not interrupted (UC-35a, UC-35b). On a phone the panel sits behind the ⋯ menu together with Meeting content and Attendance.
+The In-Room Documents Panel opens from the Documents icon in the bottom bar of the online room. It shows the Documents tab in a room layout and is read-only: the current Agenda Item comes first with its documents open and the other items folded, and a document opens in the Document Viewer in a new browser tab so the call is not interrupted. On a phone the panel sits behind the ⋯ menu together with Meeting content and Attendance.
 
 This screen allows users connected to the room (Chair, Secretary, Participant, and a verified Guest) to:
 
-- View Meeting Documents: see the documents of the current Agenda Item first, the other items and the Votes with documents collapsed, and the general documents (UC-35a).
+- View Meeting Documents: see the documents of the current Agenda Item first, the other items and the Votes with documents collapsed, and the general documents.
 
-- Open Document: click a document to read it in the on-page viewer without leaving the room — it closes with the ✕ button, Esc or Back; the viewer there has the comments panel (UC-35b, UC-38).
+- Open Document: click a document to read it in the on-page viewer without leaving the room — it closes with the ✕ button, Esc or Back; the viewer there has the comments panel.
+
+Related UC: UC-35a, UC-35b, UC-38
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Panel title | Title with the number of Meeting documents, each counted once. |
-| Online-only chip | Shown for a Secret Meeting, whose documents cannot be downloaded (BR-081). |
-| Current item group | “Current item · 2. 2027 business plan report”; follows the Chair when the current Agenda Item changes. |
-| Document row | File type badge, file name, page count and number of comments; tooltip “Opens in a new tab · you stay in the room”. |
-| Other items | Collapsed rows with order number, title and number of documents; expanding one lists its documents. |
-| Votes | Shown when a Vote the user can see has documents: one collapsed block per Vote with its status and documents, each with Read or Not read as on the Documents tab (7.3). |
-| General documents | Documents linked to no Agenda Item and to no Vote; a document of a Vote is listed in the Votes group only. |
-| Read-only rule | No add, link or remove actions in the room; documents added from the Documents tab appear in the panel without reloading. To show a page to everyone, the presenter shares the screen (8.4). |
+| Panel title | Panel title with the number of meeting documents. |
+| Online-only chip | Chip shown for a Secret meeting, whose documents cannot be downloaded. |
+| Current item group | Current item group following the Chair when the current agenda item changes. |
+| Document row | Document row with file badge, name, page count and comments; tooltip “Opens in a new tab · you stay in the room”. |
+| Other items | Collapsed rows of other items with order number, title and document count. |
+| Votes | Collapsed block per visible vote with its status and documents. |
+| General documents | General documents linked to no agenda item and to no vote. |
+| Read-only rule | Read-only note that nothing can be added, linked or removed in the room; presenting a page means sharing the screen. |
 
 #### 8.7 My Recorded Speech
 
 Figure 67: My Recorded Speech
 
-My Recorded Speech is a side panel of the online room, opened from the My recording button. It lists only the sentences recorded from the user’s own microphone, so each person can listen to them again and delete a sentence (UC-53, BR-113).
+My Recorded Speech is a side panel of the online room, opened from the My recording button. It lists only the sentences recorded from the user’s own microphone, so each person can listen to them again and delete a sentence.
 
 This screen allows the Chair, Secretary, Participant and a verified Guest to:
 
-- View My Sentences: see the own sentences with time, length, text and state (UC-53).
+- View My Sentences: see the own sentences with time, length, text and state.
 
-- Play Sentence: listen to one sentence again (UC-53).
+- Play Sentence: listen to one sentence again.
 
-- Delete Sentence: delete one own sentence after confirming; its text and audio are removed for good (UC-53).
+- Delete Sentence: delete one own sentence after confirming; its text and audio are removed for good.
+
+Related UC: UC-53
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Panel header | Title “My recording” and a close button; the note “Each sentence you say is saved separately and turned into text.” |
-| Saved to the system | Group with its count; each card shows time and length (e.g. 13:15 · 6 seconds), a state chip (Transcribed, Transcribing) and the text. |
-| Not yet delivered | Group for sentences still on this device, labelled Sending or Waiting to resend; they are resent automatically. |
-| Play / Delete | Icon buttons on each card; Delete asks for confirmation, then MSG322. A sentence removed by the Chair or the Secretary shows “Removed from the minutes”. |
-| View the whole recording | Link at the bottom; opens the Meeting recordings in a new tab so the call continues. |
+| Panel header | Panel header “My recording” with a close button. |
+| Saved to the system | Group of sentences saved to the system with time, length, state chip and text. |
+| Not yet delivered | Group of sentences still on the device, resent automatically. |
+| Play / Delete | Play and Delete icon buttons on each card; Delete asks for confirmation. |
+| View the whole recording | Link opening the meeting recordings in a new tab so the call continues. |
 
 ### 9. FE-09 – Meeting Recording
 
@@ -4068,123 +4148,131 @@ Field Description
 
 Figure 68: Meeting Detail – Recordings Tab
 
-The Meeting Detail – Recordings tab is the media library of a meeting. TrustCabinet never records meetings itself: after the meeting has Ended, the Secretary uploads the audio file(s) recorded outside the system, the system transcribes each file and shows the speaker-attributed transcript here, and the Secretary then generates the meeting summary from it. Authorized users of the meeting can view the media library and play the audio; the transcript and the upload controls are available only to the assigned Secretary (UC-51a, UC-51b, UC-52, UC-54, UC-55, UC-58).
+The Meeting Detail – Recordings tab is the media library of a meeting. TrustCabinet never records meetings itself: after the meeting has Ended, the Secretary uploads the audio file(s) recorded outside the system, the system transcribes each file and shows the speaker-attributed transcript here, and the Secretary then generates the meeting summary from it. Authorized users of the meeting can view the media library and play the audio; the transcript and the upload controls are available only to the assigned Secretary.
 
 This screen allows the Secretary to:
 
-- View Media Library: see the audio files uploaded for the meeting with duration, size and uploader (UC-51a).
+- View Media Library: see the audio files uploaded for the meeting with duration, size and uploader.
 
-- Upload Meeting Audio: drag and drop an audio file or click “Choose file” to open the Upload Audio Dialog (UC-52).
+- Upload Meeting Audio: drag and drop an audio file or click “Choose file” to open the Upload Audio Dialog.
 
-- View Processing Status: see whether the transcript of a file is being processed, processed or failed, and reprocess a failed file (UC-54).
+- View Processing Status: see whether the transcript of a file is being processed, processed or failed, and reprocess a failed file.
 
-- View Speaker-Attributed Transcript: read the transcript segments with time, speaker and text (UC-54).
+- View Speaker-Attributed Transcript: read the transcript segments with time, speaker and text.
 
-- Correct Speaker Attribution: change the speaker of a segment directly in its dropdown (UC-55).
+- Correct Speaker Attribution: change the speaker of a segment directly in its dropdown.
 
-- Generate Meeting Summary: click “Generate summary from transcript” to have AI create a draft summary (UC-58).
+- Generate Meeting Summary: click “Generate summary from transcript” to have AI create a draft summary.
 
 On the screen, s/he can also:
 
-- Open the Full Transcript Editor: go to the Speaker-Attributed Transcript screen to play the audio, search, edit text and assign unknown speakers (UC-51b, UC-54, UC-55).
+- Open the Full Transcript Editor: go to the Speaker-Attributed Transcript screen to play the audio, search, edit text and assign unknown speakers.
 
 - Navigate Detail Tabs: switch to the other meeting detail tabs.
+
+Related UC: UC-51a, UC-51b, UC-52, UC-54, UC-55, UC-58
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Meeting header | Back link “‹ Meetings”, meeting title with status chip (e.g. Ended) and confidentiality chip (e.g. Normal); second line: actual time and date “08:32–09:41 · 15/10/2026” and mode · location “Hybrid · Room 2.1, floor 2”. |
-| Tabs | General Information, Participants, Meeting Content, Documents, Voting, Recordings (selected), Summary, Minutes. |
-| Transcript panel header | “Transcript · hop-sprint6.m4a”: the file whose transcript is shown, with a processing status chip: Processing, Processed (green) or Failed with a “Reprocess” button. |
-| Transcript segment | One row per segment: start time (hh:mm:ss, e.g. 00:00:12), speaker dropdown and the transcribed text. Transcription runs on the uploaded file after upload; there is no real-time transcription and no translation. |
-| Speaker dropdown | Lists the meeting’s internal participants and Guests; changing it re-assigns that segment (UC-55). A voice not yet identified is shown as “Speaker 3” with an amber border. |
-| Transcript footer | Read-only: “Segments 1–5 of 214” and “Last edited 15/10 10:20”. |
-| Upload drop zone | Dashed area “Drag and drop an audio file here”, hint “MP3, M4A, WAV · up to 300 MB”, button “Choose file” that opens the Upload Audio Dialog. Shown only to the Secretary and only after the meeting has Ended (UC-52). |
-| Uploaded files | Media library list; each file shows the name (e.g. hop-sprint6.m4a) and “1 h 09 min · 64 MB · Do Hai Yen” (duration · size · uploaded by) (UC-51a). Audio files only – the system stores no video. |
-| Rejected file message | Red inline box for a file that failed validation, e.g. “ghi-am-phong.wma: unsupported format. Choose an MP3, M4A or WAV file.”; files over 300 MB are rejected in the same way. The user can choose another file. |
-| Generate summary from transcript | Primary button, enabled when at least one transcript is Processed. Sends the edited transcript to the AI provider to create a Draft summary and opens the Meeting Summary tab (UC-58). |
-| Visibility rule | Other authorized users of the meeting (Member, Approver, Chair, Participant, System Admin) see only the media library and can play the audio (UC-51a, UC-51b); the transcript, upload and summary actions are shown only to the assigned Secretary. |
+| Meeting header | Read-only meeting header with back link, title, status and confidentiality chips, actual time, date, mode and location. |
+| Tabs | Tabs of the meeting detail with Recordings selected. |
+| Transcript panel header | Transcript panel header naming the audio file with its processing status chip. |
+| Transcript segment | One row per transcript segment with start time, speaker dropdown and text. |
+| Speaker dropdown | Dropdown per segment listing the meeting participants and guests; unidentified voices show as “Speaker n”. |
+| Transcript footer | Read-only footer with the segment range and the last-edit time. |
+| Upload drop zone | Dashed drop zone for audio upload, shown only to the Secretary after the meeting has Ended. |
+| Uploaded files | Media library list with file name, duration, size and uploader; audio files only. |
+| Rejected file message | Red inline box for a rejected file naming the file and the accepted formats. |
+| Generate summary from transcript | Primary button sending the edited transcript to the AI provider to create a draft summary. |
+| Visibility rule | Read-only note that other authorized users see only the media library and can play the audio. |
 
 #### 9.2 Upload Audio Dialog
 
 Figure 69: Upload Audio Dialog
 
-The Upload Audio Dialog is opened by the Secretary from the Recordings tab with “Choose file” or by dropping a file on the upload area. Because the system never records meetings, this dialog is the only way to add a recording: the Secretary chooses an audio file (no video), confirms that attendees were informed of and agreed to the recording, and uploads it. After a successful upload the system starts transcription automatically and the progress is shown on the Recordings tab (UC-52).
+The Upload Audio Dialog is opened by the Secretary from the Recordings tab with “Choose file” or by dropping a file on the upload area. Because the system never records meetings, this dialog is the only way to add a recording: the Secretary chooses an audio file (no video), confirms that attendees were informed of and agreed to the recording, and uploads it. After a successful upload the system starts transcription automatically and the progress is shown on the Recordings tab.
 
 This screen allows the Secretary to:
 
-- Select Audio File: drag a file into the drop area or click it to choose an MP3, M4A or WAV file of up to 300 MB (UC-52).
+- Select Audio File: drag a file into the drop area or click it to choose an MP3, M4A or WAV file of up to 300 MB.
 
-- Confirm Recording Consent: tick the confirmation that attendees were informed and consented to the recording (UC-52).
+- Confirm Recording Consent: tick the confirmation that attendees were informed and consented to the recording.
 
-- Upload Meeting Audio: click “Upload” to send the file and follow the upload progress (UC-52).
+- Upload Meeting Audio: click “Upload” to send the file and follow the upload progress.
 
 - Cancel: close the dialog without uploading, or stop an upload in progress.
+
+Related UC: UC-52
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Upload audio | Dialog title. The dialog is available only to the assigned Secretary of the meeting and only when the meeting is Ended. |
-| Drop zone | Dashed area “Drag a file here or click to choose” with the hint “MP3, M4A, WAV · up to 300 MB”. Accepts one audio file at a time. |
-| File validation | A file with another format (e.g. .wma or any video file) or larger than 300 MB is rejected immediately with an inline error naming the file and the accepted formats; the user can choose another file. |
-| Selected file row | File name and size (e.g. “hop-sprint6.m4a · 64 MB”) with a progress bar and percentage (e.g. 64%) while uploading. |
-| Recording consent | Checkbox, required, unticked by default: “I confirm that attendees were informed and consented to the recording under Law 91/2025/QH15 on Personal Data Protection and Decree 356/2025/ND-CP.” Required because the recording is personal data. |
-| Cancel | Ghost button; closes the dialog and discards the selected file; an upload in progress is cancelled. |
-| Upload | Primary button, enabled when a valid file is selected and the consent box is ticked. Uploads the file, adds it to the media library with uploader and upload time, and starts transcription automatically (status Processing on the Recordings tab). If the upload fails, an error is shown and the Secretary can try again. |
+| Upload audio | Dialog title “Upload audio”; available only to the assigned Secretary once the meeting has Ended. |
+| Drop zone | Dashed drop zone “Drag a file here or click to choose” with the hint “MP3, M4A, WAV · up to 300 MB”; one file at a time. |
+| File validation | Inline error rejecting a file of another format or over 300 MB. |
+| Selected file row | Selected file row with name, size, progress bar and percentage while uploading. |
+| Recording consent | Required checkbox: “I confirm that attendees were informed and consented to the recording under Law 91/2025/QH15 on Personal Data Protection and Decree 356/2025/NĐ-CP.” |
+| Cancel | Ghost button “Cancel” closing the dialog and discarding the file; an upload in progress is cancelled. |
+| Upload | Primary button “Upload” enabled with a valid file and ticked consent; uploading starts transcription automatically. |
 
 #### 9.3 Room Microphone Recorder
 
 Figure 70: Room Microphone Recorder
 
-The room microphone recorder is a floating card at the bottom right of every page of an In-person Meeting that is In Progress, shown to its Secretary. It records the sound of the meeting room in takes and keeps recording while the Secretary moves between tabs; for a Hybrid Meeting the Secretary’s microphone in the online room is the room microphone instead (UC-52a, BR-107, BR-108).
+The room microphone recorder is a floating card at the bottom right of every page of an In-person Meeting that is In Progress, shown to its Secretary. It records the sound of the meeting room in takes and keeps recording while the Secretary moves between tabs; for a Hybrid Meeting the Secretary’s microphone in the online room is the room microphone instead.
 
 This screen allows the Secretary to:
 
-- Turn Room Microphone On: confirm that attendees were informed (first take only) and start a take (UC-52a).
+- Turn Room Microphone On: confirm that attendees were informed (first take only) and start a take.
 
-- Turn Room Microphone Off: save the take into the Meeting’s room recording (UC-52a).
+- Turn Room Microphone Off: save the take into the Meeting’s room recording.
 
-- Minimize Card: shrink the card and drag it aside (UC-52a).
+- Minimize Card: shrink the card and drag it aside.
+
+Related UC: UC-52a
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Microphone button | Left button of the card; turns the room microphone on or off. The first time it asks for the recording confirmation and an optional purpose, as in 9.2. (BR-109) |
-| State | Recording (with elapsed time); Take left open – Continue recording / Save recorded part; Recording on another device – stop it there; Slow network. |
-| Minimize | Icon button at the top corner; the minimized card keeps showing the recording state. |
-| Recording indicator | While a take is open, everyone viewing the Meeting sees a red “Recording” label beside the title. |
-| Messages | MSG363 when a take is saved; MSG359 if the Meeting is not In Progress; MSG360 if the microphone is on at another device; MSG295 if the actor is not the Secretary. |
+| Microphone button | Card button turning the room microphone on or off; the first use asks for the recording confirmation and an optional purpose. |
+| State | Read-only recording states: Recording with elapsed time, open take, recording on another device, slow network. |
+| Minimize | Icon button minimizing the card while keeping the recording state visible. |
+| Recording indicator | Red “Recording” label beside the meeting title seen by everyone viewing the meeting while a take is open. |
+| Messages | Inline notices of saving and of blocked recording conditions. |
 
 #### 9.4 My Voice ID
 
 Figure 71: My Voice ID
 
-My Voice ID is reached from the account menu by every signed-in internal user. Voice ID needs its own consent, separate from recording consent, and can be withdrawn at any time; voice features are kept only in protected form (UC-56, BR-116, BR-117, BR-121).
+My Voice ID is reached from the account menu by every signed-in internal user. Voice ID needs its own consent, separate from recording consent, and can be withdrawn at any time; voice features are kept only in protected form.
 
 This screen allows every signed-in internal user to:
 
-- Give Voice ID Consent: read the notice, tick the box and turn Voice ID on (UC-56b).
+- Give Voice ID Consent: read the notice, tick the box and turn Voice ID on.
 
-- Record Voice Sample: read a passage aloud, listen back and save or record again (UC-56c).
+- Record Voice Sample: read a passage aloud, listen back and save or record again.
 
-- Play / Delete Voice Sample: listen to or delete an own sample (UC-56d, UC-56e).
+- Play / Delete Voice Sample: listen to or delete an own sample.
 
-- Withdraw Consent: turn Voice ID off; every sample is deleted (UC-56f).
+- Withdraw Consent: turn Voice ID off; every sample is deleted.
+
+Related UC: UC-56, UC-56b, UC-56c, UC-56d, UC-56e, UC-56f
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Page header | Title “My voice” with the note “Voice ID helps the Secretary know who is speaking in the transcript of meetings you attend.” |
-| Consent card | Shown before consent: the notice (purpose, data kept, rights, sensitive data), an unticked checkbox and “Turn on Voice ID”, enabled only once ticked. MSG305 after consent. |
-| Tabs | “Recorded by me” and “Recorded for me by others”, each with its count. |
-| Notice changed | Yellow banner when the notice version changed: open it to read and accept again. |
-| Voice samples | Card with the status chip On, the date since, the count n/5 and a tip to record one more sample; each sample has Play and Delete (MSG311). |
-| Record voice sample | Dialog with the passage; while recording the button counts “Keep reading… (n seconds)” until the minimum length, then Save sample or Record again. 6–60 seconds of clear speech from one person (BR-118, BR-119); MSG307 when saved. |
-| Turn off and delete samples | Red button; asks for confirmation, deletes all samples and shows MSG306. (BR-117) |
+| Page header | Page header “My voice” with the note explaining Voice ID. |
+| Consent card | Consent card shown before consent: the notice, an unticked checkbox and “Turn on Voice ID” enabled once ticked. |
+| Tabs | Tabs “Recorded by me” and “Recorded for me by others”, each with its count. |
+| Notice changed | Yellow banner shown when the notice version changed, asking to read and accept again. |
+| Voice samples | Voice sample cards with status chip, count and Play/Delete buttons. |
+| Record voice sample | Dialog with the reading passage; the button counts down until the minimum length, then offers Save sample or Record again. |
+| Turn off and delete samples | Red button “Turn off and delete samples” asking for confirmation and deleting all samples. |
 
 ### 10. FE-10 – Transcription, Speaker Identification & Meeting Summary
 
@@ -4192,227 +4280,241 @@ Field Description
 
 Figure 72: Speaker-Attributed Transcript
 
-The Speaker-Attributed Transcript screen is the transcript editor inside the Recordings tab, used by the Secretary after the system has transcribed an uploaded audio file. The transcript is split into timed segments; the system separates the voices as “Speaker 1, 2, …” and may suggest a name for each voice, but never assigns a person by itself: the Secretary confirms the suggestion or assigns each unknown voice to a person from the meeting attendee list – once for all segments of that voice – and corrects the wording before generating the summary. There is no real-time transcription and no translation (UC-51b, UC-54, UC-55, UC-58).
+The Speaker-Attributed Transcript screen is the transcript editor inside the Recordings tab, used by the Secretary after the system has transcribed an uploaded audio file. The transcript is split into timed segments; the system separates the voices as “Speaker 1, 2, …” and may suggest a name for each voice, but never assigns a person by itself: the Secretary confirms the suggestion or assigns each unknown voice to a person from the meeting attendee list – once for all segments of that voice – and corrects the wording before generating the summary. There is no real-time transcription and no translation.
 
 This screen allows the Secretary to:
 
-- Select Audio File: choose which uploaded file’s transcript to work on (UC-54).
+- Select Audio File: choose which uploaded file’s transcript to work on.
 
-- Play Meeting Audio: play, pause and seek the audio, or click a segment time to listen to exactly that segment (UC-51b).
+- Play Meeting Audio: play, pause and seek the audio, or click a segment time to listen to exactly that segment.
 
-- View Speaker-Attributed Transcript: read the segments with start time, speaker and text, and search the transcript (UC-54).
+- View Speaker-Attributed Transcript: read the segments with start time, speaker and text, and search the transcript.
 
-- Edit Transcript Text: click a segment to correct its text (UC-55).
+- Edit Transcript Text: click a segment to correct its text.
 
-- Assign Speaker: confirm the name the system suggests for a voice, assign an unknown voice to an attendee for all of its segments, or change the speaker of a single segment (UC-55).
+- Assign Speaker: confirm the name the system suggests for a voice, assign an unknown voice to an attendee for all of its segments, or change the speaker of a single segment.
 
-- Generate Meeting Summary: click “Generate summary” to create the AI draft summary from the edited transcript (UC-58).
+- Generate Meeting Summary: click “Generate summary” to create the AI draft summary from the edited transcript.
+
+Related UC: UC-51b, UC-54, UC-55, UC-58
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Audio file selector | Dropdown listing the uploaded audio files of the meeting, e.g. “hop-sprint6.m4a”; default the latest file. |
-| Processing status chip | Processing / Processed / Failed. Editing is possible only when the file is Processed. |
-| Search in transcript | Text input; filters or highlights segments containing the keyword. |
-| Generate summary | Primary button; sends the current edited transcript to the AI provider and opens the Meeting Summary tab with a new Draft (UC-58). |
-| Audio player | Play/pause button, current position (e.g. 00:14:02), seek bar and total duration (e.g. 01:09:12) (UC-51b). |
-| Segment time | Start time of the segment (hh:mm:ss); clicking it moves the player to that point and plays it. The segment being played is highlighted. |
-| Speaker dropdown | Per segment; lists the meeting’s internal participants and Guests. Changing it affects only that segment. A name the system filled in automatically is shown as assigned and marked as filled in by the system, and the Secretary may change or clear it. An unassigned voice is shown as “Speaker 3” with an amber border (UC-55). |
-| Segment text | Transcribed text; click to edit inline, saved when leaving the field. The last-edit time is updated (UC-55). |
-| Assign “Speaker 3” card | Opened when an unassigned voice is selected; hint “Choose from the attendee list. Applies to all segments of this voice (12 segments).” Radio list of attendees, e.g. “Ngo Thanh Van · guest”, “Pham Duc Long”, “Le Thu Ha”; one must be selected. |
-| Assign to 12 segments | Primary button; assigns the selected attendee to every segment of that voice in one step and refreshes the transcript (UC-55). |
-| Visibility rule | Viewing and editing the transcript is limited to the assigned Secretary of the meeting (permission matrix, Transcript – View / Edit). |
+| Audio file selector | Dropdown listing the uploaded audio files of the meeting; default the latest file. |
+| Processing status chip | Processing status chip: Processing, Processed or Failed; editing is possible only when Processed. |
+| Search in transcript | Text input filtering or highlighting segments containing the keyword. |
+| Generate summary | Primary button sending the current edited transcript to the AI provider and opening a new draft. |
+| Audio player | Audio player with play/pause, current position, seek bar and total duration. |
+| Segment time | Start time of the segment; clicking moves the player to that point and plays it. |
+| Speaker dropdown | Speaker dropdown per segment; system-assigned names may be changed or cleared, unassigned voices show as “Speaker n”. |
+| Segment text | Transcribed text; click to edit inline, saved when leaving the field. |
+| Assign “Speaker 3” card | Card opened for an unassigned voice with the attendee radio list; one must be selected. |
+| Assign to 12 segments | Primary button assigning the selected attendee to every segment of that voice. |
+| Visibility rule | Read-only note that viewing and editing the transcript is limited to the assigned Secretary. |
 
 #### 10.2 Meeting Summary
 
 Figure 73: Meeting Summary
 
-The Meeting Summary card on the Minutes tab shows the AI draft of the Meeting's content, written from the Meeting's own record, and the review that makes it usable. The draft always has three sections — I. Objectives and scope of the meeting, II. Discussion and assessment, III. Conclusions and assignments — and is always labelled as written by AI. Only the current Chair and Secretary see and correct it; after they approve it the other participants read it. Correcting it withdraws the approval, and the minutes use only an approved draft. Vote results are copied from the data and are never written by the model; action items stay plain text with no assignee or deadline. There is no publish step (UC-58, UC-59, UC-60, UC-61).
+The Meeting Summary card on the Minutes tab shows the AI draft of the Meeting's content, written from the Meeting's own record, and the review that makes it usable. The draft always has three sections — I. Objectives and scope of the meeting, II. Discussion and assessment, III. Conclusions and assignments — and is always labelled as written by AI. Only the current Chair and Secretary see and correct it; after they approve it the other participants read it. Correcting it withdraws the approval, and the minutes use only an approved draft. Vote results are copied from the data and are never written by the model; action items stay plain text with no assignee or deadline. There is no publish step.
 
 This screen allows the current Chair and the current Secretary to:
 
-- View Meeting Summary: read the three sections, the label saying the text was written by AI, the model and time, who asked for it, who approved it and who last corrected it (UC-59).
+- View Meeting Summary: read the three sections, the label saying the text was written by AI, the model and time, who asked for it, who approved it and who last corrected it.
 
-- Generate Meeting Summary: click “Generate summary”, or “Regenerate” over an existing draft, to queue a new draft from the Meeting's transcript (UC-58). The page asks again every 5 seconds while the AI writes.
+- Generate Meeting Summary: click “Generate summary”, or “Regenerate” over an existing draft, to queue a new draft from the Meeting's transcript. The page asks again every 5 seconds while the AI writes.
 
-- Edit Meeting Summary: correct the text of the three sections before approving it (UC-60).
+- Edit Meeting Summary: correct the text of the three sections before approving it.
 
-- Approve Meeting Summary: click “Approve draft” to vouch for the content; the other participants can read it from then on (UC-61).
+- Approve Meeting Summary: click “Approve draft” to vouch for the content; the other participants can read it from then on.
+
+Related UC: UC-58, UC-59, UC-60, UC-61
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Meeting header | Read-only: back link, Meeting title, status chip Ended, confidentiality chip, actual time and place. |
-| AI label | Read-only chip “AI-written — needs review” on every draft, reviewed or not. |
-| Draft status | Read-only: Queued, Running, Ready, Failed with the reason, and an empty state when there is none. |
-| Generate summary / Regenerate | Primary button, shown to the current Chair and Secretary while the Meeting is InProgress or Ended. Queues the request; the earlier draft stays readable while the AI writes, and the page asks again every 5 seconds. |
-| Sections | Three text boxes — I. Objectives and scope of the meeting, II. Discussion and assessment, III. Conclusions and assignments — limited to 2,000, 12,000 and 8,000 characters. |
-| Edit draft | Secondary button on a finished draft; saving withdraws the review. |
-| Save | Saves the three sections and withdraws the review, so the other participants stop seeing the draft until it is approved again. |
-| Approve draft | Secondary button on a finished draft; records the reviewer and the time. From then on everyone who may read the Meeting reads the draft. |
-| Reviewer and editor | Read-only: who approved the draft and when, and who last corrected it and when. |
-| Model and time | Read-only: the model name, the time the draft was written and the person who asked for it. |
-| Sources | Read-only, for each part of section II: the agenda item title and the stretch of the Meeting the part was written from, e.g. “09:12–09:31 · 42 sentences”, to check against the Recordings tab. |
-| What the draft is based on | Read-only, shown to the current Chair and Secretary before asking: sentences recorded, voices not yet named, transcripts running or failed, agenda items and how many were timed, closed votes. |
-| Visibility rule | Read-only note: before approval only the current Chair and Secretary see the draft; after approval everyone who may read the Meeting sees it read-only; correcting it withdraws the approval. |
-| No publish step | No Publish button: the summary is not published outside the Meeting. |
+| Meeting header | Read-only meeting header with back link, title, Ended chip, confidentiality chip, actual time and place. |
+| AI label | Read-only chip “AI-written — needs review” on every draft. |
+| Draft status | Read-only draft status: Queued, Running, Ready, Failed or empty. |
+| Generate summary / Regenerate | Primary button for the current Chair and Secretary queuing a new draft; the earlier draft stays readable meanwhile. |
+| Sections | Three text boxes for objectives and scope, discussion and assessment, conclusions and assignments, with character limits. |
+| Edit draft | Secondary button withdrawing the review to edit a finished draft. |
+| Save | Button saving the three sections and withdrawing the review. |
+| Approve draft | Secondary button on a finished draft recording the reviewer and the time. |
+| Reviewer and editor | Read-only reviewer, approval time, last editor and edit time. |
+| Model and time | Read-only model name, writing time and the person who asked for it. |
+| Sources | Read-only source of each part of section II: agenda item title and the stretch of the meeting it was written from. |
+| What the draft is based on | Read-only checklist shown before asking: recorded sentences, unnamed voices, transcript states, timed agenda items, closed votes. |
+| Visibility rule | Read-only note that only the Chair and Secretary see the draft before approval, and everyone with access sees it after. |
+| No publish step | Read-only note that there is no Publish button: the summary is not published outside the meeting. |
 
 #### 10.3 Collect Voice Samples for Attendees
 
 Figure 74: Collect Voice Samples for Attendees
 
-The voice collection dialog opens from a user row on the Users screen, for holders of the Voice sample collection permission. It records a sample for a person under that person’s own Voice ID consent, asking for agreement on every take (UC-57, BR-118, BR-119, BR-124).
+The voice collection dialog opens from a user row on the Users screen, for holders of the Voice sample collection permission. It records a sample for a person under that person’s own Voice ID consent, asking for agreement on every take.
 
 This screen allows a holder of the Voice sample collection permission to:
 
-- View Voice Collection: see the person’s consent and the samples collected for the person (UC-57a).
+- View Voice Collection: see the person’s consent and the samples collected for the person.
 
-- Record Voice Sample for Attendee: confirm the person agreed to this take, record, listen back and save (UC-57b).
+- Record Voice Sample for Attendee: confirm the person agreed to this take, record, listen back and save.
 
-- Play / Delete Collected Sample: listen to or delete a collected sample (UC-57c, UC-57d).
+- Play / Delete Collected Sample: listen to or delete a collected sample.
+
+Related UC: UC-57, UC-57a, UC-57b, UC-57c, UC-57d
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Person | Name and email of the person and the consent status. Without consent under the current notice, recording is not possible. |
-| Agreement for this take | Required checkbox, ticked before each recording. |
-| Passage and recorder | Passage to read, Start/Stop, play back, Save sample or Record again; 6–60 seconds of clear speech; at most 50 collected samples. MSG473 when saved, and the person is notified. |
-| Collected samples | List with date and collector; Play and Delete (MSG474) on each. |
+| Person | Row showing the person’s name, email and consent status; recording is impossible without current consent. |
+| Agreement for this take | Required checkbox “Agreement for this take” ticked before each recording. |
+| Passage and recorder | Passage to read with “Start”/“Stop”, play back, “Save sample” or “Record again”; 6–60 seconds of clear speech, at most 50 samples. |
+| Collected samples | List of collected samples with date and collector, Play and Delete on each. |
 
 ### 11. FE-11 – Voting Management
 
-Scope: create/open/cast only while Meeting is InProgress. End Meeting is independent of Vote closure. Chair can close and tally existing Open Votes in InProgress or Ended, then record the conclusion. No post-meeting ballot casting, time-boxed voting or quorum. (BR-026, BR-090, BR-092, BR-093)
+Scope: create/open/cast only while Meeting is InProgress. End Meeting is independent of Vote closure. Chair can close and tally existing Open Votes in InProgress or Ended, then record the conclusion. No post-meeting ballot casting, time-boxed voting or quorum.
 
 #### 11.1 Meeting Detail – Voting Tab
 
 Figure 75: Meeting Detail – Voting Tab
 
-The Meeting Detail – Voting tab lists every Vote that belongs directly to the selected Meeting. It remains readable after Ended; casting stops at Meeting end. While InProgress, the header shows the actual start time, elapsed time and the current Agenda Item. The Chair creates/opens during InProgress, and may close outstanding Open Votes during InProgress or after Ended; other users involved in the Meeting see the same list read-only. Votes are never held before or after the Meeting and have no deadline or quorum (UC-62a, UC-62b, UC-63, UC-64, UC-66).
+The Meeting Detail – Voting tab lists every Vote that belongs directly to the selected Meeting. It remains readable after Ended; casting stops at Meeting end. While InProgress, the header shows the actual start time, elapsed time and the current Agenda Item. The Chair creates/opens during InProgress, and may close outstanding Open Votes during InProgress or after Ended; other users involved in the Meeting see the same list read-only. Votes are never held before or after the Meeting and have no deadline or quorum.
 
 This screen allows the Chair to:
 
-- View Meeting Votes: view all Votes of the Meeting with status, linked Agenda Item, ballot type and opening time (UC-62a).
+- View Meeting Votes: view all Votes of the Meeting with status, linked Agenda Item, ballot type and opening time.
 
-- View Vote Status: follow the turnout of an open Vote (ballots cast / eligible voters) in real time (UC-62b).
+- View Vote Status: follow the turnout of an open Vote (ballots cast / eligible voters) in real time.
 
-- Edit Draft Vote: click “Edit” on a Draft Vote to change its content, options or ballot type in the Create & Open Vote Dialog (UC-63).
+- Edit Draft Vote: click “Edit” on a Draft Vote to change its content, options or ballot type in the Create & Open Vote Dialog.
 
-- Delete Draft Vote: click “Delete” on a Draft Vote to remove it; an open or closed Vote cannot be deleted (UC-63).
+- Delete Draft Vote: click “Delete” on a Draft Vote to remove it; an open or closed Vote cannot be deleted.
 
-- Open Vote: click “Open vote” on a Draft Vote so that eligible people can cast their ballots (UC-64).
+- Open Vote: click “Open vote” on a Draft Vote so that eligible people can cast their ballots.
 
-- Close Vote: click “Close voting” on an open Vote to stop balloting; the system tallies the result and the Vote moves to Vote Result & Conclusion (UC-66).
+- Close Vote: click “Close voting” on an open Vote to stop balloting; the system tallies the result and the Vote moves to Vote Result & Conclusion.
 
 On the screen, s/he can also:
 
-- Create Vote: click “Create vote” to open the Create & Open Vote Dialog for the current Agenda Item (UC-63).
+- Create Vote: click “Create vote” to open the Create & Open Vote Dialog for the current Agenda Item.
+
+Related UC: UC-62a, UC-62b, UC-63, UC-64, UC-66
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Meeting header | Read-only: Meeting title, status chip InProgress, confidentiality chip (e.g. Normal), actual start time and elapsed time (“Started 08:32 · 22 min in”) and the current Agenda Item (“Current item: 2. …”). |
-| Tabs | General Information · Participants · Meeting Agenda · Documents · Voting · Recordings · Summary · Minutes; Voting is selected. |
-| Vote count | Read-only number of Votes that belong to the Meeting. |
-| Create vote | Primary button, visible only to the current Chair and enabled only while the Meeting is InProgress (BR-090, BR-092, BR-093). Opens the Create & Open Vote Dialog. |
-| Vote status chip | Draft (dashed card), Open, Closed; after the Chair records a conclusion the Vote shows its conclusion. Lifecycle: Draft → Open → Closed → Concluded. |
-| Vote content | Bold text of the motion, e.g. “Approve voting only within the meeting”. |
-| Vote meta | Read-only: linked Agenda Item (“Item 2”), ballot type public or secret and opening time (“opened 08:51”). |
-| Turnout bar | Progress bar with “cast / eligible” count (e.g. 3/5), shown for an open Vote and updated as ballots arrive. Individual choices are not shown while the Vote is open. |
-| Eligibility note | Read-only text, e.g. “5 people eligible: Chair, Secretary, Member, Guest.” Counts the current holders of the roles selected for this Vote; the list is fixed when the Vote opens, and attendance does not decide eligibility (BR-090, BR-055, BR-091). |
-| Close voting | Chair only; close and tally an existing Open Vote while Meeting is InProgress or Ended. End Meeting is independently available and never requires this action. After Meeting Ended no new ballot is accepted, even if Vote remains Open. (BR-026, BR-090, BR-099, BR-092, BR-093) |
-| Edit | Button on a Draft Vote, Chair only; opens the dialog pre-filled. An open or closed Vote can no longer be edited. |
-| Delete | Button on a Draft Vote, Chair only; asks for confirmation and deletes the Draft Vote. An open or closed Vote cannot be deleted (UC-63, BR-086, BR-087). |
-| Open vote | Primary button on a Draft Vote, Chair only, enabled while the Meeting is InProgress (BR-092, BR-093). Eligible voters see the Vote immediately in Cast Vote. |
+| Meeting header | Read-only meeting header with title, InProgress chip, confidentiality chip, start time, elapsed time and current agenda item. |
+| Tabs | Tabs of the meeting detail with Voting selected. |
+| Vote count | Read-only number of votes belonging to the meeting. |
+| Create vote | Primary button visible only to the current Chair while the meeting is In Progress; opens the Create & Open Vote Dialog. |
+| Vote status chip | Status chip Draft, Open or Closed; a concluded vote shows its conclusion; lifecycle Draft → Open → Closed → Concluded. |
+| Vote content | Bold text of the motion. |
+| Vote meta | Read-only linked agenda item, ballot type and opening time. |
+| Turnout bar | Progress bar with the cast/eligible count, updated as ballots arrive; no choices shown while open. |
+| Eligibility note | Read-only eligible voter count fixed when the vote opens; attendance does not decide eligibility. |
+| Close voting | Chair-only button “Close voting” closing and tallying an open vote while the meeting is In Progress or Ended. |
+| Edit | Button “Edit” on a draft vote, Chair only, opening the dialog pre-filled; open or closed votes cannot be edited. |
+| Delete | Button “Delete” on a draft vote, Chair only, asking for confirmation and deleting it; open or closed votes cannot be deleted. |
+| Open vote | Primary button “Open vote” on a draft vote, Chair only, enabled while In Progress; eligible voters see the vote immediately. |
 
 #### 11.2 Create & Open Vote Dialog
 
 Figure 76: Create & Open Vote Dialog
 
-The Create & Open Vote Dialog opens over the Voting tab when the Chair clicks “Create vote” (or “Edit” on a Draft Vote). The title shows the Agenda Item the Vote is linked to, normally the current item (“Create vote · Item 2”). The Vote belongs directly to the Meeting, can only be created while the Meeting is InProgress and has no deadline or quorum (UC-63, UC-64).
+The Create & Open Vote Dialog opens over the Voting tab when the Chair clicks “Create vote” (or “Edit” on a Draft Vote). The title shows the Agenda Item the Vote is linked to, normally the current item (“Create vote · Item 2”). The Vote belongs directly to the Meeting, can only be created while the Meeting is InProgress and has no deadline or quorum.
 
 This screen allows the Chair to:
 
-- Create / Configure Vote: enter the motion, define and order the voting options, choose public or secret ballot and the meeting roles allowed to vote (UC-63).
+- Create / Configure Vote: enter the motion, define and order the voting options, choose public or secret ballot and the meeting roles allowed to vote.
 
-- Save as Draft: click “Save draft” to keep the Vote in Draft status on the Voting tab for opening later (UC-63).
+- Save as Draft: click “Save draft” to keep the Vote in Draft status on the Voting tab for opening later.
 
-- Open Vote: click “Open vote” to save the Vote and open it at once for eligible voters (UC-64).
+- Open Vote: click “Open vote” to save the Vote and open it at once for eligible voters.
 
 On the screen, s/he can also:
 
 - Cancel: click “Cancel” to close the dialog without saving.
 
+Related UC: UC-63, UC-64
+
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Dialog title | Read-only; shows the linked Agenda Item of the Meeting (by default the current Agenda Item). |
-| Vote content * | Text input, required; the motion put to the vote, e.g. “Approve voting only within the meeting”. Empty content blocks saving. |
-| Options | List of text inputs, pre-filled with Agree, Disagree, Abstain. Each option must be non-empty and options must be distinct; at least two options are required. |
-| Drag handle | Icon at the left of each option; drag to reorder the options shown to voters. |
-| Remove option | Icon at the right of each option; removes that option (not allowed below two options). |
-| Add option | Link button; appends an empty option row. |
-| Ballot type | Segmented control: Public (default) – each voter’s choice is shown with the result; Secret ballot – only totals are shown. |
-| Eligible voters | Multi-select of meeting roles: Chair, Secretary, Member, Guest; all selected by default and at least one required. Eligible voters are the current holders of the selected roles when the Vote opens; the list and its count are then fixed. A Guest votes with the invitation identity, not the display name or room connection. (BR-090, BR-055, BR-091) |
-| Cancel | Link button; closes the dialog, nothing is saved. |
-| Save draft | Button; saves the Vote with status Draft. Allowed only while the Meeting is InProgress and the user is its current Chair (BR-092, BR-093). |
-| Open vote | Primary button; saves and opens the Vote (status Open, opening time recorded). If the Meeting is no longer InProgress the Vote is not created and the reason is shown (BR-090). |
+| Dialog title | Read-only title showing the linked agenda item, default the current one. |
+| Vote content * | Required text input for the motion, e.g. “Approve voting only within the meeting”; empty content blocks saving. |
+| Options | List of option inputs pre-filled with Agree, Disagree, Abstain; at least two distinct non-empty options. |
+| Drag handle | Icon at the left of each option for dragging it into a new order. |
+| Remove option | Icon at the right of each option removing it; never below two options. |
+| Add option | Link button appending an empty option row. |
+| Ballot type | Segmented control: “Public” shows each voter’s choice with the result, “Secret ballot” shows only totals; default Public. |
+| Eligible voters | Multi-select of the meeting roles eligible to vote; all selected by default, at least one required. |
+| Cancel | Link button “Cancel” closing the dialog without saving. |
+| Save draft | Button “Save draft” that saves the vote as Draft. |
+| Open vote | Primary button “Open vote” that saves and opens the vote with the opening time recorded. |
 
 #### 11.3 Cast Vote
 
 Figure 77: Cast Vote
 
-The Cast Vote screen (shown here in its compact/mobile layout) is opened by an eligible voter from the open Vote card, the in-room meeting panel. It shows one open Vote of the InProgress Meeting and lets the voter submit exactly one ballot (UC-65).
+The Cast Vote screen (shown here in its compact/mobile layout) is opened by an eligible voter from the open Vote card, the in-room meeting panel. It shows one open Vote of the InProgress Meeting and lets the voter submit exactly one ballot.
 
 This screen allows the Chair, Secretary, Participant and verified Guest (eligible voters) to:
 
-- View Open Vote: view the motion, the Meeting and Agenda Item it belongs to, the ballot type and the opening time (UC-62b).
+- View Open Vote: view the motion, the Meeting and Agenda Item it belongs to, the ballot type and the opening time.
 
-- Cast Vote: select one option and click “Submit ballot”; each eligible voter can vote only once and the ballot cannot be edited (UC-65).
+- Cast Vote: select one option and click “Submit ballot”; each eligible voter can vote only once and the ballot cannot be edited.
+
+Related UC: UC-62b, UC-65
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Screen title | Read-only header. |
-| Status chip | Open with opening time (“Opened at 08:51”). When the Vote has been closed the options are disabled and the screen states that voting has ended. |
+| Screen title | Read-only screen header. |
+| Status chip | Status chip Open with opening time; a closed vote disables the options and states that voting has ended. |
 | Vote content | Read-only bold text of the motion. |
-| Vote context | Read-only: Meeting title · Agenda Item · ballot type, e.g. “Sprint 6 planning meeting · Item 2 · public”. |
-| Options | Radio group, required, one choice only; values are the options defined by the Chair (e.g. Agree, Disagree, Abstain). The selected option is highlighted. |
-| Submit ballot | Primary button, enabled when an option is selected. Accepted only while the Meeting is InProgress, the Vote is Open and the user is on the eligible list fixed when the Vote opened – a current Chair, Secretary, Participant or verified Guest in a selected role – and has not voted yet (BR-090, BR-092, BR-093, BR-091). After submission the screen shows the recorded choice and the turnout. |
-| Immutability note | Read-only hint: a submitted ballot cannot be changed or withdrawn. |
+| Vote context | Read-only meeting title, agenda item and ballot type. |
+| Options | Required radio group with the chair-defined options; one choice only. |
+| Submit ballot | Primary button “Submit ballot” enabled when an option is selected; accepted only while the meeting is In Progress, the vote Open and the voter eligible and not yet voted. |
+| Immutability note | Read-only hint that a submitted ballot cannot be changed or withdrawn. |
 
 #### 11.4 Vote Result & Conclusion
 
 Figure 78: Vote Result & Conclusion
 
-The Vote Result & Conclusion screen is shown on the Voting tab after the Chair closes a Vote. It presents the tally per option and, for a public Vote, each person’s choice. The Chair then records the conclusion Passed, NotPassed or Deferred; the tally and conclusion are carried into the Meeting Minutes (UC-62b, UC-67).
+The Vote Result & Conclusion screen is shown on the Voting tab after the Chair closes a Vote. It presents the tally per option and, for a public Vote, each person’s choice. The Chair then records the conclusion Passed, NotPassed or Deferred; the tally and conclusion are carried into the Meeting Minutes.
 
 This screen allows the Chair to:
 
-- View Vote Result: view the number of voters, ballot type, opening/closing time and the count and percentage of each option (UC-62b).
+- View Vote Result: view the number of voters, ballot type, opening/closing time and the count and percentage of each option.
 
-- View Public Ballots: for a public Vote, see how each eligible person voted and who did not vote (UC-62b).
+- View Public Ballots: for a public Vote, see how each eligible person voted and who did not vote.
 
-- Record Vote Conclusion: select Passed, NotPassed or Deferred, optionally add a note and click “Record conclusion” (UC-67).
+- Record Vote Conclusion: select Passed, NotPassed or Deferred, optionally add a note and click “Record conclusion”.
+
+Related UC: UC-62b, UC-67
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
 | Vote content | Read-only bold text of the motion. |
-| Status chip | Closed; after the conclusion is saved the chip shows the conclusion. |
-| Result summary | Read-only, e.g. “4/5 people voted · public · opened 08:51, closed 08:55”: voters / eligible, ballot type, opening and closing time. |
-| Option result rows | One row per option: option label, bar and “count · percentage”, e.g. Agree 3 · 75%, Disagree 0 · 0%, Abstain 1 · 25%; percentages are calculated on ballots cast. Calculated by the system when the Vote is closed (BR-099). |
-| Conclusion * | Segmented control, required: Passed, NotPassed, Deferred. Enabled only for the current Chair and only after the Vote is closed (BR-099, BR-092, BR-093). |
-| Conclusion note | Text input, optional, e.g. “Applies from Sprint 6.”; included with the conclusion in the minutes. |
-| Record conclusion | Primary button, Chair only; saves the conclusion on the Vote. Other users see the conclusion read-only. |
-| Public ballots | For a public Vote, list every person on the eligible list, internal or Guest, with the saved choice, or “Did not vote” for someone who cast no ballot (e.g. Pham Duc Long · Member – Did not vote). Guest uses the self-declared display profile without exposing a legal identity claim. Attendance is reference only. A secret Vote hides all voter-choice links. (BR-090, BR-092, BR-093, BR-055) |
-| Minutes note | Read-only hint: the tally and the recorded conclusion are included in the Meeting Minutes; no separate resolution is created (BR-099). |
+| Status chip | Status chip Closed, showing the conclusion once saved. |
+| Result summary | Read-only summary of voters/eligible, ballot type, opening and closing time. |
+| Option result rows | One row per option with label, bar and count · percentage calculated on ballots cast. |
+| Conclusion * | Required segmented control Passed, NotPassed or Deferred; enabled only for the current Chair after closing. |
+| Conclusion note | Optional text input for a conclusion note included with the conclusion in the minutes. |
+| Record conclusion | Chair-only primary button “Record conclusion” saving the conclusion on the vote. |
+| Public ballots | List of every eligible person with the saved choice, or “Did not vote”; secret votes hide all voter-choice links. |
+| Minutes note | Read-only hint that the tally and conclusion are included in the meeting minutes. |
 
 ### 12. FE-12 – Meeting Minutes & Approval
 
@@ -4420,59 +4522,63 @@ Field Description
 
 Figure 79: Minutes Editor
 
-The Minutes Editor is the Minutes tab of an InProgress or Ended Meeting as seen by its current Chair or Secretary. The draft is filled from one fixed template — meeting minutes, Form 1.4 of Decree 30/2020/ND-CP — with the Meeting's information, attendance, each agenda item's recorded conclusion, the Vote results and conclusions, and the three sections of the approved AI draft when there is one. The Secretary edits the HTML text in the word-processor editor with a live preview of the paper, saves explicitly, and downloads the same text as a Word file; the minutes of a Secret Meeting cannot be downloaded. The Secretary sends the finished minutes to the Chair for approval (UC-72); the Chair approves and issues them (UC-73), or returns them with a reason (UC-74).
+The Minutes Editor is the Minutes tab of an InProgress or Ended Meeting as seen by its current Chair or Secretary. The draft is filled from one fixed template — meeting minutes, Form 1.4 of Decree 30/2020/ND-CP — with the Meeting's information, attendance, each agenda item's recorded conclusion, the Vote results and conclusions, and the three sections of the approved AI draft when there is one. The Secretary edits the HTML text in the word-processor editor with a live preview of the paper, saves explicitly, and downloads the same text as a Word file; the minutes of a Secret Meeting cannot be downloaded. The Secretary sends the finished minutes to the Chair for approval; the Chair approves and issues them, or returns them with a reason.
 
 This screen allows the current Chair and the current Secretary to:
 
-- View Meeting Minutes: read the latest revision as the paper that will be printed, with its revision number, status and last save time (UC-69).
+- View Meeting Minutes: read the latest revision as the paper that will be printed, with its revision number, status and last save time.
 
-- Generate Meeting Minutes: click “Create minutes”, or “Fill from meeting data” over an existing draft, to fill the fixed template from the Meeting's records and the approved AI draft (UC-70).
+- Generate Meeting Minutes: click “Create minutes”, or “Fill from meeting data” over an existing draft, to fill the fixed template from the Meeting's records and the approved AI draft.
 
-- Edit Meeting Minutes: correct the text in the word-processor editor; the preview on the right follows the text (UC-71).
+- Edit Meeting Minutes: correct the text in the word-processor editor; the preview on the right follows the text.
 
 - Save: click “Save” to save the text; the draft is not saved automatically.
 
-Download Word: click “Download Word” to save a Word file named after the Meeting; not available for a Secret Meeting (UC-71).
+Download Word: click “Download Word” to save a Word file named after the Meeting; not available for a Secret Meeting.
+
+Related UC: UC-69, UC-70, UC-71, UC-72, UC-73, UC-74
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Meeting header | Read-only: Meeting title, status chip, confidentiality chip, actual time and place. |
-| Template | Read-only: one fixed template, meeting minutes, Form 1.4 of Decree 30/2020/ND-CP. There is no template chooser. |
-| Status and revision | Read-only: revision number, status Draft, who created the minutes and when, and when they were last saved. A correction that is not issued yet is labelled “Correction · draft / waiting for approval / returned”. |
-| Create minutes / Rebuild | Button; fills the template from the Meeting's records and the approved AI draft. Building again replaces all corrections after confirmation, and is not offered once the minutes are submitted or issued. |
-| HTML editor | Word-processor area: toolbar with paragraph style, font size, colour, alignment, lists, tables, page break, find and replace; switches to a plain-text view and back, and the preview follows the text. The server filters the HTML before saving. Template marks: “## ” section heading, “### ” sub-heading, “@@ left \| right” two-column line, “**bold**”, “- ” bullet, “^ ” centred and “~ ” small line. |
-| Preview | Read-only paper that follows the text as it is typed and is laid out as it will print: heading, two-column opening, sections I–III, closing line and the Secretary and Chair name block with space to sign the printed copy by hand. |
-| Save | Saves the text with the time the draft was read. If someone else saved first, the page says so and the newer text is not overwritten. |
-| Download Word | Downloads a Word file, named after the Meeting, built from the same text. Not available for a Secret Meeting, where the minutes are read on the screen only. |
-| Visibility rule | Read-only note: only the current Chair and Secretary see and correct a draft; everyone else sees the minutes only after they are issued; someone who is neither receives no draft at all. |
-| Task note | Read-only: “2. Tasks, deliverables and deadlines” is text in the minutes; no assignee, due date or progress is tracked. |
+| Meeting header | Read-only meeting title, status and confidentiality chips, actual time and place. |
+| Template | Read-only fixed template: meeting minutes, Form 1.4 of Decree 30/2020/ND-CP; no template chooser. |
+| Status and revision | Read-only revision number, Draft status, creator, creation and last-save time. |
+| Create minutes / Rebuild | Button filling the template from the meeting records and the approved AI draft; rebuilding replaces corrections after confirmation. |
+| HTML editor | Word-processor area with formatting toolbar, plain-text view and live preview; the server filters the HTML before saving. |
+| Preview | Read-only paper preview laid out as it will print, with the Secretary and Chair name block for hand signing. |
+| Save | Button saving the text with the read time; a newer save by someone else is never overwritten. |
+| Download Word | Button downloading a Word file named after the meeting; unavailable for a Secret meeting. |
+| Visibility rule | Read-only note that only the Chair and Secretary see and correct a draft before issuing. |
+| Task note | Read-only note that tasks, deliverables and deadlines are text only, with no tracking. |
 
 #### 12.2 Finalized Meeting Minutes
 
 Figure 80: Finalized Meeting Minutes
 
-The Finalized Meeting Minutes screen is the Minutes tab after the Chair has approved and issued the minutes. The issued minutes are the official record of the Meeting and can no longer be edited; the Meeting itself remains Ended. Every user allowed to view the Meeting’s minutes sees this read-only version (UC-69, UC-73).
+The Finalized Meeting Minutes screen is the Minutes tab after the Chair has approved and issued the minutes. The issued minutes are the official record of the Meeting and can no longer be edited; the Meeting itself remains Ended. Every user allowed to view the Meeting’s minutes sees this read-only version.
 
 This screen allows the System Admin, Member, Approver, Chair, Secretary and Participant (within their meeting scope) to:
 
-- View Meeting Minutes: read the issued minutes (UC-69).
+- View Meeting Minutes: read the issued minutes.
 
 On the screen, s/he can also:
 
 - Download PDF: click “Download PDF” to save the issued minutes as a PDF file.
 
+Related UC: UC-69, UC-73, UC-75
+
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Status chip | Issued. |
-| Seal summary | Read-only, e.g. “Revision 2 · issued by the Chair at 15/10/2026 14:40”: issued revision, Chair who issued and issue time (UC-73). |
-| Download PDF | Button; downloads the issued revision as PDF. |
-| Information banner | Read-only: “The issued minutes are the official record of the meeting: they cannot be edited, and any change is made as a new revision (UC-75).” (BR-137, BR-138). |
-| Minutes document | Read-only page: title “MEETING MINUTES”, Meeting name, date and actual time, full content (attendance, content from the published summary, vote conclusions). |
-| Empty state | When no revision is issued yet, a reader sees that no minutes have been issued yet and no Draft card. |
+| Status chip | Status chip Issued. |
+| Seal summary | Read-only issued revision, issuing Chair and issue time. |
+| Download PDF | Button downloading the issued revision as PDF. |
+| Information banner | Read-only banner stating the issued minutes are the official record and any change makes a new revision. |
+| Minutes document | Read-only page with the full content: attendance, published summary content and vote conclusions. |
+| Empty state | Empty state shown when no revision has been issued yet. |
 
 ### 13. FE-13 – Email & In-App Notification
 
@@ -4480,61 +4586,65 @@ Field Description
 
 Figure 81: Notification Panel
 
-The Notification Panel opens from the bell at the bottom of the sidebar and is anchored next to it, over the current page. Every signed-in user uses it to read in-app notifications, mark them as read and open the related meeting (UC-76, UC-77a, UC-77b, UC-78).
+The Notification Panel opens from the bell at the bottom of the sidebar and is anchored next to it, over the current page. Every signed-in user uses it to read in-app notifications, mark them as read and open the related meeting.
 
 This screen allows the Member, Approver, System Admin, Chair, Secretary and Participant to:
 
-- View Notifications: view personal notifications and the unread count; opening the panel does not mark anything as read (UC-76).
+- View Notifications: view personal notifications and the unread count; opening the panel does not mark anything as read.
 
-- Mark Notification as Read: mark a single unread notification as read (UC-77a).
+- Mark Notification as Read: mark a single unread notification as read.
 
-- Mark All Notifications as Read: mark all of the user’s unread notifications as read, including those not displayed (UC-77b).
+- Mark All Notifications as Read: mark all of the user’s unread notifications as read, including those not displayed.
 
-- Open Notification Target: click a notification to open the linked meeting; the client marks the notification as read in a separate request (UC-78).
+- Open Notification Target: click a notification to open the linked meeting; the client marks the notification as read in a separate request.
+
+Related UC: UC-76, UC-77a, UC-77b, UC-78
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Notification bell | Icon in the sidebar footer next to the user’s name, with a badge showing the unread count; updated in real time without reloading the page. |
-| Panel header | Title with “n new” chip = unread count. Opening the panel does not change any read status. |
-| Mark all as read | Link button; applies to all unread notifications of the user, including those not displayed (BR-033, BR-034); with no unread items the count simply stays 0. |
+| Notification bell | Icon in the sidebar footer with a real-time unread-count badge. |
+| Panel header | Panel title with the “n new” chip; opening the panel changes no read status. |
+| Mark all as read | Link button marking all the user’s unread notifications as read. |
 | Notification icon | Icon at the left of each item indicating the event type. |
-| Notification title | Event name, e.g. Meeting published, Meeting approved, Meeting rejected; shown bold while unread. |
-| Notification message | Detail text including the meeting name, e.g. “You are invited to the meeting ‘Q4 Board of Directors meeting’.” |
-| Time | Relative time, e.g. “51 minutes ago”, “3 hours ago”, “Yesterday”. |
-| Unread indicator | Blue dot and tinted background on unread items; removed when the item is read. Marking an already-read item leaves the count unchanged. |
-| Notification item (click) | Marks the item as read if unread and opens the linked meeting after re-checking the user’s access; protected content is not shown if access is denied (BR-016, BR-017, BR-033, BR-034). A failure to save the read status does not block opening an authorized meeting. |
-| Messages | MSG40 “Unable to load notifications. Please try again.”; MSG39 “The requested notification page is unavailable.” |
+| Notification title | Event name in bold while unread. |
+| Notification message | Detail text including the meeting name. |
+| Time | Relative time, e.g. “51 minutes ago” or “Yesterday”. |
+| Unread indicator | Blue dot and tinted background on unread items. |
+| Notification item (click) | Clicking an item marks it read and opens the linked meeting after re-checking access. |
+| Messages | Inline notices when the list or a page cannot be loaded. |
 
 #### 13.2 Meeting Invitation Email
 
 Figure 82: Meeting Invitation Email
 
-This email is sent asynchronously to internal participants and external Guests when a Meeting is published, or when a person is added to a Published or InProgress Meeting. Its buttons lead to the Invitation Response screen (6.4); a Guest first verifies the invited email with a one-time code on Guest Verification (1.3) (UC-31, UC-04).
+This email is sent asynchronously to internal participants and external Guests when a Meeting is published, or when a person is added to a Published or InProgress Meeting. Its buttons lead to the Invitation Response screen (6.4); a Guest first verifies the invited email with a one-time code on Guest Verification (1.3).
 
 This email allows the invited Chair, Secretary, Participant or Guest to:
 
 - Read Invitation: view the meeting name, the recipient’s meeting role and the planned time, location and Chair.
 
-- Respond to Meeting Invitation: choose Attend or Decline, which opens the Invitation Response screen (6.4) with that choice pre-selected (UC-31). The answer is recorded once; the Chair is not asked to respond.
+- Respond to Meeting Invitation: choose Attend or Decline, which opens the Invitation Response screen (6.4) with that choice pre-selected. The answer is recorded once; the Chair is not asked to respond.
 
 - View Details: open the meeting details after signing in or after Guest verification.
 
-- Access Meeting via Guest Invitation: a Guest opens the meeting-specific link and verifies the email with a code before any access (UC-04).
+- Access Meeting via Guest Invitation: a Guest opens the meeting-specific link and verifies the email with a code before any access.
+
+Related UC: UC-04, UC-31
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Subject / heading | “Meeting invitation: <meeting name>”, e.g. “Meeting invitation: Q4 Board of Directors meeting”, under the TrustCabinet logo. |
-| Salutation | Recipient name and meeting role, e.g. “Dear Mr Ngo Dinh Phuc, … as Guest”. |
-| Meeting information | Box with the Meeting’s planned date and time range, location and Chair, e.g. “14/10/2026 · 13:00 – 15:00”, “Meeting room A3, floor 5”, “Chair: Nguyen Minh Chau”. |
-| Attend | Primary button link; opens the Invitation Response screen with Attend pre-selected. |
-| Decline | Button link; opens the Invitation Response screen with Decline pre-selected. Internal participants other than the Chair and Guests answer once and cannot change the answer afterwards (BR-046). |
-| View details | Link; opens the meeting details (after sign-in or Guest verification). Access is limited to the invited Meeting (BR-052). |
-| Security note | “This link works only for this email address. When you open it, you will be asked for a verification code.” Guest links are meeting-specific, require email verification, expire after the configured period and stop working when the invitation is revoked (BR-052, BR-053, BR-054, BR-044). |
-| Delivery | Sent through a background queue; a delivery failure is retried and does not undo publishing or the roster change (BR-031, BR-032). |
+| Subject / heading | Subject and heading “Meeting invitation: ‹meeting name›” under the TrustCabinet logo. |
+| Salutation | Recipient name and meeting role in the salutation. |
+| Meeting information | Box with the planned date and time range, location and Chair. |
+| Attend | Primary button link opening the Invitation Response screen with Attend pre-selected. |
+| Decline | Button link opening the Invitation Response screen with Decline pre-selected. |
+| View details | Link opening the meeting details after sign-in or guest verification. |
+| Security note | Read-only note that the link works only for its email address and needs a verification code. |
+| Delivery | Read-only note that delivery runs through a background queue with retries. |
 
 ### 14. FE-14 – Reporting & Statistics
 
@@ -4542,30 +4652,32 @@ Field Description
 
 Figure 83: Reports & Statistics
 
-The Reports & Statistics screen is reached from Reports in the sidebar. It shows key figures on Meetings for a selected period, a monthly chart and a breakdown by Meeting status, and exports the same report as an Excel file. Every signed-in internal user sees only the Meetings they may read, the System Admin as for anyone else (BR-149, BR-150, PO 09/11/2026 Q1). (UC-79a, UC-79b).
+The Reports & Statistics screen is reached from Reports in the sidebar. It shows key figures on Meetings for a selected period, a monthly chart and a breakdown by Meeting status, and exports the same report as an Excel file. Every signed-in internal user sees only the Meetings they may read, the System Admin as for anyone else (PO 09/11/2026 Q1)..
 
 This screen allows the System Admin, Member, Approver, Chair, Secretary and Participant (within their own scope) to:
 
-- View Reports & Statistics: view the key figures, the meetings-per-month chart and the status breakdown for the selected period (UC-79a).
+- View Reports & Statistics: view the key figures, the meetings-per-month chart and the status breakdown for the selected period.
 
-- Change Report Period: pick a start and end month; all figures are recalculated (UC-79a).
+- Change Report Period: pick a start and end month; all figures are recalculated.
 
-- Export Report: click “Export Excel” to download the report for the current period as an Excel file (UC-79b).
+- Export Report: click “Export Excel” to download the report for the current period as an Excel file.
+
+Related UC: UC-79a, UC-79b
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Page header | Title “Reports & Statistics” with the period covered, e.g. “Data 05/2026 – 10/2026”. |
-| Period | Month pickers (From month, To month), required; the start month must not be after the end month, at most 24 months. A Meeting belongs to the month of its planned start. (BR-149, BR-150) |
-| Export Excel | Button; downloads the report for the current period and scope as an Excel file (UC-79b). |
-| Meetings | KPI tile: number of Meetings in the period, e.g. 75. |
-| Attendance rate | KPI tile: share of invitees recorded Present in attendance of Ended Meetings, e.g. 87%; based on attendance, not on invitation responses (BR-043). Unmarked invitees are not Absent; display an unmarked count so incomplete attendance is visible. |
-| Average duration | KPI tile: average meeting duration in minutes with one decimal, from the actual start to the actual end; meetings missing either time are left out, e.g. 95.5 (BR-151). |
-| Average turnaround | KPI tile: average time in hours from the actual end of a Meeting to the first issue of its minutes, e.g. 30.5 (BR-151). |
-| Meetings per month | Bar chart, one bar per month of the period (T5…T10) with the value above each bar; the current, incomplete month is drawn lighter with the note “October counted up to the 14th.” |
-| By status | Table with columns Status (chip, e.g. Ended, Published, Pending Approval, Draft), Count and % of all Meetings in the period. |
-| Scope and errors | Figures and exports include only Meetings the user may access, for the System Admin as for anyone else (BR-149, BR-150). If statistics cannot be loaded or the export fails, an error message with a retry option is shown and no file is produced. |
+| Page header | Read-only title “Reports & Statistics” with the period covered. |
+| Period | Required month pickers From and To; the start must not be after the end, at most 24 months. |
+| Export Excel | Button downloading the report for the current period and scope as Excel. |
+| Meetings | KPI tile with the number of meetings in the period. |
+| Attendance rate | KPI tile with the share recorded Present in ended meetings. |
+| Average duration | KPI tile with the average meeting duration in minutes. |
+| Average turnaround | KPI tile with the average hours from meeting end to first minutes issue. |
+| Meetings per month | Bar chart with one bar per month of the period and the value above each bar. |
+| By status | Table with Status, Count and % of all meetings in the period. |
+| Scope and errors | Read-only note that figures include only meetings the user may access; load or export failure shows an error with retry. |
 
 ### 15. FE-15 – Working Calendar & Meeting Time Search
 
@@ -4573,166 +4685,180 @@ Field Description
 
 Figure 84: Calendar Sharing
 
-The Calendar Sharing screen opens from the account menu. Its first tab lists who can see the user’s calendar and, for a Member, whose calendars are shared with the user. Sharing shows busy or free hours only, never meeting content, and Secret meetings are never shared (UC-80f, BR-140, BR-141, BR-142, BR-143).
+The Calendar Sharing screen opens from the account menu. Its first tab lists who can see the user’s calendar and, for a Member, whose calendars are shared with the user. Sharing shows busy or free hours only, never meeting content, and Secret meetings are never shared.
 
 This screen allows every signed-in internal user (the second list only for a Member) to:
 
-- View Calendar Shares: see both lists with state, level and dates (UC-80f).
+- View Calendar Shares: see both lists with state, level and dates.
 
-- Respond to Calendar Share: Accept or Decline a pending request on its row (UC-80c).
+- Respond to Calendar Share: Accept or Decline a pending request on its row.
 
-- Change, Withdraw or Stop Share: open the ⋮ menu of a row (UC-80d, UC-80e).
+- Change, Withdraw or Stop Share: open the ⋮ menu of a row.
 
-- Share or Request Calendar: open the dialogs of 15.2 (UC-80a, UC-80b).
+- Share or Request Calendar: open the dialogs of 15.2.
+
+Related UC: UC-80a, UC-80b, UC-80c, UC-80d, UC-80e, UC-80f
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Tabs | “Sharing list” and “Shared calendars” (15.5). |
-| People who can see my calendar | Card with the Share calendar button; one row per person: avatar, name, email, state chip (Waiting for you, Sharing, Waiting for reply), level (Normal meetings / Normal and Internal) and date range. |
-| Calendars shared with me | Card with the Request calendar button; same row layout. A request from a deactivated account can only be declined. |
-| Row actions | Only what the user can do now: Accept / Decline on the row, the others under ⋮ – Change share, Request change, Withdraw request, Stop sharing / Stop viewing. A pending change shows as “Change requested: …”. |
-| Ended shares (N) | Link that shows or hides declined, withdrawn and stopped shares. A stopped share shows no hours; opening it shows MSG439. Shares past their end date are not listed. |
+| Tabs | Tabs “Sharing list” and “Shared calendars”. |
+| People who can see my calendar | Card of people who can see the user’s calendar with rows of avatar, name, email, state, level and date range. |
+| Calendars shared with me | Card of calendars shared with the user with a Request calendar button and the same row layout. |
+| Row actions | Row actions limited to what the user can do now: Accept/Decline on the row, the rest under the ⋮ menu. |
+| Ended shares (N) | Link showing or hiding ended shares; a stopped share shows no hours. |
 
 #### 15.2 Request / Share Calendar Dialog
 
 Figure 85: Request / Share Calendar Dialog
 
-Two dialogs start a share: a Member asks another user to see his or her calendar (Request calendar), or the owner shares directly with a Member (Share calendar), always at Level 1 (UC-80a, UC-80b, BR-142, BR-143).
+Two dialogs start a share: a Member asks another user to see his or her calendar (Request calendar), or the owner shares directly with a Member (Share calendar), always at Level 1.
 
 This screen allows a Member (request) and every internal user (direct share) to:
 
-- Request Calendar Share: choose the owner, level and dates, then Send request (UC-80a).
+- Request Calendar Share: choose the owner, level and dates, then Send request.
 
-- Share Calendar Directly: choose a Member and dates, then Share (UC-80b).
+- Share Calendar Directly: choose a Member and dates, then Share.
+
+Related UC: UC-80a, UC-80b
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Note | “If the person agrees, you see their busy hours, not meeting names or content.” |
-| View calendar of / Share with | Required; search by name or email over the eligible users. A person with a pending or active share is marked “Already” and cannot be chosen; for a direct share only users who can create meetings are listed (MSG455). |
-| Level | Request only: Normal meetings, or Normal and Internal; Secret meetings never show. A direct share is always Normal meetings. |
-| Sharing period | Required date range with shortcuts 1 week, 1 month, 3 months; starts today or later, at most 365 days (MSG443). |
-| Buttons | Cancel; Send request (MSG435) or Share (MSG441). The other side is notified. |
+| Note | Read-only note “If the person agrees, you see their busy hours, not meeting names or content.” |
+| View calendar of / Share with | Required search by name or email; a person with a pending or active share is marked “Already” and cannot be chosen. |
+| Level | Sharing level: request offers Normal meetings or Normal and Internal; a direct share is always Normal meetings. |
+| Sharing period | Required date range with 1-week, 1-month and 3-month shortcuts, starting today or later; at most 365 days. |
+| Buttons | Buttons “Cancel” and “Send request” / “Share”; the other side is notified. |
 
 #### 15.3 Respond to Calendar Share
 
 Figure 86: Respond to Calendar Share
 
-Accepting a request opens a dialog where the owner may grant less than was asked: a lower level or a shorter period. The same dialog approves a change request (UC-80c, BR-140, BR-141).
+Accepting a request opens a dialog where the owner may grant less than was asked: a lower level or a shorter period. The same dialog approves a change request.
 
 This screen allows the person who was asked to:
 
-- Accept Share: confirm the level and period and accept (UC-80c).
+- Accept Share: confirm the level and period and accept.
 
-- Decline Share: decline after confirming (UC-80c).
+- Decline Share: decline after confirming.
+
+Related UC: UC-80c
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Requester | Avatar, name and email; the line “Requested: ‹level›, ‹period›. You may grant less.” |
-| Level | Radio: Normal meetings, or Normal and Internal; not wider than requested. |
-| Sharing period | Date range with shortcuts, only within the requested range (MSG443). |
-| Buttons | Cancel; Accept (MSG436, or MSG442 for a change). Decline asks first and shows MSG437 (MSG452 for a change); a sender who was deactivated gives MSG468. |
+| Requester | Requester avatar, name and email with the line “Requested: <level>, <period>. You may grant less.” |
+| Level | Radio choice of the granted level, never wider than requested. |
+| Sharing period | Date range limited to within the requested range. |
+| Buttons | Buttons “Cancel”, “Accept” and “Decline”; Decline asks first. |
 
 #### 15.4 Change or Stop Calendar Share
 
 Figure 87: Change or Stop Calendar Share
 
-From the ⋮ menu of a share, the viewer asks for a higher level or a longer period, the owner lowers the level or changes the dates at once, and either side can stop the share (UC-80d, UC-80e, BR-142, BR-143).
+From the ⋮ menu of a share, the viewer asks for a higher level or a longer period, the owner lowers the level or changes the dates at once, and either side can stop the share.
 
 This screen allows the viewer and the calendar owner to:
 
-- Request Change: the viewer asks to raise the level or extend the period; one request at a time (UC-80d).
+- Request Change: the viewer asks to raise the level or extend the period; one request at a time.
 
-- Change Share: the owner lowers the level or changes the dates; it applies at once (UC-80d).
+- Change Share: the owner lowers the level or changes the dates; it applies at once.
 
-- Withdraw or Stop: withdraw a request, or stop an active share after confirming (UC-80e).
+- Withdraw or Stop: withdraw a request, or stop an active share after confirming.
+
+Related UC: UC-80d, UC-80e
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Current share | Sentence “Currently sharing: ‹level›, ‹period›”. |
-| Level / Period | A request must raise the level or extend the period, at most 365 days from the original start (MSG443). The owner may only lower the level, and keeps the start date or moves it to today or later. |
-| Messages | MSG454 change request sent; MSG442 change applied; MSG450 wrong state. |
-| Stop sharing | Confirmation “Stop sharing with ‹name›?”; for the viewer “Stop viewing ‹name›’s calendar? You will need to request again.” MSG451; the other side is notified. Withdraw uses the same kind of confirmation (MSG438). |
+| Current share | Read-only sentence “Currently sharing: <level>, <period>”. |
+| Level / Period | New level and period: a request must raise or extend, an owner may only lower and keeps the start date or moves it to today or later; at most 365 days. |
+| Messages | Inline notices confirming the sent request, the applied change or a wrong state. |
+| Stop sharing | Confirmation “Stop sharing with <name>?”, or for the viewer “Stop viewing <name>’s calendar? You will need to request again.”; the other side is notified. |
 
 #### 15.5 Shared Calendar – Week View
 
 Figure 88: Shared Calendar – Week View
 
-The Shared calendars tab shows a Member a week of busy hours of the people who share with him or her. Only busy blocks at the shared level are drawn, never a title, location, attendee or confidentiality level (UC-81c, BR-144, BR-145).
+The Shared calendars tab shows a Member a week of busy hours of the people who share with him or her. Only busy blocks at the shared level are drawn, never a title, location, attendee or confidentiality level.
 
 This screen allows a Member to:
 
-- View Shared Calendar: browse weeks and show or hide people (UC-81c).
+- View Shared Calendar: browse weeks and show or hide people.
+
+Related UC: UC-81c
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Week navigation | This week, previous, next and the date range; the working hours on the right, e.g. 08:00 – 17:00. |
-| People | One coloured chip per person; click to show or hide. A stopped share keeps its chip with “Stopped” and no hours; opening it shows MSG439. |
-| Week grid | Hours × 7 days; busy blocks coloured by person. Days outside a share’s period show “?” (unknown), never as free. |
-| Empty state | “Nobody shares a calendar with you yet.” with Request calendar. On a phone one day is shown at a time. |
+| Week navigation | Week navigation with This week, previous, next, the date range and the working hours. |
+| People | One coloured chip per person to show or hide; a stopped share keeps its chip with “Stopped” and no hours. |
+| Week grid | Hours × 7 days grid with busy blocks coloured by person; days outside a share’s period show “?” and never free. |
+| Empty state | Empty state with a Request calendar button; on a phone one day is shown at a time. |
 
 #### 15.6 Find Meeting Time
 
 Figure 89: Find Meeting Time
 
-Find meeting time is a sidebar item for users who can create meetings. It finds slots where the chosen people are free, using only calendars shared with the user (UC-81a, BR-144, BR-145, BR-146, BR-147).
+Find meeting time is a sidebar item for users who can create meetings. It finds slots where the chosen people are free, using only calendars shared with the user.
 
 This screen allows a Member to:
 
-- Find Meeting Time Slots: set duration, dates, weekdays, hours, buffer and rounding, choose people and search (UC-81a).
+- Find Meeting Time Slots: set duration, dates, weekdays, hours, buffer and rounding, choose people and search.
 
-- Request Calendar Share: ask a person shown as not sharing (UC-80a).
+- Request Calendar Share: ask a person shown as not sharing.
 
-- Choose Slot: open a slot to see who is free and create a draft (UC-81b).
+- Choose Slot: open a slot to see who is free and create a draft.
+
+Related UC: UC-80a, UC-81a, UC-81b
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Tabs | “Find slots” and “Shared calendars” (same content as 15.5). |
-| Meeting length | Dropdown, 15 minutes to 8 hours. |
-| Date range / Weekdays | Starts today, at most 31 days long and 365 days ahead; weekday toggles Mon–Sun. |
-| Working hours / Avoid lunch break | Start–end time; optional lunch break range. |
-| Meeting buffer (i) / Round start time | Buffer kept before and after every busy period: none, 15, 30, 45 minutes, 1–4 hours (default 30 minutes). Rounding: 5, 10, 15, 30 minutes, 1 or 2 hours. |
-| Main attendees | Required; at most 10 people besides the user. Each row shows the shared level, or “Calendar not shared” with Request calendar sharing. Chips “+ Name” add people who share with the user. |
-| Include my calendar | Checkbox, unticked by default. |
-| Find | Button (“Finding…” while working); errors in the search values are shown on the fields; MSG448 if the user may no longer create meetings. |
-| Results | Number of slots, then one row of start times per day (at most 200). Choosing a time shows who is Free, Busy or Unknown and the Create draft button. |
+| Tabs | Tabs “Find slots” and “Shared calendars”. |
+| Meeting length | Dropdown choosing the meeting length from 15 minutes to 8 hours. |
+| Date range / Weekdays | Date range starting today with weekday toggles Mon–Sun. |
+| Working hours / Avoid lunch break | Working start–end time with an optional lunch break range. |
+| Meeting buffer (i) / Round start time | Buffer kept around busy periods and rounding of start times, with a help icon. |
+| Main attendees | Required main attendees, at most 10 people besides the user, each with shared level or “Calendar not shared”. |
+| Include my calendar | Checkbox including the user’s own calendar, unticked by default. |
+| Find | Button running the search; errors in the values are shown on the fields. |
+| Results | Result rows of start times per day with Free, Busy or Unknown per person and a Create draft button. |
 
 #### 15.7 Create Draft Meeting from Slot
 
 Figure 90: Create Draft Meeting from Slot
 
-Create draft opens the meeting form filled with the chosen slot and people. The slot is checked again against the same shared data before saving; the new Meeting is a Draft and follows the normal approval flow (UC-81b, UC-13, BR-148).
+Create draft opens the meeting form filled with the chosen slot and people. The slot is checked again against the same shared data before saving; the new Meeting is a Draft and follows the normal approval flow.
 
 This screen allows a Member to:
 
-- Create Draft Meeting from Slot: complete the form and create the Draft Meeting (UC-81b).
+- Create Draft Meeting from Slot: complete the form and create the Draft Meeting.
+
+Related UC: UC-13, UC-81b
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Slot | Read-only bar with the date and time of the chosen slot, e.g. “Monday, 16/11/2026 · 08:00 – 10:00”. |
-| Meeting name / Description | Name required; description optional. |
-| Attendees | People from the search; the first becomes Chair, the others Members and the user Secretary; ↑/↓ buttons reorder the list. |
-| Mode / Location / Meeting link / Confidentiality | As in 4.4; Confidentiality required. |
-| Buttons | Cancel (asks “Discard the meeting being drafted?” if something was typed); Create draft – MSG29. If someone became busy in the meantime, MSG446 and the search runs again; invalid values MSG31, wrong people MSG277, saving error MSG35. |
+| Slot | Read-only bar with the date and time of the chosen slot. |
+| Meeting name / Description | Required meeting name and optional description. |
+| Attendees | Attendees from the search; the first becomes Chair, the rest Members and the user Secretary, with reorder buttons. |
+| Mode / Location / Meeting link / Confidentiality | Mode, Location, Meeting link and Confidentiality as in Create meeting; Confidentiality required. |
+| Buttons | “Cancel” and “Create draft” buttons; a slot that became busy re-runs the search. |
 
 ### 16. Background Job Inventory
 
 #### 16.1 Process Notifications (JOB-01)
 
-Runs inside the backend every 5 seconds. Each cycle creates the “meeting starting soon” reminder, once per recipient, for Meetings that start within the next 15 minutes, and queues the matching reminder email, then pushes up to 100 pending in-app notifications to their recipients over the notification hub and marks them as pushed; deactivated users receive no push. A missed push is not lost, because the notification list is read from the database (UC-76). A failed cycle is logged and retried on the next tick.
+Runs inside the backend every 5 seconds. Each cycle creates the “meeting starting soon” reminder, once per recipient, for Meetings that start within the next 15 minutes, and queues the matching reminder email, then pushes up to 100 pending in-app notifications to their recipients over the notification hub and marks them as pushed; deactivated users receive no push. A missed push is not lost, because the notification list is read from the database. A failed cycle is logged and retried on the next tick.
 
 #### 16.2 Deliver Queued Emails (JOB-02)
 
@@ -4740,35 +4866,35 @@ Runs inside the backend only when email sending through Resend is enabled. It qu
 
 #### 16.3 Transcribe Recordings (JOB-03)
 
-Runs inside the backend every 3 seconds and takes one waiting transcript at a time, so a long recording never slows the screens down. It sends the audio to the in-house speech recognition, cleans the result, suggests or fills in speaker names from Voice ID, keeps the Secretary's manual corrections and marks the transcript Completed or Failed with a reason the Secretary sees (UC-54a). A run whose recording changed meanwhile is discarded, and a transcript left half done by a restart is queued again. Details: Report 4, IV.1–IV.3.
+Runs inside the backend every 3 seconds and takes one waiting transcript at a time, so a long recording never slows the screens down. It sends the audio to the in-house speech recognition, cleans the result, suggests or fills in speaker names from Voice ID, keeps the Secretary's manual corrections and marks the transcript Completed or Failed with a reason the Secretary sees. A run whose recording changed meanwhile is discarded, and a transcript left half done by a restart is queued again. Details: Report 4, IV.1–IV.3.
 
 #### 16.4 Draft Meeting Summaries (JOB-04)
 
-Runs inside the backend every 3 seconds and drafts one requested meeting summary at a time (UC-58–UC-61) with the team's own language model, or, for a Normal Meeting, with the outside AI API the System Admin chose (API-06, BR-129). A failure is shown on the summary with the option to try again. Details: Report 4, IV.10.
+Runs inside the backend every 3 seconds and drafts one requested meeting summary at a time with the team's own language model, or, for a Normal Meeting, with the outside AI API the System Admin chose (API-06). A failure is shown on the summary with the option to try again. Details: Report 4, IV.10.
 
 #### 16.5 Build Combined Recordings (JOB-05)
 
-Runs inside the backend every 30 seconds. For a hybrid or online Meeting that has ended and whose recordings have stopped changing, it builds one recording that holds the meeting room and every online participant on the real clock, with long silences shortened, and rebuilds it when a source changes within 8 days (UC-51a). It keeps the purpose and retention date of its sources and is not transcribed again. Details: Report 4, IV.5.
+Runs inside the backend every 30 seconds. For a hybrid or online Meeting that has ended and whose recordings have stopped changing, it builds one recording that holds the meeting room and every online participant on the real clock, with long silences shortened, and rebuilds it when a source changes within 8 days. It keeps the purpose and retention date of its sources and is not transcribed again. Details: Report 4, IV.5.
 
 #### 16.6 Erase Expired Recordings (JOB-06)
 
-Runs inside the backend every 15 minutes. It erases recordings and recorded speech whose retention period of 180 days has ended, together with their transcripts, keeping only the record that a recording existed (BR-110), and saves a room-microphone take that has received no sound for 12 hours. Details: Report 4, IV.4 and IV.6.
+Runs inside the backend every 15 minutes. It erases recordings and recorded speech whose retention period of 180 days has ended, together with their transcripts, keeping only the record that a recording existed, and saves a room-microphone take that has received no sound for 12 hours. Details: Report 4, IV.4 and IV.6.
 
 #### 16.7 Cancel or End Overdue Meetings (JOB-07)
 
-Runs inside the backend every 15 minutes. It cancels a Meeting nobody started 24 hours after its planned start (BR-029) and ends a Meeting still in progress 24 hours after its planned end (BR-027), recording the system as the actor in the status history. Details: Report 4, IV.6.
+Runs inside the backend every 15 minutes. It cancels a Meeting nobody started 24 hours after its planned start and ends a Meeting still in progress 24 hours after its planned end, recording the system as the actor in the status history. Details: Report 4, IV.6.
 
 #### 16.8 Remove Expired Personal Data (JOB-08)
 
-Runs inside the backend every 60 minutes. It removes data that has outlived its purpose: audio no recording uses any more, Draft votes of Cancelled Meetings, read notifications after 90 days and all notifications after 180 days, guest verification codes after one day and the bodies of sent emails after 30 days. A run that removed something writes one audit entry per rule (BR-010). Details: Report 4, IV.6.
+Runs inside the backend every 60 minutes. It removes data that has outlived its purpose: audio no recording uses any more, Draft votes of Cancelled Meetings, read notifications after 90 days and all notifications after 180 days, guest verification codes after one day and the bodies of sent emails after 30 days. A run that removed something writes one audit entry per rule. Details: Report 4, IV.6.
 
 #### 16.9 Purge Unused Document Files (JOB-09)
 
-Runs inside the backend every 60 minutes. It deletes stored document files that no personal library entry and no meeting document uses any more, after a grace period of 24 hours (BR-077). Details: Report 4, IV.6.
+Runs inside the backend every 60 minutes. It deletes stored document files that no personal library entry and no meeting document uses any more, after a grace period of 24 hours. Details: Report 4, IV.6.
 
 #### 16.10 Reconcile Online Meeting Rooms (JOB-10)
 
-Runs inside the backend every 30 seconds. It compares the online meeting rooms with the Meetings, closes the room of a Meeting that is no longer in progress and removes people who may no longer be in it, such as a deactivated user or a participant who was removed (UC-43). Details: Report 4, IV.10.
+Runs inside the backend every 30 seconds. It compares the online meeting rooms with the Meetings, closes the room of a Meeting that is no longer in progress and removes people who may no longer be in it, such as a deactivated user or a participant who was removed. Details: Report 4, IV.10.
 
 ### 17. External API Inventory
 
@@ -4798,7 +4924,7 @@ Runs inside the backend every 30 seconds. It compares the online meeting rooms w
 
 | URL | Resend's email API over HTTPS |
 | --- | --- |
-| Purpose | Delivers the system's emails: meeting invitations, updates and cancellations with an .ics calendar file, meeting reminders, the issued-minutes notice, guest presenter notices, guest verification codes and password-reset links. |
+| Purpose | Delivers the system's emails: meeting invitations, updates and cancellations with an.ics calendar file, meeting reminders, the issued-minutes notice, guest presenter notices, guest verification codes and password-reset links. |
 | Caller | TrustCabinet backend → Resend Email. Queued emails go through the email queue worker (JOB-02); password-reset links and guest verification codes are sent at once. |
 | Auth | Resend API key sent as a bearer token over HTTPS. Credentials are kept in user-secrets/environment variables. |
 | Request / Response | MIME message: From (FromName/FromAddress), To, Subject, plain-text body; invitations add text/calendar METHOD:REQUEST attachment 'thu-moi-hop.ics' and cancellations add text/calendar METHOD:CANCEL attachment 'huy-hop.ics'. Reset links are {ApplicationBaseUrl}/reset-password#token=… (token in URL fragment). |
@@ -4831,12 +4957,12 @@ Runs inside the backend every 30 seconds. It compares the online meeting rooms w
 
 | URL | The team's own AI server, reached over the team's private network, or an outside AI API over HTTPS with the address, model and key the System Admin sets on the AI configuration screen. |
 | --- | --- |
-| Purpose | Writes the three sections of the AI draft of the Meeting content from the transcript, the agenda and the vote results (UC-58). Transcription and speaker identification are not part of this interface: they run inside the system. |
+| Purpose | Writes the three sections of the AI draft of the Meeting content from the transcript, the agenda and the vote results. Transcription and speaker identification are not part of this interface: they run inside the system. |
 | Caller | TrustCabinet backend background processing → AI drafting service. |
 | Auth | The outside API key is entered by the System Admin and stored encrypted; it is never returned to the browser or written to a log. The team's own server is reachable only inside the team's private network. |
 | Request / Response | Input: the transcript text, the agenda and the closed vote results of one Meeting, never audio or voice data. Output: the draft of the three sections; the model used is stored with the draft. |
 | Failure handling | A draft waits in a queue and is written one Meeting at a time (Queued, Running, Ready, Failed); a failed draft is shown and can be asked for again. When no AI server is ready the request is refused (MSG394). The draft never becomes the minutes by itself: the Chair or the Secretary reviews it first. |
-| Status | Only a Normal Meeting may be sent to the outside API; Internal and Secret Meetings always use the team's own server (BR-129). |
+| Status | Only a Normal Meeting may be sent to the outside API; Internal and Secret Meetings always use the team's own server. |
 
 #### 17.7 File Storage – SeaweedFS (API-07)
 
@@ -4853,11 +4979,11 @@ Runs inside the backend every 30 seconds. It compares the online meeting rooms w
 
 | URL | The team's own speech worker over HTTP on the private network: POST /v1/transcribe (a recording or one sentence, with speaker separation on or off), GET /v1/progress (progress of a running transcription), POST /v1/embed (voice vector of one Voice ID sample). A second worker can be configured as backup. |
 | --- | --- |
-| Purpose | Speech recognition, speaker separation and voice vectors for Voice ID, run inside the system so that audio and voice data never leave it (BR-121). |
+| Purpose | Speech recognition, speaker separation and voice vectors for Voice ID, run inside the system so that audio and voice data never leave it. |
 | Caller | TrustCabinet backend: the transcription queue (JOB-03), the live sentence recording of each participant's microphone, and Voice ID sample enrolment (UC-56c). |
 | Auth | A shared key sent as a bearer token when the worker is configured with one; the key is kept outside the code base. The worker is reachable only on the private network. |
 | Request / Response | In: the audio file and the run parameters. Out: timed lines with a voice label, one voice vector per voice and a confidence score per word; for /v1/embed, one voice vector after the sample's quality checks. |
-| Failure handling | When the main worker cannot be reached, the request goes to the backup worker, which is then asked first for a short while. A worker error marks the transcript Failed with a reason the Secretary sees (UC-54a); a sample that fails the checks is refused with a message. |
+| Failure handling | When the main worker cannot be reached, the request goes to the backup worker, which is then asked first for a short while. A worker error marks the transcript Failed with a reason the Secretary sees; a sample that fails the checks is refused with a message. |
 | Configuration | Worker address, backup address, shared key and timeouts; set by configuration. |
 
 #### 17.9 POST: /api/email/resend/webhook – Email delivery webhook (API-09)
