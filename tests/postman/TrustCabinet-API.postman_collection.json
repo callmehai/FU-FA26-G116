@@ -1,0 +1,1172 @@
+{
+  "info": {
+    "name": "TrustCabinet API — luồng chính",
+    "description": "Luồng chính của TrustCabinet: đăng nhập, cuộc họp (tạo, duyệt, công bố, huỷ), chương trình nghị sự, thành phần, tài liệu, điểm danh, biểu quyết, thông báo. Chạy tuần tự trên app local đã seed, cùng môi trường TrustCabinet-local. Xem tests/postman/README.md.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Xác thực (UC-01)",
+      "item": [
+        {
+          "name": "API01 — Sai mật khẩu → MSG01",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 401', () => pm.response.to.have.status(401));",
+                  "pm.test('code = MSG01', () => pm.expect(pm.response.json().code).to.eql('MSG01'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{organizerEmail}}\",\n  \"password\": \"sai-mat-khau\"\n}"
+            }
+          }
+        },
+        {
+          "name": "API02 — Đăng nhập Thành viên (người tổ chức, lưu token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test('trả accessToken và user', () => { pm.expect(b.accessToken).to.be.a('string'); pm.expect(b.user.id).to.be.a('string'); });",
+                  "pm.environment.set('token', b.accessToken);",
+                  "pm.collectionVariables.set('organizerId', b.user.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{organizerEmail}}\",\n  \"password\": \"{{password}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "API03 — Làm mới token bằng cookie refresh",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test('cấp accessToken mới', () => pm.expect(b.accessToken).to.be.a('string'));",
+                  "pm.environment.set('token', b.accessToken);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/api/auth/refresh"
+          }
+        },
+        {
+          "name": "API04 — Thông tin người đăng nhập",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('đúng tài khoản thành viên', () => pm.expect(pm.response.json().email).to.eql(pm.environment.get('organizerEmail')));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/auth/me"
+          }
+        },
+        {
+          "name": "API05 — Không có token → 401",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 401', () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/meetings"
+          }
+        },
+        {
+          "name": "API06 — Đăng nhập Phê duyệt viên (sẽ làm Chủ toạ cuộc họp)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test('trả accessToken và user', () => { pm.expect(b.accessToken).to.be.a('string'); pm.expect(b.user.id).to.be.a('string'); });",
+                  "pm.environment.set('approverToken', b.accessToken);",
+                  "pm.collectionVariables.set('approverId', b.user.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{approverEmail}}\",\n  \"password\": \"{{password}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "API07 — Đăng nhập Phê duyệt viên khác (sẽ làm Thư ký cuộc họp)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test('trả accessToken và user', () => { pm.expect(b.accessToken).to.be.a('string'); pm.expect(b.user.id).to.be.a('string'); });",
+                  "pm.environment.set('secretaryToken', b.accessToken);",
+                  "pm.collectionVariables.set('secretaryId', b.user.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{secretaryEmail}}\",\n  \"password\": \"{{password}}\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Cuộc họp: tạo, duyệt, công bố, huỷ",
+      "item": [
+        {
+          "name": "API08 — Danh sách cuộc họp",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('có items và totalCount', () => { const b = pm.response.json(); pm.expect(b.items).to.be.an('array'); pm.expect(b.totalCount).to.be.a('number'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/meetings?page=1&pageSize=10"
+          }
+        },
+        {
+          "name": "API09 — Tạo cuộc họp thiếu tiêu đề → MSG31",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const d = new Date(Date.now() + 24 * 3600 * 1000); d.setUTCHours(2, 0, 0, 0);",
+                  "pm.collectionVariables.set('startAt', d.toISOString().replace('.000Z', 'Z'));",
+                  "pm.collectionVariables.set('endAt', new Date(d.getTime() + 3600 * 1000).toISOString().replace('.000Z', 'Z'));",
+                  "pm.collectionVariables.set('stamp', new Date().toISOString().slice(0, 19).replace('T', ' '));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', () => pm.response.to.have.status(400));",
+                  "pm.test('code = MSG31', () => pm.expect(pm.response.json().code).to.eql('MSG31'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/meetings",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"\",\n  \"plannedStartTime\": \"{{startAt}}\",\n  \"plannedEndTime\": \"{{endAt}}\",\n  \"mode\": \"InPerson\",\n  \"location\": \"Phòng họp Postman\",\n  \"sensitivity\": \"Normal\",\n  \"description\": \"Cuộc họp do collection Postman tạo để kiểm thử API.\",\n  \"participants\": [\n    {\n      \"userId\": \"{{approverId}}\",\n      \"role\": \"Chair\"\n    },\n    {\n      \"userId\": \"{{secretaryId}}\",\n      \"role\": \"Secretary\"\n    },\n    {\n      \"userId\": \"{{organizerId}}\",\n      \"role\": \"Member\"\n    }\n  ]\n}"
+            }
+          }
+        },
+        {
+          "name": "API10 — Tạo cuộc họp",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const d = new Date(Date.now() + 24 * 3600 * 1000); d.setUTCHours(2, 0, 0, 0);",
+                  "pm.collectionVariables.set('startAt', d.toISOString().replace('.000Z', 'Z'));",
+                  "pm.collectionVariables.set('endAt', new Date(d.getTime() + 3600 * 1000).toISOString().replace('.000Z', 'Z'));",
+                  "pm.collectionVariables.set('stamp', new Date().toISOString().slice(0, 19).replace('T', ' '));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+                  "pm.test('code = MSG29', () => pm.expect(pm.response.json().code).to.eql('MSG29'));",
+                  "const b = pm.response.json();",
+                  "pm.test('trạng thái Draft', () => pm.expect(b.meeting.status).to.eql('Draft'));",
+                  "pm.collectionVariables.set('meetingId', b.meeting.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/meetings",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"[Postman] Họp kiểm thử API {{stamp}}\",\n  \"plannedStartTime\": \"{{startAt}}\",\n  \"plannedEndTime\": \"{{endAt}}\",\n  \"mode\": \"InPerson\",\n  \"location\": \"Phòng họp Postman\",\n  \"sensitivity\": \"Normal\",\n  \"description\": \"Cuộc họp do collection Postman tạo để kiểm thử API.\",\n  \"participants\": [\n    {\n      \"userId\": \"{{approverId}}\",\n      \"role\": \"Chair\"\n    },\n    {\n      \"userId\": \"{{secretaryId}}\",\n      \"role\": \"Secretary\"\n    },\n    {\n      \"userId\": \"{{organizerId}}\",\n      \"role\": \"Member\"\n    }\n  ]\n}"
+            }
+          }
+        },
+        {
+          "name": "API11 — Gửi duyệt cho Phê duyệt viên",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('code = MSG78', () => pm.expect(pm.response.json().code).to.eql('MSG78'));",
+                  "pm.test('WaitingApproval', () => pm.expect(pm.response.json().meeting.status).to.eql('WaitingApproval'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/meetings/{{meetingId}}/transitions",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"SubmitForApproval\",\n  \"assignedApproverId\": \"{{approverId}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "API12 — Thành viên không được duyệt cuộc họp → 403",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 403', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/meetings/{{meetingId}}/transitions",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"Approve\"\n}"
+            }
+          }
+        },
+        {
+          "name": "API13 — Phê duyệt viên duyệt",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('code = MSG43', () => pm.expect(pm.response.json().code).to.eql('MSG43'));",
+                  "pm.test('Approved', () => pm.expect(pm.response.json().meeting.status).to.eql('Approved'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{approverToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/meetings/{{meetingId}}/transitions",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"Approve\"\n}"
+            }
+          }
+        },
+        {
+          "name": "API14 — Công bố",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('code = MSG45', () => pm.expect(pm.response.json().code).to.eql('MSG45'));",
+                  "pm.test('Published', () => pm.expect(pm.response.json().meeting.status).to.eql('Published'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/meetings/{{meetingId}}/transitions",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"Publish\"\n}"
+            }
+          }
+        },
+        {
+          "name": "API15 — Tạo cuộc họp thứ hai để huỷ",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const d = new Date(Date.now() + 24 * 3600 * 1000); d.setUTCHours(2, 0, 0, 0);",
+                  "pm.collectionVariables.set('startAt', d.toISOString().replace('.000Z', 'Z'));",
+                  "pm.collectionVariables.set('endAt', new Date(d.getTime() + 3600 * 1000).toISOString().replace('.000Z', 'Z'));",
+                  "pm.collectionVariables.set('stamp', new Date().toISOString().slice(0, 19).replace('T', ' '));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+                  "pm.test('code = MSG29', () => pm.expect(pm.response.json().code).to.eql('MSG29'));",
+                  "pm.collectionVariables.set('cancelMeetingId', pm.response.json().meeting.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/meetings",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"[Postman] Họp sẽ huỷ {{stamp}}\",\n  \"plannedStartTime\": \"{{startAt}}\",\n  \"plannedEndTime\": \"{{endAt}}\",\n  \"mode\": \"InPerson\",\n  \"location\": \"Phòng họp Postman\",\n  \"sensitivity\": \"Normal\",\n  \"description\": \"Cuộc họp do collection Postman tạo để kiểm thử API.\",\n  \"participants\": [\n    {\n      \"userId\": \"{{approverId}}\",\n      \"role\": \"Chair\"\n    },\n    {\n      \"userId\": \"{{secretaryId}}\",\n      \"role\": \"Secretary\"\n    },\n    {\n      \"userId\": \"{{organizerId}}\",\n      \"role\": \"Member\"\n    }\n  ]\n}"
+            }
+          }
+        },
+        {
+          "name": "API16 — Huỷ không lý do → MSG262",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', () => pm.response.to.have.status(400));",
+                  "pm.test('code = MSG262', () => pm.expect(pm.response.json().code).to.eql('MSG262'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/meetings/{{cancelMeetingId}}/transitions",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"Cancel\",\n  \"reason\": \"\"\n}"
+            }
+          }
+        },
+        {
+          "name": "API17 — Huỷ cuộc họp",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('code = MSG261', () => pm.expect(pm.response.json().code).to.eql('MSG261'));",
+                  "pm.test('Cancelled', () => pm.expect(pm.response.json().meeting.status).to.eql('Cancelled'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/meetings/{{cancelMeetingId}}/transitions",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"Cancel\",\n  \"reason\": \"Đổi kế hoạch, kiểm thử Postman.\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Chương trình nghị sự, thành phần",
+      "item": [
+        {
+          "name": "API18 — Thêm nội dung họp",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+                  "pm.test('code = MSG60', () => pm.expect(pm.response.json().code).to.eql('MSG60'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{secretaryToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/meetings/{{meetingId}}/agenda",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Báo cáo tiến độ quý\",\n  \"description\": \"Thư ký trình bày.\",\n  \"presenterId\": null,\n  \"presenterGuestInvitationId\": null\n}"
+            }
+          }
+        },
+        {
+          "name": "API19 — Thêm nội dung tiêu đề rỗng → MSG66",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', () => pm.response.to.have.status(400));",
+                  "pm.test('code = MSG66', () => pm.expect(pm.response.json().code).to.eql('MSG66'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{secretaryToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/meetings/{{meetingId}}/agenda",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"   \",\n  \"description\": \"\"\n}"
+            }
+          }
+        },
+        {
+          "name": "API20 — Đọc chương trình nghị sự",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('có 1 nội dung', () => pm.expect(pm.response.json().items).to.have.lengthOf(1));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/meetings/{{meetingId}}/agenda"
+          }
+        },
+        {
+          "name": "API21 — Danh sách thành phần tham dự",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('đủ 3 người', () => pm.expect(pm.response.json().items.length).to.be.at.least(3));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/meetings/{{meetingId}}/participants"
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Tài liệu",
+      "item": [
+        {
+          "name": "API22 — Tải tài liệu PDF lên",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+                  "pm.test('code = MSG161', () => pm.expect(pm.response.json().code).to.eql('MSG161'));",
+                  "pm.test('addedCount = 1', () => pm.expect(pm.response.json().addedCount).to.eql(1));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{secretaryToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/meetings/{{meetingId}}/documents/upload",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "files",
+                  "type": "file",
+                  "src": "fixtures/tai-lieu-mau.pdf"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "API23 — Danh sách tài liệu cuộc họp",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('có tài liệu vừa tải', () => pm.expect(pm.response.json().general.length).to.be.at.least(1));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/meetings/{{meetingId}}/documents"
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Diễn ra cuộc họp: điểm danh, biểu quyết",
+      "item": [
+        {
+          "name": "API24 — Chủ toạ bắt đầu cuộc họp",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('code = MSG110', () => pm.expect(pm.response.json().code).to.eql('MSG110'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{approverToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/meetings/{{meetingId}}/transitions",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"Start\"\n}"
+            }
+          }
+        },
+        {
+          "name": "API25 — Đọc danh sách điểm danh",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const e = pm.response.json().items.find(x => x.kind === 'Internal');",
+                  "pm.collectionVariables.set('attendanceId', e.id); pm.collectionVariables.set('attendanceVersion', e.rowVersion);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{secretaryToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/meetings/{{meetingId}}/attendance"
+          }
+        },
+        {
+          "name": "API26 — Thư ký lưu điểm danh",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('code = MSG147', () => pm.expect(pm.response.json().code).to.eql('MSG147'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{secretaryToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/meetings/{{meetingId}}/attendance",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"entries\": [\n    {\n      \"id\": \"{{attendanceId}}\",\n      \"kind\": \"Internal\",\n      \"attendance\": \"Present\",\n      \"expectedVersion\": \"{{attendanceVersion}}\"\n    }\n  ]\n}"
+            }
+          }
+        },
+        {
+          "name": "API27 — Thành viên không được điểm danh → 403",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 403', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/meetings/{{meetingId}}/attendance",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"entries\": [\n    {\n      \"id\": \"{{attendanceId}}\",\n      \"kind\": \"Internal\",\n      \"attendance\": \"Absent\",\n      \"expectedVersion\": \"{{attendanceVersion}}\"\n    }\n  ]\n}"
+            }
+          }
+        },
+        {
+          "name": "API28 — Chủ toạ tạo và mở biểu quyết",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('code = MSG217', () => pm.expect(pm.response.json().code).to.eql('MSG217'));",
+                  "pm.collectionVariables.set('voteId', pm.response.json().voteId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{approverToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/meetings/{{meetingId}}/votes",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Thông qua kế hoạch quý\",\n  \"description\": \"\",\n  \"options\": [\n    \"Đồng ý\",\n    \"Không đồng ý\"\n  ],\n  \"isAnonymous\": false,\n  \"eligibleRoles\": [\n    \"Chair\",\n    \"Secretary\",\n    \"Member\"\n  ],\n  \"openImmediately\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "API29 — Xem biểu quyết đang mở",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const v = pm.response.json();",
+                  "pm.test('đang Open, có 2 phương án', () => { pm.expect(v.status).to.eql('Open'); pm.expect(v.options).to.have.lengthOf(2); });",
+                  "pm.collectionVariables.set('optionId', v.options[0].id ?? v.options[0].optionId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/meetings/{{meetingId}}/votes/{{voteId}}"
+          }
+        },
+        {
+          "name": "API30 — Thành viên bỏ phiếu",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('code = MSG227', () => pm.expect(pm.response.json().code).to.eql('MSG227'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/meetings/{{meetingId}}/votes/{{voteId}}/ballots",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"optionId\": \"{{optionId}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "API31 — Bỏ phiếu lần hai → MSG226",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 409', () => pm.response.to.have.status(409));",
+                  "pm.test('code = MSG226', () => pm.expect(pm.response.json().code).to.eql('MSG226'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/meetings/{{meetingId}}/votes/{{voteId}}/ballots",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"optionId\": \"{{optionId}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "API32 — Chủ toạ kết thúc biểu quyết",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('code = MSG229', () => pm.expect(pm.response.json().code).to.eql('MSG229'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{approverToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/meetings/{{meetingId}}/votes/{{voteId}}/close"
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Thông báo",
+      "item": [
+        {
+          "name": "API33 — Danh sách thông báo của Thành viên",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('có items', () => pm.expect(pm.response.json().items).to.be.an('array'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/notifications/?page=1&pageSize=10"
+          }
+        },
+        {
+          "name": "API34 — Số thông báo chưa đọc",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('là số', () => pm.expect(pm.response.json().unreadCount).to.be.a('number'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/notifications/unread-count"
+          }
+        },
+        {
+          "name": "API35 — Đánh dấu đã đọc tất cả",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/notifications/read-all"
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "meetingId",
+      "value": ""
+    },
+    {
+      "key": "cancelMeetingId",
+      "value": ""
+    },
+    {
+      "key": "organizerId",
+      "value": ""
+    },
+    {
+      "key": "approverId",
+      "value": ""
+    },
+    {
+      "key": "secretaryId",
+      "value": ""
+    },
+    {
+      "key": "startAt",
+      "value": ""
+    },
+    {
+      "key": "endAt",
+      "value": ""
+    },
+    {
+      "key": "stamp",
+      "value": ""
+    },
+    {
+      "key": "attendanceId",
+      "value": ""
+    },
+    {
+      "key": "attendanceVersion",
+      "value": ""
+    },
+    {
+      "key": "voteId",
+      "value": ""
+    },
+    {
+      "key": "optionId",
+      "value": ""
+    }
+  ]
+}
