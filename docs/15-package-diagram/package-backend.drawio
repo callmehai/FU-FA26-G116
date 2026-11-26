@@ -298,10 +298,10 @@
         <mxCell id="p2-infra-Reports" parent="p2-infra" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="Reports" vertex="1">
           <mxGeometry x="840" y="490" width="170" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="p2-e-meetinghub-endpoints" parent="1" source="p2-web-MeetingHub" target="p2-web-endpoints" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0.5;exitY=0;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.7727;entryY=1;entryDx=0;entryDy=0;entryPerimeter=0;" value="">
+        <mxCell id="p2-e-meetinghub-endpoints" parent="1" source="p2-web-MeetingHub" target="p2-web-endpoints" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0.5;exitY=0;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.7727;entryY=1;entryDx=0;entryDy=0;entryPerimeter=0;" value="«use»">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="p2-e-notificationhub-endpoints" parent="1" source="p2-web-NotificationHub" target="p2-web-endpoints" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.7143;entryDx=0;entryDy=0;entryPerimeter=0;" value="">
+        <mxCell id="p2-e-notificationhub-endpoints" parent="1" source="p2-web-NotificationHub" target="p2-web-endpoints" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.7143;entryDx=0;entryDy=0;entryPerimeter=0;" value="«use»">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
               <mxPoint x="55" y="227.0" />
@@ -309,7 +309,7 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="p2-e-notificationworker-endpoints" parent="1" source="p2-web-NotificationWorker" target="p2-web-endpoints" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.7143;entryDx=0;entryDy=0;entryPerimeter=0;" value="">
+        <mxCell id="p2-e-notificationworker-endpoints" parent="1" source="p2-web-NotificationWorker" target="p2-web-endpoints" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.7143;entryDx=0;entryDy=0;entryPerimeter=0;" value="«use»">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
               <mxPoint x="55" y="277.0" />
@@ -317,7 +317,7 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="p2-e-program-endpoints" parent="1" source="p2-web-Program" target="p2-web-endpoints" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.7143;entryDx=0;entryDy=0;entryPerimeter=0;" value="">
+        <mxCell id="p2-e-program-endpoints" parent="1" source="p2-web-Program" target="p2-web-endpoints" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.7143;entryDx=0;entryDy=0;entryPerimeter=0;" value="«use»">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
               <mxPoint x="55" y="577.0" />
@@ -325,7 +325,7 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="p2-e-databasemigrationcommand-di" parent="1" source="p2-web-DatabaseMigrationCommand" target="p2-infra-DependencyInjection" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.2353;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;" value="">
+        <mxCell id="p2-e-databasemigrationcommand-di" parent="1" source="p2-web-DatabaseMigrationCommand" target="p2-infra-DependencyInjection" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.2353;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;" value="«use»">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
               <mxPoint x="575" y="577.0" />
@@ -334,25 +334,25 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="p2-e-seed-auth" parent="1" source="p2-infra-Seed" target="p2-infra-Authentication" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" value="">
+        <mxCell id="p2-e-seed-auth" parent="1" source="p2-infra-Seed" target="p2-infra-Authentication" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" value="«use»">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="p2-e-di-seed" parent="1" source="p2-infra-DependencyInjection" target="p2-infra-Seed" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" value="">
+        <mxCell id="p2-e-di-seed" parent="1" source="p2-infra-DependencyInjection" target="p2-infra-Seed" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" value="«use»">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="p2-e-users-audit" parent="1" source="p2-infra-Users" target="p2-infra-Audit" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5;entryY=0.2;entryDx=0;entryDy=0;entryPerimeter=0;" value="">
+        <mxCell id="p2-e-users-audit" parent="1" source="p2-infra-Users" target="p2-infra-Audit" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5;entryY=0.2;entryDx=0;entryDy=0;entryPerimeter=0;" value="«use»">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="p2-e-guestaccess-auth" parent="1" source="p2-infra-GuestAccess" target="p2-infra-Authentication" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0.5;exitY=0.2;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;entryPerimeter=0;" value="">
+        <mxCell id="p2-e-guestaccess-auth" parent="1" source="p2-infra-GuestAccess" target="p2-infra-Authentication" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0.5;exitY=0.2;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;entryPerimeter=0;" value="«use»">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="p2-e-guestaccess-email" parent="1" source="p2-infra-GuestAccess" target="p2-infra-Email" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5;entryY=0.2;entryDx=0;entryDy=0;entryPerimeter=0;" value="">
+        <mxCell id="p2-e-guestaccess-email" parent="1" source="p2-infra-GuestAccess" target="p2-infra-Email" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5;entryY=0.2;entryDx=0;entryDy=0;entryPerimeter=0;" value="«use»">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="p2-e-recordings-guestaccess" parent="1" source="p2-infra-Recordings" target="p2-infra-GuestAccess" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" value="">
+        <mxCell id="p2-e-recordings-guestaccess" parent="1" source="p2-infra-Recordings" target="p2-infra-GuestAccess" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" value="«use»">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="p2-e-calls-guestaccess" parent="1" source="p2-infra-Calls" target="p2-infra-GuestAccess" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0.25;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.8;entryY=1;entryDx=0;entryDy=0;entryPerimeter=0;" value="">
+        <mxCell id="p2-e-calls-guestaccess" parent="1" source="p2-infra-Calls" target="p2-infra-GuestAccess" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0.25;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.8;entryY=1;entryDx=0;entryDy=0;entryPerimeter=0;" value="«use»">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
               <mxPoint x="1122.5" y="1099.0" />
@@ -360,16 +360,16 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="p2-e-calls-speaking" parent="1" source="p2-infra-Calls" target="p2-infra-Speaking" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" value="">
+        <mxCell id="p2-e-calls-speaking" parent="1" source="p2-infra-Calls" target="p2-infra-Speaking" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" value="«use»">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="p2-e-calls-persistence" parent="1" source="p2-infra-Calls" target="p2-infra-Persistence" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0.6;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.6;entryY=0.2;entryDx=0;entryDy=0;entryPerimeter=0;" value="">
+        <mxCell id="p2-e-calls-persistence" parent="1" source="p2-infra-Calls" target="p2-infra-Persistence" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0.6;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.6;entryY=0.2;entryDx=0;entryDy=0;entryPerimeter=0;" value="«use»">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="p2-e-ai-summaries" parent="1" source="p2-infra-Ai" target="p2-infra-Summaries" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=1;exitY=0.4333;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.4333;entryDx=0;entryDy=0;entryPerimeter=0;" value="">
+        <mxCell id="p2-e-ai-summaries" parent="1" source="p2-infra-Ai" target="p2-infra-Summaries" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=1;exitY=0.4333;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.4333;entryDx=0;entryDy=0;entryPerimeter=0;" value="«use»">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="p2-e-summaries-ai" parent="1" source="p2-infra-Summaries" target="p2-infra-Ai" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0;exitY=0.8;exitDx=0;exitDy=0;exitPerimeter=0;entryX=1;entryY=0.8;entryDx=0;entryDy=0;entryPerimeter=0;" value="">
+        <mxCell id="p2-e-summaries-ai" parent="1" source="p2-infra-Summaries" target="p2-infra-Ai" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0;exitY=0.8;exitDx=0;exitDy=0;exitPerimeter=0;entryX=1;entryY=0.8;entryDx=0;entryDy=0;entryPerimeter=0;" value="«use»">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="p2-e-web-app" parent="1" source="p2-web" target="p2-app" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" value="«import»">

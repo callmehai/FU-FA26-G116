@@ -27,65 +27,68 @@ Table of Contents
 | 09/10/2026 | M, D | KhanhPG | Restore FE-04, retire FE-05 and six session UCs; in-meeting voting with Chair conclusion only. |
 | 09/10/2026 | M | KhanhPG | Align UC flows, BR/MSG traceability, screens and BF-02/03/04 with single Meeting + in-meeting voting; retired IDs kept. |
 | 12/10/2026 | M | KhanhPG | Revise FE-06 participant management (UC-27–UC-31) to business-level flows: bulk add, Chair replacement, full Present/Absent attendance, viewing access; update rules, messages, screens and sequences. |
-| 13/10/2026 | M, D | HaiTV | Apply ADR-0018 (no document versions): one immutable file per document; drop UC-32b/33b; add UC-33c/71/72; browser-side previews; Chair/Secretary manage meeting documents; Chair-selected voters, Guests vote (FE-11). |
-| 14/10/2026 | M | LocHD | Update screens to wireframe v4 (ADR-0018, Chair-selected voters); rewrite the 7.1 empty state; fix examples in 5.3, 7.5, 11.1, 11.4. |
+| 13/10/2026 | M, D | HaiTV | Apply the no-versions rule for documents: one immutable file per document; drop UC-32b/33b; add UC-33c/71/72; browser-side previews; Chair/Secretary manage meeting documents; Chair-selected voters, Guests vote (FE-11). |
+| 14/10/2026 | M | LocHD | Update screens to wireframe v4 (Chair-selected voters); rewrite the 7.1 empty state; fix examples in 5.3, 7.5, 11.1, 11.4. |
 | 14/10/2026 | M | LocHD | Align 8.5, footnote 14 and BR-165 with Chair-selected voters (selected Guests vote); retire MSG113; describe the two background jobs; drop build status from API-04/05. |
 | 14/10/2026 | M | KhanhPG | Complete FE-07/FE-11 use case specs (UC-52a/b, UC-53–UC-57): vote preparation states, one open vote per meeting, fixed eligibility; screens stay with their author. |
-| 15/10/2026 | M | KhanhPG | Align UC/BR/MSG with ADR-0020 (access by meeting right): add UC-33b/33d, meeting-based reading, end-of-meeting locks; retire MSG237; clarify BR-159/192/228 and multi-file upload (BR-286). Screens handed over separately. |
-| 16/10/2026 | M | LocHD | SCRUM-19 decision (16/10): the Organizer gets an in-app notice on approval/rejection (reason included), no decision email; no invitation notice to the publishing Organizer; all current participants still emailed. |
-| 22/10/2026 | M | LocHD | SCRUM-21/22/23: group documents by Agenda Item, Vote and general; in-room Documents panel; audit Confidential/Secret views; one-level comment replies; UC-33a 10-file/200 MB limit (BR-315–319, MSG288). |
+| 15/10/2026 | M | KhanhPG | Align UC/BR/MSG with access by meeting right: add UC-33b/33d, meeting-based reading, end-of-meeting locks; retire MSG237; clarify BR-159/192/228 and multi-file upload (BR-286). Screens handed over separately. |
+| 16/10/2026 | M | LocHD | Decision (16/10): the Organizer gets an in-app notice on approval/rejection (reason included), no decision email; no invitation notice to the publishing Organizer; all current participants still emailed. |
+| 22/10/2026 | M | LocHD | Group documents by Agenda Item, Vote and general; in-room Documents panel; audit Confidential/Secret views; one-level comment replies; UC-33a 10-file/200 MB limit (BR-315–319, MSG288). |
 | 23/10/2026 | M | LocHD | Rewrite screens 7.3, 7.4, 7.5 and 8.1–8.6 to wireframe v7 and the deployed room; add the 8.6 In-Room Documents panel. |
-| 24/10/2026 | M | KhanhPG | BA Final Review SCRUM-18/20/26/97/107: align UC-14/17/28–31/33a/73, their rules and messages with the code; screens redrawn to wireframe v8. |
-| 27/10/2026 | M | KhanhPG | PO 27/10 on FE-07 (SCRUM-58, ADR-0033–335): add UC-34b, BR-333–335 — 10 GB system document cap (MSG346), audited locked-account library reading; UC-33a/33b/36 share the 10-file/200 MB limit. |
-| 28/10/2026 | M | KhanhPG | BA Final Review FE-07 (SCRUM-23/58/110–113): align UC-71b/72/35/33a–d/34b with the code; exception flows MSG347–349; locked-account reading in the permission matrix. |
-| 29/10/2026 | M | KhanhPG | BA Final Review FE-04/05/13 (SCRUM-99/69/15/25/98): UC-75 auto-cancels overdue meetings (AF-2, EX-4 MSG345); BR-301 rewritten (24 h), BR-302 retired; UC-17 Cancelled group; UC-26 read-only Guest view. |
-| 29/10/2026 | M | KhanhPG | BA Final Review FE-08 (SCRUM-39/41/42/43): specify room UC-37–42/78 as built; add UC-79 Register to Speak; drop one-to-one calls; BR-323–339, MSG328–343/350. |
+| 24/10/2026 | M | KhanhPG | BA Final Review: align UC-14/17/28–31/33a/73, their rules and messages with the code; screens redrawn to wireframe v8. |
+| 27/10/2026 | M | KhanhPG | PO 27/10 on FE-07: add UC-34b, BR-333–335 — 10 GB system document cap (MSG346), audited locked-account library reading; UC-33a/33b/36 share the 10-file/200 MB limit. |
+| 28/10/2026 | M | KhanhPG | BA Final Review FE-07: align UC-71b/72/35/33a–d/34b with the code; exception flows MSG347–349; locked-account reading in the permission matrix. |
+| 29/10/2026 | M | KhanhPG | BA Final Review FE-04/05/13: UC-75 auto-cancels overdue meetings (AF-2, EX-4 MSG345); BR-301 rewritten (24 h), BR-302 retired; UC-17 Cancelled group; UC-26 read-only Guest view. |
+| 29/10/2026 | M | KhanhPG | BA Final Review FE-08: specify room UC-37–42/78 as built; add UC-79 Register to Speak; drop one-to-one calls; BR-323–339, MSG328–343/350. |
 | 30/10/2026 | M | HuyNQ | Fix review findings: correct Actors-table UC IDs; AI provider is an in-house worker; replace UC-09/13 placeholders; add the feature priority table; ALT-1 becomes AF-1; keep design out of requirements; refresh the ToC. |
 | 30/10/2026 | M, A | KhanhPG | Reorganize FE-09/10 to the as-built recording/transcription/Voice ID; add UC-80 (recorded speech) and UC-81 (Voice ID). |
 | 01/11/2026 | M | KhanhPG | Align FE-09/10 with the code: takes replace edited text and names (BR-345/360); erasure is audit-only; 180-day retention from the first take (BR-347); external actors locked to OAuth, Google AI, Resend, R2. |
-| 02/11/2026 | M, A | KhanhPG | BA Final Review SCRUM-116 (Guest access, UC-04): code-based verification flow (MSG371–379), 12-hour access ending with the meeting; display name declared once, no cross emails (PO 01/11, MSG381, BR-180). |
-| 02/11/2026 | M | LocHD | Align FE-07 with the 02/11 E2E run (PR #224): UC-32a/32c/33a/34b/35 checks as built (MSG382/383); PDF page counting, password refusal; screens 7.3/7.4/7.5/8.6 rewritten as built. |
-| 03/11/2026 | M | KhanhPG | PR #201: the agenda form no longer picks documents (UC-23a/b); attach from the row paperclip menu (UC-33b/76a); sign-in lands on the calendar; BR-280/185/277–279 updated. |
-| 03/11/2026 | M | KhanhPG | Guest wave (PR #212/213/215/218): UC-04 sign-out flow and end screens; UC-29/32c/37/38/41 Guest rules with recording-notice confirmation (MSG380); Guest speaker assignment (UC-46b/81a); ERD gains GuestSession and TranscriptSpeaker. |
-| 03/11/2026 | M | KhanhPG | Post-review fixes (PR #237/#238): 12-hour session limit on UC-04; endpoint 403 before the Chair check; Secretary-only speaker suggestions (UC-45a); second-voice grouping paths (BR-367: 0.7/0.8, ADR-0050); ERD target model settled. |
-| 03/11/2026 | M, A | KhanhPG | SCRUM-130 + PR #225 (SCRUM-35): Voice ID ends with account deactivation (UC-06c, BR-365/372); auto-naming for clear matches of notice-1.2 users (BR-362/366/367); notice 1.2 with listen-before-save (UC-81). |
-| 03/11/2026 | M | KhanhPG | PO 03/11 on general documents (SCRUM-21, PR #249): general means linked to no Agenda Item and no Vote (BR-280); Draft-Vote-only documents hidden from Members/Guests (BR-275, MSG156); screens 7.3/8.6 follow. |
-| 03/11/2026 | M | KhanhPG | SCRUM-129 (PR #245, ADR-0051): room Guests record from their own mic and manage own sentences during the session; BR-355/370, UC-39a AF-2, UC-80. |
-| 04/11/2026 | M | KhanhPG | Post-review fixes (PR #254): Draft-Vote-only documents hidden from all but Chair/Secretary (BR-275, UC-32c); Guests get 404 for others' sentences (UC-80); section 3.2 gains Entities 31–35. |
+| 02/11/2026 | M, A | KhanhPG | BA Final Review of Guest access (UC-04): code-based verification flow (MSG371–379), 12-hour access ending with the meeting; display name declared once, no cross emails (PO 01/11, MSG381, BR-180). |
+| 02/11/2026 | M | LocHD | Align FE-07 with the 02/11 E2E run: UC-32a/32c/33a/34b/35 checks as built (MSG382/383); PDF page counting, password refusal; screens 7.3/7.4/7.5/8.6 rewritten as built. |
+| 03/11/2026 | M | KhanhPG | The agenda form no longer picks documents (UC-23a/b); attach from the row paperclip menu (UC-33b/76a); sign-in lands on the calendar; BR-280/185/277–279 updated. |
+| 03/11/2026 | M | KhanhPG | Guest wave: UC-04 sign-out flow and end screens; UC-29/32c/37/38/41 Guest rules with recording-notice confirmation (MSG380); Guest speaker assignment (UC-46b/81a); ERD gains GuestSession and TranscriptSpeaker. |
+| 03/11/2026 | M | KhanhPG | Post-review fixes: 12-hour session limit on UC-04; endpoint 403 before the Chair check; Secretary-only speaker suggestions (UC-45a); second-voice grouping paths (BR-367: 0.7/0.8); ERD target model settled. |
+| 03/11/2026 | M, A | KhanhPG | Voice ID ends with account deactivation (UC-06c, BR-365/372); auto-naming for clear matches of notice-1.2 users (BR-362/366/367); notice 1.2 with listen-before-save (UC-81). |
+| 03/11/2026 | M | KhanhPG | PO 03/11 on general documents: general means linked to no Agenda Item and no Vote (BR-280); Draft-Vote-only documents hidden from Members/Guests (BR-275, MSG156); screens 7.3/8.6 follow. |
+| 03/11/2026 | M | KhanhPG | Room Guests record from their own mic and manage own sentences during the session; BR-355/370, UC-39a AF-2, UC-80. |
+| 04/11/2026 | M | KhanhPG | Post-review fixes: Draft-Vote-only documents hidden from all but Chair/Secretary (BR-275, UC-32c); Guests get 404 for others' sentences (UC-80); section 3.2 gains Entities 31–35. |
 | 04/11/2026 | M | HuyNT | Replace the section 3.1 ERD picture with the code-drawn 41-table model; rewrite the section text; rename VotingEligibleVoter to VoteEligibleVoter. |
-| 07/11/2026 | A |  | Add FE-16 Working Calendar & Meeting Time Search (Should-have): UC-84a–e, UC-85a–c (BR-414–430, MSG435–455) for SCRUM-137/142; UC-82/83 numbering reserved; no screens yet. |
-| 08/11/2026 | M, A | HuyNQ | Post-review fixes (PR #282): BR-419 drops delegated attendance; BR-424/426 drop UC-12c; new BR-431 share date range; ordered owner–viewer pairs; viewer-loses-right stops the share (MSG439 list-only); UC-84d/84e/85b flows named. |
-| 08/11/2026 | M | HuyNQ | Point FE-16/UC-84/85/BR-414–430 to ADR-0058 (PO 07/11: sharing + find-a-time, no AI assistant); find-a-time may overlap Secret meetings, invitee declines. |
-| 08/11/2026 | M | KhánhPG | Three sensitivity levels (ADR-0057): Normal/Internal/Secret; Confidential removed; PO confirms the 365-day share limit and the busy-status list. |
-| 08/11/2026 | M | KhánhPG | BA Final Review SCRUM-28/96: UC-52a/b drop System Admin; UC-56 tallies from ballots; Guests need no verification at opening (UC-54); UC-74/76a exceptions (MSG166); draft votes auto-delete at End with audit (UC-22); diagrams in sync. |
-| 09/11/2026 | A | HuyNT | SCRUM-38: specify UC-70a/70b reports (BR-432–438, MSG463–466 reserved). |
-| 10/11/2026 | M, A | LocHD | SCRUM-16 + PR #311 as built: UC-13 audit log rewritten (actors, filters, entry details, EX-3; BR-440–446 incl. sign-in/status/minutes records; MSG469/470 reserved); failed sign-ins name the account (BR-444); screen 3.3 unchanged. |
-| 10/11/2026 | M, A | LocHD | E2E run 09/11 (SCRUM-147–151): confirmations for UC-75/17/18/15/29/73/28b; case-insensitive search (BR-439); approver email shown; UC AF/EX additions. |
-| 11/11/2026 | M, A | KhanhPG | BA Final Review SCRUM-33 (PR #297): UC-58–60 approval-aligned; new UC-61/64/65/83; BR-404–413; MSG424–434/456; FE-12 renamed; screens 12.2–12.4 pending. |
-| 11/11/2026 | M, A | KhanhPG | BA Final Review SCRUM-16 (PR #311): audit steps into UC-01/02/04/14/15/18–22/64/75 (BR-444–446); screen 3.3 pending. |
-| 11/11/2026 | M, A | KhanhPG | BA Final Review SCRUM-142 (PO 09–10/11): BR-424–426 drop the nightly job (no Expired status or notification); new UC-84f; MSG439/467/468; UC-06c/08/11 stop Effective shares only. |
-| 11/11/2026 | M, A | KhanhPG | Post-review fixes (PR #322, note 43): UC-15/58/61/64/01/02/84c/84f/85c/70a-b aligned with code and PO Q1/Q2 (BR-447 average duration); UC diagram renewed; sequences re-exported. |
-| 15/11/2026 | M, A | KhanhPG | SCRUM-152 (note 44, ADR-0060): the Secretary collects Voice ID samples for attendees (new UC-86a–d, BR-448–454, MSG473–477); one consent covers both sample sets; withdrawal deletes both. |
-| 15/11/2026 | M, A | KhanhPG | SCRUM-153 (note 45, ADR-0061): recording follows the meeting format (uploads: In-person only, EX-8 MSG478); Hybrid Ended gains a system-built combined recording (AF-3, MSG479; BR-340/342 rewritten, BR-455–458). |
-| 15/11/2026 | M, A | KhanhPG | PR #332 (note 46, ADR-0062, PO 13/11): the system ends meetings left In Progress 24 h after planned end (BR-460); UC-22 unchanged; BR-302 points to BR-460. |
-| 15/11/2026 | M, D | KhanhPG | PO 14–15/11 (SCRUM-37/106): drop minutes signing incl. simulation — remove UC-62/63, retire BR-166; Chair approval issues minutes (UC-64); no feedback-list UC (note 47). |
-| 15/11/2026 | M, D | HaiTV | PO 15/11 (SCRUM-37): drop MinutesSignature from the database (migration DropMinutesSignature); section 3.2 loses Entity 27, Entity 26 rewritten to the approval flow. |
-| 15/11/2026 | M, D | KhanhPG | SCRUM-207 (note 50): align Report 3 and API docs with QA-built behavior 15/11 (drop UC-09/UC-69, fix UC/BR/MSG mismatches). |
-| 15/11/2026 | M, D | KhanhPG | SCRUM-207 (note 51): drop remaining FE-14 mentions; features are Must-have FE-01 to FE-13, Should-have FE-15 to FE-16. |
-| 19/11/2026 | M | KhanhPG | [PR docs note 54] Sync Report 3 UC/BR/messages/screens with the shipped UI audit and the In-Progress busy rule — done. (source: note 54, PR #396–#399, BR-420) |
-| 19/11/2026 | M | KhanhPG | BA Final Review note 55: retire UC-51, add UC-82 (Take Meeting Notes) to FE-05 with BR-397–BR-403/BR-459/BR-461 and MSG415–MSG423; promote UC-84/85 to official; update UC-59 (BR-402) and UC-24 (AF-2); sync inventory and UC diagram. |
-| 21/11/2026 | M, A | KhanhPG | [PR docs note 57] Bug-fix round 19-21/11 (PR #420-#448): Secretary starts meetings, audit/search, AI draft gating, upload limits, calendar sharing, MP3 and combined recordings (BR-462, MSG481/482). |
-| 22/11/2026 | D | BA | [note 58] Post-trial 21/11 changes (PR #466-#471, #473, #474, #476): three system roles only with Chair/Secretary as meeting roles (ADR-0075); proxy voice collection by permission holders with per-take agreement and MSG483 (ADR-0073); 0.6/0.05/0.7/0.7/0.8 thresholds with 0.6 auto-assign (ADR-0074); digits in transcripts (ADR-0076); one-switch hybrid room mic with 5-minute takes (ADR-0072). |
-| 23/11/2026 | M | BA | [note 59] Report query (PR #488, SCRUM-38): UC-70a/70b query flow with EX-3 MSG484, BR-437/BR-438 update, new BR-468; keep hand corrections on re-transcription (ADR-0077, SCRUM-31/35): UC-44d/45c/46a/46b, BR-345/349/360 update, new BR-467, two transcript sentence columns. |
-| 24/11/2026 | M | HuyNQ | [plan 08, ADR-0079] Business Rules cut from 406 to 153 and renumbered BR-001–153; UI, validation and technical limits moved into the use cases and section IV. Actors Meeting Organizer and Meeting Approver renamed Member and Approver. Earlier rows keep the old BR IDs (see 09-bang-anh-xa-br-dot-1). |
-| 24/11/2026 | M | HuyNQ | [ADR-0079, UC batch 1] Use cases renumbered UC-01–UC-81 in the order of section II, sub-cases lettered again without gaps; UC-86 made a parent of its own; retired UC-51 removed. Earlier rows keep the old ids (see 10-bang-anh-xa-uc-dot-1). |
-| 24/11/2026 | M, A | HuyNQ | [decisions after PR #509] BR-125 split (new BR-154: unmatched carry only in the audit log); combined recordings add no hours moved from BR-153 to BR-151; UC-54c states the carry thresholds; UC-06b edits Full Name, Email and System Role in one save, as built (EX-3, MSG12). |
+| 07/11/2026 | A |  | Add FE-16 Working Calendar & Meeting Time Search (Should-have): UC-84a–e, UC-85a–c (BR-414–430, MSG435–455); UC-82/83 numbering reserved; no screens yet. |
+| 08/11/2026 | M, A | HuyNQ | Post-review fixes: BR-419 drops delegated attendance; BR-424/426 drop UC-12c; new BR-431 share date range; ordered owner–viewer pairs; viewer-loses-right stops the share (MSG439 list-only); UC-84d/84e/85b flows named. |
+| 08/11/2026 | M | HuyNQ | Point FE-16/UC-84/85/BR-414–430 to the PO decision of 07/11 (sharing + find-a-time, no AI assistant); find-a-time may overlap Secret meetings, invitee declines. |
+| 08/11/2026 | M | KhanhPG | Three sensitivity levels: Normal/Internal/Secret; Confidential removed; PO confirms the 365-day share limit and the busy-status list. |
+| 08/11/2026 | M | KhanhPG | BA Final Review: UC-52a/b drop System Admin; UC-56 tallies from ballots; Guests need no verification at opening (UC-54); UC-74/76a exceptions (MSG166); draft votes auto-delete at End with audit (UC-22); diagrams in sync. |
+| 09/11/2026 | A | HuyNT | Specify UC-70a/70b reports (BR-432–438, MSG463–466 reserved). |
+| 10/11/2026 | M, A | LocHD | As built: UC-13 audit log rewritten (actors, filters, entry details, EX-3; BR-440–446 incl. sign-in/status/minutes records; MSG469/470 reserved); failed sign-ins name the account (BR-444); screen 3.3 unchanged. |
+| 10/11/2026 | M, A | LocHD | E2E run 09/11: confirmations for UC-75/17/18/15/29/73/28b; case-insensitive search (BR-439); approver email shown; UC AF/EX additions. |
+| 11/11/2026 | M, A | KhanhPG | BA Final Review: UC-58–60 approval-aligned; new UC-61/64/65/83; BR-404–413; MSG424–434/456; FE-12 renamed; screens 12.2–12.4 pending. |
+| 11/11/2026 | M, A | KhanhPG | BA Final Review: audit steps into UC-01/02/04/14/15/18–22/64/75 (BR-444–446); screen 3.3 pending. |
+| 11/11/2026 | M, A | KhanhPG | BA Final Review (PO 09–10/11): BR-424–426 drop the nightly job (no Expired status or notification); new UC-84f; MSG439/467/468; UC-06c/08/11 stop Effective shares only. |
+| 11/11/2026 | M, A | KhanhPG | Post-review fixes: UC-15/58/61/64/01/02/84c/84f/85c/70a-b aligned with code and PO Q1/Q2 (BR-447 average duration); UC diagram renewed; sequences re-exported. |
+| 15/11/2026 | M, A | KhanhPG | The Secretary collects Voice ID samples for attendees (new UC-86a–d, BR-448–454, MSG473–477); one consent covers both sample sets; withdrawal deletes both. |
+| 15/11/2026 | M, A | KhanhPG | Recording follows the meeting format (uploads: In-person only, EX-8 MSG478); Hybrid Ended gains a system-built combined recording (AF-3, MSG479; BR-340/342 rewritten, BR-455–458). |
+| 15/11/2026 | M, A | KhanhPG | PO 13/11: the system ends meetings left In Progress 24 h after planned end (BR-460); UC-22 unchanged; BR-302 points to BR-460. |
+| 15/11/2026 | M, D | KhanhPG | PO 14–15/11: drop minutes signing incl. simulation — remove UC-62/63, retire BR-166; Chair approval issues minutes (UC-64); no feedback-list UC. |
+| 15/11/2026 | M, D | HaiTV | PO 15/11: drop MinutesSignature from the database (migration DropMinutesSignature); section 3.2 loses Entity 27, Entity 26 rewritten to the approval flow. |
+| 15/11/2026 | M, D | KhanhPG | Align Report 3 and API docs with QA-built behavior 15/11 (drop UC-09/UC-69, fix UC/BR/MSG mismatches). |
+| 15/11/2026 | M, D | KhanhPG | Drop remaining FE-14 mentions; features are Must-have FE-01 to FE-13, Should-have FE-15 to FE-16. |
+| 19/11/2026 | M | KhanhPG | Sync Report 3 UC/BR/messages/screens with the shipped UI audit and the In-Progress busy rule. |
+| 19/11/2026 | M | KhanhPG | BA Final Review: retire UC-51, add UC-82 (Take Meeting Notes) to FE-05 with BR-397–BR-403/BR-459/BR-461 and MSG415–MSG423; promote UC-84/85 to official; update UC-59 (BR-402) and UC-24 (AF-2); sync inventory and UC diagram. |
+| 21/11/2026 | M, A | KhanhPG | Bug-fix round 19-21/11: Secretary starts meetings, audit/search, AI draft gating, upload limits, calendar sharing, MP3 and combined recordings (BR-462, MSG481/482). |
+| 22/11/2026 | D | BA | Post-trial 21/11 changes: three system roles only with Chair/Secretary as meeting roles; proxy voice collection by permission holders with per-take agreement and MSG483; 0.6/0.05/0.7/0.7/0.8 thresholds with 0.6 auto-assign; digits in transcripts; one-switch hybrid room mic with 5-minute takes. |
+| 23/11/2026 | M | BA | Report query: UC-70a/70b query flow with EX-3 MSG484, BR-437/BR-438 update, new BR-468; keep hand corrections on re-transcription: UC-44d/45c/46a/46b, BR-345/349/360 update, new BR-467, two transcript sentence columns. |
+| 24/11/2026 | M | HuyNQ | [plan 08] Business Rules cut from 406 to 153 and renumbered BR-001–153; UI, validation and technical limits moved into the use cases and section IV. Actors Meeting Organizer and Meeting Approver renamed Member and Approver. Earlier rows keep the old BR IDs (see 09-bang-anh-xa-br-dot-1). |
+| 24/11/2026 | M | HuyNQ | [UC batch 1] Use cases renumbered UC-01–UC-81 in the order of section II, sub-cases lettered again without gaps; UC-86 made a parent of its own; retired UC-51 removed. Earlier rows keep the old ids (see 10-bang-anh-xa-uc-dot-1). |
+| 24/11/2026 | M, A | HuyNQ | BR-125 split (new BR-154: unmatched carry only in the audit log); combined recordings add no hours moved from BR-153 to BR-151; UC-54c states the carry thresholds; UC-06b edits Full Name, Email and System Role in one save, as built (EX-3, MSG12). |
 | 24/11/2026 | M | LocHD | [BF review] BF-02 to BF-04 aligned with the built system: BF-02 adds finding a common time (UC-81) and cancelling (UC-22); BF-03 adds room recording (UC-52); BF-04 adds summary approval (UC-61) and minutes from the fixed template (UC-70). |
-| 24/11/2026 | M | HuyNQ | [PR #531] UC diagrams follow strict UML: only 8 real <<extend>> kept, the rest connect to the actor; actors renamed Member/Approver, Cloudflare R2 → File Storage (ADR-0084); §1, §4.1 and §4.3 updated. |
-| 25/11/2026 | M | HuyNQ | [PR #537] File Storage is no longer an actor (SeaweedFS runs on the app server, ADR-0084): §1, §4.1, context and UC diagrams; §17.7 says SeaweedFS; UC-42 to the actor (7 <<extend>>); AI Drafting Service drawn on UC-58. |
-| 25/11/2026 | M, A, D | KhanhPG | [note 60, note 61] UC-52b and UC-54c removed: UC-52a renamed Turn Room Microphone On/Off, UC-54a gains AF-2/AF-3; system-run steps moved to Report 4 part IV, JOB-03–JOB-10 added; UC tables in one style; every figure captioned, overview UC diagram in §4.3. |
-| 25/11/2026 | M | KhanhPG | [PR #507] §IV.2.3 External Guest access scope: the one-time code expires within 15 minutes, as in the code (GuestAccessOptions.CodeLifetimeMinutes). |
-| 25/11/2026 | M | LocHD | [PR #547] Audio uploads limited to 300 MB with no duration limit; audit log (UC-12) without CSV export or before/after values; the server never records on its own; CPU-only speech worker; Jira keys removed. |
+| 24/11/2026 | M | HuyNQ | UC diagrams follow strict UML: only 8 real <<extend>> kept, the rest connect to the actor; actors renamed Member/Approver, Cloudflare R2 → File Storage; §1, §4.1 and §4.3 updated. |
+| 25/11/2026 | M | HuyNQ | File Storage is no longer an actor (SeaweedFS runs on the app server): §1, §4.1, context and UC diagrams; §17.7 says SeaweedFS; UC-42 to the actor (7 <<extend>>); AI Drafting Service drawn on UC-58. |
+| 25/11/2026 | M, A, D | KhanhPG | UC-52b and UC-54c removed: UC-52a renamed Turn Room Microphone On/Off, UC-54a gains AF-2/AF-3; system-run steps moved to Report 4 part IV, JOB-03–JOB-10 added; UC tables in one style; every figure captioned, overview UC diagram in §4.3. |
+| 25/11/2026 | M | KhanhPG | §IV.2.3 External Guest access scope: the one-time code expires within 15 minutes, as in the code (GuestAccessOptions.CodeLifetimeMinutes). |
+| 25/11/2026 | M | LocHD | Audio uploads limited to 300 MB with no duration limit; audit log (UC-12) without CSV export or before/after values; the server never records on its own; CPU-only speech worker. |
+| 25/11/2026 | M | LocHD | Email via Resend only (16.3, API-03); features FE-01–FE-15; no Vietnamese or decision-record references; one font size in the permission matrix; entity and UC descriptions rewritten, UC-28 row added; 3.3 and IV checked against the code. |
+| 25/11/2026 | M | KhanhPG | IV.2.3 Audit logging: event list matched to the events the system records; meeting status changes, summary approval, vote closing and rate-limited sign-ins are not audit events (status changes stay in the status history). BR-011: adding or removing a meeting document is not an audit event, deleting a voice sample is; UC-36a POST-1 no longer cites BR-011. |
+| 26/11/2026 | M | LocHD | Participants: additional Meeting permissions removed from the entity table, permission matrix, MSG table and Participants screen; FE-07 intro without dated notes, storage quota stated; 9.4 and 15.4 images fit one page. |
 
 *A - Added M - Modified D - Deleted
 
@@ -103,18 +106,17 @@ Table of Contents
 | FE | Feature |
 | API | Application Programming Interface |
 | JOB | Background Job |
-| ADR | Architecture Decision Record |
 | Organizer | The person who created a given Meeting, a Member or an Approver. Business rules name this relationship; it is not a separate actor and differs from the meeting role Member. |
 
 ## I. Overall Requirements
 
 ### 1. Context Diagram
 
-TrustCabinet is an Internal Meeting and Document Management System that interacts with the following human/internal actors: System Admin, Member, Approver, Participant, and Guest. Chair and Secretary are meeting roles, not system roles (ADR-0075). The context diagram also shows three service actors outside the TrustCabinet backend: OAuth Provider, AI drafting service and Resend Email. Uploaded files are kept in the team's own SeaweedFS store on the app server (ADR-0084), inside the system boundary, so it is not an actor.
+TrustCabinet is an Internal Meeting and Document Management System that interacts with the following human/internal actors: System Admin, Member, Approver, Participant, and Guest. Chair and Secretary are meeting roles, not system roles. The context diagram also shows three service actors outside the TrustCabinet backend: OAuth Provider, AI drafting service and Resend Email. Uploaded files are kept in the team's own SeaweedFS store on the app server, inside the system boundary, so it is not an actor.
 
 - OAuth Provider supports Google-based sign-in and provides verified identity information for users accessing TrustCabinet.
 
-- The AI drafting service writes an editable draft of the Meeting content from the transcript, agenda and vote results (UC-58). The System Admin chooses the team's own AI machine or an external API; only Normal meetings may be sent to the API, Internal and Secret meetings always stay on the team's machine (ADR-0056). Only text is sent: audio and voice samples never leave the system (BR-121). Transcription and speaker identification run inside the system and do not use any external service. The Secretary may correct transcript text and speaker attribution before generating or regenerating the summary. Formal meeting minutes are prepared separately from approved meeting records and are not generated by the AI service from secretary notes or arbitrary meeting documents.
+- The AI drafting service writes an editable draft of the Meeting content from the transcript, agenda and vote results (UC-58). The System Admin chooses the team's own AI machine or an external API; only Normal meetings may be sent to the API, Internal and Secret meetings always stay on the team's machine. Only text is sent: audio and voice samples never leave the system (BR-121). Transcription and speaker identification run inside the system and do not use any external service. The Secretary may correct transcript text and speaker attribution before generating or regenerating the summary. Formal meeting minutes are prepared separately from approved meeting records and are not generated by the AI service from secretary notes or arbitrary meeting documents.
 
 - Resend Email handles outbound email delivery, including password-reset messages, meeting invitations, and other meeting-related communications.
 
@@ -170,7 +172,7 @@ View the full-size image on Google Drive
 
 #### 3.1 Entity Relationship Diagram
 
-Figure 6 shows the data model of TrustCabinet as 42 tables: the 34 entities described in 3.2; two entities that 3.2 does not detail, AiProviderSetting (the AI drafting service chosen by the System Admin) and CalendarShare (calendar sharing between users, FE-16); the four junction tables MeetingDocumentAgendaItem, VoteEligibleVoter, VoteDocument and DocumentReadConfirmation; and two supporting tables, MeetingInvitationDispatch and GuestVerificationChallenge, for invitation email delivery and Guest email verification. Vote and Agenda Item each belong directly to Meeting.
+Figure 6 shows the data model of TrustCabinet as 42 tables: the 34 entities described in 3.2; two entities that 3.2 does not detail, AiProviderSetting (the AI drafting service chosen by the System Admin) and CalendarShare (calendar sharing between users, FE-15); the four junction tables MeetingDocumentAgendaItem, VoteEligibleVoter, VoteDocument and DocumentReadConfirmation; and two supporting tables, MeetingInvitationDispatch and GuestVerificationChallenge, for invitation email delivery and Guest email verification. Vote and Agenda Item each belong directly to Meeting.
 
 Figure 6: Entity Relationship Diagram
 
@@ -182,7 +184,7 @@ This section describes each table of the data model shown in the Entity Relation
 
 Entity 1: User
 
-Internal account of an organization member. A user signs in with email and password, with Google, or both; the account is deactivated rather than deleted so historical records stay attributable.
+An internal account. A user signs in with email and password, with Google, or both. Accounts are deactivated, never deleted, so past records still name their author.
 
 | No | Field | Data Type | Key | Nullable | Description |
 | --- | --- | --- | --- | --- | --- |
@@ -196,7 +198,7 @@ Internal account of an organization member. A user signs in with email and passw
 
 Entity 2: Role
 
-Named system role that bundles a set of capabilities and is assigned to users. Built-in roles ship with the system; additional roles can be created by the System Admin.
+A system role: a named set of permissions given to users. The built-in roles come with the system; the System Admin can add custom roles.
 
 | No | Field | Data Type | Key | Nullable | Description |
 | --- | --- | --- | --- | --- | --- |
@@ -207,7 +209,7 @@ Named system role that bundles a set of capabilities and is assigned to users. B
 
 Entity 3: RoleCapability
 
-Role and permission matrix: each row grants one capability to one role. Rows are removed together with their role.
+One permission granted to one role. The rows of a role are deleted with it.
 
 | No | Field | Data Type | Key | Nullable | Description |
 | --- | --- | --- | --- | --- | --- |
@@ -216,7 +218,7 @@ Role and permission matrix: each row grants one capability to one role. Rows are
 
 Entity 4: AuditLogEntry
 
-Append-only business audit trail of significant actions such as sign-in, meeting lifecycle changes, access to confidential documents and permission changes. Rows are never updated or deleted.
+One recorded action, such as a sign-in, a change of meeting status, a permission change or a read of protected data. Rows are only added, never changed or deleted.
 
 | No | Field | Data Type | Key | Nullable | Description |
 | --- | --- | --- | --- | --- | --- |
@@ -231,7 +233,7 @@ Append-only business audit trail of significant actions such as sign-in, meeting
 
 Entity 5: Meeting
 
-Central entity of the system: one independent meeting with its schedule, mode, sensitivity and lifecycle. The meeting status decides who may edit it, when voting can open and when minutes can be produced.
+One meeting with its planned schedule, mode, sensitivity level and status. The status decides who may edit the Meeting, when Votes can open and when minutes can be written.
 
 | No | Field | Data Type | Key | Nullable | Description |
 | --- | --- | --- | --- | --- | --- |
@@ -256,7 +258,7 @@ Central entity of the system: one independent meeting with its schedule, mode, s
 
 Entity 6: MeetingStatusHistory
 
-Append-only history of every status transition of a meeting: who changed it, when and why. Used to show the meeting timeline and as audit evidence.
+One change of a Meeting's status: who made it, when and why. Rows are only added; they build the Meeting timeline and serve as audit evidence.
 
 | No | Field | Data Type | Key | Nullable | Description |
 | --- | --- | --- | --- | --- | --- |
@@ -270,7 +272,7 @@ Append-only history of every status transition of a meeting: who changed it, whe
 
 Entity 7: MeetingParticipant
 
-Internal user assigned to a meeting, together with the meeting role, the invitation response and the actual attendance. Removed participants are kept for history.
+An internal user on a Meeting's roster, with the meeting role, the invitation response and the attendance. A removed participant keeps the row, marked Removed.
 
 | No | Field | Data Type | Key | Nullable | Description |
 | --- | --- | --- | --- | --- | --- |
@@ -285,16 +287,10 @@ Internal user assigned to a meeting, together with the meeting role, the invitat
 | 9 | RemovedAt | timestamptz |  | Yes | Date and time the participant was removed from the meeting. |
 | 10 | AttendanceRecordedById | uuid | FK | Yes | Secretary who saved the official attendance (references User). Empty until recorded. |
 | 11 | AttendanceRecordedAt | timestamptz |  | Yes | Time official attendance was last saved. Empty until recorded. |
-| No | Field | Data Type | Key | Nullable | Description |
-| 1 | Id | uuid | PK | No | Unique identifier of the additional meeting permission. |
-| 2 | MeetingParticipantId | uuid | FK | No | Current internal participant assignment receiving the permission; the permission applies only to that assignment’s Meeting. |
-| 3 | PermissionCode | string |  | No | Identifier from the system-defined Meeting permission catalogue. ViewParticipants and ViewResponses are examples, not the only possible additional permissions. The catalogue and grant matrix have not been finalized. |
-| 4 | GrantedById | uuid | FK | No | Assigned Secretary who granted the additional permission (references User). |
-| 5 | GrantedAt | timestamptz |  | No | Time the additional permission was granted. |
 
 Entity 8: MeetingGuestInvitation
 
-Invitation that lets an external Guest without an internal account join a meeting through a secure invitation link.
+An invitation for an external Guest, who has no internal account, to one Meeting. The Guest opens it from a link and verifies the invited email.
 
 | No | Field | Data Type | Key | Nullable | Description |
 | --- | --- | --- | --- | --- | --- |
@@ -315,7 +311,7 @@ Invitation that lets an external Guest without an internal account join a meetin
 
 Entity 9: AgendaItem
 
-One item on the agenda of a Meeting. Documents may be linked to multiple Items of the same Meeting through MeetingDocumentAgendaItem; notes and speaking requests may refer to an Item. Votes belong only to the Meeting.
+One item on a Meeting's agenda. Documents link to items through MeetingDocumentAgendaItem, and notes and speaking requests may name an item; Votes belong to the Meeting, not to an item.
 
 | No | Field | Data Type | Key | Nullable | Description |
 | --- | --- | --- | --- | --- | --- |
@@ -336,7 +332,7 @@ One item on the agenda of a Meeting. Documents may be linked to multiple Items o
 
 Entity 10: SpeakingRequest
 
-Request from a participant to speak during the meeting, and how the Chair handled it. Kept after the meeting so the minutes can report who spoke and for how long.
+A request to speak in the online room and how the Chair handled it. It is kept after the Meeting so the minutes can say who spoke and for how long.
 
 | No | Field | Data Type | Key | Nullable | Description |
 | --- | --- | --- | --- | --- | --- |
@@ -352,7 +348,7 @@ Request from a participant to speak during the meeting, and how the Chair handle
 
 Entity 11: MeetingNote
 
-Running notes taken during the meeting, either for the meeting as a whole or for one agenda item.
+The Secretary's running notes, for the whole Meeting or for one agenda item.
 
 | No | Field | Data Type | Key | Nullable | Description |
 | --- | --- | --- | --- | --- | --- |
@@ -364,7 +360,7 @@ Running notes taken during the meeting, either for the meeting as a whole or for
 
 Entity 12: CallSession
 
-Online call: the online room of a meeting. Only call metadata is stored; audio and video are not stored.
+The online room of a Meeting. Only the call's metadata is stored, never its audio or video.
 
 | No | Field | Data Type | Key | Nullable | Description |
 | --- | --- | --- | --- | --- | --- |
@@ -378,7 +374,7 @@ Online call: the online room of a meeting. Only call metadata is stored; audio a
 
 Entity 13: CallParticipant
 
-One connection of a user or guest to a call. Leaving and rejoining creates a new row, so the connected time of each person can be calculated.
+One connection of a user or Guest to the online room. Leaving and joining again adds a new row, so each person's connected time can be worked out.
 
 | No | Field | Data Type | Key | Nullable | Description |
 | --- | --- | --- | --- | --- | --- |
@@ -391,7 +387,7 @@ One connection of a user or guest to a call. Leaving and rejoining creates a new
 
 Entity 14: VotingSession
 
-A Vote belongs to one Meeting and is not linked to an Agenda Item. The current Chair prepares Draft Votes in Approved, Published or InProgress; opening and balloting require InProgress. Closing and recording a conclusion may finish in Ended. The fixed eligible-voter list is represented by VoteEligibleVoter; it is not reconstructed from current roles. No time-boxed voting or quorum exists.
+A Vote of a Meeting; it is not tied to an agenda item. The Chair or the Secretary prepares it as a Draft while the Meeting is Approved, Published or In Progress. It opens and takes ballots only while the Meeting is In Progress, and may be closed and concluded after the Meeting has ended. Its voters are the list fixed in VoteEligibleVoter when it opens. There is no deadline and no quorum.
 
 | No | Field | Data Type | Key | Nullable | Description |
 | --- | --- | --- | --- | --- | --- |
@@ -421,7 +417,7 @@ Fixed eligibility for one person in one Vote, created only when opening succeeds
 
 Entity 15: VotingOption
 
-One answer that voters can choose in a voting session.
+One choice a voter can pick in a Vote.
 
 | No | Field | Data Type | Key | Nullable | Description |
 | --- | --- | --- | --- | --- | --- |
@@ -432,7 +428,7 @@ One answer that voters can choose in a voting session.
 
 Entity 16: VoteReceipt
 
-Records that one eligible internal User or Guest invitation identity has voted, never their chosen option. Exactly one of VoterId and GuestInvitationId is set. The identity must belong to the fixed eligible-voter list for this Vote, and may have only one receipt in it. Rejoining does not create another identity or ballot.
+Proof that one eligible voter, an internal user or a Guest, has voted; it never holds the choice. Exactly one of VoterId and GuestInvitationId is set, and a voter has at most one receipt per Vote.
 
 | No | Field | Data Type | Key | Nullable | Description |
 | --- | --- | --- | --- | --- | --- |
@@ -444,7 +440,7 @@ Records that one eligible internal User or Guest invitation identity has voted, 
 
 Entity 17: VoteChoice
 
-The option chosen in a Vote. For a Public Vote, exactly one of VoterId and GuestInvitationId identifies the voter. For a Secret Vote, both are empty and no receipt or eligible-voter reference is stored with the choice. All recorded choices contribute to the tally.
+The choice made in a Vote. In a public Vote it names the voter through VoterId or GuestInvitationId; in a secret Vote both are empty, so no choice can be traced to a person. Every choice counts in the tally.
 
 | No | Field | Data Type | Key | Nullable | Description |
 | --- | --- | --- | --- | --- | --- |
@@ -457,7 +453,7 @@ The option chosen in a Vote. For a Public Vote, exactly one of VoterId and Guest
 
 Entity 18: Document
 
-Entry in a user's personal library. It refers to one immutable Stored File; documents have no versions, so changing a document means uploading a new file.
+An entry in a user's personal library that points to one Stored File. Documents have no versions: a changed document is a new upload.
 
 | No | Field | Data Type | Key | Nullable | Description |
 | --- | --- | --- | --- | --- | --- |
@@ -470,7 +466,7 @@ Entry in a user's personal library. It refers to one immutable Stored File; docu
 
 Entity 19: StoredFile
 
-One uploaded file in object storage. It is immutable; personal library entries and Meeting documents only refer to it. A periodic cleanup deletes the object once nothing refers to it.
+One uploaded file in the file store. It never changes; library entries and Meeting documents point to it, and a cleanup job deletes it once nothing points to it.
 
 | No | Field | Data Type | Key | Nullable | Description |
 | --- | --- | --- | --- | --- | --- |
@@ -486,7 +482,7 @@ One uploaded file in object storage. It is immutable; personal library entries a
 
 Entity 20: MeetingDocument
 
-One addition of a stored file to a Meeting. A document may be linked to several Agenda Items through MeetingDocumentAgendaItem; with no links, it is a general Meeting document. Removing it clears its current Item links but preserves this addition and its comments as history. Readding the same file creates a new addition and does not restore the old comments. Deleting the personal-library entry does not remove this Meeting document.
+One addition of a stored file to a Meeting; with no agenda-item links it is a general Meeting document. Removing it clears its links but keeps the row and its comments as history, and adding the same file again makes a new row without the old comments. Deleting the library entry does not remove it from the Meeting.
 
 | No | Field | Data Type | Key | Nullable | Description |
 | --- | --- | --- | --- | --- | --- |
@@ -511,7 +507,7 @@ Links an active MeetingDocument addition to one Agenda Item of the same Meeting.
 
 Entity 21: DocumentComment
 
-Comment on one MeetingDocument addition, by an internal User or Guest invitation identity. Exactly one of AuthorId and GuestInvitationId is set. Comments are read-only after the Meeting ends. Removed additions retain their comments as history; a new addition of the same file does not inherit them. Existing reply references remain within the same addition.
+A comment on one Meeting document, by an internal user or a Guest; exactly one of AuthorId and GuestInvitationId is set. Comments become read-only when the Meeting ends and stay with the addition they were made on.
 
 | No | Field | Data Type | Key | Nullable | Description |
 | --- | --- | --- | --- | --- | --- |
@@ -526,7 +522,7 @@ Comment on one MeetingDocument addition, by an internal User or Guest invitation
 
 Entity 22: Recording
 
-Audio of a meeting: the room microphone's takes appended into one recording, a file uploaded afterwards, or the combined recording of a hybrid or online meeting built by the server. Consent and retention fields support personal data obligations. How takes are saved and the combined recording is built is described in Report 4, IV.4 and IV.5; automatic erasure in Report 4, IV.6.
+Audio of a Meeting: the takes of the room microphone joined into one recording, an audio file uploaded afterwards, or the combined recording the server builds for a hybrid or online Meeting. It carries the consent and the retention date that personal data requires. Report 4, IV.4 to IV.6, describes how takes are saved, how the combined recording is built and how recordings are erased.
 
 | No | Field | Data Type | Key | Nullable | Description |
 | --- | --- | --- | --- | --- | --- |
@@ -548,7 +544,7 @@ Audio of a meeting: the room microphone's takes appended into one recording, a f
 
 Entity 23: Transcript
 
-Speech-to-text result with speaker separation for one recording. It is processed in the background, so its state, progress and error are stored; its life cycle is Pending, Processing, then Completed or Failed (Report 4, IV.1).
+The text of one recording, with the speakers separated. It is produced in the background, so it stores its state (Pending, Processing, Completed or Failed), its progress and any error (Report 4, IV.1).
 
 | No | Field | Data Type | Key | Nullable | Description |
 | --- | --- | --- | --- | --- | --- |
@@ -564,7 +560,7 @@ Speech-to-text result with speaker separation for one recording. It is processed
 
 Entity 24: TranscriptSegment
 
-One stretch of speech in a transcript, with timestamps and speaker label, in the form "Speaker A says / Speaker B says". No voiceprint is stored.
+One stretch of speech in a transcript, with its start and end time and its speaker. No voiceprint is stored.
 
 | No | Field | Data Type | Key | Nullable | Description |
 | --- | --- | --- | --- | --- | --- |
@@ -582,7 +578,7 @@ One stretch of speech in a transcript, with timestamps and speaker label, in the
 
 Entity 25: MeetingSummary
 
-AI-generated summary of a meeting, produced from the transcript after the meeting ends. The Secretary reviews and approves it before it is published or used for the minutes.
+The AI draft of a Meeting's content, written from the transcript, the agenda and the vote results after the Meeting ends. The Chair or the Secretary reviews and approves it; only then do other readers see it and can the minutes use it.
 
 | No | Field | Data Type | Key | Nullable | Description |
 | --- | --- | --- | --- | --- | --- |
@@ -598,7 +594,7 @@ AI-generated summary of a meeting, produced from the transcript after the meetin
 
 Entity 26: MeetingMinutes
 
-Formal minutes of a meeting, compiled from the approved summary, decisions and vote results. The Secretary submits a revision, the Chair approves it, which issues it, or returns it with a reason. An issued revision is locked and never edited; a correction is a new revision.
+One revision of a Meeting's formal minutes, built from the fixed template and the Meeting's records. The Secretary submits it; the Chair approves it, which issues it, or returns it with a reason. An issued revision is never edited: a correction is a new revision.
 
 | No | Field | Data Type | Key | Nullable | Description |
 | --- | --- | --- | --- | --- | --- |
@@ -621,7 +617,7 @@ Formal minutes of a meeting, compiled from the approved summary, decisions and v
 
 Entity 27: Notification
 
-In-app notification delivered to one user; opening it navigates to the related resource.
+An in-app notification for one user; opening it goes to the related Meeting or item.
 
 | No | Field | Data Type | Key | Nullable | Description |
 | --- | --- | --- | --- | --- | --- |
@@ -634,7 +630,7 @@ In-app notification delivered to one user; opening it navigates to the related r
 
 Entity 28: EmailMessage
 
-Outgoing email kept in a queue so it can be sent in the background, retried on failure and traced later.
+An outgoing email in the send queue, so it can be sent in the background, retried after a failure and traced later.
 
 | No | Field | Data Type | Key | Nullable | Description |
 | --- | --- | --- | --- | --- | --- |
@@ -647,7 +643,7 @@ Outgoing email kept in a queue so it can be sent in the background, retried on f
 
 Entity 29: Folder
 
-Folder in a user’s personal library. Folders nest at most five levels; a folder created for a meeting upload keeps a link to that Meeting so later uploads find it after a rename or move.
+A folder in a user's personal library, nested at most five levels deep. A folder made for uploads to a Meeting keeps a link to that Meeting, so later uploads find it after a rename or move.
 
 | No | Field | Data Type | Key | Nullable | Description |
 | --- | --- | --- | --- | --- | --- |
@@ -660,7 +656,7 @@ Folder in a user’s personal library. Folders nest at most five levels; a folde
 
 Entity 30: TranscriptSpeaker
 
-One voice of a transcript and the person it belongs to. The machine may suggest a member whose voice sample matches and, from 03/11/2026, fills the name in when the score reaches the auto-assign threshold; the Secretary may change or clear it. A voice belongs to a member or to a Guest with a current invitation. No voice vector is stored.
+One voice in a transcript and the person it belongs to: a member of the Meeting or a Guest with a valid invitation. The system suggests a person whose voice sample matches and fills the name in when the match is strong enough; the Secretary can change or clear it. No voice vector is stored.
 
 | No | Field | Data Type | Key | Nullable | Description |
 | --- | --- | --- | --- | --- | --- |
@@ -677,7 +673,7 @@ One voice of a transcript and the person it belongs to. The machine may suggest 
 
 Entity 31: GuestSession
 
-Verified session of an external Guest, giving access to one Meeting without an account. A row is itself the evidence that the invited email was verified; one invitation may open several sessions, one per device.
+A verified session of an external Guest, giving access to one Meeting without an account. The row is the evidence that the Guest verified the invited email; one invitation may have several sessions, one per device.
 
 | No | Field | Data Type | Key | Nullable | Description |
 | --- | --- | --- | --- | --- | --- |
@@ -688,7 +684,7 @@ Verified session of an external Guest, giving access to one Meeting without an a
 
 Entity 32: SpeechClip
 
-One sentence a person said into their own microphone in an online or hybrid Meeting, transcribed as soon as they paused and kept with its audio so the meeting can be heard again sentence by sentence. The speaker is the owner of the microphone: a member of the Meeting or a Guest invited to it, never both. It is personal data and is erased with the Meeting's recordings.
+One sentence a person said into their own microphone in an online or hybrid Meeting, transcribed when they paused and kept with its audio. The speaker is the owner of the microphone: a member of the Meeting or an invited Guest. It is personal data and is erased with the Meeting's recordings.
 
 | No | Field | Data Type | Key | Nullable | Description |
 | --- | --- | --- | --- | --- | --- |
@@ -712,7 +708,7 @@ One sentence a person said into their own microphone in an online or hybrid Meet
 
 Entity 33: VoiceConsent
 
-A person's consent to Voice ID: the system may keep voice samples and use them to suggest that person's name for a voice. The consent is separate from consent to being recorded, is given by the person themself, and is kept with the notice they read and the purpose they agreed to. A voice used to recognise someone is sensitive personal data.
+A person's consent to Voice ID, under which the system keeps their voice samples and uses them to suggest their name for a voice. It is separate from consent to recording, is given by the person themself, and is stored with the notice version and purpose they accepted. A voice used to recognise someone is sensitive personal data.
 
 | No | Field | Data Type | Key | Nullable | Description |
 | --- | --- | --- | --- | --- | --- |
@@ -725,7 +721,7 @@ A person's consent to Voice ID: the system may keep voice samples and use them t
 
 Entity 34: VoiceSample
 
-One enrolment sample of a person's voice, kept only encrypted, used to suggest that person's name for a voice in the meetings they attend. The recording itself is kept too, encrypted, so its owner can hear it back. Erased with every other sample when the person withdraws consent. A sample the person recorded stands alone; a collected sample carries the collector granted the Voice sample collection permission (the Meeting is kept only for samples collected at a Meeting before ADR-0075).
+One encrypted sample of a person's voice, used to suggest that person's name in the Meetings they attend; the recording is also kept encrypted so its owner can play it back. All samples are erased when the person withdraws consent. A collected sample records who collected it; the Meeting is filled in only for samples collected at a Meeting before 21/11/2026.
 
 | No | Field | Data Type | Key | Nullable | Description |
 | --- | --- | --- | --- | --- | --- |
@@ -738,22 +734,25 @@ One enrolment sample of a person's voice, kept only encrypted, used to suggest t
 | 7 | AudioCiphertext | bytea |  | Yes | The recording as uploaded, encrypted the same way; null for a sample taken before it was kept. |
 | 8 | AudioContentType | string |  | Yes | Media type of the recording, to play it back as it was sent. |
 | 9 | CollectedById | uuid | FK | Yes | Holder of the Voice sample collection permission who collected this sample for the person; null for a sample the person recorded. |
-| 10 | MeetingId | uuid | FK | Yes | Only kept for a sample collected at a Meeting before ADR-0075; null for every new sample. |
+| 10 | MeetingId | uuid | FK | Yes | Only kept for a sample collected at a Meeting before 21/11/2026; null for every new sample. |
 
 #### 3.3 Data Business Rules
 
 | Rule | Description | Enforced On |
 | --- | --- | --- |
-| Unique username | A username identifies at most one internal user account. | Account creation/change |
-| Unique email | An internal email address identifies at most one account. | Account creation/change |
-| Meeting schedule | Each Meeting has planned start and end times; planned end follows planned start. | Meeting creation/update |
-| Invitation response | Each invitation has one response: Pending until the invitee answers Accepted or Declined. The answer is recorded once with its response time and is not changed afterwards; the Chair's response is not displayed, and a role change does not reset an earlier answer. The initial participants of a new Meeting are saved with the Meeting in one save, each Pending. | Meeting creation; Invitation response |
-| Single meeting lifecycle | A Meeting has exactly one lifecycle. No Meeting Session entity or nested session lifecycle exists. | Meeting lifecycle |
-| Agenda ownership | Each Agenda Item belongs to exactly one Meeting. Reordering is within that Meeting. | Agenda management |
-| Vote ownership | Each Vote belongs to one Meeting and is not linked to an Agenda Item. | Voting management |
-| Vote conclusion ownership | A Vote belongs to one Meeting, whose Minutes incorporate vote tallies and the Chair’s conclusions. | Vote Conclusion creation |
-| Minutes scope | Each Meeting has its own Minutes process with versioned revision history. | Minutes governance |
-| Meeting audit trail | Meeting lifecycle, approval, publication and permitted schedule changes remain traceable. | Meeting audit |
+| Unique email | An email address identifies at most one account, compared without regard to case; a Google account is linked to at most one account. | Account creation and change |
+| Account can sign in | Every account has a password, a linked Google account, or both. | Account creation and change |
+| Accounts are kept | An account is deactivated, never deleted, so the records it made keep their author. | Account deactivation |
+| Meeting schedule | Each Meeting has a planned start and end; the end follows the start, and a new Meeting starts after the moment it is saved. | Meeting creation and update |
+| One current Chair | A Meeting has at most one current Chair, and a person appears at most once among its current participants. | Participant management |
+| Invitation response | Each invitation has one response: Pending until the invitee accepts or declines. The answer is recorded once with its time and is not changed afterwards; a change of role does not reset it. | Invitation response |
+| Agenda ownership | Each Agenda Item belongs to one Meeting and is ordered within it; at most one item of a Meeting is In Progress. | Agenda management |
+| Vote ownership | Each Vote belongs to one Meeting and to no Agenda Item; at most one Vote of a Meeting is Open at a time. | Voting management |
+| One ballot per voter | A voter, internal or Guest, has at most one receipt per Vote; a secret Vote stores no link between a choice and a voter. | Casting a vote |
+| Minutes revisions | A Meeting's minutes are numbered revisions, one row per number. An issued revision is never changed; a correction is a new revision that points to the one it corrects. | Minutes management |
+| Append-only history | Meeting status history and the audit log are only added to, never changed or deleted. | Meeting lifecycle; audit |
+| Stored files | An uploaded file never changes. Library documents and Meeting documents point to it, and it is deleted only when nothing points to it. | Document upload and cleanup |
+| Voice data | A voice embedding is kept only encrypted, in VoiceSample, and is erased when the person withdraws Voice ID consent. | Voice ID |
 
 ### 4. User Requirements
 
@@ -762,104 +761,105 @@ One enrolment sample of a person's voice, kept only encrypted, used to suggest t
 | # | Actor | Description |
 | --- | --- | --- |
 | 1 | Guest | An external person who does not have an internal user account. A Guest is invited to a specific meeting by name and email and accesses only that meeting through a secure meeting-specific guest invitation and email verification, without signing in to an internal account. Guest access is limited to permitted meeting functions. |
-| 2 | Member (Thành viên) | An internal user whose system role may create meetings. A Member creates, updates, submits for approval and publishes the meetings they organise. An Approver or a System Admin can do the same, because both roles also hold the create-meeting permission. |
-| 3 | Approver (Phê duyệt viên) | A system-authorized user who may be assigned to review a specific meeting approval request and decide whether to approve or reject it. An approval permission alone does not grant access to all meetings. |
+| 2 | Member | An internal user whose system role may create meetings. A Member creates, updates, submits for approval and publishes the meetings they organise. An Approver or a System Admin can do the same, because both roles also hold the create-meeting permission. |
+| 3 | Approver | A system-authorized user who may be assigned to review a specific meeting approval request and decide whether to approve or reject it. An approval permission alone does not grant access to all meetings. |
 | 4 | System Admin | An administrator responsible for managing user accounts, roles, permissions and system-wide configuration, including viewing relevant business and security audit events. |
 | 5 | Chair | A user assigned to chair a meeting, start/end it, control agenda execution, open/close Votes and record their conclusions, and moderate authorized meeting-room interactions. |
 | 6 | Secretary | A user assigned to support a specific meeting by preparing agenda items, managing the meeting roster and official attendance, managing authorized meeting documents, uploading the post-meeting audio, reviewing transcripts and summaries, and preparing/finalizing meeting minutes. |
 | 7 | Participant | An internal user assigned to participate in a specific meeting. A Participant may perform authorized meeting activities such as joining the online meeting room, viewing or commenting on meeting documents, responding to invitations, and voting. Chair and Secretary are meeting-specific roles with additional responsibilities. |
 | 8 | OAuth Provider | An external identity provider used for Google-based authentication and verified identity data exchange. It participates primarily in UC-02 Sign in with Google and supports the authentication flow shown in the context diagram. |
-| 9 | AI drafting service | A generative-AI service that writes the three sections of the Meeting draft from the transcript, the agenda and the vote results, supporting UC-58 Generate / Regenerate Meeting Summary. It receives text only, never an audio recording. The team's own server writes the draft for every meeting that is not Normal; for a Normal meeting the administrator may choose an outside AI service, and only then does the transcript leave the system (BR-129, ADR-0056). |
+| 9 | AI drafting service | A generative-AI service that writes the three sections of the Meeting draft from the transcript, the agenda and the vote results, supporting UC-58 Generate / Regenerate Meeting Summary. It receives text only, never an audio recording. The team's own server writes the draft for every meeting that is not Normal; for a Normal meeting the administrator may choose an outside AI service, and only then does the transcript leave the system (BR-129). |
 | 10 | Resend Email | An external outbound email service used to deliver password-reset messages, meeting invitations, guest-access emails and notification emails. It supports flows such as UC-07 Reset Password, UC-19 Publish Meeting and notification delivery under FE-13. |
 
 #### 4.2 Use Cases (UC)
 
 | ID | Use Case | Feature | Use Case Description |
 | --- | --- | --- | --- |
-| UC-01 | Sign in with Email and Password | Authentication & Account Security | Authenticate users using their registered email and password. |
-| UC-02 | Sign in with Google | Authentication & Account Security | Authenticate users using their authorized Google account. |
-| UC-03 | Sign Out | Authentication & Account Security | End the user's current authenticated session. |
-| UC-04 | Access Meeting via Guest Invitation | Authentication & Account Security | Allows an invited Guest to verify control of the invited email and enter self-declared display information for the invited Meeting. |
-| UC-05 | View User Accounts | User & Profile Management | View, search, and filter user accounts in the system. |
-| UC-06 | Manage User Accounts | User & Profile Management | Create, update, deactivate, or reactivate user accounts; the operation is specified in UC-06a–UC-06c. |
-| UC-07 | Reset User Password | User & Profile Management | Initiate a password reset for an eligible user account. |
-| UC-08 | Assign System Role to User | User & Profile Management | Assign or change the system role of a user account. |
-| UC-09 | View Role & Permission Matrix | Role-Based Access Control | View system roles and their assigned permissions. |
-| UC-10 | Configure Role Permissions | Role-Based Access Control | Configure permissions assigned to a system role. |
-| UC-11 | Manage Roles | Role-Based Access Control | Create, update, or delete custom roles; see the detailed UC-11a–UC-11c specifications. |
-| UC-12 | View Audit Log | Role-Based Access Control | Review recorded system events for security, accountability and operational investigation. |
-| UC-13 | Create Meeting | Meeting Management | Create one independent Meeting with its planned start and end times, mode, location, confidentiality, other required details and its initial participants. |
-| UC-14 | Update Meeting | Meeting Management | Update Meeting information while Draft/Rejected, or reschedule a Published Meeting before it begins when authorized. |
-| UC-15 | View Meeting Details | Meeting Management | View authorized Meeting details, including planned schedule, actual start/end times, Meeting lifecycle status and, for a Cancelled Meeting, its cancellation reason. |
-| UC-16 | View Meeting List | Meeting Management | View, search and filter Meetings by their own schedule, status (including Cancelled), name and confidentiality level. The list opens filtered to In Progress Meetings; the time filter offers Today, This week, Not yet held and Already held. |
-| UC-17 | Submit Meeting for Approval | Meeting Management | Submit a Draft or Rejected Meeting with a valid planned schedule for approval. |
-| UC-18 | Review Meeting Approval | Meeting Management | Approve or reject an assigned meeting approval request. |
-| UC-19 | Publish Meeting | Meeting Management | Publish an Approved Meeting with valid planned time and required Chair/Secretary assignments, and initiate invitations. |
-| UC-20 | Start Meeting | Meeting Management | Start a Published Meeting and record actual start time. |
-| UC-21 | End Meeting | Meeting Management | End an InProgress Meeting and record actual end time. |
-| UC-22 | Cancel Meeting | Meeting Management | The Member cancels a Meeting that will no longer take place, before it starts, with a required reason; invitees of a Published Meeting are notified. |
-| UC-23 | Manage Agenda Items | Agenda Management | Manage Agenda planning as Secretary: add Pending Items at the end; edit Title, Presenter and Description in any status; delete only Pending Items; reorder Items in any status. The Presenter is a current participant or Guest and is notified once the Meeting is published. |
-| UC-24 | Set Current Agenda Item | Agenda Management | Chair starts any Pending Item as the current Item when no Item is InProgress. |
-| UC-25 | Complete Agenda Item | Agenda Management | Chair completes the current Item at any time, records its actual end time and does not automatically start the next Item. |
-| UC-26 | View Meeting Agenda | Agenda Management | Authorized viewers see the complete Agenda and automatically receive its successfully saved changes. |
-| UC-27 | Record Agenda Item Conclusion | Agenda Management | The current Chair or Secretary records or updates what was concluded for an InProgress or Done Agenda Item, until the minutes draft is generated; minutes include each Item conclusion. |
-| UC-29 | View Meeting Participants | Meeting Participant Management | View the current internal participants and external Guests associated with a meeting, together with their meeting-specific role or guest access type. |
-| UC-30 | Manage Meeting Participants | Meeting Participant Management | Add participants after the Meeting is created (the initial participants are chosen in UC-13), manage meeting roles and additional permissions, replace the Chair before publication, or remove participants; see UC-30a–UC-30c. From publication onward the Chair hands over the role through UC-34. |
-| UC-31 | Respond to Meeting Invitation | Meeting Participant Management | Allow an invited internal participant (other than the Chair) or external Guest to accept or decline their own Meeting invitation once; the answer cannot be changed afterwards. |
-| UC-32 | View Participant Response Status | Meeting Participant Management | View the invitation response of current internal participants and external Guests as a label beside each name. |
-| UC-33 | Record Attendance | Meeting Participant Management | Record or revise Present/Absent attendance for one or more selected current internal participants or external Guests while the Meeting is InProgress. |
-| UC-34 | Hand Over Chair to Another Participant | Meeting Participant Management | The current Chair gives the Chair role to another internal participant in one step; the former Chair becomes a Member. |
-| UC-35 | View Meeting Documents | Personal Document Library & Meeting Document Management | View Meeting documents through UC-35a and preview or download through UC-35b. Anyone who can view the Meeting can read its documents; Secret Meeting documents cannot be downloaded. |
-| UC-36 | Manage Meeting Documents | Personal Document Library & Meeting Document Management | Manage Meeting documents through UC-36a Add one or more documents, UC-36b Attach documents to an Agenda Item, UC-36c Remove from Meeting and UC-36d Detach from one Item. Current Chair or Secretary acts before Meeting end; documents are attached from the Meeting, the computer or My Documents, and a multiple-document submission succeeds as a whole or changes nothing. Item status does not lock links. |
-| UC-37 | View Personal Document Library | Personal Document Library & Meeting Document Management | Browse the user's personal document library, search or filter documents and view permitted Meeting-usage details. |
-| UC-37a | View a Deactivated Account’s Personal Library | Personal Document Library & Meeting Document Management | A System Admin reads, read-only, the folders and documents in the personal library of a deactivated account. Every read is written to the audit log. |
-| UC-38 | Comment on Meeting Document | Personal Document Library & Meeting Document Management | Read and add Meeting-document comments with the same viewing access, before Meeting end. After end, documents and comments are read-only. |
-| UC-39 | Upload Document to Personal Library | Personal Document Library & Meeting Document Management | Upload one or more PDF or DOCX files together to the user's personal library, each at most 10 MB. The whole submission succeeds or no documents are added. |
-| UC-40 | Manage Personal Documents | Personal Document Library & Meeting Document Management | Delete, rename or move personal-library documents through UC-40a, UC-40b and UC-40c, preserving Meeting documents already added. |
-| UC-41 | Manage Library Folders | Personal Document Library & Meeting Document Management | Create, rename, move or delete personal-library folders through UC-41a to UC-41d; only empty folders may be deleted. |
-| UC-42 | Confirm Document Read | Personal Document Library & Meeting Document Management | A person who may vote confirms reading a Vote document after scrolling to its last page; required before casting a ballot. |
-| UC-43 | Join Meeting Room | Online Meeting Room Management | Join the online room of an authorized Online or Hybrid meeting; an external Guest may join through a verified meeting-specific guest invitation without an internal account login. |
-| UC-44 | Leave Meeting Room | Online Meeting Room Management | Leave the online meeting room without changing the Meeting lifecycle. |
-| UC-45 | Manage Meeting Room Controls | Online Meeting Room Management | Control microphone, camera, screen sharing and the audio and video devices within the Meeting Room; see UC-45a–UC-45d. |
-| UC-46 | View Meeting Room Participants | Online Meeting Room Management | View the users currently connected to the online meeting room and their current room presence. |
-| UC-47 | Moderate Meeting Room | Online Meeting Room Management | Allow the current Chair to mute another person's microphone in the meeting room; muting is one-way and the person may turn the microphone on again. |
-| UC-48 | Use In-room Chat | Online Meeting Room Management | Exchange text messages with authorized users currently connected to the online meeting room. |
-| UC-49 | Keep Meeting in a Floating Window | Online Meeting Room Management | A person connected to the online room keeps the call in a small always-on-top window while working in other tabs and brings it back to the main window; the floating window uses the same room connection. |
-| UC-50 | Register to Speak | Online Meeting Room Management | A person in the online room raises a hand to ask for the floor; the Chair sees the raised hands in order, invites one person at a time to speak and closes each turn. |
-| UC-51 | View & Play Meeting Recordings | Meeting Recording | View meeting recordings and play room recordings or per-mic speech clips; see UC-51a–UC-51c. |
-| UC-52 | Record Room Audio | Meeting Recording | Record room audio through the browser or upload an audio file; see UC-52a–UC-52e. |
-| UC-53 | Manage My Recorded Speech | Meeting Recording | View sentences recorded from the user's own microphone, listen to playback and withdraw/delete personal speech. |
-| UC-54 | View Meeting Transcript | Transcription, Speaker Identification & Meeting Summary | View and export the transcript of meeting recordings, and run their transcription; see UC-54a and UC-54b. |
-| UC-55 | Edit Transcript & Speaker Attribution | Transcription, Speaker Identification & Meeting Summary | Edit transcript text, assign speakers to voices, exclude sentences or delete sentences; see UC-55a–UC-55d. |
-| UC-56 | Manage My Voice ID | Transcription, Speaker Identification & Meeting Summary | Manage personal voice biometric consent, record and listen to voice samples, or withdraw consent; see UC-56a–UC-56f. |
-| UC-57 | Collect Voice Samples for Attendees | Transcription, Speaker Identification & Meeting Summary | A holder of the Voice sample collection permission collects voice samples for a person on the Users screen: view the collection (UC-57a), record a sample (UC-57b), play a collected sample (UC-57c) and delete a collected sample (UC-57d). |
-| UC-58 | Generate / Regenerate Meeting Summary | Transcription, Speaker Identification & Meeting Summary | Ask the AI for a draft of the Meeting content in three sections (I. Objectives and scope, II. Discussion and assessment, III. Conclusions and assignments) from the transcript, the agenda and the vote results; asking again replaces the draft. |
-| UC-59 | View Meeting Summary | Transcription, Speaker Identification & Meeting Summary | Read the AI draft, its AI label and its review state; before review only the current Chair and Secretary see it, and after review every reader of the Meeting does. |
-| UC-60 | Edit Meeting Summary | Transcription, Speaker Identification & Meeting Summary | Correct the text of the three sections; saving withdraws the review until the draft is approved again. |
-| UC-61 | Approve Meeting Summary | Transcription, Speaker Identification & Meeting Summary | Approve the draft so the other participants can read it and the minutes can use sections I-III. |
-| UC-62 | View Meeting Votes | Voting Management | View visible Meeting Votes and their status or result through UC-62a and UC-62b. |
-| UC-63 | Create / Configure Vote | Voting Management | Allows the current Chair or Secretary to prepare a Vote draft and configure or delete an existing draft; only the Chair may proceed to opening the Vote. Draft preparation is allowed before the Meeting starts, while it is Approved or Published, and during InProgress. Each Vote belongs directly to its Meeting; its documents are managed through UC-68. |
-| UC-64 | Open Vote | Voting Management | Allows the current Chair to open a valid Vote during an InProgress Meeting. Opening fixes the eligible-voter list and count. Only one Vote may be Open in a Meeting at a time. |
-| UC-65 | Cast Vote | Voting Management | Allows an eligible person to submit one choice in an Open Vote during the Meeting, after confirming reading of every Vote document. Eligibility comes from the list fixed at opening and requires current Meeting access. Attendance is not a condition. A saved ballot cannot be changed or withdrawn. |
-| UC-66 | Close Vote | Voting Management | Allows the current Chair to close an existing Open Vote and obtain its tally while the Meeting is InProgress or Ended. Closing a Vote does not end the Meeting and does not determine the Chair's conclusion. |
-| UC-67 | Record Vote Conclusion | Voting Management | Allows the current Chair to record the business conclusion of a Closed and tallied Vote as Passed, NotPassed or Deferred, with an optional note. The Chair decides the conclusion; the system records it rather than inferring it from a majority. |
-| UC-68 | Manage Vote Documents | Voting Management | Attach documents to, or detach them from, a Draft Vote through UC-68a and UC-68b; documents come from the Meeting, the computer or My Documents. |
-| UC-69 | View Meeting Minutes | Meeting Minutes & Approval | Read the latest draft of the minutes as the paper that will be printed; only the current Chair and Secretary see a draft. |
-| UC-70 | Generate Meeting Minutes | Meeting Minutes & Approval | Build the minutes from one fixed template (Decree 30, Mẫu 1.4) and the Meeting records, using the approved AI draft for sections I-III. |
-| UC-71 | Edit Meeting Minutes | Meeting Minutes & Approval | Correct the content of the draft in a word-processor editor with a live preview, save it, and download the same content as a Word or PDF file; the minutes of a Secret Meeting cannot be downloaded. |
-| UC-72 | Submit Meeting Minutes for Approval | Meeting Minutes & Approval | Send the finished minutes to the current Chair for approval; the revision is locked until the Chair approves or returns it. |
-| UC-73 | Approve and Issue Meeting Minutes | Meeting Minutes & Approval | The current Chair approves the minutes waiting for approval; approval issues them at once. |
-| UC-74 | Return Meeting Minutes for Revision | Meeting Minutes & Approval | The current Chair returns the minutes with a reason so the Secretary can correct and submit them again. |
-| UC-75 | Correct Issued Meeting Minutes | Meeting Minutes & Approval | Start a correction of issued minutes as a new revision; the issued revision stays readable until the correction is issued. |
-| UC-76 | View Notifications | Email & In-App Notification | View personal notifications and the unread notification count. |
-| UC-77 | Mark Notifications as Read | Email & In-App Notification | Mark one notification or all unread notifications as read; see UC-77a–UC-77b. |
-| UC-78 | Open Notification Target | Email & In-App Notification | Open the meeting linked to a selected notification. |
-| UC-79 | View & Export Reports | Reporting & Statistics | View reporting statistics and export the corresponding report; see UC-79a–UC-79b. |
-| UC-80 | Manage Calendar Sharing | Working Calendar & Meeting Time Search | Manage calendar sharing through UC-80a request, UC-80b direct share, UC-80c response, UC-80d change, UC-80e withdrawal or end and UC-80f viewing the share lists; see the detailed UC-80a–UC-80f specifications and ADR-0058. |
-| UC-80f | View Calendar Shares | Working Calendar & Meeting Time Search | See the calendar shares you take part in, with state and the actions you can take now. |
-| UC-81 | Find Meeting Time | Working Calendar & Meeting Time Search | Find common free slots through UC-81a, create a Draft meeting from a slot through UC-81b and view shared calendars through UC-81c; see the detailed UC-81a–UC-81c specifications and ADR-0058. |
+| UC-01 | Sign in with Email and Password | Authentication & Account Security | An internal user signs in with their registered email and password. |
+| UC-02 | Sign in with Google | Authentication & Account Security | An internal user signs in with a Google account linked to their existing account. |
+| UC-03 | Sign Out | Authentication & Account Security | A signed-in user ends their session. |
+| UC-04 | Access Meeting via Guest Invitation | Authentication & Account Security | An invited Guest verifies the invited email with a one-time code and enters a display name to open the invited Meeting. |
+| UC-05 | View User Accounts | User & Profile Management | The System Admin views, searches and filters the user accounts. |
+| UC-06 | Manage User Accounts | User & Profile Management | The System Admin creates, updates, deactivates or reactivates a user account. |
+| UC-07 | Reset User Password | User & Profile Management | The System Admin sends the owner of an account a single-use password reset link by email. |
+| UC-08 | Assign System Role to User | User & Profile Management | The System Admin assigns or changes the system role of a user account. |
+| UC-09 | View Role & Permission Matrix | Role-Based Access Control | The System Admin views the system roles and the permissions of each role. |
+| UC-10 | Configure Role Permissions | Role-Based Access Control | The System Admin changes the permissions of a system role. |
+| UC-11 | Manage Roles | Role-Based Access Control | The System Admin creates, renames or deletes custom roles; built-in roles cannot be renamed or deleted. |
+| UC-12 | View Audit Log | Role-Based Access Control | The System Admin reviews the audit log: who did what, to which object, when and from which address. |
+| UC-13 | Create Meeting | Meeting Management | A Member or an Approver creates a Meeting as a Draft with its planned schedule, mode, location, sensitivity level and first participants. |
+| UC-14 | Update Meeting | Meeting Management | The Organizer edits a Draft or Rejected Meeting, or reschedules a Published Meeting before it starts. |
+| UC-15 | View Meeting Details | Meeting Management | A user who may access a Meeting views its details: planned and actual times, status and, for a Cancelled Meeting, the reason. |
+| UC-16 | View Meeting List | Meeting Management | A user views, searches and filters the Meetings they take part in or are responsible for. |
+| UC-17 | Submit Meeting for Approval | Meeting Management | The Organizer submits a Draft or Rejected Meeting to a chosen Approver. |
+| UC-18 | Review Meeting Approval | Meeting Management | The assigned Approver approves the Meeting or rejects it with a reason. |
+| UC-19 | Publish Meeting | Meeting Management | The Organizer publishes an Approved Meeting, which sends the invitations. |
+| UC-20 | Start Meeting | Meeting Management | The Chair or the Secretary starts a Published Meeting; the actual start time is recorded. |
+| UC-21 | End Meeting | Meeting Management | The Chair ends an In Progress Meeting; the actual end time is recorded. |
+| UC-22 | Cancel Meeting | Meeting Management | The Organizer cancels a Meeting before it starts, with a reason; the invitees of a Published Meeting are notified. |
+| UC-23 | Manage Agenda Items | Agenda Management | The Secretary adds, edits, deletes and reorders the Agenda Items of a Meeting. |
+| UC-24 | Set Current Agenda Item | Agenda Management | The Chair starts a Pending Agenda Item as the current item. |
+| UC-25 | Complete Agenda Item | Agenda Management | The Chair completes the current Agenda Item. |
+| UC-26 | View Meeting Agenda | Agenda Management | A user who may access a Meeting views its agenda, which updates as changes are saved. |
+| UC-27 | Record Agenda Item Conclusion | Agenda Management | The Chair or the Secretary records the conclusion of an Agenda Item, for use in the minutes. |
+| UC-28 | Take Meeting Notes | Agenda Management | The Secretary takes running notes during the Meeting, for one Agenda Item or the whole Meeting; the Chair reads them. |
+| UC-29 | View Meeting Participants | Meeting Participant Management | Participants and Guests view the Meeting roster with each person's meeting role. |
+| UC-30 | Manage Meeting Participants | Meeting Participant Management | The Secretary adds participants or invites Guests after the Meeting is created, changes meeting roles and removes participants. |
+| UC-31 | Respond to Meeting Invitation | Meeting Participant Management | An invitee other than the Chair accepts or declines the invitation once; the answer cannot be changed. |
+| UC-32 | View Participant Response Status | Meeting Participant Management | Participants and Guests see each invitee's response beside their name. |
+| UC-33 | Record Attendance | Meeting Participant Management | The Secretary marks each participant and Guest Present or Absent while the Meeting is In Progress. |
+| UC-34 | Hand Over Chair to Another Participant | Meeting Participant Management | The Chair hands the Chair role to another internal participant and becomes a Member. |
+| UC-35 | View Meeting Documents | Personal Document Library & Meeting Document Management | A user who may read a Meeting browses, previews and downloads its documents; documents of a Secret Meeting cannot be downloaded. |
+| UC-36 | Manage Meeting Documents | Personal Document Library & Meeting Document Management | The Chair or the Secretary adds documents to a Meeting, attaches them to Agenda Items, detaches them or removes them, until the Meeting ends. |
+| UC-37 | View Personal Document Library | Personal Document Library & Meeting Document Management | An internal user browses, searches and filters their own document library and sees which Meetings use each document. |
+| UC-37a | View a Deactivated Account’s Personal Library | Personal Document Library & Meeting Document Management | The System Admin reads, without changing it, the personal library of a deactivated account; every read is audited. |
+| UC-38 | Comment on Meeting Document | Personal Document Library & Meeting Document Management | A user who may read a Meeting document reads its comments and adds comments until the Meeting ends. |
+| UC-39 | Upload Document to Personal Library | Personal Document Library & Meeting Document Management | An internal user uploads one or more PDF or DOCX files, up to 10 MB each, to their personal library. |
+| UC-40 | Manage Personal Documents | Personal Document Library & Meeting Document Management | The owner deletes, renames or moves documents in their personal library; copies already added to Meetings stay. |
+| UC-41 | Manage Library Folders | Personal Document Library & Meeting Document Management | The owner creates, renames, moves or deletes folders in their personal library; only an empty folder can be deleted. |
+| UC-42 | Confirm Document Read | Personal Document Library & Meeting Document Management | A person who may vote confirms reading a Vote document after reaching its last page; this is required before voting. |
+| UC-43 | Join Meeting Room | Online Meeting Room Management | A participant or Guest of an In Progress Online or Hybrid Meeting checks camera and microphone and joins the online room. |
+| UC-44 | Leave Meeting Room | Online Meeting Room Management | A person leaves the online room; the Meeting goes on for everyone else. |
+| UC-45 | Manage Meeting Room Controls | Online Meeting Room Management | A person in the room turns their microphone and camera on or off, shares a screen and chooses audio and video devices. |
+| UC-46 | View Meeting Room Participants | Online Meeting Room Management | A person in the room sees who is connected, who is speaking and whose microphone is off. |
+| UC-47 | Moderate Meeting Room | Online Meeting Room Management | The Chair mutes another person's microphone; that person can turn it on again. |
+| UC-48 | Use In-room Chat | Online Meeting Room Management | People in the room exchange text messages, which are not stored. |
+| UC-49 | Keep Meeting in a Floating Window | Online Meeting Room Management | A person in the room keeps the call in a small always-on-top window while working in other tabs. |
+| UC-50 | Register to Speak | Online Meeting Room Management | A person in the room raises a hand to ask for the floor; the Chair invites one person at a time and closes each turn. |
+| UC-51 | View & Play Meeting Recordings | Meeting Recording | The Chair, the Secretary and Participants view and play the Meeting's recordings; the Chair and the Secretary can download them. |
+| UC-52 | Record Room Audio | Meeting Recording | The Secretary records the room audio with the room microphone or uploads an audio file for an In-person Meeting, and deletes takes or erases recordings. |
+| UC-53 | Manage My Recorded Speech | Meeting Recording | A person reviews, plays back and deletes the sentences recorded from their own microphone. |
+| UC-54 | View Meeting Transcript | Transcription, Speaker Identification & Meeting Summary | The Chair, the Secretary and Participants view the transcript of a recording; the Chair and the Secretary export it. |
+| UC-55 | Edit Transcript & Speaker Attribution | Transcription, Speaker Identification & Meeting Summary | The Secretary corrects transcript text, assigns speakers and deletes sentences; the Chair or the Secretary excludes or restores a sentence. |
+| UC-56 | Manage My Voice ID | Transcription, Speaker Identification & Meeting Summary | An internal user gives or withdraws Voice ID consent and records, plays and deletes their own voice samples. |
+| UC-57 | Collect Voice Samples for Attendees | Transcription, Speaker Identification & Meeting Summary | A holder of the Voice sample collection permission records, plays and deletes voice samples for another person, under that person's consent. |
+| UC-58 | Generate / Regenerate Meeting Summary | Transcription, Speaker Identification & Meeting Summary | The Chair or the Secretary asks the AI drafting service for a three-part draft of the Meeting content, written from the transcript, the agenda and the vote results. |
+| UC-59 | View Meeting Summary | Transcription, Speaker Identification & Meeting Summary | The Chair and the Secretary read the AI draft and its review state; once it is approved, every reader of the Meeting can read it. |
+| UC-60 | Edit Meeting Summary | Transcription, Speaker Identification & Meeting Summary | The Chair or the Secretary corrects the three parts of the draft; saving withdraws the approval. |
+| UC-61 | Approve Meeting Summary | Transcription, Speaker Identification & Meeting Summary | The Chair or the Secretary approves the draft, so other readers see it and the minutes can use it. |
+| UC-62 | View Meeting Votes | Voting Management | A user who may read a Meeting views its Votes, their status and results; Draft Votes are visible only to the Chair and the Secretary. |
+| UC-63 | Create / Configure Vote | Voting Management | The Chair or the Secretary prepares, changes or deletes a Draft Vote. |
+| UC-64 | Open Vote | Voting Management | The Chair opens a Vote while the Meeting is In Progress; opening fixes the list of eligible voters. |
+| UC-65 | Cast Vote | Voting Management | An eligible voter casts one choice in an Open Vote after confirming reading its documents. |
+| UC-66 | Close Vote | Voting Management | The Chair closes an Open Vote and gets its tally. |
+| UC-67 | Record Vote Conclusion | Voting Management | The Chair records the conclusion of a closed Vote: Passed, Not passed or Deferred, with an optional note. |
+| UC-68 | Manage Vote Documents | Voting Management | The Chair or the Secretary attaches documents to a Draft Vote or detaches them. |
+| UC-69 | View Meeting Minutes | Meeting Minutes & Approval | The Chair and the Secretary read the latest revision of the minutes; other internal readers of the Meeting read the latest issued revision. |
+| UC-70 | Generate Meeting Minutes | Meeting Minutes & Approval | The Chair or the Secretary builds the minutes draft from the fixed template (Form 1.4, Decree 30/2020/ND-CP) and the Meeting's records. |
+| UC-71 | Edit Meeting Minutes | Meeting Minutes & Approval | The Chair or the Secretary edits the minutes draft with a live preview and downloads it as a Word or PDF file; minutes of a Secret Meeting cannot be downloaded. |
+| UC-72 | Submit Meeting Minutes for Approval | Meeting Minutes & Approval | The Secretary sends the finished minutes to the Chair for approval; the revision is locked until the Chair answers. |
+| UC-73 | Approve and Issue Meeting Minutes | Meeting Minutes & Approval | The Chair approves the minutes, which issues them. |
+| UC-74 | Return Meeting Minutes for Revision | Meeting Minutes & Approval | The Chair returns the minutes to the Secretary with a reason. |
+| UC-75 | Correct Issued Meeting Minutes | Meeting Minutes & Approval | The Chair or the Secretary starts a correction of issued minutes as a new revision. |
+| UC-76 | View Notifications | Email & In-App Notification | A signed-in user views their notifications and the unread count. |
+| UC-77 | Mark Notifications as Read | Email & In-App Notification | A user marks one notification, or all of them, as read. |
+| UC-78 | Open Notification Target | Email & In-App Notification | A user opens the Meeting a notification refers to. |
+| UC-79 | View & Export Reports | Reporting & Statistics | An internal user views statistics on the Meetings they may read over a chosen period and exports the table to Excel. |
+| UC-80 | Manage Calendar Sharing | Working Calendar & Meeting Time Search | A Member asks for, and a calendar owner grants, a share of working hours as busy or free; either side changes, withdraws or ends the share. |
+| UC-80f | View Calendar Shares | Working Calendar & Meeting Time Search | A user sees the calendar shares they take part in and the actions available to them now. |
+| UC-81 | Find Meeting Time | Working Calendar & Meeting Time Search | A Member finds slots when everyone invited is free, using shared calendars, and creates a Draft Meeting from a slot. |
 
-Feature priority. The features are prioritised with the Product Owner: FE-01 to FE-13 are Must-have and FE-15 to FE-16 are Should-have. FE-16 follows ADR-0058: calendar sharing shows busy or free only, and there is no AI assistant.
+Feature priority. The features are prioritised with the Product Owner: FE-01 to FE-13 are Must-have and FE-14 to FE-15 are Should-have. In FE-15, calendar sharing shows busy or free only, and there is no AI assistant.
 
 | Feature | Name | Priority |
 | --- | --- | --- |
@@ -876,8 +876,8 @@ Feature priority. The features are prioritised with the Product Owner: FE-01 to 
 | FE-11 | Voting Management | Must-have |
 | FE-12 | Meeting Minutes & Approval | Must-have |
 | FE-13 | Email & In-App Notification | Must-have |
-| FE-15 | Reporting & Statistics | Should-have |
-| FE-16 | Working Calendar & Meeting Time Search | Should-have |
+| FE-14 | Reporting & Statistics | Should-have |
+| FE-15 | Working Calendar & Meeting Time Search | Should-have |
 
 #### 4.3 Use Case Diagrams
 
@@ -974,7 +974,7 @@ Full = unrestricted  ·  Restricted = conditions apply (see footnotes)  ·  No =
 | Agenda item | View | Full | Restricted ³ | Restricted ³ | Restricted ³ | Restricted ³ | Restricted ³ | Restricted ¹¹: Member rules within the invited Meeting |
 | Agenda item | Create / Update / Delete / Reorder | No | No | No | No | Restricted ⁸ | No | No |
 | Agenda item | Set current / Complete | No | No | No | Restricted ⁹ | No | No | No |
-| Participant | View participants / response status | No | No | No | Full from Published onward | Restricted ³: roster under existing rules; responses from Published onward | Restricted ³: from Published, each view requires its matching additional permission | Restricted ¹¹: from Published, each view requires its matching additional permission |
+| Participant | View participants / response status | No | No | No | Full from Published onward | Restricted ³: roster under existing rules; responses from Published onward | Restricted ³: roster and responses from Published onward | Restricted ¹¹: names and responses from Published onward; other people’s email addresses hidden |
 | Participant | Add participant / Invite Guest | Restricted ³ | Restricted ³ | Restricted ³ | No | Restricted ³ | No | No |
 | Participant | Manage meeting role | No | No | No | No | Restricted ³ | No | No |
 | Participant | Remove participant / Revoke Guest | No | No | No | No | Restricted ³ | No | No |
@@ -1013,7 +1013,7 @@ Full = unrestricted  ·  Restricted = conditions apply (see footnotes)  ·  No =
 | Online meeting room | View room participants / In-room chat | No | Restricted ¹⁹ | Restricted ¹⁹ | Restricted ¹⁹ | Restricted ¹⁹ | Restricted ¹⁹ | Restricted ¹¹ |
 | Online meeting room | Moderate | No | No | No | Restricted ¹⁹ | No | No | No |
 
-Additional Meeting permissions supplement the permissions provided by an existing Meeting role. ViewParticipants and ViewResponses are examples, not a closed set. The final permission catalogue and grant matrix remain to be specified. Guest grants follow the same principle subject to the approved Guest exclusions. (BR-055)
+There are no per-participant additional Meeting permissions: what a participant may do follows from the Meeting role alone. A Guest has the rights of a participant except moderating the room, a personal library and sharing documents. (BR-055)
 
 Notes:
 
@@ -1081,6 +1081,9 @@ View the full-size image on Google Drive
 | 4.7 | Approve / Reject Meeting | FE-04 Meeting Management | Allows the assigned Approver to review a Pending Approval Meeting read-only and approve it, or reject it with a mandatory reason that is sent to the Member. |
 | 4.8 | Publish Meeting | FE-04 Meeting Management | Allows the Member to publish an Approved Meeting after checking that an active Chair and Secretary are assigned, which sends invitations to internal participants and external Guests. |
 | 4.9 | Reschedule Meeting | FE-04 Meeting Management | Allows the Member to reschedule a Published Meeting that has not started by changing only its date, time, location and online link, and notify all invitees; the Chair can start the Meeting here. |
+| 4.10 | Cancel Meeting | FE-04 Meeting Management | Allows the Member to cancel a Meeting that has not started, with a required reason; invitees or the Approver are informed according to its status. |
+| 4.11 | Start Meeting | FE-04 Meeting Management | Allows the Chair or the Secretary to start a Published Meeting, confirming first when it is earlier than planned; a Meeting without a Secretary cannot start. |
+| 4.12 | End Meeting | FE-04 Meeting Management | Allows the Chair to end an In Progress Meeting after confirming; the online room closes and the Meeting cannot be reopened. |
 | 5.1 | Meeting Detail – Meeting Content Tab | FE-05 Agenda Management | Allows users related to a meeting to view its agenda items with presenter, duration and planned time, and the Secretary to add, edit, delete and reorder items while the meeting is Draft or Rejected. |
 | 5.2 | Add / Edit Agenda Item Drawer | FE-05 Agenda Management | Allows the Secretary to add or edit an agenda item of a Draft or Rejected meeting with content, presenter, duration, note, a needs-vote flag and documents chosen from the meeting documents. |
 | 5.3 | Meeting Facilitation | FE-05 Agenda Management | Allows the Chair to run an InProgress meeting: set the current agenda item, complete it with actual times recorded, create a vote for the item, join the online room and end the meeting. |
@@ -1100,20 +1103,30 @@ View the full-size image on Google Drive
 | 8.4 | Screen Sharing & Chat | FE-08 Online Meeting Room Management | Allows users connected to the online room to present their screen on the main stage, follow a shared screen and exchange text chat messages that are not kept after the meeting. |
 | 8.5 | In-Room Voting Panel | FE-08 Online Meeting Room Management | Planned: allows eligible voters in the online room to follow the open Vote and cast a ballot without leaving the room. |
 | 8.6 | In-Room Documents Panel | FE-08 Online Meeting Room Management | Built: allows users in the online room to read the meeting documents, current Agenda Item first, opening each document in a new tab so the call continues. |
-| 8.7 | In-Room Attendance Panel | FE-08 Online Meeting Room Management | Allows the Secretary to record Present or Absent for any current internal participant or Guest from a separate Attendance panel without leaving the online room; choosing a value saves it. Other users see the same attendance read-only. No totals are shown. |
+| 8.7 | My Recorded Speech | FE-08 Online Meeting Room Management | Allows each person in the online room to review, play and delete the sentences recorded from his or her own microphone. |
 | 9.1 | Meeting Detail – Recordings Tab | FE-09 Meeting Recording | Allows the Secretary to upload the meeting audio after the meeting has ended, see processing status and uploaded files, review the speaker-attributed transcript and start generating the AI summary. |
 | 9.2 | Upload Audio Dialog | FE-09 Meeting Recording | Allows the Secretary to select or drag an MP3, M4A or WAV audio file of up to 300 MB, confirm recording consent and upload it to an Ended meeting for transcription. |
+| 9.3 | Room Microphone Recorder | FE-09 Meeting Recording | Allows the Secretary of an In-person Meeting to record the room sound in takes from a floating card that stays on every page of the Meeting. |
+| 9.4 | My Voice ID | FE-09 Meeting Recording | Allows every internal user to give or withdraw Voice ID consent and to record, play and delete his or her own voice samples. |
 | 10.1 | Speaker-Attributed Transcript | FE-10 Transcription, Speaker Identification & Meeting Summary | Allows the Secretary to play the uploaded meeting audio, search and correct the transcript text, and assign unknown voices to meeting attendees before generating the meeting summary. |
 | 10.2 | Meeting Summary | FE-10 Transcription, Speaker Identification & Meeting Summary | Allows the current Chair and the current Secretary to read the AI draft of the Meeting content in three sections, ask for it again, correct it and approve it; other participants read it once it is approved. The minutes use only an approved draft. The summary is not published outside the Meeting. |
+| 10.3 | Collect Voice Samples for Attendees | FE-10 Transcription, Speaker Identification & Meeting Summary | Allows a holder of the Voice sample collection permission to record, play and delete voice samples for a person who agreed to Voice ID. |
 | 11.1 | Meeting Detail – Voting Tab | FE-11 Voting Management | Allows the Chair to view all Votes of an InProgress Meeting with their status and turnout, create, edit, delete and open Draft Votes, and close an open Vote; other involved users view read-only. |
 | 11.2 | Create & Open Vote Dialog | FE-11 Voting Management | Allows the Chair to define a Vote for the current Agenda Item of an InProgress Meeting – content, options, ballot type and eligible voter roles – and save it as a draft or open it immediately. |
 | 11.3 | Cast Vote | FE-11 Voting Management | Allows an eligible Chair, Secretary, Participant or verified Guest to view an open Vote of the InProgress Meeting, choose one option and submit a single ballot that cannot be changed afterwards. |
 | 11.4 | Vote Result & Conclusion | FE-11 Voting Management | Allows the Chair to view the tallied result of a closed Vote, including public ballots, and record its conclusion – Passed, NotPassed or Deferred – with a note carried into the minutes. |
-| 12.1 | Minutes Editor | FE-12 Meeting Minutes & Approval | Allows the current Chair and the current Secretary to build the minutes from one fixed template (Decree 30, Mẫu 1.4) and the Meeting records, correct the plain text with a live preview, save it, and download it as a Word or PDF file; the minutes of a Secret Meeting cannot be downloaded. The Secretary sends the minutes to the Chair for approval; the Chair approves and issues them, or returns them with a reason. The minutes carry no digital signature. |
+| 12.1 | Minutes Editor | FE-12 Meeting Minutes & Approval | Allows the current Chair and the current Secretary to build the minutes from one fixed template (Decree 30/2020/ND-CP, Form 1.4) and the Meeting records, correct the plain text with a live preview, save it, and download it as a Word or PDF file; the minutes of a Secret Meeting cannot be downloaded. The Secretary sends the minutes to the Chair for approval; the Chair approves and issues them, or returns them with a reason. The minutes carry no digital signature. |
 | 12.2 | Finalized Meeting Minutes | FE-12 Meeting Minutes & Approval | Allows users involved in the Meeting to view the issued, read-only minutes and download the minutes as a PDF. |
 | 13.1 | Notification Panel | FE-13 Email & In-App Notification | Allows every signed-in internal user to view personal in-app notifications and the unread count, mark one or all as read, and open the meeting a notification refers to. |
 | 13.2 | Meeting Invitation Email | FE-13 Email & In-App Notification | Allows an invited internal participant or external Guest to read the meeting invitation – time, location, Chair and role – and open the response or meeting details from the email. |
-| 15.1 | Reports & Statistics | FE-15 Reporting & Statistics | Allows users to view meeting statistics for a chosen period – meeting count, attendance rate, average duration and average turnaround, monthly and status breakdowns – and export them to Excel. |
+| 14.1 | Reports & Statistics | FE-14 Reporting & Statistics | Allows users to view meeting statistics for a chosen period – meeting count, attendance rate, average duration and average turnaround, monthly and status breakdowns – and export them to Excel. |
+| 15.1 | Calendar Sharing | FE-15 Working Calendar & Meeting Time Search | Allows every internal user to see who can view his or her calendar and, for a Member, whose calendars are shared with him or her, and to act on each share. |
+| 15.2 | Request / Share Calendar Dialog | FE-15 Working Calendar & Meeting Time Search | Allows a Member to request another user’s calendar, or any user to share his or her calendar directly with a Member. |
+| 15.3 | Respond to Calendar Share | FE-15 Working Calendar & Meeting Time Search | Allows the person asked to accept a calendar share, possibly at a lower level or for a shorter period, or to decline it. |
+| 15.4 | Change or Stop Calendar Share | FE-15 Working Calendar & Meeting Time Search | Allows the viewer to request a higher level or a longer period, the owner to change a share at once, and either side to stop it. |
+| 15.5 | Shared Calendar – Week View | FE-15 Working Calendar & Meeting Time Search | Allows a Member to see a weekly grid of busy hours of the people who share their calendars with him or her, without any meeting content. |
+| 15.6 | Find Meeting Time | FE-15 Working Calendar & Meeting Time Search | Allows a Member to find time slots where the chosen people are free, using only calendars shared with him or her. |
+| 15.7 | Create Draft Meeting from Slot | FE-15 Working Calendar & Meeting Time Search | Allows a Member to create a Draft Meeting from a found slot with the chosen people, checked again before saving. |
 
 #### 5.2 External API Inventory
 
@@ -1121,12 +1134,12 @@ View the full-size image on Google Drive
 | --- | --- | --- | --- |
 | 1 | Google Identity Services (Sign in with Google, browser SDK) | Sign-in page → Google Identity Services SDK in the browser → Google ID token returned to the SPA | Google's sign-in popup authenticates the user's Google account in the browser and hands the SPA a signed ID token; no client secret and no server-side OAuth redirect is used (API-01). |
 | 2 | Google ID token verification (OpenID Connect) | SPA → TrustCabinet backend (Google sign-in) → Google's published signing keys | The backend verifies the Google ID token (signature, issuer, audience = configured Client ID, expiry, verified email) and signs in the active account with the same email; no account is created this way (API-02). |
-| 3 | Email delivery – Resend email API, or an SMTP server | Email queue worker, password reset and guest verification → Resend Email or SMTP server | Sends the system's emails: meeting invitations, updates and cancellations with an .ics calendar file, meeting reminders, the issued-minutes notice and guest presenter notices from the email queue with retries; password-reset links and guest verification codes are sent at once (API-03). |
+| 3 | Email delivery – Resend email API | Email queue worker, password reset and guest verification → Resend Email | Sends the system's emails: meeting invitations, updates and cancellations with an .ics calendar file, meeting reminders, the issued-minutes notice and guest presenter notices from the email queue with retries; password-reset links and guest verification codes are sent at once (API-03). |
 | 4 | Email delivery webhook (Resend) | Resend → TrustCabinet backend (delivery events) | Inbound, signed callback that reports what happened to an accepted email (delivered, delayed, bounced, marked as spam, failed, suppressed) and records it on the queued email (API-09). |
 | 5 | LiveKit server – RoomService API and access tokens | TrustCabinet backend (room join, chair controls, room reconciliation) → LiveKit server; browser → LiveKit real-time connection | Self-hosted LiveKit SFU for the online meeting room: the backend issues short-lived LiveKit access tokens after its permission checks and calls RoomService (list rooms and participants, mute a track, remove a participant, close a room); media and signalling flow between the browser and LiveKit (API-04). |
 | 6 | LiveKit webhook | LiveKit server → TrustCabinet backend (room events) | Inbound, signed callback on participant joined, left or connection aborted, room finished and track published, used to record call sessions and attendance and to enforce the one-screen-share rule (API-05). |
 | 7 | Speech worker – speech recognition and Voice ID (in-house) | Transcription queue, live sentence recording and Voice ID enrolment → TrustCabinet backend → speech worker over the private network (a backup worker when the main one cannot be reached) | The team's own speech service: turns a recording or a sentence into timed text with speaker separation, reports the progress of a long run, and turns a voice sample into a voice vector. Audio and voice data never leave the system (API-08). |
-| 8 | AI drafting service – language model (chat completions) | Summary queue worker → TrustCabinet backend → the team's own language model server, or for a Normal Meeting the outside AI API the System Admin chose | Writes the three sections of the AI draft of the Meeting content from the transcript, the agenda and the vote results, for the Chair and the Secretary to review (UC-58). Internal, Secret and Top Secret Meetings always use the team's own server; the model used is stored with every draft (API-06). |
+| 8 | AI drafting service – language model (chat completions) | Summary queue worker → TrustCabinet backend → the team's own language model server, or for a Normal Meeting the outside AI API the System Admin chose | Writes the three sections of the AI draft of the Meeting content from the transcript, the agenda and the vote results, for the Chair and the Secretary to review (UC-58). Internal and Secret Meetings always use the team's own server; the model used is stored with every draft (API-06). |
 | 9 | File Storage – SeaweedFS, S3-compatible object storage | Document upload, view and download → TrustCabinet backend → File Storage (SeaweedFS) | Stores the bytes of uploaded personal and meeting documents in a private bucket; the backend reads them back after checking the permission of the caller, and a periodic clean-up removes files no document uses any more (API-07). |
 
 #### 5.3 Background Job Inventory
@@ -1134,7 +1147,7 @@ View the full-size image on Google Drive
 | # | Job Name | Group | Description |
 | --- | --- | --- | --- |
 | 1 | Process notifications (JOB-01) | Scheduled worker | Every 5 seconds: creates the “meeting starting soon” reminders and their emails, and pushes new in-app notifications to connected users. |
-| 2 | Deliver queued emails (JOB-02) | Queue worker | When email sending is enabled (Resend or SMTP): queues the invitation emails of published Meetings and sends queued emails one at a time, retrying failures; polls every 5 seconds when the queue is empty. |
+| 2 | Deliver queued emails (JOB-02) | Queue worker | When email sending through Resend is enabled: queues the invitation emails of published Meetings and sends queued emails one at a time, retrying failures; polls every 5 seconds when the queue is empty. |
 | 3 | Transcribe recordings (JOB-03) | Queue worker | Every 3 seconds: transcribes one waiting recording with the speech worker, suggests speaker names and keeps the Secretary's manual corrections. |
 | 4 | Draft meeting summaries (JOB-04) | Queue worker | Every 3 seconds: writes one requested AI draft of the Meeting content. |
 | 5 | Build combined recordings (JOB-05) | Scheduled worker | Every 30 seconds: builds or rebuilds the combined recording of an ended hybrid or online Meeting. |
@@ -1154,8 +1167,8 @@ View the full-size image on Google Drive
 | --- | --- | --- | --- |
 | Description | As an internal system user, I want to sign in using my email and password so that I can securely access the system through my internal account. |  |  |
 | Preconditions | ● PRE-1: The user has an existing internal account; any role may sign in, including a role with no capabilities. (BR-002)<br>● PRE-2: The user's account is active.<br>● PRE-3: The user is currently on the system login page. |  |  |
-| Postconditions | ● POST-1: The user is authenticated.<br>● POST-2: The system identifies the corresponding internal user.<br>● POST-3: The user is signed in and lands on the calendar [Lịch làm việc]. A page opened from a link while signed out opens instead after sign-in, and a session ended by the system returns to the page the user was on; after a deliberate sign-out the next sign-in lands on the calendar. When the account cannot open the requested page, the user lands on the calendar too.<br>● POST-4: The sign-in, successful or failed for an existing account, is recorded in the audit log. (BR-009) |  |  |
-| Normal Flow | Sign in with Email and Password<br>1. The user enters their email and password on the login page. An empty email, a malformed email or an empty password is pointed out beside its field before the sign-in is sent.<br>2. The user clicks “Sign In”.<br>3. The system validates the provided credentials.<br>4. The system records the successful sign-in, and the method used, in the audit log. (BR-009)<br>5. The system signs the user in and opens the landing page, the calendar [Lịch làm việc], unless the sign-in continued a page opened while signed out. |  |  |
+| Postconditions | ● POST-1: The user is authenticated.<br>● POST-2: The system identifies the corresponding internal user.<br>● POST-3: The user is signed in and lands on the calendar. A page opened from a link while signed out opens instead after sign-in, and a session ended by the system returns to the page the user was on; after a deliberate sign-out the next sign-in lands on the calendar. When the account cannot open the requested page, the user lands on the calendar too.<br>● POST-4: The sign-in, successful or failed for an existing account, is recorded in the audit log. (BR-009) |  |  |
+| Normal Flow | Sign in with Email and Password<br>1. The user enters their email and password on the login page. An empty email, a malformed email or an empty password is pointed out beside its field before the sign-in is sent.<br>2. The user clicks “Sign In”.<br>3. The system validates the provided credentials.<br>4. The system records the successful sign-in, and the method used, in the audit log. (BR-009)<br>5. The system signs the user in and opens the landing page, the calendar, unless the sign-in continued a page opened while signed out. |  |  |
 | Alternative Flows | N/A |  |  |
 | Exception Flows | EX-1 – System cannot authenticate the user<br>1. The entered email or password is invalid. (BR-004)<br>2. If the email belongs to an existing account, the system records the failed sign-in against that account as the actor, with the reason and without the password; an email that matches no account is not recorded. (BR-009)<br>3. The system displays MSG01 – “Invalid email or password.”<br>4. The flow resumes at Step 1 of the Normal Flow.<br>EX-2 – The internal account has been deactivated<br>1. The corresponding internal account is inactive or has been deactivated. (BR-001)<br>2. The system records the failed sign-in against that account as the actor, because the account is deactivated. (BR-009)<br>3. The system displays MSG02 – “Your account is currently unavailable. Please contact your administrator for assistance.”<br>4. The use case ends. |  |  |
 
@@ -1165,8 +1178,8 @@ View the full-size image on Google Drive
 | --- | --- | --- | --- |
 | Description | As an internal system user, I want to sign in using my Google account so that I can securely and quickly access the system through my existing internal account. |  |  |
 | Preconditions | ● PRE-1: The user has an existing internal account; any role may sign in, including a role with no capabilities. (BR-002)<br>● PRE-2: The user's account is active.<br>● PRE-3: The user is currently on the system login page. |  |  |
-| Postconditions | ● POST-1: User is authenticated.<br>● POST-2: System identifies the corresponding internal user.<br>● POST-3: The user lands on the calendar [Lịch làm việc], on the same terms as UC-01 POST-3.<br>● POST-4: The sign-in with Google, successful or failed for an existing account, is recorded in the audit log. (BR-009) |  |  |
-| Normal Flow | Sign in with Google<br>1. User selects “Continue with Google” on the login page.<br>2. User signs in using their Google account.<br>3. System verifies that the Google account is associated with an authorized internal user.<br>4. The system records the successful sign-in with Google in the audit log. (BR-009)<br>5. System signs the user in, grants access according to the user's assigned role and opens the calendar [Lịch làm việc], unless the sign-in continued a page opened while signed out. |  |  |
+| Postconditions | ● POST-1: User is authenticated.<br>● POST-2: System identifies the corresponding internal user.<br>● POST-3: The user lands on the calendar, on the same terms as UC-01 POST-3.<br>● POST-4: The sign-in with Google, successful or failed for an existing account, is recorded in the audit log. (BR-009) |  |  |
+| Normal Flow | Sign in with Google<br>1. User selects “Continue with Google” on the login page.<br>2. User signs in using their Google account.<br>3. System verifies that the Google account is associated with an authorized internal user.<br>4. The system records the successful sign-in with Google in the audit log. (BR-009)<br>5. System signs the user in, grants access according to the user's assigned role and opens the calendar, unless the sign-in continued a page opened while signed out. |  |  |
 | Alternative Flows | N/A |  |  |
 | Exception Flows | EX-1 – User can’t authenticate with Google<br>1. The user fails to authenticate with Google or cancels the Google sign-in process. (BR-002)<br>2. The system displays MSG03 – “Google sign-in was unsuccessful.”<br>3. The use case ends.<br>EX-2 – System can’t verify the Google account<br>1. The system cannot verify the identity information returned by Google. (BR-003)<br>2. The system displays MSG03 – “Google sign-in was unsuccessful.”<br>3. The use case ends.<br>EX-3 – Google account is not linked to an internal account<br>1. The authenticated Google account is not associated with any existing internal account. (BR-003)<br>2. The system displays MSG05 – “This Google account has not been granted access to the system.”<br>3. The use case ends.<br>EX-4 – The internal account has been deactivated<br>1. The internal account associated with the Google account is inactive or has been deactivated. (BR-001)<br>2. The system records the failed sign-in against that account as the actor, because the account is deactivated. (BR-009)<br>3. The system displays MSG02 – “Your account is currently unavailable. Please contact your administrator for assistance.”<br>4. The use case ends. |  |  |
 
@@ -1330,7 +1343,7 @@ This single end-to-end sequence covers code request, invited-email verification,
 | Description | Allows the System Admin to review the recorded business and security events — who did what, to which object, when and from which access address — for accountability and investigation. The audit log is read-only. (BR-012) |  |  |
 | Preconditions | ● PRE-1: The System Admin is signed in.<br>● PRE-2: The System Admin's role holds the User administration permission. (BR-012) |  |  |
 | Postconditions | ● POST-1: The audit entries matching the chosen period and filters are displayed, newest first.<br>● POST-2: No audit entry is changed or deleted. (BR-012)<br>● POST-3: The System Admin gains no access to the Meetings, documents or minutes the entries are about, even though the entries name their objects. |  |  |
-| Normal Flow | View Audit Log<br>1. The System Admin opens Nhật ký hệ thống [Audit Log] from the Administration menu.<br>2. The system checks that the System Admin's role holds the User administration permission. (BR-012)<br>3. The system retrieves the audit entries, newest first, one page at a time.<br>4. The system displays, for each entry, the time, the actor (a user account, a Guest or the system), the event, the object and the access address. The object is shown by its name, or only as “Họp Mật” for anything of a Secret meeting.<br>5. The System Admin browses the pages; the chosen period and filters are kept across pages. |  |  |
+| Normal Flow | View Audit Log<br>1. The System Admin opens Audit Log from the Administration menu.<br>2. The system checks that the System Admin's role holds the User administration permission. (BR-012)<br>3. The system retrieves the audit entries, newest first, one page at a time.<br>4. The system displays, for each entry, the time, the actor (a user account, a Guest or the system), the event, the object and the access address. The object is shown by its name, or only as “Secret meeting” for anything of a Secret meeting.<br>5. The System Admin browses the pages; the chosen period and filters are kept across pages. |  |  |
 | Alternative Flows | AF-1 – Filter the audit log<br>1. At Step 4 of the Normal Flow, the System Admin chooses a period, an actor (a user account, Guests or the system), an event type, or enters a keyword; the keyword matches the object id, the object name — except the name of anything of a Secret meeting — and the recorded details, ignoring case and Vietnamese marks.<br>2. The system retrieves the entries that match all the chosen criteria.<br>3. The flow resumes at Step 4 of the Normal Flow.<br>AF-2 – View the details of an entry<br>1. At Step 4 of the Normal Flow, the System Admin selects an entry.<br>2. The system displays the details recorded with that entry, read-only; the fields differ between event types.<br>3. The flow resumes at Step 5 of the Normal Flow.<br>AF-3 – No entry matches<br>1. At Step 3 of the Normal Flow, no audit entry matches the period and filters.<br>2. The system displays an empty list and a no-results message.<br>3. The System Admin may change the period or the filters; the flow resumes at Step 1 of AF-1. |  |  |
 | Exception Flows | EX-1 – The System Admin's role does not hold the User administration permission<br>1. At Step 2 of the Normal Flow, the System Admin's role does not hold the User administration permission, or no longer holds it.<br>2. The system returns no audit entry and the Audit Log page is not shown.<br>3. The use case ends.<br>EX-2 – The chosen period or filters are not valid<br>1. At Step 3 of the Normal Flow, the start of the period is after its end, or a filter value is not valid.<br>2. No entry is retrieved. The system displays MSG469 – “The audit log filter is invalid. Check the period and the selected values.”<br>3. The flow resumes at Step 1 of AF-1. |  |  |
 
@@ -1545,7 +1558,7 @@ This single end-to-end sequence covers code request, invited-email verification,
 | Description | Allows the current Secretary to type running notes during the sitting, each attached to the agenda item under discussion or to the Meeting as a whole, so that the minutes are written from what was noted at the time rather than from memory. (BR-134) |  |  |
 | Preconditions | ● PRE-1: The actor is signed in and is the current Secretary of the Meeting. (BR-134)<br>● PRE-2: The Meeting is InProgress, or it has Ended and no minutes draft has been built yet. (BR-134) |  |  |
 | Postconditions | ● POST-1: The note of the chosen agenda item, or of the Meeting as a whole, holds the text the actor typed, with the time it was saved.<br>● POST-2: Text that could not reach the system yet stays on the actor's device until it is sent; for a Secret Meeting, only until the page is closed.<br>● POST-3: No agenda item, conclusion, minutes or other Meeting record is changed. |  |  |
-| Normal Flow | Take Meeting Notes<br>1. During the sitting, the actor opens the Ghi chú panel — on the Meeting page or inside the online room, without leaving the call.<br>2. The system loads the actor's notes for the Meeting and opens the note of the agenda item that is InProgress.<br>3. The actor types. A line may start with a mark — Ý kiến, Kết luận or Nhiệm vụ. When the minutes draft is later built without an AI draft (UC-70), each item's note goes under that item in section II, lines marked Kết luận go to section III and lines marked Nhiệm vụ go to “Nhiệm vụ, sản phẩm và thời hạn”. (BR-133)<br>4. Shortly after the actor stops typing, the system checks that the actor is still the current Secretary, that the Meeting still accepts notes, that the item still belongs to the Meeting, that the text is within 20,000 characters and that the note was not saved elsewhere since the actor read it. (BR-134)<br>5. The system saves the note and shows the time it was saved: MSG415 – “Note saved.” |  |  |
+| Normal Flow | Take Meeting Notes<br>1. During the sitting, the actor opens the Notes panel — on the Meeting page or inside the online room, without leaving the call.<br>2. The system loads the actor's notes for the Meeting and opens the note of the agenda item that is InProgress.<br>3. The actor types. A line may start with a mark — Opinion, Conclusion or Task. When the minutes draft is later built without an AI draft (UC-70), each item's note goes under that item in section II, lines marked Conclusion go to section III and lines marked Task go to “Tasks, deliverables and deadlines”. (BR-133)<br>4. Shortly after the actor stops typing, the system checks that the actor is still the current Secretary, that the Meeting still accepts notes, that the item still belongs to the Meeting, that the text is within 20,000 characters and that the note was not saved elsewhere since the actor read it. (BR-134)<br>5. The system saves the note and shows the time it was saved: MSG415 – “Note saved.” |  |  |
 | Alternative Flows | AF-1 – Note on another item or on the Meeting as a whole<br>1. At Step 2 or Step 3, the actor selects another agenda item, or “Chung” [General].<br>2. The system opens the actor's note of that choice.<br>3. The flow resumes at Step 3 of the Normal Flow.<br>AF-2 – The Chair moves to another item<br>1. After Step 2, the Chair sets another agenda item as current (UC-24).<br>2. The system keeps the text already typed with the earlier item and opens the note of the new current item for what is typed next.<br>3. The flow resumes at Step 3 of the Normal Flow.<br>AF-3 – The connection is lost<br>1. At Step 4, the text cannot reach the system.<br>2. The system keeps the text on the actor's device and displays MSG423 – “You are offline. The note is kept on this device and will be saved when the connection returns.”<br>3. When the connection returns, the flow resumes at Step 4 of the Normal Flow.<br>AF-4 – The Chair reads the notes<br>1. At Step 1, the actor is the current Chair.<br>2. The system shows the current Secretary's notes read-only. (BR-134)<br>3. The use case ends. |  |  |
 | Exception Flows | EX-1 – Actor is not the current secretary<br>1. At Step 4, the actor is no longer the current Secretary. (BR-134)<br>2. Nothing is saved; the typed text stays in the panel so it can be copied. The system displays MSG416 – “Only the Secretary may write meeting notes.”<br>3. The use case ends.<br>EX-2 – Meeting no longer accepts notes<br>1. At Step 4, the Meeting is not InProgress, or it has Ended and its minutes draft has been built. (BR-134)<br>2. Nothing is saved; the typed text stays in the panel. The system displays MSG417 – “Notes can be written only while the meeting is in progress, or after it has ended until the minutes draft is created.”<br>3. The use case ends.<br>EX-3 – Note was changed in another window<br>1. At Step 4, the note was saved from another window or device after the actor read it.<br>2. Nothing is overwritten. The system shows the latest text next to the actor's unsaved text and displays MSG418 – “This note was changed in another window. Reload to see the latest version.”<br>3. The flow resumes at Step 3 of the Normal Flow. |  |  |
 
@@ -1645,7 +1658,7 @@ Delivery scope: UC-33 attendance is delivered separately from the roster, invita
 
 ### 7. FE-07 – Personal Document Library & Meeting Document Management
 
-15/10/2026: Sixteen detailed Document use cases. UC-36b links an existing Meeting document to an Agenda Item; UC-36d removes only one Item link. Meeting-document reading follows Meeting viewing access. Document additions, removals and Item-link changes stop when the Meeting ends; Agenda Item status does not lock document links. PO follow-up: Meeting documents and comments are read-only after the Meeting ends. Deleting an Agenda Item keeps its documents in the Meeting. Readding a removed document does not restore previous comments. Personal-library quotas remain undecided.
+Sixteen detailed Document use cases. UC-36b links an existing Meeting document to an Agenda Item; UC-36d removes only one Item link. Meeting-document reading follows Meeting viewing access. Document additions, removals and Item-link changes stop when the Meeting ends; Agenda Item status does not lock document links. Meeting documents and comments are read-only after the Meeting ends. Deleting an Agenda Item keeps its documents in the Meeting. Readding a removed document does not restore previous comments. There is no per-user quota; personal documents count toward the system-wide 250 GB storage limit.
 
 #### 7.1 UC-35 – View Meeting Documents
 
@@ -1679,7 +1692,7 @@ Delivery scope: UC-33 attendance is delivered separately from the roster, invita
 | --- | --- | --- | --- |
 | Description | Allows the current Chair or Secretary to add one or more documents from their own personal library or computer to a Meeting in one submission; files from the computer are added one at a time. Linking documents to Agenda Items is handled separately in UC-36b. (BR-070, BR-071, BR-072, BR-073) |  |  |
 | Preconditions | ● PRE-1: The actor is signed in and is the current Chair or Secretary of the selected Meeting.<br>● PRE-2: The actor can currently view the Meeting. (BR-070, BR-071)<br>● PRE-3: The Meeting has not ended. (BR-070, BR-071) |  |  |
-| Postconditions | ● POST-1: All submitted documents appear in the Meeting as general documents, with their names copied at addition and the actor and addition time recorded. (BR-011)<br>● POST-2: Selected personal-library documents stay unchanged. Files uploaded from the computer are also available in the uploader's personal library. (BR-072, BR-073)<br>● POST-3: A removed document added again is a new addition without its previous comments. (BR-074, BR-075, BR-076)<br>● POST-4: Each file uploaded from the computer is added as a whole or not at all, and a file that cannot be added does not stop the other files. Documents chosen from the personal library are added together or none are. Existing documents and Meeting status remain unchanged. |  |  |
+| Postconditions | ● POST-1: All submitted documents appear in the Meeting as general documents, with their names copied at addition and the actor and addition time recorded.<br>● POST-2: Selected personal-library documents stay unchanged. Files uploaded from the computer are also available in the uploader's personal library. (BR-072, BR-073)<br>● POST-3: A removed document added again is a new addition without its previous comments. (BR-074, BR-075, BR-076)<br>● POST-4: Each file uploaded from the computer is added as a whole or not at all, and a file that cannot be added does not stop the other files. Documents chosen from the personal library are added together or none are. Existing documents and Meeting status remain unchanged. |  |  |
 | Normal Flow | Add Documents from Personal Library<br>1. The Chair or Secretary opens the Meeting documents and chooses Add Documents.<br>2. The system offers selection from the actor's personal library or upload from the computer.<br>3. The actor selects one or more documents from their own library and submits them.<br>4. The system checks the current Chair or Secretary, Meeting access and status, and that every selected document belongs to the actor, is available and is not already attached to this Meeting. (BR-070, BR-071, BR-072, BR-073)<br>5. The system adds all selected documents to the Meeting under their current names and records who added them and when; either all are added or none is. Personal-library documents stay unchanged; a document added again does not recover old comments. (BR-011, BR-074, BR-075, BR-076)<br>6. The system shows the number added and displays MSG161 – “Documents added to the Meeting successfully.”. |  |  |
 | Alternative Flows | AF-1 – Upload files from the computer<br>1. At Step 3, the actor selects one or more files from the computer: at most 10 files totalling at most 100 MB at once. Each file is added on its own.<br>2. Before reading any file, the system performs the authority, Meeting access and status checks from Step 4 of the Normal Flow. An actor who is not the current Chair or Secretary receives MSG162 – “You no longer have permission to add documents to this Meeting.” whatever the files are. (BR-070, BR-071)<br>3. The system checks that every file is no larger than 10 MB and is a valid PDF or DOCX whose content matches its extension, and identifies any file that fails. (BR-069)<br>4. The system checks that the file fits within the 250 GB storage limit of the whole system, then adds it to the Meeting and to the uploader's personal library, recording the number of pages of a PDF. The file goes into a folder named after the Meeting title and planned start date; an existing folder is reused and a deleted one is created again. (BR-072, BR-073)<br>5. A file that cannot be added is added to neither place, and the other files continue; a file that fails the checks of Step 3 follows EX-2. Otherwise, the flow resumes at Step 6 of the Normal Flow. |  |  |
 | Exception Flows | EX-1 – Actor is no longer the Chair or Secretary<br>1. At Step 4, or at Step 2 of AF-1, the actor can still view the Meeting but is no longer its current Chair or Secretary.<br>2. None of the submitted documents are added. The system displays MSG162 – “You no longer have permission to add documents to this Meeting.”<br>3. The use case ends.<br>EX-2 – Selection is empty, unavailable or already attached, or a file is invalid<br>1. At Step 4, no document was selected, or any selected document is unavailable or does not belong to the actor. Or a selected document is already in the Meeting. Or, in AF-1, a file is missing or invalid.<br>2. None are added. The system identifies the unavailable selections within the actor's library and displays MSG249 – “Select one or more available documents from your personal library.” When a selected document is already in the Meeting, the system displays MSG165 – “One or more selected documents are already attached to the Meeting.” In AF-1, when a file is not a valid PDF or DOCX or is larger than 10 MB, the system displays MSG164 – “Select valid PDF or DOCX files, each no larger than 10 MB.”.<br>3. The actor revises the selection. The flow resumes at Step 3 of the Normal Flow.<br>EX-3 – Meeting no longer accepts documents<br>1. At Step 4, or at Step 2 of AF-1, the Meeting has ended, including while the actor was selecting or uploading files. (BR-070, BR-071)<br>2. None of the submitted documents are added. The system displays MSG172 – “Documents cannot be added after the Meeting has ended.”<br>3. The use case ends. |  |  |
@@ -2262,7 +2275,7 @@ Delivery scope: UC-33 attendance is delivered separately from the roster, invita
 
 | Primary Actors | Chair, Secretary | Secondary Actors | AI drafting service — the team's own server, or an outside AI service for a Normal meeting when the administrator has chosen one |
 | --- | --- | --- | --- |
-| Description | Allows the current Chair or the current Secretary to ask the system to write a first draft of the meeting's content in three sections — I. Mục tiêu và phạm vi cuộc họp, II. Nội dung thảo luận và đánh giá, III. Kết luận và phân công thực hiện — from the meeting's own record. The draft is written by AI and is a proposal only: a person reviews it before it is used. |  |  |
+| Description | Allows the current Chair or the current Secretary to ask the system to write a first draft of the meeting's content in three sections — I. Objectives and scope of the meeting, II. Discussion and assessment, III. Conclusions and assignments — from the meeting's own record. The draft is written by AI and is a proposal only: a person reviews it before it is used. |  |  |
 | Preconditions | ● PRE-1: The actor is signed in and is the current Chair or the current Secretary of the Meeting. (BR-126, BR-127)<br>● PRE-2: The Meeting has Ended. (BR-126, BR-127)<br>● PRE-3: The drafting service is available to the system.<br>● PRE-4: No draft of this Meeting is waiting to be written or being written. |  |  |
 | Postconditions | ● POST-1: The request is accepted; any earlier draft stays readable until the new one is ready.<br>● POST-2: A draft of the three sections exists, marked as written by AI, with the time the AI read the transcript and the person who asked for it.<br>● POST-3: The new draft replaces the earlier one whole; its corrections and its review are cleared.<br>● POST-4: Attendance, votes and every other Meeting record are unchanged; the vote results in section III are copied from the closed votes. (BR-128) |  |  |
 | Normal Flow | Generate Meeting Summary<br>1. The Chair or the Secretary opens the draft of the Meeting's minutes. (BR-126, BR-127)<br>2. The system checks the current assignment and the Meeting status and shows what a draft would be based on: sentences recorded, voices not yet named, transcripts still running or failed, agenda items and how many were timed, and closed votes. (BR-126, BR-127, BR-128)<br>3. The actor asks for a draft, or for a new one when a draft already exists.<br>4. The system accepts the request, keeps the earlier draft readable and displays MSG384 – “The request was sent. The draft appears when the AI has written it.”<br>5. The system writes the three sections from the transcript, the agenda items and the conclusions the Chair recorded; section II follows the agenda items, and the result of each closed vote is copied as recorded, not written by AI. (BR-128)<br>6. The system marks the draft as written by AI, clears any earlier review and shows the draft as soon as it is ready. |  |  |
@@ -2276,7 +2289,7 @@ Delivery scope: UC-33 attendance is delivered separately from the roster, invita
 | Description | Allows a person who may read the Meeting to read the AI draft. Until the draft is reviewed only the current Chair and the current Secretary see it; after review the other people who may read the Meeting see it as well, without any control to change it. (BR-126, BR-127) |  |  |
 | Preconditions | ● PRE-1: The internal user is signed in and may read the Meeting.<br>● PRE-2: For anyone other than the current Chair or the current Secretary, the draft has been reviewed. (BR-126, BR-127) |  |  |
 | Postconditions | ● POST-1: The draft, its state and where each part came from are displayed.<br>● POST-2: No draft, review or Meeting record is changed. |  |  |
-| Normal Flow | View Meeting Summary<br>1. The actor opens the minutes of the Meeting; they open only after the Meeting has Ended.<br>2. The system checks that the actor may read the Meeting and whether the actor is its current Chair or current Secretary. (BR-126, BR-127)<br>3. The system displays the draft labelled “Nội dung do AI tạo — cần rà soát”, its three sections I–III, the time the AI read the transcript and the person who asked for it.<br>4. The system shows the review state — who reviewed it and when, and who last corrected it and when — and, for each part of section II, the stretch of the Meeting the part was written from, so the reader can check it against the recording.<br>5. While a draft is waiting or being written, the system shows that state; the earlier draft stays readable.<br>6. When voices are still unnamed, the current Chair or Secretary may name them from the draft, under the same rules as UC-55b. |  |  |
+| Normal Flow | View Meeting Summary<br>1. The actor opens the minutes of the Meeting; they open only after the Meeting has Ended.<br>2. The system checks that the actor may read the Meeting and whether the actor is its current Chair or current Secretary. (BR-126, BR-127)<br>3. The system displays the draft labelled “AI-written — needs review”, its three sections I–III, the time the AI read the transcript and the person who asked for it.<br>4. The system shows the review state — who reviewed it and when, and who last corrected it and when — and, for each part of section II, the stretch of the Meeting the part was written from, so the reader can check it against the recording.<br>5. While a draft is waiting or being written, the system shows that state; the earlier draft stays readable.<br>6. When voices are still unnamed, the current Chair or Secretary may name them from the draft, under the same rules as UC-55b. |  |  |
 | Alternative Flows | AF-1 – No draft yet<br>1. At Step 3, no draft exists, or none has finished being written.<br>2. The system shows an empty state; for the current Chair and Secretary it also shows what a draft would be based on (BR-128), and everyone else sees nothing about the draft.<br>3. The use case ends.<br>AF-2 – The last draft failed<br>1. At Step 3, the last attempt was marked as failed.<br>2. The system shows the reason. The current Chair or Secretary may ask again (UC-58); the flow resumes at Step 3 of the Normal Flow.<br>AF-3 – Read a reviewed draft as another participant<br>1. At Step 2, the actor is not the current Chair or Secretary and the draft has been reviewed.<br>2. The system applies Steps 3–4 and offers no correction or review control. (BR-126, BR-127)<br>3. The use case ends.<br>AF-4 – The draft is out of date<br>1. At Step 3, the transcript changed after the AI read it — a sentence was added, corrected, excluded or deleted, a voice was named or lost its name because consent was withdrawn (BR-117), a sentence moved to another voice, or the recording was deleted.<br>2. The system marks the draft as out of date and offers to write it again (UC-58); the draft itself is unchanged.<br>3. The use case ends. |  |  |
 | Exception Flows | EX-1 – The Meeting is not accessible<br>1. At Step 2, the Meeting is unavailable or the actor may no longer read it.<br>2. The system answers as if the Meeting did not exist and discloses nothing about its draft.<br>3. The use case ends. |  |  |
 
@@ -2536,116 +2549,116 @@ Scope: the current Chair or the current Secretary may prepare Vote drafts while 
 | Alternative Flows | AF-1 – Notification is already read<br>1. At Step 3 of the Normal Flow, the notification is already read, so its status and the unread count remain unchanged.<br>2. The flow resumes at Step 4 of the Normal Flow. |  |  |
 | Exception Flows | N/A |  |  |
 
-### 15. FE-15 – Reporting & Statistics
+### 14. FE-14 – Reporting & Statistics
 
-#### 15.1 UC-79 – View & Export Reports
+#### 14.1 UC-79 – View & Export Reports
 
-##### 15.1.1 UC-79a – View Reports & Statistics
+##### 14.1.1 UC-79a – View Reports & Statistics
 
 | Primary Actors | System Admin, Member, Approver, Chair, Secretary, Participant | Secondary Actors | N/A |
 | --- | --- | --- | --- |
 | Description | Allows a signed-in internal user to see aggregate figures about the meetings they may read over a chosen period — meetings per month, by status and by sensitivity, the average attendance rate, the average meeting duration in minutes (BR-151) and the average time from the end of a meeting to the issue of its minutes — so that meeting activity can be followed without opening each meeting. The page then lets the actor query the main tables (meetings, participants, votes, documents, minutes, recordings) by choosing the table, the grouping, the top groups, the filters and the ordering, with a Total row. (BR-149, BR-150, BR-152, BR-151, BR-153) |  |  |
 | Preconditions | ● PRE-1: The actor is signed in with an internal account. (BR-149, BR-150) |  |  |
 | Postconditions | ● POST-1: The actor sees the figures of the chosen period, computed only from the Meetings the actor may read. (BR-149, BR-150)<br>● POST-2: The manager figures show no meeting title, participant or content. In the queried table, a row grouped by person or by meeting shows only the person’s name or the meeting code and title — only for meetings the actor may read — and never the meeting content; a Guest appears by name only, without email. (BR-152)<br>● POST-3: Nothing in the system is changed. |  |  |
-| Normal Flow | View Reports & Statistics<br>1. The actor opens the Báo cáo [Reports] page.<br>2. The system selects the 12 months ending with the current month and the default table with its default grouping.<br>3. The system checks the period and the actor's choice of table, grouping, ordering, number of groups and filters.<br>4. The system counts the Meetings the actor may read whose planned start falls within the period and shows them per month, by status and by sensitivity, with the average attendance rate, the average meeting duration in minutes and the average time from the end of a Meeting to the issue of its minutes, each with the number of Meetings it is based on. (BR-149, BR-150, BR-151)<br>5. The system shows the chosen table with only what the actor may see, grouped, ordered and limited to the chosen top groups, with a Total row. (BR-151, BR-153) |  |  |
+| Normal Flow | View Reports & Statistics<br>1. The actor opens the Reports page.<br>2. The system selects the 12 months ending with the current month and the default table with its default grouping.<br>3. The system checks the period and the actor's choice of table, grouping, ordering, number of groups and filters.<br>4. The system counts the Meetings the actor may read whose planned start falls within the period and shows them per month, by status and by sensitivity, with the average attendance rate, the average meeting duration in minutes and the average time from the end of a Meeting to the issue of its minutes, each with the number of Meetings it is based on. (BR-149, BR-150, BR-151)<br>5. The system shows the chosen table with only what the actor may see, grouped, ordered and limited to the chosen top groups, with a Total row. (BR-151, BR-153) |  |  |
 | Alternative Flows | AF-1 – Choose another period<br>1. At Step 2 or after Step 5, the actor chooses a start month and an end month.<br>2. The flow resumes at Step 3 of the Normal Flow with that period.<br>AF-2 – No Meeting in the period<br>1. At Step 4, the actor may read no Meeting whose planned start falls within the period.<br>2. The system shows that there are no meetings and displays MSG466 – “There are no meetings you can view in this period.” No all-zero tables are shown.<br>3. The use case ends.<br>AF-3 – An average has no data<br>1. At Step 4, no Ended Meeting in the period had attendance taken, none has issued minutes, or none has both an actual start and an actual end.<br>2. The system shows that average as having no data instead of a number. (BR-151)<br>3. The use case ends.<br>AF-4 – Choose another table, grouping or filter<br>1. At Step 2 or after Step 5, the actor chooses another table, grouping, ordering, number of groups or filter.<br>2. The flow resumes at Step 3 of the Normal Flow with that choice. |  |  |
 | Exception Flows | EX-1 – The period is not valid<br>1. At Step 3, the start month is after the end month, or the period is longer than 24 months.<br>2. No figure is computed. The system displays MSG463 – “The report period is invalid. Choose up to 24 months, with the start month not after the end month.”<br>3. The flow resumes at Step 1 of AF-1.<br>EX-2 – The report choice is not valid<br>1. At Step 3, the chosen table, grouping, ordering, number of groups or filter is not available for that table.<br>2. Nothing is read. The system displays MSG484 – “The report parameters are invalid. Choose the data, grouping or filter again.”<br>3. The use case ends. |  |  |
 
-##### 15.1.2 UC-79b – Export Report
+##### 14.1.2 UC-79b – Export Report
 
 | Primary Actors | System Admin, Member, Approver, Chair, Secretary, Participant | Secondary Actors | N/A |
 | --- | --- | --- | --- |
 | Description | Allows the actor to download the table shown on the page for the chosen period as an Excel file, to keep it or to work on it outside the system. The file is named bao-cao-<table>_<from>_<to>.xlsx. (BR-010) |  |  |
-| Preconditions | ● PRE-1: The actor is signed in with an internal account. (BR-149, BR-150)<br>● PRE-2: The actor is on the Báo cáo page with a period and a table chosen. (UC-79a) |  |  |
+| Preconditions | ● PRE-1: The actor is signed in with an internal account. (BR-149, BR-150)<br>● PRE-2: The actor is on the Reports page with a period and a table chosen. (UC-79a) |  |  |
 | Postconditions | ● POST-1: The actor receives an Excel file holding the same table as the page for that period and that query, with its Total row, computed at the time of export. (BR-010)<br>● POST-2: The file holds no meeting content; rows grouped by person or by meeting follow the same rule as UC-79a POST-2. (BR-152)<br>● POST-3: The export is recorded with the actor, the table, the grouping, the filters, the period and the time. (BR-010) |  |  |
-| Normal Flow | Export Report<br>1. The actor selects Xuất Excel [Export to Excel].<br>2. The system checks the period and the choices of the table shown.<br>3. The system builds the Excel file of that table with its Total row and records the export. (BR-152, BR-010)<br>4. The actor receives the file. |  |  |
+| Normal Flow | Export Report<br>1. The actor selects Export to Excel.<br>2. The system checks the period and the choices of the table shown.<br>3. The system builds the Excel file of that table with its Total row and records the export. (BR-152, BR-010)<br>4. The actor receives the file. |  |  |
 | Alternative Flows | AF-1 – No Meeting in the period<br>1. At Step 2, the actor may read no Meeting in the period.<br>2. The file is still built, with zero counts and no averages.<br>3. The flow resumes at Step 3 of the Normal Flow. |  |  |
 | Exception Flows | EX-1 – The period is not valid<br>1. At Step 2, the period is not valid.<br>2. No file is built. The system displays MSG463 – “The report period is invalid. Choose up to 24 months, with the start month not after the end month.”<br>3. The use case ends.<br>EX-2 – The report choice is not valid<br>1. At Step 2, the chosen table, grouping, ordering, number of groups or filter is not available for that table.<br>2. No file is built. The system displays MSG484 – “The report parameters are invalid. Choose the data, grouping or filter again.”<br>3. The use case ends. |  |  |
 
-### 16. FE-16 – Working Calendar & Meeting Time Search
+### 15. FE-15 – Working Calendar & Meeting Time Search
 
-#### 16.1 UC-80 – Manage Calendar Sharing
+#### 15.1 UC-80 – Manage Calendar Sharing
 
-##### 16.1.1 UC-80a – Request Calendar Share
+##### 15.1.1 UC-80a – Request Calendar Share
 
 | Primary Actors | Member (the person who will create the meeting) | Secondary Actors | User — the calendar owner (every active internal account except the requester) |
 | --- | --- | --- | --- |
 | Description | Allows a Member to ask another user to share working hours as busy/free, so that free slots can be found without asking each person. The owner answers in UC-80c. (BR-140, BR-141, BR-142, BR-143) |  |  |
-| Preconditions | ● PRE-1: The actor is signed in as a Member. (BR-140, BR-141)<br>● PRE-2: No share of the owner’s calendar to the actor is Pending (Chờ đồng ý) or Effective (Đang hiệu lực). (BR-142, BR-143) |  |  |
+| Preconditions | ● PRE-1: The actor is signed in as a Member. (BR-140, BR-141)<br>● PRE-2: No share of the owner’s calendar to the actor is Pending or Effective. (BR-142, BR-143) |  |  |
 | Postconditions | ● POST-1: A Pending share exists and the owner is notified. (BR-142, BR-143, BR-010)<br>● POST-2: No meeting content of the owner is disclosed either way. (BR-140, BR-141)<br>● POST-3: Shares of other people stay invisible: asking about them discloses nothing about the other share or account. |  |  |
-| Normal Flow | Request Calendar Share<br>1. The actor chooses the calendar owner among the other active internal accounts, a level (Mốc 1 or Mốc 2) and a date range; the request can also start from a person shown as not sharing in UC-81a.<br>2. The system checks that the actor is still a Member (else EX-1), that the owner is an active internal account different from the actor, that no Pending or Effective share of the owner’s calendar to the actor exists (else EX-2) and that the range is valid (else EX-3). A range is valid when it starts today or later, does not end before it starts and covers at most 365 days counting both ends. (BR-140, BR-141, BR-142, BR-143)<br>3. The system saves the Pending share, records it in the audit log and notifies the owner. (BR-010) The system displays MSG435 – “Calendar share request sent.” The owner answers in UC-80c. |  |  |
+| Normal Flow | Request Calendar Share<br>1. The actor chooses the calendar owner among the other active internal accounts, a level (Level 1 or Level 2) and a date range; the request can also start from a person shown as not sharing in UC-81a.<br>2. The system checks that the actor is still a Member (else EX-1), that the owner is an active internal account different from the actor, that no Pending or Effective share of the owner’s calendar to the actor exists (else EX-2) and that the range is valid (else EX-3). A range is valid when it starts today or later, does not end before it starts and covers at most 365 days counting both ends. (BR-140, BR-141, BR-142, BR-143)<br>3. The system saves the Pending share, records it in the audit log and notifies the owner. (BR-010) The system displays MSG435 – “Calendar share request sent.” The owner answers in UC-80c. |  |  |
 | Alternative Flows | N/A |  |  |
 | Exception Flows | EX-1 – Requester has no right to create meetings<br>1. At Step 2, the actor is no longer a Member. (BR-140, BR-141)<br>2. Nothing is saved. The system displays MSG448 – “Only a Member can do this.”<br>3. The use case ends.<br>EX-2 – A share already exists<br>1. At Step 2, a Pending or Effective share of the owner’s calendar to the actor already exists. (BR-142, BR-143)<br>2. Nothing is saved. The system displays MSG449 – “There is already a pending or effective share with this person.”<br>3. The use case ends.<br>EX-3 – Range is invalid<br>1. At Step 2, the date range is invalid.<br>2. Nothing is saved. The system displays MSG443 – “The date range is invalid.”<br>3. The use case ends. |  |  |
 
-##### 16.1.2 UC-80b – Share Calendar Directly
+##### 15.1.2 UC-80b – Share Calendar Directly
 
 | Primary Actors | User — the calendar owner (every active internal account) | Secondary Actors | Member — the recipient |
 | --- | --- | --- | --- |
-| Description | Allows a calendar owner to share working hours directly with a Member, always at Mốc 1. The recipient answers in UC-80c; the recipient asks for Mốc 2 through UC-80d after accepting. (BR-140, BR-141, BR-142, BR-143) |  |  |
-| Preconditions | ● PRE-1: The actor is signed in with an active internal account. (BR-140, BR-141)<br>● PRE-2: No share of the actor’s calendar to the recipient is Pending (Chờ đồng ý) or Effective (Đang hiệu lực). (BR-142, BR-143) |  |  |
-| Postconditions | ● POST-1: A Pending share at Mốc 1 exists and the recipient is notified. (BR-140, BR-141, BR-010)<br>● POST-2: No meeting content of the owner is disclosed either way. (BR-140, BR-141) |  |  |
-| Normal Flow | Share Calendar Directly<br>1. The actor chooses a recipient who is a Member and a date range; the level is always Mốc 1.<br>2. The system checks the recipient (active account, still a Member — else EX-1), that no Pending or Effective share of the actor’s calendar to the recipient exists (else EX-2) and that the range is valid (else EX-3). A range is valid when it starts today or later, does not end before it starts and covers at most 365 days counting both ends. (BR-140, BR-141, BR-142, BR-143)<br>3. The system saves the Pending share at Mốc 1, records it in the audit log and notifies the recipient. (BR-010) The system displays MSG441 – “Calendar shared. Waiting for acceptance.” The recipient answers in UC-80c. |  |  |
+| Description | Allows a calendar owner to share working hours directly with a Member, always at Level 1. The recipient answers in UC-80c; the recipient asks for Level 2 through UC-80d after accepting. (BR-140, BR-141, BR-142, BR-143) |  |  |
+| Preconditions | ● PRE-1: The actor is signed in with an active internal account. (BR-140, BR-141)<br>● PRE-2: No share of the actor’s calendar to the recipient is Pending or Effective. (BR-142, BR-143) |  |  |
+| Postconditions | ● POST-1: A Pending share at Level 1 exists and the recipient is notified. (BR-140, BR-141, BR-010)<br>● POST-2: No meeting content of the owner is disclosed either way. (BR-140, BR-141) |  |  |
+| Normal Flow | Share Calendar Directly<br>1. The actor chooses a recipient who is a Member and a date range; the level is always Level 1.<br>2. The system checks the recipient (active account, still a Member — else EX-1), that no Pending or Effective share of the actor’s calendar to the recipient exists (else EX-2) and that the range is valid (else EX-3). A range is valid when it starts today or later, does not end before it starts and covers at most 365 days counting both ends. (BR-140, BR-141, BR-142, BR-143)<br>3. The system saves the Pending share at Level 1, records it in the audit log and notifies the recipient. (BR-010) The system displays MSG441 – “Calendar shared. Waiting for acceptance.” The recipient answers in UC-80c. |  |  |
 | Alternative Flows | N/A |  |  |
 | Exception Flows | EX-1 – Recipient cannot receive a share<br>1. At Step 2, the recipient is not a Member or is not active.<br>2. Nothing is saved. The system displays MSG455 – “This person cannot receive a calendar share.”<br>3. The use case ends.<br>EX-2 – A share already exists<br>1. At Step 2, a Pending or Effective share of the actor’s calendar to the recipient already exists. (BR-142, BR-143)<br>2. Nothing is saved. The system displays MSG449 – “There is already a pending or effective share with this person.”<br>3. The use case ends.<br>EX-3 – Range is invalid<br>1. At Step 2, the date range is invalid.<br>2. Nothing is saved. The system displays MSG443 – “The date range is invalid.”<br>3. The use case ends. |  |  |
 
-##### 16.1.3 UC-80c – Respond to Calendar Share
+##### 15.1.3 UC-80c – Respond to Calendar Share
 
 | Primary Actors | User — the asked side (the calendar owner, for a UC-80a request or a UC-80d change; the receiving Member, for a UC-80b direct share) | Secondary Actors | The sender (receives a notification about the answer) |
 | --- | --- | --- | --- |
 | Description | Allows the asked person to accept or decline a calendar share request, a direct share or a pending change. Accepting a UC-80a request may lower the level or shorten the range. A Pending request whose sender’s account is deactivated can only be declined (BR-142, BR-143). (BR-140, BR-141, BR-142, BR-143, BR-010) |  |  |
-| Preconditions | ● PRE-1: The actor is the asked side of a Pending (Chờ đồng ý) share or pending change.<br>● PRE-2: The share or change is still Pending. (BR-142, BR-143) |  |  |
-| Postconditions | ● POST-1: The share is Effective (Đang hiệu lực) with the chosen level/range, or closed, or kept as it was for a declined change; the sender is notified in every case. (BR-010)<br>● POST-2: No meeting content of the owner is disclosed either way. (BR-140, BR-141)<br>● POST-3: Shares of other people stay invisible: asking about them discloses nothing about the other share or account. |  |  |
+| Preconditions | ● PRE-1: The actor is the asked side of a Pending share or pending change.<br>● PRE-2: The share or change is still Pending. (BR-142, BR-143) |  |  |
+| Postconditions | ● POST-1: The share is Effective with the chosen level/range, or closed, or kept as it was for a declined change; the sender is notified in every case. (BR-010)<br>● POST-2: No meeting content of the owner is disclosed either way. (BR-140, BR-141)<br>● POST-3: Shares of other people stay invisible: asking about them discloses nothing about the other share or account. |  |  |
 | Normal Flow | Respond to Calendar Share<br>1. The actor opens the Pending request, from the notification or the list of shares, and sees who sent it, the level and the date range.<br>2. The system checks that the actor is the asked side (else EX-1), that the share is still Pending (else EX-2). An Effective share whose viewer lost the Member right was stopped at that moment; a Pending one is kept and can only be declined (BR-142, BR-143).<br>3. On accept the system marks the share Effective — for a UC-80a request the owner may choose a lower level or a shorter range within the requested one (BR-140, BR-141) — records it in the audit log and notifies the sender. The system displays MSG436 – “Calendar share accepted.”<br>4. On decline, after confirming, the system closes the share, records it in the audit log and notifies the sender. The system displays MSG437 – “Calendar share request declined.” |  |  |
-| Alternative Flows | AF-1 – Answer a pending change (UC-80d)<br>1. At Step 3, the pending item is a change (raise to Mốc 2 or extend the range) instead of a new share.<br>2. On approval, the system checks that the requested range still fits the current start date; if it does not, the change cannot be approved (MSG450 – “This action is not allowed in the current state of the share”). Otherwise the system applies the new level or range, records it in the audit log, notifies the viewer and displays MSG442 – “Calendar share updated.”<br>3. On decline, everything stays as it was and both sides are notified. The system displays MSG452 – “Calendar share change declined.” |  |  |
+| Alternative Flows | AF-1 – Answer a pending change (UC-80d)<br>1. At Step 3, the pending item is a change (raise to Level 2 or extend the range) instead of a new share.<br>2. On approval, the system checks that the requested range still fits the current start date; if it does not, the change cannot be approved (MSG450 – “This action is not allowed in the current state of the share”). Otherwise the system applies the new level or range, records it in the audit log, notifies the viewer and displays MSG442 – “Calendar share updated.”<br>3. On decline, everything stays as it was and both sides are notified. The system displays MSG452 – “Calendar share change declined.” |  |  |
 | Exception Flows | EX-1 – Actor is not the asked side<br>1. At Step 2, the actor is not the asked side of this share.<br>2. Nothing changes and nothing about the share or account is disclosed.<br>3. The use case ends.<br>EX-2 – Share is no longer Pending<br>1. At Step 2, the share or change is no longer Pending, or its end date has passed (BR-142, BR-143), or the viewer lost the Member right (BR-140, BR-141). (BR-142, BR-143)<br>2. Nothing changes. The system displays MSG450 – “This action is not allowed in the current state of the share.”<br>3. The use case ends.<br>EX-3 – Range is invalid<br>1. At Step 3, the owner shortens the range to an invalid range.<br>2. Nothing changes. The system displays MSG443 – “The date range is invalid.”<br>3. The flow resumes at Step 3 of the Normal Flow. |  |  |
 
-##### 16.1.4 UC-80d – Change Calendar Share
+##### 15.1.4 UC-80d – Change Calendar Share
 
 | Primary Actors | Member (the viewer) and User — the calendar owner (depending on who acts) | Secondary Actors | The other side of the share (receives a notification; answers a pending change in UC-80c) |
 | --- | --- | --- | --- |
 | Description | Allows the viewer to ask for a higher level or a longer range (answered in UC-80c); the owner lowers the level or changes the dates at once. A stopped share shows its state and reveals no hours; a share past its end date is no longer listed (BR-142, BR-143). (BR-142, BR-143, BR-010) |  |  |
-| Preconditions | ● PRE-1: Both sides are signed in as the two people of the share when they act. (BR-140, BR-141)<br>● PRE-2: The share is Effective (Đang hiệu lực); a Pending (Chờ đồng ý) share is withdrawn in UC-80e and asked for again instead. (BR-142, BR-143) |  |  |
+| Preconditions | ● PRE-1: Both sides are signed in as the two people of the share when they act. (BR-140, BR-141)<br>● PRE-2: The share is Effective; a Pending share is withdrawn in UC-80e and asked for again instead. (BR-142, BR-143) |  |  |
 | Postconditions | ● POST-1: The share holds a pending change, or the new level/range; the other side is notified in both cases. (BR-010)<br>● POST-2: Shares of other people stay invisible: asking about them discloses nothing about the other share or account. |  |  |
-| Normal Flow | Change Calendar Share<br>1. The viewer opens their share and asks for Mốc 2 (raise) or a longer range (extend); only one pending change at a time. A longer range may keep the share's original start date and still covers at most 365 days counting both ends.<br>2. The system saves the pending change, audits and notifies the owner. MSG454 – “Calendar share change request sent.” The use case ends; the owner’s answer is UC-80c. |  |  |
+| Normal Flow | Change Calendar Share<br>1. The viewer opens their share and asks for Level 2 (raise) or a longer range (extend); only one pending change at a time. A longer range may keep the share's original start date and still covers at most 365 days counting both ends.<br>2. The system saves the pending change, audits and notifies the owner. MSG454 – “Calendar share change request sent.” The use case ends; the owner’s answer is UC-80c. |  |  |
 | Alternative Flows | AF-1 – The owner lowers the level or changes the dates<br>1. At any time on an Effective share, the owner chooses a lower level or a new date range, even while the viewer has a change pending; that change stays pending and the owner still answers it in UC-80c.<br>2. The system applies it at once, audits and notifies the viewer. MSG442 – “Calendar share updated.” |  |  |
 | Exception Flows | EX-1 – Actor is not one of the two people<br>1. At Step 1, the actor is not one of the two people of this share.<br>2. Nothing changes and nothing about the share or account is disclosed.<br>3. The use case ends.<br>EX-2 – Change is not allowed<br>1. At Step 1 (or AF-1 Step 1), the share is not Effective, or its end date has passed (BR-142, BR-143), or — at Step 1 only — the viewer already has a change pending. (BR-142, BR-143)<br>2. Nothing changes. The system displays MSG450 – “This action is not allowed in the current state of the share.”<br>3. The use case ends.<br>EX-3 – Range is invalid<br>1. At Step 1 (or AF-1 Step 1), the new date range is invalid.<br>2. Nothing changes. The system displays MSG443 – “The date range is invalid.”<br>3. The flow resumes at Step 1 of the Normal Flow, or at Step 1 of AF-1. |  |  |
 
-##### 16.1.5 UC-80e – Withdraw or End Calendar Share
+##### 15.1.5 UC-80e – Withdraw or End Calendar Share
 
 | Primary Actors | Member (the viewer) and User — the calendar owner (depending on who acts) | Secondary Actors | The other side of the share (receives a notification) |
 | --- | --- | --- | --- |
 | Description | Allows the sender to withdraw a Pending share or a pending change; either side ends an Effective share. A stopped share stays listed with its state and reveals no hours; a share past its end date is no longer listed. (BR-142, BR-143, BR-010) |  |  |
-| Preconditions | ● PRE-1: Both sides are signed in as the two people of the share when they act. (BR-140, BR-141)<br>● PRE-2: Withdrawing needs a Pending (Chờ đồng ý) share or change; ending needs an Effective (Đang hiệu lực) share. (BR-142, BR-143) |  |  |
+| Preconditions | ● PRE-1: Both sides are signed in as the two people of the share when they act. (BR-140, BR-141)<br>● PRE-2: Withdrawing needs a Pending share or change; ending needs an Effective share. (BR-142, BR-143) |  |  |
 | Postconditions | ● POST-1: The request is closed (a withdrawn new share leaves nothing; a withdrawn change leaves the share as it was), or the share is ended; the other side is notified in every case. (BR-010)<br>● POST-2: A stopped share reveals no busy hours and never comes back; viewing again needs a new share. (BR-142, BR-143)<br>● POST-3: Shares of other people stay invisible: asking about them discloses nothing about the other share or account. |  |  |
 | Normal Flow | Withdraw Calendar Share<br>1. The side that sent the request or the change confirms and withdraws it.<br>2. The system closes the request (a withdrawn new share leaves nothing; a withdrawn change leaves the share as it was), audits and notifies the other side. MSG438 – “Calendar share request withdrawn.” |  |  |
-| Alternative Flows | AF-1 – Either side ends an Effective share (“Ngừng chia sẻ” / “Thôi xem lịch”)<br>1. Either side confirms and ends the share.<br>2. The system closes it, audits and notifies the other side. Hours already found are not removed from anyone’s screen, but no new lookup uses this share. MSG451 – “Calendar sharing ended.” |  |  |
+| Alternative Flows | AF-1 – Either side ends an Effective share (“Stop sharing” / “Stop viewing”)<br>1. Either side confirms and ends the share.<br>2. The system closes it, audits and notifies the other side. Hours already found are not removed from anyone’s screen, but no new lookup uses this share. MSG451 – “Calendar sharing ended.” |  |  |
 | Exception Flows | EX-1 – Actor is not one of the two people<br>1. At Step 1, the actor is not one of the two people of this share.<br>2. Nothing changes and nothing about the share or account is disclosed.<br>3. The use case ends.<br>EX-2 – Nothing to withdraw or end<br>1. At Step 1 (or AF-1 Step 1), there is nothing Pending to withdraw, or the share is not Effective to end, or its end date has passed (BR-142, BR-143).<br>2. Nothing changes. The system displays MSG450 – “This action is not allowed in the current state of the share.”<br>3. The use case ends. |  |  |
 
-##### 16.1.6 UC-80f – View Calendar Shares
+##### 15.1.6 UC-80f – View Calendar Shares
 
 | Primary Actors | User — the calendar owner and, when holding the Member right, the viewer | Secondary Actors | The other side of each share |
 | --- | --- | --- | --- |
-| Description | Allows a signed-in user to see the calendar shares they take part in: who can see their calendar (“Người xem được lịch của tôi”) and, for a Member, who shared with them (“Lịch được chia sẻ với tôi”). Each share shows its state and only the actions the user can take now; the actions themselves are UC-80a to UC-80e. (BR-142, BR-143, BR-140, BR-141) |  |  |
+| Description | Allows a signed-in user to see the calendar shares they take part in: who can see their calendar (“People who can see my calendar”) and, for a Member, who shared with them (“Calendars shared with me”). Each share shows its state and only the actions the user can take now; the actions themselves are UC-80a to UC-80e. (BR-142, BR-143, BR-140, BR-141) |  |  |
 | Preconditions | ● PRE-1: The actor is signed in with an active internal account. (BR-140, BR-141) |  |  |
-| Postconditions | ● POST-1: The actor sees only shares where they are one of the two people; nothing about other people’s shares is disclosed. (BR-142, BR-143)<br>● POST-2: A stopped (Đã dừng) share stays listed and reveals no hours; a share past its end date is not listed. (BR-142, BR-143) |  |  |
+| Postconditions | ● POST-1: The actor sees only shares where they are one of the two people; nothing about other people’s shares is disclosed. (BR-142, BR-143)<br>● POST-2: A stopped share stays listed and reveals no hours; a share past its end date is not listed. (BR-142, BR-143) |  |  |
 | Normal Flow | View Calendar Shares<br>1. The actor opens the list of calendar shares.<br>2. The system checks that the actor is an active internal account, loads the shares where the actor is the owner and, if the actor holds the Member right, the shares where the actor is the viewer; it leaves out every share whose end date is before today. (BR-140, BR-141, BR-142, BR-143)<br>3. The system shows the two lists, open shares (Pending, Effective) before closed ones (Declined, Withdrawn, Stopped, Ended), newest first. Each share shows the other person, the level, the date range, its state, any pending change and only the actions the actor may take now. (BR-142, BR-143)<br>4. A Pending request whose sender was deactivated can only be declined. Opening a stopped share shows MSG439 – “This calendar share was stopped because the viewer is no longer a Member or an account was deactivated. Ask for a new share.” (BR-142, BR-143) |  |  |
 | Alternative Flows | AF-1 – Nobody has shared yet<br>1. At Step 2, the actor has no share in either list.<br>2. The system shows empty lists and offers to ask for a share (UC-80a) or to share directly (UC-80b). The use case ends.<br>AF-2 – The actor is not a member<br>1. At Step 2, the actor does not hold the Member right.<br>2. The system shows only the list of people who can see the actor's calendar, and asking for a share is not offered. The actor can still answer, change or end the shares of their own calendar and share directly. (BR-140, BR-141; PO 10/11/2026)<br>AF-3 – Open a share link whose row is gone<br>1. At Step 1, the actor opens a share from a notification, but that share is not in the lists.<br>2. The system reloads both lists once; if the share is still missing, it shows MSG439 – “This calendar share was stopped because the viewer is no longer a Member or an account was deactivated. Ask for a new share.” when the viewer lost the Member right, otherwise that the share no longer exists. The use case ends.<br>AF-4 – A share changes while viewing<br>1. While the actor views either list, someone answers, changes or ends a share with the actor.<br>2. The actor sees the change without reloading the page.<br>3. The flow resumes at Step 3 of the Normal Flow. |  |  |
 | Exception Flows | N/A |  |  |
 
-#### 16.2 UC-81 – Find Meeting Time
+#### 15.2 UC-81 – Find Meeting Time
 
-##### 16.2.1 UC-81a – Find Meeting Time Slots
+##### 15.2.1 UC-81a – Find Meeting Time Slots
 
 | Primary Actors | Member (will become the Secretary of the meeting created in UC-81b) | Secondary Actors | User — the invitees (a person who has not shared is shown as not sharing) |
 | --- | --- | --- | --- |
-| Description | Allows a Member to find slots where everyone invited is free, using only shared calendars. From anyone shown “Chưa được chia sẻ lịch”, the finder may start UC-80a. (BR-140, BR-141, BR-144, BR-145, BR-146, BR-147, BR-148) |  |  |
+| Description | Allows a Member to find slots where everyone invited is free, using only shared calendars. From anyone shown “Calendar not shared”, the finder may start UC-80a. (BR-140, BR-141, BR-144, BR-145, BR-146, BR-147, BR-148) |  |  |
 | Preconditions | ● PRE-1: The actor is signed in as a Member. (BR-140, BR-141) |  |  |
-| Postconditions | ● POST-1: The actor sees common slots by day, or — when none fits everyone — the slots with the most people free and who is busy. Attendee names come from the actor’s own invite list; no meeting titles, locations, attendee lists or sensitivity levels are shown. (BR-144, BR-145, BR-140, BR-141)<br>● POST-2: Days outside a share and people who never shared show “unknown” / “Chưa được chia sẻ lịch”, never free. (BR-144, BR-145) |  |  |
+| Postconditions | ● POST-1: The actor sees common slots by day, or — when none fits everyone — the slots with the most people free and who is busy. Attendee names come from the actor’s own invite list; no meeting titles, locations, attendee lists or sensitivity levels are shown. (BR-144, BR-145, BR-140, BR-141)<br>● POST-2: Days outside a share and people who never shared show “unknown” / “Calendar not shared”, never free. (BR-144, BR-145) |  |  |
 | Normal Flow | Find Meeting Time Slots<br>1. The actor opens the meeting-time search and enters the invitees (at most 10 people besides the actor, optionally counting the actor's own calendar), the duration (15 minutes to 8 hours), the date range (starting today, no more than 365 days ahead and at most 31 days long), the weekdays, the working hours with a lunch break, the buffer kept around every busy period (0 to 4 hours) and the rounding step for start times (5 minutes to 2 hours).<br>2. The system checks the search values.<br>3. The system builds each invitee's busy hours from the Effective shares of that invitee's calendar to the actor, at shared levels only, adds the actor's own Meetings when the actor asked to be counted, keeps the buffer around every busy period and never proposes a start time in the past; days outside a share are unknown. (BR-140, BR-141, BR-142, BR-143, BR-144, BR-145, BR-146, BR-147)<br>4. The system lists the common slots by day. |  |  |
 | Alternative Flows | AF-1 – No slot fits everyone<br>1. At Step 4, no slot fits all invitees.<br>2. The system shows the slots with the most people free, with who is busy, per day. MSG445 – “No time slot fits everyone. Showing the slots with the most people free.” |  |  |
 | Exception Flows | EX-1 – Search parameters are invalid<br>1. At Step 2, the search values are outside the limits of Step 1 (too many people, bad duration, range over 31 days, bad hours/buffer/step).<br>2. Nothing is searched. The system displays MSG444 – “The meeting-time search is invalid. Check the highlighted fields.”<br>3. The flow resumes at Step 1 of the Normal Flow.<br>EX-2 – Actor has no right to create meetings<br>1. At Step 2, the actor is no longer a Member.<br>2. Nothing is searched. The system displays MSG448 – “Only a Member can do this.”<br>3. The use case ends. |  |  |
 
-##### 16.2.2 UC-81b – Create Draft Meeting from Slot
+##### 15.2.2 UC-81b – Create Draft Meeting from Slot
 
 | Primary Actors | Member (the finder in UC-81a, will become the Secretary of the created meeting) | Secondary Actors | User — the invitees in the chosen slot |
 | --- | --- | --- | --- |
@@ -2656,13 +2669,13 @@ Scope: the current Chair or the current Secretary may prepare Vote drafts while 
 | Alternative Flows | N/A |  |  |
 | Exception Flows | EX-1 – Slot is no longer free<br>1. At Step 2, the slot no longer fits the shared data (someone’s shared calendar changed).<br>2. No meeting is created. The system displays MSG446 – “This time slot is no longer free. Please choose another slot.” The message is the same whether or not an undisclosed meeting overlaps. (BR-148)<br>3. The use case ends; the actor may choose another slot from the UC-81a results.<br>EX-2 – Actor has no right to create meetings<br>1. At Step 2, the actor is no longer a Member.<br>2. No meeting is created. The system displays MSG448 – “Only a Member can do this.”<br>3. The use case ends. |  |  |
 
-##### 16.2.3 UC-81c – View Shared Calendar
+##### 15.2.3 UC-81c – View Shared Calendar
 
 | Primary Actors | Member | Secondary Actors | User — the people who shared their calendars with the actor |
 | --- | --- | --- | --- |
 | Description | Allows a Member to see a weekly calendar of busy hours from people who shared with them. Each person has one row; no meeting titles are ever shown. People whose share stopped stay listed with their state label and contribute no hours; a share past its end date is no longer listed. (BR-140, BR-141, BR-144, BR-145, BR-142, BR-143) |  |  |
 | Preconditions | ● PRE-1: The actor is signed in as a Member. (BR-140, BR-141) |  |  |
-| Postconditions | ● POST-1: The actor sees only busy blocks of Effective (Đang hiệu lực) shares at shared levels; nothing else. (BR-140, BR-141)<br>● POST-2: Stopped (Đã dừng) shares stay listed with their state label and reveal no hours; they never come back. (BR-142, BR-143) |  |  |
+| Postconditions | ● POST-1: The actor sees only busy blocks of Effective shares at shared levels; nothing else. (BR-140, BR-141)<br>● POST-2: Stopped shares stay listed with their state label and reveal no hours; they never come back. (BR-142, BR-143) |  |  |
 | Normal Flow | View Shared Calendar<br>1. The actor opens the calendars shared with him or her and chooses a week. (BR-140, BR-141)<br>2. The system loads the actor's Effective or Stopped shares whose end date is today or later, keeping the newest share per person, and the busy Meetings of those people at shared levels. (BR-140, BR-141, BR-142, BR-143, BR-146, BR-147)<br>3. The system shows the week with one row per person and only busy blocks; days outside a share's range show as unknown, never as free. (BR-144, BR-145)<br>4. People whose share stopped are listed with that state and contribute no hours; opening one shows MSG439 – “This calendar share was stopped because the viewer is no longer a Member or an account was deactivated. Ask for a new share.” No title, location, attendee or level is ever shown. (BR-140, BR-141, BR-142, BR-143) |  |  |
 | Alternative Flows | AF-1 – No Effective or Stopped share in range<br>1. At Step 2, the actor has no Effective or Stopped share whose end date is on or after today.<br>2. The system shows that nobody has shared a calendar with the actor and offers to ask for one (UC-80a). The use case ends.<br>AF-2 – A share changes while viewing<br>1. While the actor views the week, someone accepts, changes or stops sharing with the actor.<br>2. The actor sees the change without reloading the page.<br>3. The flow resumes at Step 3 of the Normal Flow. |  |  |
 | Exception Flows | EX-1 – Actor cannot create meetings<br>1. At Step 2, the actor does not hold the Member right. (BR-140, BR-141)<br>2. Nothing is shown. The system displays MSG448 – “Only a Member can do this.”<br>3. The use case ends. |  |  |
@@ -2693,14 +2706,14 @@ Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Application header | Read-only: TrustCabinet logo and name with the subtitle “Sign in to the paperless meeting room system” [Đăng nhập hệ thống phòng họp không giấy]. |
-| Information banner [Hộp thông báo] | Read-only blue box, shown only when there is a reason: “Sign in to open the meeting.” [Đăng nhập để mở cuộc họp.] when a meeting link was opened while signed out, or “Your session has expired. Please sign in again.” [Phiên đăng nhập đã kết thúc. Vui lòng đăng nhập lại.] (MSG140) after the sign-in session ended. Hidden otherwise. |
-| Error box [Hộp lỗi] | Red box displayed above the form when sign-in fails: MSG01 “Invalid email or password.”, MSG02 (account deactivated/unavailable), MSG03 (Google sign-in unsuccessful), MSG04 (Google account cannot be verified), MSG05 (Google account not granted access) followed by a hint to choose the Google account with the registered email. Messages never reveal whether an email exists (BR-004). |
+| Application header | Read-only: TrustCabinet logo and name with the subtitle “Sign in to the paperless meeting room system”. |
+| Information banner | Read-only blue box, shown only when there is a reason: “Sign in to open the meeting.” when a meeting link was opened while signed out, or “Your session has expired. Please sign in again.” (MSG140) after the sign-in session ended. Hidden otherwise. |
+| Error box | Red box displayed above the form when sign-in fails: MSG01 “Invalid email or password.”, MSG02 (account deactivated/unavailable), MSG03 (Google sign-in unsuccessful), MSG04 (Google account cannot be verified), MSG05 (Google account not granted access) followed by a hint to choose the Google account with the registered email. Messages never reveal whether an email exists (BR-004). |
 | Email | Text input, required, email format. No initial value. Each field is checked under its own input — empty email, malformed email, empty password — and focus moves to the first invalid field. |
-| Password [Mật khẩu] | Password input (masked), required. No initial value; the password is never displayed or stored in plain text. |
-| Sign in with password [Đăng nhập bằng mật khẩu] | Primary button. Validates the credentials; a deactivated account cannot sign in (BR-001). On success the user is redirected to the authenticated home page, or to the meeting whose link was opened. |
-| Divider “or” [hoặc] | Read-only separator between the password form and the Google option. |
-| Continue with Google [Tiếp tục sử dụng dịch vụ bằng Google] | Button with the Google icon that opens Google sign-in. The verified Google email must be linked to an existing active internal account; no new account is created automatically (BR-003). If the Google sign-in service cannot be loaded, an error text replaces the button. |
+| Password | Password input (masked), required. No initial value; the password is never displayed or stored in plain text. |
+| Sign in with password | Primary button. Validates the credentials; a deactivated account cannot sign in (BR-001). On success the user is redirected to the authenticated home page, or to the meeting whose link was opened. |
+| Divider “or” | Read-only separator between the password form and the Google option. |
+| Continue with Google | Button with the Google icon that opens Google sign-in. The verified Google email must be linked to an existing active internal account; no new account is created automatically (BR-003). If the Google sign-in service cannot be loaded, an error text replaces the button. |
 | Sign Out confirmation dialog | Opened from the account menu: “Are you sure you want to sign out? The session on this device will end.” with Cancel / Sign Out buttons. On failure shows MSG06 “Unable to sign out. Please try again.” After sign-out protected functions are no longer accessible. |
 
 #### 1.2 Reset Password
@@ -2723,13 +2736,13 @@ Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Page title | Read-only: “Reset password” [Đặt lại mật khẩu] under the TrustCabinet logo. |
-| Instruction text | Read-only: “Choose a new password for your account.” [Chọn mật khẩu mới cho tài khoản của bạn.] |
-| New password [Mật khẩu mới] | Password input (masked), required (*). Hint below: “Password must be at least 12 characters.” [Mật khẩu phải có ít nhất 12 ký tự.]; a shorter value shows the same text as a field error (MSG94). |
-| Confirm password [Nhập lại mật khẩu] | Password input (masked), required (*). Must be identical to New password; otherwise the field is outlined in red with the error “The re-entered password does not match.” [Mật khẩu nhập lại không khớp.] |
-| Sign-out notice | Read-only text: “After the reset, every device currently signed in to this account will be signed out.” [Đặt lại xong, mọi thiết bị đang đăng nhập tài khoản này sẽ bị đăng xuất.] (UC-07 POST-5). |
-| Set new password [Đặt mật khẩu mới] | Primary button. Saves the new password as a salted hash, ends all sign-in sessions of the account, invalidates the link, records the reset in the audit log (BR-009, BR-010, BR-011) and redirects to Sign In with MSG92 “Password reset successfully. Please sign in with your new password.” If this browser is still signed in, it is signed out first; if that fails MSG06 is also shown. |
-| Invalid link page | Shown instead of the form when the link is expired (older than 60 minutes), already used or superseded: “This link can no longer be used.” [Liên kết này không dùng được nữa.] (MSG93) with guidance to contact the System Admin. When the link has no reset code, MSG129 is displayed. |
+| Page title | Read-only: “Reset password” under the TrustCabinet logo. |
+| Instruction text | Read-only: “Choose a new password for your account.” |
+| New password | Password input (masked), required (*). Hint below: “Password must be at least 12 characters.”; a shorter value shows the same text as a field error (MSG94). |
+| Confirm password | Password input (masked), required (*). Must be identical to New password; otherwise the field is outlined in red with the error “The re-entered password does not match.” |
+| Sign-out notice | Read-only text: “After the reset, every device currently signed in to this account will be signed out.” (UC-07 POST-5). |
+| Set new password | Primary button. Saves the new password as a salted hash, ends all sign-in sessions of the account, invalidates the link, records the reset in the audit log (BR-009, BR-010, BR-011) and redirects to Sign In with MSG92 “Password reset successfully. Please sign in with your new password.” If this browser is still signed in, it is signed out first; if that fails MSG06 is also shown. |
+| Invalid link page | Shown instead of the form when the link is expired (older than 60 minutes), already used or superseded: “This link can no longer be used.” (MSG93) with guidance to contact the System Admin. When the link has no reset code, MSG129 is displayed. |
 
 #### 1.3 Guest Verification
 
@@ -2758,14 +2771,14 @@ Field Description
 | Field Name | Description |
 | --- | --- |
 | Application header | Read-only bar with the TrustCabinet logo and name; no sign-in menu, as the Guest has no internal account (BR-052). |
-| Invitation caption [TrustCabinet mời bạn họp] | Read-only uppercase caption “TrustCabinet invites you to a meeting”. |
-| Meeting title | Read-only: title of the invited meeting, e.g. “Sprint 6 planning meeting” [Họp kế hoạch Sprint 6]. Only the invited meeting is shown (BR-052). |
-| Code destination | Read-only text “Enter the 6-digit code just sent to v***@doitac.vn to view the meeting.” [Nhập mã 6 số vừa gửi tới … để xem cuộc họp.] showing the invited email partially masked. |
+| Invitation caption | Read-only uppercase caption “TrustCabinet invites you to a meeting”. |
+| Meeting title | Read-only: title of the invited meeting, e.g. “Sprint 6 planning meeting”. Only the invited meeting is shown (BR-052). |
+| Code destination | Read-only text “Enter the 6-digit code just sent to v***@doitac.vn to view the meeting.” showing the invited email partially masked. |
 | Verification code | Six single-digit input boxes, required, digits only, exactly 6 digits; the cursor moves to the next box after each digit. A wrong, expired or already-used code shows MSG126 “Unable to verify the guest invitation. Check the code and try again.” |
-| Verify [Xác minh] | Primary button. Verifies control of the invited email (BR-053, BR-054) and establishes a Guest session limited to the invited meeting that expires according to the configured validity period (BR-052, BR-053, BR-054); no internal account sign-in is needed (BR-052). A missing, expired or revoked invitation cannot be verified and the Guest is told the invitation is no longer valid (BR-044). If the verification service is unavailable no Guest session is created. |
-| Resend code [Gửi lại mã] | Text link next to Verify; sends a new one-time code to the invited email address. |
-| Recording notice | Read-only yellow info box: “The meeting may be recorded to prepare the minutes. Your information is used only for this meeting.” [Cuộc họp có thể được ghi âm để lập biên bản. Thông tin của bạn chỉ dùng cho cuộc họp này.] |
-| Guest scope notice | Read-only scope notice: “Khách chỉ truy cập cuộc họp được mời và toàn bộ tài liệu gắn trong cuộc họp theo quyền Thành viên. Email đã được xác minh; tên hiển thị và chức vụ do khách tự khai.” (BR-055) |
+| Verify | Primary button. Verifies control of the invited email (BR-053, BR-054) and establishes a Guest session limited to the invited meeting that expires according to the configured validity period (BR-052, BR-053, BR-054); no internal account sign-in is needed (BR-052). A missing, expired or revoked invitation cannot be verified and the Guest is told the invitation is no longer valid (BR-044). If the verification service is unavailable no Guest session is created. |
+| Resend code | Text link next to Verify; sends a new one-time code to the invited email address. |
+| Recording notice | Read-only yellow info box: “The meeting may be recorded to prepare the minutes. Your information is used only for this meeting.” |
+| Guest scope notice | Read-only scope notice: “Guests may access only the meeting they are invited to and all documents attached to it, with Member rights. The email has been verified; the display name and position are self-declared.” (BR-055) |
 | Already verified | When the Guest reopens a valid link during an active verified Guest session, this screen is skipped and the invited meeting opens directly (UC-04 AF-1). |
 
 ### 2. FE-02 – User & Profile Management
@@ -2774,7 +2787,7 @@ Field Description
 
 Figure 19: User List
 
-The User List screen is the System Admin’s account management page, reached from Administration › Users [Quản trị › Người dùng] in the sidebar. It lists all user accounts, one per row, and provides the per-account actions edit (including the system role), deactivate/reactivate and send password reset link (UC-05, UC-06a–UC-06c, UC-07, UC-08).
+The User List screen is the System Admin’s account management page, reached from Administration › Users in the sidebar. It lists all user accounts, one per row, and provides the per-account actions edit (including the system role), deactivate/reactivate and send password reset link (UC-05, UC-06a–UC-06c, UC-07, UC-08).
 
 This screen allows the System Admin to:
 
@@ -2798,20 +2811,20 @@ Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Page header | Read-only breadcrumb “Administration” [Quản trị], title “Users” [Người dùng] and summary “Manage users and system permissions · 7 accounts, 6 active.” [Quản lý người dùng và phân quyền hệ thống · … tài khoản, … đang hoạt động.] |
-| Create account [Tạo tài khoản] | Primary button; opens the Create / Edit User Account Dialog in create mode. |
-| Search [Tìm theo tên hoặc email…] | Text input, optional, empty by default. Matches full name or email. |
-| Role filter [Tất cả vai trò] | Dropdown. Values: All roles (default) and every system role, e.g. [Chủ toạ], [Thư ký], [Thành viên], [Quản trị viên] and custom roles such as [Kiểm soát viên]. |
-| Status filter [Mọi trạng thái] | Dropdown. Values: All statuses (default), Active, Deactivated. Combined filters must all match. |
-| Full name [Họ tên] | Column: avatar initials, full name and email below, one account per row; a long name or email is cut with “…” and shows a tooltip only when cut. The signed-in System Admin’s own row is tagged “You” [Bạn]. |
-| Role [Vai trò] | Column chip: name of the system role held by the account. |
-| Sign-in method [Đăng nhập] | Column: Password [Mật khẩu], Google, or Password · Google (account linked to Google). Passwords and tokens are never displayed. |
-| Status [Trạng thái] | Column chip: Active [Hoạt động] (green) or Deactivated [Đã vô hiệu hoá] (grey). |
-| Created date [Ngày tạo] | Column, format dd/mm/yyyy. |
-| Actions [Thao tác] | Three icon buttons: Edit · Deactivate / Reactivate · Send password reset link. A button is greyed out when not applicable and its tooltip gives the reason: the System Admin cannot change the status of his/her own account; a Google-only or deactivated account cannot receive a password reset link. |
+| Page header | Read-only breadcrumb “Administration”, title “Users” and summary “Manage users and system permissions · 7 accounts, 6 active.” |
+| Create account | Primary button; opens the Create / Edit User Account Dialog in create mode. |
+| Search | Text input, optional, empty by default. Matches full name or email. |
+| Role filter | Dropdown. Values: All roles (default) and every system role, e.g.,,, and custom roles such as. |
+| Status filter | Dropdown. Values: All statuses (default), Active, Deactivated. Combined filters must all match. |
+| Full name | Column: avatar initials, full name and email below, one account per row; a long name or email is cut with “…” and shows a tooltip only when cut. The signed-in System Admin’s own row is tagged “You”. |
+| Role | Column chip: name of the system role held by the account. |
+| Sign-in method | Column: Password, Google, or Password · Google (account linked to Google). Passwords and tokens are never displayed. |
+| Status | Column chip: Active (green) or Deactivated (grey). |
+| Created date | Column, format dd/mm/yyyy. |
+| Actions | Three icon buttons: Edit · Deactivate / Reactivate · Send password reset link. A button is greyed out when not applicable and its tooltip gives the reason: the System Admin cannot change the status of his/her own account; a Google-only or deactivated account cannot receive a password reset link. |
 | Deactivate / Reactivate confirmation | Dialog: deactivation signs the user out of all devices and keeps meeting history (BR-001); reactivation restores sign-in with the current role. Success shows MSG11 “User account status changed successfully.”; deactivating the last active account holding the User administration permission is blocked with MSG12. |
 | No-result message | “No accounts match the filter.” shown in the table when search/filter returns nothing; “No accounts yet.” when the list is empty. |
-| Pagination [Phân trang] | Client-side paging 20/50/100 over the full GET /api/users response (temporary decision; the server does not page yet, so this is not a server paging contract). |
+| Pagination | Client-side paging 20/50/100 over the full GET /api/users response (temporary decision; the server does not page yet, so this is not a server paging contract). |
 
 #### 2.2 Create / Edit User Account Dialog
 
@@ -2833,16 +2846,16 @@ Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Dialog title | “Create account” [Tạo tài khoản] in create mode, “Edit account” [Sửa tài khoản] in edit mode. |
+| Dialog title | “Create account” in create mode, “Edit account” in edit mode. |
 | Information note | Create mode: “The new account is active and can sign in immediately with this email and password. If the email is a Google account, the user can also sign in with Google.” (BR-006). Edit mode: first Google sign-in with the same email links automatically; passwords are not changed here. |
-| Full name [Họ tên] | Text input, required (*), max 200 characters. Errors: “Full name is required.”, “Full name must not exceed 200 characters.” (MSG09). |
+| Full name | Text input, required (*), max 200 characters. Errors: “Full name is required.”, “Full name must not exceed 200 characters.” (MSG09). |
 | Email | Text input, required (*), valid email format, unique among accounts (BR-005). Errors: “Email is required.”, “Email is invalid.” (MSG09); “Email is already in use.” (MSG08). |
-| Password [Mật khẩu] | Create mode only. Masked input, required (*), minimum 12 characters (MSG09 “Password must be at least 12 characters.”). Has an eye button to show/hide and a copy button. Hint: “Minimum 12 characters. Send the password to the user through a private channel, not a shared group chat.” [Tối thiểu 12 ký tự. Gửi mật khẩu cho người dùng qua kênh riêng, không qua nhóm chat chung.] |
-| Generate password [Tạo mật khẩu] | Button next to Password; fills the field with a random password that satisfies the rule. |
-| Role [Vai trò] | Dropdown, required (*); initial value [Thành viên] in create mode, current role in edit mode. Lists existing roles only (MSG09 “The role does not exist.” otherwise). Changing another user’s role signs that user out of all devices; changing the role of the last active account holding the User administration permission is blocked (MSG12). |
+| Password | Create mode only. Masked input, required (*), minimum 12 characters (MSG09 “Password must be at least 12 characters.”). Has an eye button to show/hide and a copy button. Hint: “Minimum 12 characters. Send the password to the user through a private channel, not a shared group chat.” |
+| Generate password | Button next to Password; fills the field with a random password that satisfies the rule. |
+| Role | Dropdown, required (*); initial value in create mode, current role in edit mode. Lists existing roles only (MSG09 “The role does not exist.” otherwise). Changing another user’s role signs that user out of all devices; changing the role of the last active account holding the User administration permission is blocked (MSG12). |
 | Self-edit warning | Edit mode only. Shown when the System Admin changes his/her own role or email: after saving s/he will be signed out and must sign in again. |
-| Cancel [Huỷ] | Secondary button; closes the dialog without saving. |
-| Create account / Save [Tạo tài khoản / Lưu] | Primary button. Validates all fields, saves and records the change in the audit log (BR-009, BR-010, BR-011). Success toast MSG07 “User account created successfully.” or MSG10 “User account updated successfully.” |
+| Cancel | Secondary button; closes the dialog without saving. |
+| Create account / Save | Primary button. Validates all fields, saves and records the change in the audit log (BR-009, BR-010, BR-011). Success toast MSG07 “User account created successfully.” or MSG10 “User account updated successfully.” |
 
 #### 2.3 Send Password Reset Link Dialog
 
@@ -2864,12 +2877,12 @@ Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Dialog title | “Reset password” [Đặt lại mật khẩu]. |
-| Confirmation text | Read-only: “Send a password reset link to <email>?” [Gửi liên kết đặt lại mật khẩu tới …?] with the registered email of the selected account in bold. |
+| Dialog title | “Reset password”. |
+| Confirmation text | Read-only: “Send a password reset link to <email>?” with the registered email of the selected account in bold. |
 | Validity note | Read-only, in the same paragraph: the link can be used once within 60 minutes; any link sent earlier becomes invalid; the current password keeps working until the user (named in the text) sets a new one (UC-07 POST-4). |
-| Cancel [Huỷ] | Secondary button; closes the dialog, no link is created. |
-| Send link [Gửi liên kết] | Primary button. Allowed only for an active account that signs in with a password, otherwise MSG14 “Password reset is not available for this account.” Success closes the dialog and shows toast MSG13 “Password reset email sent successfully.”; email failure shows MSG15 “Unable to send the password reset email. Please try again.” and no new link becomes usable. The request is recorded in the audit log (BR-009, BR-010, BR-011). |
-| Deactivate account dialog [Vô hiệu hoá tài khoản] | Same layout: “Deactivate <full name>’s account? This person will be signed out of all devices… Their meeting history is kept.” [… Lịch sử cuộc họp của họ vẫn được giữ nguyên.] with Cancel / Deactivate buttons (BR-001); success MSG11, blocked change MSG12. |
+| Cancel | Secondary button; closes the dialog, no link is created. |
+| Send link | Primary button. Allowed only for an active account that signs in with a password, otherwise MSG14 “Password reset is not available for this account.” Success closes the dialog and shows toast MSG13 “Password reset email sent successfully.”; email failure shows MSG15 “Unable to send the password reset email. Please try again.” and no new link becomes usable. The request is recorded in the audit log (BR-009, BR-010, BR-011). |
+| Deactivate account dialog | Same layout: “Deactivate <full name>’s account? This person will be signed out of all devices… Their meeting history is kept.” with Cancel / Deactivate buttons (BR-001); success MSG11, blocked change MSG12. |
 
 ### 3. FE-03 – Role-Based Access Control
 
@@ -2877,7 +2890,7 @@ Field Description
 
 Figure 22: Role List
 
-The Role List screen is reached from Administration › Roles [Quản trị › Vai trò] in the sidebar and is the first tab of the role management page. The System Admin views the system roles with the number of accounts holding each, creates custom roles, and edits or deletes custom roles; predefined (Default) roles are protected (UC-09, UC-11a, UC-11b, UC-11c).
+The Role List screen is reached from Administration › Roles in the sidebar and is the first tab of the role management page. The System Admin views the system roles with the number of accounts holding each, creates custom roles, and edits or deletes custom roles; predefined (Default) roles are protected (UC-09, UC-11a, UC-11b, UC-11c).
 
 This screen allows the System Admin to:
 
@@ -2897,17 +2910,17 @@ Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Page header | Breadcrumb “Administration” [Quản trị], title “Roles” [Vai trò] and description: “Each role is a group of permissions; assign roles to accounts on the User screen.” [Mỗi vai trò là một nhóm quyền; gán vai trò cho tài khoản ở màn Người dùng.] |
-| Tabs | “Role list” [Danh sách vai trò] with the role count, e.g. 5 (default tab), and “Permission matrix” [Ma trận phân quyền]. |
-| Create role [Tạo vai trò] | Primary button; opens the role form in create mode. |
-| Role name [Tên vai trò] | Column. Predefined roles ([Chủ toạ], [Thư ký], [Thành viên], [Quản trị viên]) carry the “Default” [Mặc định] badge; the role of the signed-in System Admin carries the “Your role” [Vai trò của bạn] badge. |
-| Description [Mô tả] | Column: short description of the role. |
-| Accounts [Tài khoản] | Column: number of accounts holding the role, including deactivated accounts. |
-| Actions [Thao tác] | Edit and Delete icon buttons for custom roles only (e.g. [Kiểm soát viên]); Default roles show no actions and cannot be renamed or deleted (MSG24). |
+| Page header | Breadcrumb “Administration”, title “Roles” and description: “Each role is a group of permissions; assign roles to accounts on the User screen.” |
+| Tabs | “Role list” with the role count, e.g. 5 (default tab), and “Permission matrix”. |
+| Create role | Primary button; opens the role form in create mode. |
+| Role name | Column. Predefined roles (,,,) carry the “Default” badge; the role of the signed-in System Admin carries the “Your role” badge. |
+| Description | Column: short description of the role. |
+| Accounts | Column: number of accounts holding the role, including deactivated accounts. |
+| Actions | Edit and Delete icon buttons for custom roles only (e.g.); Default roles show no actions and cannot be renamed or deleted (MSG24). |
 | Role form – Name | Text input, required, max 64 characters after trimming, unique (case-insensitive) among all roles. Errors: MSG20 “Invalid role information.” (“Role name is required.”, “Role name must not exceed 64 characters.”), MSG21 “A role with this name already exists. Please choose a different name.” |
 | Role form – Description | Textarea, optional, max 256 characters (MSG20). |
-| Role form – Initial permissions | Create mode only. Checkboxes of the system permissions, optional; an empty set gives the same access as the [Thành viên] role. Success MSG19 “Role created successfully.”; edit success MSG22 “Role updated successfully.” |
-| Delete role dialog [Xoá vai trò] | Confirmation dialog “Cannot delete role ‘<name>’ yet.” [Chưa thể xoá vai trò …] when accounts still hold the role, with a yellow warning: “This role is still held by {n} account(s), including deactivated accounts. Move them to another role before deleting.” (MSG25); the Delete role [Xoá vai trò] button is then disabled. Buttons: Close [Đóng], Delete role. Success MSG23 “Role deleted successfully.”; failure MSG28. |
+| Role form – Initial permissions | Create mode only. Checkboxes of the system permissions, optional; an empty set gives the same access as the role. Success MSG19 “Role created successfully.”; edit success MSG22 “Role updated successfully.” |
+| Delete role dialog | Confirmation dialog “Cannot delete role ‘<name>’ yet.” when accounts still hold the role, with a yellow warning: “This role is still held by {n} account(s), including deactivated accounts. Move them to another role before deleting.” (MSG25); the Delete role button is then disabled. Buttons: Close, Delete role. Success MSG23 “Role deleted successfully.”; failure MSG28. |
 
 #### 3.2 Permission Matrix
 
@@ -2933,24 +2946,24 @@ Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Page header and tabs | Same header as the Role List (title “Roles” [Vai trò], Create role button); the “Permission matrix” [Ma trận phân quyền] tab is selected. |
-| Role [Vai trò] | Row header: role name with “Default” [Mặc định] or “Your role” [Vai trò của bạn] badge; custom roles such as [Kiểm soát viên] have no badge. |
-| Meeting [Cuộc họp] group | Permission columns: Create meeting [Tạo cuộc họp], Approve meeting [Phê duyệt cuộc họp]. |
-| Minutes [Biên bản] group | Permission column: Prepare minutes [Soạn biên bản]. |
-| Administration [Quản trị] group | Permission column: User administration [Quản trị người dùng]. |
+| Page header and tabs | Same header as the Role List (title “Roles”, Create role button); the “Permission matrix” tab is selected. |
+| Role | Row header: role name with “Default” or “Your role” badge; custom roles such as have no badge. |
+| Meeting group | Permission columns: Create meeting, Approve meeting. |
+| Minutes group | Permission column: Prepare minutes. |
+| Administration group | Permission column: User administration. |
 | Permission cell | Toggle (checked = granted). Initial value = saved configuration. A changed cell is highlighted in yellow and its row is tinted until saved or undone. Only permissions defined by the system can be set (BR-007). |
-| Actions [Thao tác] | “Undo” [Hoàn tác] and “Save” [Lưu] appear only on a row that has unsaved changes; each row is saved independently. Success toast MSG16 “Role permissions updated successfully.”; the change is audit-logged (BR-009, BR-010, BR-011). |
+| Actions | “Undo” and “Save” appear only on a row that has unsaved changes; each row is saved independently. Success toast MSG16 “Role permissions updated successfully.”; the change is audit-logged (BR-009, BR-010, BR-011). |
 | Inline row error | Removing “User administration” from the last role that holds it for an active account is blocked and an error is shown under the row (MSG17 “Invalid permission configuration.”); save failure shows MSG18 “Unable to update role permissions. Please try again.” |
 
 #### 3.3 System Audit Log
 
 Figure 24: System Audit Log
 
-The System Audit Log screen is reached from Administration › Audit Log [Quản trị › Nhật ký hệ thống] in the sidebar. It shows the read-only log of business and security events (not technical logs) so that the System Admin can trace who did what and when, and open the details recorded with each entry (UC-12).
+The System Audit Log screen is reached from Administration › Audit Log in the sidebar. It shows the read-only log of business and security events (not technical logs) so that the System Admin can trace who did what and when, and open the details recorded with each entry (UC-12).
 
 This screen allows the System Admin to:
 
-- View Audit Log: view events, newest first, with time, actor, event type, target object — shown with its name, or only as “Họp Mật” for anything of a Secret meeting — and IP address (UC-12).
+- View Audit Log: view events, newest first, with time, actor, event type, target object — shown with its name, or only as “Secret meeting” for anything of a Secret meeting — and IP address (UC-12).
 
 - Filter Audit Log: filter by date range, actor and event type (UC-12).
 
@@ -2962,18 +2975,18 @@ Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Page header | Breadcrumb “Administration” [Quản trị], title “Audit Log” [Nhật ký hệ thống] and note “Business and security events. Cannot be edited or deleted.” [Sự kiện nghiệp vụ và bảo mật. Không sửa, không xoá được.] |
+| Page header | Breadcrumb “Administration”, title “Audit Log” and note “Business and security events. Cannot be edited or deleted.” |
 | Date range | Date range picker dd/mm/yyyy – dd/mm/yyyy (e.g. 01/10/2026 – 06/10/2026); limits events to the selected period. An invalid range is reported and not applied. |
-| Actor filter [Mọi người thực hiện] | Dropdown; default All actors; lists users. |
-| Event type filter [Mọi loại sự kiện] | Dropdown; default All event types (e.g. change role permissions, approve meeting, failed sign-in, download document, send password reset link). |
-| Search [Tìm theo đối tượng…] | Text input, optional; matches the target object name or id, or the recorded details, ignoring case and Vietnamese marks — except the name of anything of a Secret meeting, which never matches. All criteria must match. |
-| Time [Thời điểm] | Column, format dd/mm hh:mm, newest first. |
-| Actor [Người thực hiện] | Column: avatar initials and full name of the user who performed the action. |
-| Event [Sự kiện] | Column chip with the event type, e.g. “Changed role permissions” [Đổi quyền vai trò], “Approved meeting” [Duyệt cuộc họp], “Downloaded document” [Tải tài liệu], “Sent password reset link” [Gửi liên kết đặt lại mật khẩu]. Security events such as “Failed sign-in” [Đăng nhập thất bại] use a red chip and the whole row is highlighted in red. |
-| Object [Đối tượng] | Column: the object name — meeting title, document file name, vote title, voice owner name, and so on — or the last 8 characters of its id when it has no name, or only “Họp Mật” for anything of a Secret meeting. |
-| IP address [Địa chỉ IP] | Column: IP address of the request. |
+| Actor filter | Dropdown; default All actors; lists users. |
+| Event type filter | Dropdown; default All event types (e.g. change role permissions, approve meeting, failed sign-in, download document, send password reset link). |
+| Search | Text input, optional; matches the target object name or id, or the recorded details, ignoring case and Vietnamese marks — except the name of anything of a Secret meeting, which never matches. All criteria must match. |
+| Time | Column, format dd/mm hh:mm, newest first. |
+| Actor | Column: avatar initials and full name of the user who performed the action. |
+| Event | Column chip with the event type, e.g. “Changed role permissions”, “Approved meeting”, “Downloaded document”, “Sent password reset link”. Security events such as “Failed sign-in” use a red chip and the whole row is highlighted in red. |
+| Object | Column: the object name — meeting title, document file name, vote title, voice owner name, and so on — or the last 8 characters of its id when it has no name, or only “Secret meeting” for anything of a Secret meeting. |
+| IP address | Column: IP address of the request. |
 | Detail panel | Right-side drawer opened by clicking a row; shows the actor, event code, object with its id, IP address and the details recorded with the entry, field by field. Read-only. |
-| Pagination | “Showing 1–5 of 1,284” [Hiển thị 1–5 trong 1.284] with previous/next and page-number buttons. No matching entries shows an empty-result message so the filters can be revised. |
+| Pagination | “Showing 1–5 of 1,284” with previous/next and page-number buttons. No matching entries shows an empty-result message so the filters can be revised. |
 
 ### 4. FE-04 – Meeting Management
 
@@ -2981,7 +2994,7 @@ Field Description
 
 Figure 25: Meeting Calendar – Calendar View
 
-The Meeting Calendar – Calendar View is the work-schedule page reached from “Calendar” [Lịch làm việc] in the sidebar. The toolbar is the first line of the page (there is no page title). It places every Meeting the user is allowed to see on a weekly day/hour grid according to the Meeting’s own planned start and end time, colours each Meeting by its lifecycle status, and opens the Meeting detail when a block is clicked (UC-16, UC-15).
+The Meeting Calendar – Calendar View is the work-schedule page reached from “Calendar” in the sidebar. The toolbar is the first line of the page (there is no page title). It places every Meeting the user is allowed to see on a weekly day/hour grid according to the Meeting’s own planned start and end time, colours each Meeting by its lifecycle status, and opens the Meeting detail when a block is clicked (UC-16, UC-15).
 
 This screen allows any signed-in internal user related to a meeting (Member, Approver, Chair, Secretary, Participant) to:
 
@@ -3003,23 +3016,23 @@ Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Today [Hôm nay] | Button; jumps to the current week. |
+| Today | Button; jumps to the current week. |
 | Previous / Next week (‹ ›) | Buttons; move one week back or forward. |
 | Week label | Read-only date range of the displayed week, e.g. 12/10 – 16/10/2026. |
-| View toggle [Lịch / Danh sách] | Segmented control Calendar [Lịch] (selected) / List [Danh sách]. The selected mode is kept in the URL. |
-| Week range [Tuần làm việc] | Dropdown: Work week (default, Monday–Friday) or Full week. |
-| Create meeting [Tạo cuộc họp] | Primary button; visible only to users with the create-meeting permission (Member). Opens the Create Meeting dialog over the calendar. |
-| Day header | Weekday name and date (dd/mm) for each column, e.g. “Thứ Hai 12/10”; the current day is highlighted and labelled “Today” [Hôm nay]. |
+| View toggle | Segmented control Calendar (selected) / List. The selected mode is kept in the URL. |
+| Week range | Dropdown: Work week (default, Monday–Friday) or Full week. |
+| Create meeting | Primary button; visible only to users with the create-meeting permission (Member). Opens the Create Meeting dialog over the calendar. |
+| Day header | Weekday name and date (dd/mm) for each column, e.g. “Monday 12/10”; the current day is highlighted and labelled “Today”. |
 | Time grid | Hour rows covering 24 hours; the grid scrolls inside its frame. For the current week it scrolls automatically to a red line marking the current time, with the time shown in a red badge on the hour axis (e.g. 13:47). |
-| Meeting block | One block per Meeting, placed by its planned start and end time (BR-013): time range (hh:mm – hh:mm), Meeting title and mode · location (e.g. “Trực tiếp · Phòng họp A1”; Online Meetings show only “Trực tuyến”). A “Secret” [Mật] chip is shown for Secret Meetings. The block is coloured by status: Pending Approval has a dashed amber border and a Rejected Meeting is red with its title struck through. Only Meetings the user may access are shown (BR-016, BR-017), and a Meeting the user has declined through UC-31 is left out of the user’s own calendar; the Chair’s Meeting is never hidden (BR-047, BR-048). Clicking opens a quick view with the title, status, time, place, Chair and participants; an invitee who may still answer finds “Xác nhận tham dự?” [Confirm attendance?] with the buttons Attend [Tham dự] and Not attending [Không tham dự] there, and “View details” [Xem chi tiết] opens the Meeting detail; Back returns to the same week and mode. |
-| Status legend | Read-only colour legend below the grid: In Progress [Đang họp], Published [Đã công bố], Approved [Đã duyệt], Pending Approval [Chờ duyệt], Draft [Nháp], Ended [Đã kết thúc], Rejected [Bị từ chối]. |
+| Meeting block | One block per Meeting, placed by its planned start and end time (BR-013): time range (hh:mm – hh:mm), Meeting title and mode · location (e.g. “In person · Meeting room A1”; Online Meetings show only “Online”). A “Secret” chip is shown for Secret Meetings. The block is coloured by status: Pending Approval has a dashed amber border and a Rejected Meeting is red with its title struck through. Only Meetings the user may access are shown (BR-016, BR-017), and a Meeting the user has declined through UC-31 is left out of the user’s own calendar; the Chair’s Meeting is never hidden (BR-047, BR-048). Clicking opens a quick view with the title, status, time, place, Chair and participants; an invitee who may still answer finds “Confirm attendance?” with the buttons Attend and Not attending there, and “View details” opens the Meeting detail; Back returns to the same week and mode. |
+| Status legend | Read-only colour legend below the grid: In Progress, Published, Approved, Pending Approval, Draft, Ended, Rejected. |
 | Error state | If the Meetings cannot be loaded the grid shows MSG38 “Unable to load meetings. Please try again.” |
 
 #### 4.2 Meeting Calendar – List View
 
 Figure 26: Meeting Calendar – List View
 
-The Meeting Calendar – List View shows the same weekly Meetings as the Calendar View, but as cards grouped by day in chronological order. It is opened with the List [Danh sách] toggle of the calendar toolbar and uses the same data and access rules as the calendar (UC-16, UC-15). A Meeting the user has declined is not listed (BR-047, BR-048). On a card of a Published or In Progress Meeting the invitee may also answer the invitation once (UC-31).
+The Meeting Calendar – List View shows the same weekly Meetings as the Calendar View, but as cards grouped by day in chronological order. It is opened with the List toggle of the calendar toolbar and uses the same data and access rules as the calendar (UC-16, UC-15). A Meeting the user has declined is not listed (BR-047, BR-048). On a card of a Published or In Progress Meeting the invitee may also answer the invitation once (UC-31).
 
 This screen allows any signed-in internal user related to a meeting (Member, Approver, Chair, Secretary, Participant) to:
 
@@ -3031,7 +3044,7 @@ This screen allows any signed-in internal user related to a meeting (Member, App
 
 - Open Meeting Detail: click “View details” on a card to open the Meeting Detail – General Information screen (UC-15).
 
-- Respond to Invitation: on a card that shows “Xác nhận tham dự?” [Confirm attendance?], click Attend [Tham dự] or Not attending [Không tham dự]; the answer is recorded once and cannot be changed (UC-31). The Chair has no buttons.
+- Respond to Invitation: on a card that shows “Confirm attendance?”, click Attend or Not attending; the answer is recorded once and cannot be changed (UC-31). The Chair has no buttons.
 
 On the screen, s/he can also:
 
@@ -3041,17 +3054,17 @@ Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Toolbar | Same controls as the Calendar View: Today [Hôm nay], ‹ ›, week label, Calendar / List toggle (List selected, kept in the URL as ?mode=list), Work week [Tuần làm việc] dropdown and Create meeting [Tạo cuộc họp] button (Member only; opens the Create Meeting dialog). |
-| Day group header | Weekday and full date (dd/mm/yyyy), e.g. “Thứ Hai 12/10/2026”, with the number of Meetings that day on the right (e.g. “1 cuộc họp”). The current day carries a “Today” [Hôm nay] badge. |
+| Toolbar | Same controls as the Calendar View: Today, ‹ ›, week label, Calendar / List toggle (List selected, kept in the URL as ?mode=list), Work week dropdown and Create meeting button (Member only; opens the Create Meeting dialog). |
+| Day group header | Weekday and full date (dd/mm/yyyy), e.g. “Monday 12/10/2026”, with the number of Meetings that day on the right (e.g. “1 meeting”). The current day carries a “Today” badge. |
 | Time column | Planned start time (bold) and planned end time below it (hh:mm), with a dot coloured by the Meeting status. |
 | Meeting title | Name of the Meeting; struck through when the Meeting is Rejected. |
-| Mode · location | Meeting mode In-person [Trực tiếp] / Online [Trực tuyến] / Hybrid [Kết hợp] followed by the location; Online Meetings show the mode only. |
-| Status chip | Meeting status: Draft [Nháp], Pending Approval [Chờ duyệt], Approved [Đã duyệt], Rejected [Bị từ chối], Published [Đã công bố], In Progress [Đang họp], Ended [Đã kết thúc] (green). The time dot and the card’s left border keep the status tone, muted for a past meeting. |
-| Confidentiality chip | Normal [Thường] / Internal [Nội bộ] / Secret [Mật]. |
-| Response chip [Đã xác nhận tham dự / Không tham dự] | Shown on a card once the user has answered: “Đã xác nhận tham dự” [Attending] or “Không tham dự” [Not attending]. Nothing is shown while the user has not answered and for the Chair. (UC-31, UC-32) |
-| Attendance question [Xác nhận tham dự?] | Shown on a card of a Published or In Progress Meeting that the user may still answer, with the buttons Attend [Tham dự] (primary, green) and Not attending [Không tham dự] (outline). One click sends the answer without a confirmation step; after it the buttons disappear and the card shows the Response chip. Choosing Not attending also removes the Meeting from the user’s calendar and the toast adds “Cuộc họp không còn hiện trên lịch của bạn.” Messages: MSG105 on success, MSG154 when the same answer is sent again, MSG285 when the invitation was already answered, MSG286 for the Chair, MSG107 when the Meeting no longer accepts answers (BR-046, BR-047, BR-048). |
-| View details [Xem chi tiết ›] | Button on each card; opens the Meeting detail. Only Meetings the user may access are listed (BR-016, BR-017). |
-| Empty day | A day without Meetings shows a dashed box “No meetings” [Không có cuộc họp]. The list scrolls within the page. |
+| Mode · location | Meeting mode In-person / Online / Hybrid followed by the location; Online Meetings show the mode only. |
+| Status chip | Meeting status: Draft, Pending Approval, Approved, Rejected, Published, In Progress, Ended (green). The time dot and the card’s left border keep the status tone, muted for a past meeting. |
+| Confidentiality chip | Normal / Internal / Secret. |
+| Response chip | Shown on a card once the user has answered: “Attending” or “Not attending”. Nothing is shown while the user has not answered and for the Chair. (UC-31, UC-32) |
+| Attendance question | Shown on a card of a Published or In Progress Meeting that the user may still answer, with the buttons Attend (primary, green) and Not attending (outline). One click sends the answer without a confirmation step; after it the buttons disappear and the card shows the Response chip. Choosing Not attending also removes the Meeting from the user’s calendar and the toast adds “The meeting no longer appears on your calendar.” Messages: MSG105 on success, MSG154 when the same answer is sent again, MSG285 when the invitation was already answered, MSG286 for the Chair, MSG107 when the Meeting no longer accepts answers (BR-046, BR-047, BR-048). |
+| View details | Button on each card; opens the Meeting detail. Only Meetings the user may access are listed (BR-016, BR-017). |
+| Empty day | A day without Meetings shows a dashed box “No meetings”. The list scrolls within the page. |
 | Error state | If the Meetings cannot be loaded the list shows MSG38 “Unable to load meetings. Please try again.” |
 
 #### 4.3 Meeting List
@@ -3060,7 +3073,7 @@ Figure 27: Meeting List
 
 Figure 28: Meeting List – time filter open
 
-The Meeting List screen is reached from “Meetings” [Cuộc họp] in the sidebar. It lists only the Meetings the user has an authorized relationship with – Meetings s/he created (any status), Meetings assigned to him/her for approval from Pending Approval onward, and Meetings where s/he is active assigned Secretary before publication (BR-016, BR-017, BR-030), or Chair at any status, or Participant from Published onward; Guests do not use the internal list – with search, filters and paging. Visibility is enforced on the server (UC-16, UC-15).
+The Meeting List screen is reached from “Meetings” in the sidebar. It lists only the Meetings the user has an authorized relationship with – Meetings s/he created (any status), Meetings assigned to him/her for approval from Pending Approval onward, and Meetings where s/he is active assigned Secretary before publication (BR-016, BR-017, BR-030), or Chair at any status, or Participant from Published onward; Guests do not use the internal list – with search, filters and paging. Visibility is enforced on the server (UC-16, UC-15).
 
 This screen allows any signed-in internal user related to a meeting (Member, Approver, Chair, Secretary, Participant) to:
 
@@ -3082,22 +3095,22 @@ Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Page header | Title “Meetings” [Cuộc họp] with the subtitle “Meetings you organize, are invited to or need to approve” [Các cuộc họp bạn tổ chức, được mời hoặc cần duyệt]. |
-| Create meeting [Tạo cuộc họp] | Primary button; visible only to users with the create-meeting permission (Member). |
-| Search [Tìm theo tên cuộc họp] | Text input, optional, empty by default; matches the Meeting name. |
-| Status filter [Trạng thái] | Dropdown, with “All statuses” [Mọi trạng thái] (default, showing every status) and no “Hôm nay” [Today] choice — “Hôm nay” lives in the Time filter, not here. Options: Draft, Pending Approval, Approved, Rejected, Published, In Progress, Ended, Cancelled. The status is kept in the URL (status=all means every status). |
-| Confidentiality filter [Mức độ] | Dropdown: “Mọi mức độ” [Any level] (default), Normal [Thường], Internal [Nội bộ], Secret [Mật]. |
-| Time filter [Thời điểm] | Dropdown opening with “Mọi thời điểm” [Any time] (no time criterion). Other choices: This week [Tuần này], Not yet held [Chưa diễn ra], Already held [Đã diễn ra]. There is no date-range or month input. Today and This week match a Meeting whose own planned start/end interval overlaps that day or week; Not yet held matches a Meeting whose planned start time is later than now; Already held matches a Meeting whose planned start time is now or earlier, so a Meeting in progress counts as Already held. Combined criteria must all match. Selecting a status in the Status dropdown keeps the current Time criterion (PO 16/11/2026, note 52 Q1). |
-| Meeting name [Tên cuộc họp] | Column: Meeting name in bold; second line shows the Chair (“Chủ trì: <name>”), “No Chair yet” [Chưa có chủ trì] when none is assigned, or the rejection reason (“Lý do từ chối: …”) for a Rejected Meeting. |
-| Time [Thời gian] | Column: planned start–end time (hh:mm–hh:mm) with weekday and date (dd/mm/yyyy) below. |
-| Mode · Location [Hình thức · Địa điểm] | Column: In-person / Online / Hybrid and the location; Online Meetings show the mode only. |
-| Confidentiality [Mức độ] | Column chip: Normal [Thường] / Internal [Nội bộ] / Secret [Mật]. |
-| Status [Trạng thái] | Column chip: Draft [Nháp], Pending Approval [Chờ duyệt], Approved [Đã duyệt], Rejected [Bị từ chối], Published [Đã công bố], In Progress [Đang họp], Ended [Đã kết thúc] (green). |
+| Page header | Title “Meetings” with the subtitle “Meetings you organize, are invited to or need to approve”. |
+| Create meeting | Primary button; visible only to users with the create-meeting permission (Member). |
+| Search | Text input, optional, empty by default; matches the Meeting name. |
+| Status filter | Dropdown, with “All statuses” (default, showing every status) and no “Today” choice — “Today” lives in the Time filter, not here. Options: Draft, Pending Approval, Approved, Rejected, Published, In Progress, Ended, Cancelled. The status is kept in the URL (status=all means every status). |
+| Confidentiality filter | Dropdown: “Any level” (default), Normal, Internal, Secret. |
+| Time filter | Dropdown opening with “Any time” (no time criterion). Other choices: This week, Not yet held, Already held. There is no date-range or month input. Today and This week match a Meeting whose own planned start/end interval overlaps that day or week; Not yet held matches a Meeting whose planned start time is later than now; Already held matches a Meeting whose planned start time is now or earlier, so a Meeting in progress counts as Already held. Combined criteria must all match. Selecting a status in the Status dropdown keeps the current Time criterion (PO 16/11/2026, note 52 Q1). |
+| Meeting name | Column: Meeting name in bold; second line shows the Chair (“Chair: <name>”), “No Chair yet” when none is assigned, or the rejection reason (“Rejection reason: …”) for a Rejected Meeting. |
+| Time | Column: planned start–end time (hh:mm–hh:mm) with weekday and date (dd/mm/yyyy) below. |
+| Mode · Location | Column: In-person / Online / Hybrid and the location; Online Meetings show the mode only. |
+| Confidentiality | Column chip: Normal / Internal / Secret. |
+| Status | Column chip: Draft, Pending Approval, Approved, Rejected, Published, In Progress, Ended (green). |
 | Row link | The whole row is a link to the Meeting detail. Only Meetings the user may access are returned (BR-016, BR-017). |
-| Pagination | “Showing 1–6 of 23 meetings” [Hiển thị 1–6 trong 23 cuộc họp] with ‹, page numbers and ›. Search, filter and sort criteria are kept when moving between pages. |
-| Messages | “Hôm nay không có cuộc họp nào.” [There are no meetings today] with the button “Xem mọi cuộc họp” [View all Meetings] when the opening Today filter finds nothing; “No meetings match the filter.” when other criteria match no row; MSG38 “Unable to load meetings. Please try again.” on load failure; MSG32 “The meeting list criteria are invalid.” for invalid criteria. A Meeting the user has declined still appears in the list (BR-047, BR-048). |
-| Summary cards [Thẻ tóm tắt] | Four cards above the list: Họp hôm nay [Meetings today], Đã công bố [Published], Cần xử lý [To do], Bản nháp [Drafts]. Họp hôm nay reads “N đang diễn ra” or “Chưa có cuộc họp đang diễn ra” and counts only today’s In-Progress meetings. Choosing a card filters the list to that card; choosing it again clears the filter. |
-| Sort [Sắp xếp] | Default planned start time, newest first — except the Họp hôm nay and Cần xử lý views, which default to planned start time, oldest first. A manual sort choice is kept in the URL (sortSet) and when moving between pages. |
+| Pagination | “Showing 1–6 of 23 meetings” with ‹, page numbers and ›. Search, filter and sort criteria are kept when moving between pages. |
+| Messages | “There are no meetings today” with the button “View all Meetings” when the opening Today filter finds nothing; “No meetings match the filter.” when other criteria match no row; MSG38 “Unable to load meetings. Please try again.” on load failure; MSG32 “The meeting list criteria are invalid.” for invalid criteria. A Meeting the user has declined still appears in the list (BR-047, BR-048). |
+| Summary cards | Four cards above the list: Meetings today, Published, To do, Drafts. Meetings today reads “N in progress” or “No meeting in progress” and counts only today’s In-Progress meetings. Choosing a card filters the list to that card; choosing it again clears the filter. |
+| Sort | Default planned start time, newest first — except the Meetings today and To do views, which default to planned start time, oldest first. A manual sort choice is kept in the URL (sortSet) and when moving between pages. |
 
 #### 4.4 Create / Edit Meeting
 
@@ -3105,7 +3118,7 @@ Figure 29: Create Meeting dialog
 
 Figure 30: Edit Meeting dialog
 
-The Create / Edit Meeting dialog opens over the current page with “Create meeting” from the calendar or the Meeting List, or with “Edit” [Sửa thông tin] on the detail of a Draft or Rejected Meeting. It is a dialog, not a separate page. The planned schedule (date, start and end time) is entered directly on the Meeting, which represents one sitting. A new Meeting is saved as Draft and is visible only to its Member until it is submitted for approval (UC-13, UC-14). Rescheduling a Published Meeting is done in the Reschedule Meeting dialog (4.9).
+The Create / Edit Meeting dialog opens over the current page with “Create meeting” from the calendar or the Meeting List, or with “Edit” on the detail of a Draft or Rejected Meeting. It is a dialog, not a separate page. The planned schedule (date, start and end time) is entered directly on the Meeting, which represents one sitting. A new Meeting is saved as Draft and is visible only to its Member until it is submitted for approval (UC-13, UC-14). Rescheduling a Published Meeting is done in the Reschedule Meeting dialog (4.9).
 
 This screen allows the Member to:
 
@@ -3119,19 +3132,19 @@ Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Dialog title | “Tạo cuộc họp” [Create meeting] for a new Meeting, “Chỉnh sửa cuộc họp” [Edit meeting] when editing. A new Meeting is saved as Draft and only its Organizer sees it until it is submitted for approval (BR-013). |
-| Meeting name [Tên cuộc họp] * | Text input, required, max 300 characters; e.g. “Họp kế hoạch Sprint 6”. Errors under MSG31: “Meeting title is required.”, “Meeting title must not exceed 300 characters.” |
-| Description [Mô tả] | Textarea, optional, max 4,000 characters (MSG31 “Description must not exceed 4000 characters.”). |
-| Meeting date [Ngày họp] * | Date picker (dd/mm/yyyy), required; the date of the sitting. |
-| Start [Bắt đầu] * | Time picker (hh:mm), required. Together with the date it forms the Planned Start Time (BR-013); for a new Meeting it must be later than the current time (BR-013). |
-| End [Kết thúc] * | Time picker (hh:mm), required; forms the Planned End Time, which must be later than the Planned Start Time (BR-013). |
-| Mode [Hình thức] * | Segmented control: In-person [Trực tiếp], Online [Trực tuyến], Hybrid [Kết hợp]. Invalid values are rejected (MSG31 “Invalid meeting mode.”). |
-| Confidentiality level [Mức độ mật] | Segmented control: Normal [Thường] (default), Internal [Nội bộ], Secret [Mật]. |
-| Location [Địa điểm / Địa điểm họp trực tiếp] | Text input, max 300 characters, e.g. “Phòng 2.1, tầng 2”, hint “Phòng họp hoặc địa chỉ.”; shown for In-person and Hybrid Meetings and required for them (BR-013); labelled “Địa điểm họp trực tiếp” for a Hybrid Meeting. Error MSG31 “Location must not exceed 300 characters.” |
-| Online link [Link họp trực tuyến] | Text/URL input, optional, max 1,000 characters (hint “Không bắt buộc, tối đa 1.000 ký tự.”); shown for Online and Hybrid Meetings. When left blank, the TrustCabinet online meeting room is used by default and the field shows the placeholder “Để trống: phòng họp TrustCabinet”. |
-| Participants [Người dự họp] * | Only when creating. Search box “Tìm theo tên hoặc email để thêm người dự họp” lists active internal users who are not chosen yet (“Không có ai khớp, hoặc người đó đã được chọn.” when none); picking a person adds one row with the person’s name and email (“(Tôi)” [me] beside the signed-in user), a Meeting Role dropdown (Chair [Chủ tọa], Secretary [Thư ký], Member [Thành viên]; Member by default) and a remove button “Bỏ khỏi danh sách”. Choosing Chair for one person turns the previous Chair into Member, so there is exactly one Chair; a Secretary is optional; the Organizer need not be on the list; Guests cannot be added here. “Chưa chọn ai.” [No one chosen yet] when empty. Invalid list (nobody chosen, no Chair, a person listed twice, an inactive user) shows MSG277 “The meeting participant list is not valid.” under the field. Participants are saved with the Meeting in one save, each with a Pending response, and no invitation is sent while the Meeting is Draft. |
-| Cancel [Huỷ] | Outline button; with unsaved inputs shows the confirm dialog “Bỏ cuộc họp đang soạn?” [Discard the Meeting being drafted?] (edit: “Bỏ thay đổi chưa lưu?” [Discard unsaved changes?]) with the buttons “Bỏ cuộc họp” / “Bỏ thay đổi” and “Tiếp tục soạn” / “Tiếp tục sửa” [Keep editing]. |
-| Create meeting [Tạo cuộc họp] / Save changes [Lưu thay đổi] | Primary button (“Tạo cuộc họp” when creating, “Lưu thay đổi” when editing). Validates the fields and the participant list (BR-013); invalid input shows MSG31 “Invalid meeting information.” and highlights the fields, an invalid participant list shows MSG277. Create: the Meeting is saved with status Draft, the creator is recorded as Member and the chosen participants are saved with it (BR-013), toast MSG29 “Meeting created successfully.”, and the Meeting detail opens; a Secretary can still be assigned later on the Participants tab; failure shows MSG35. Edit: allowed only in Draft or Rejected and does not change the status (BR-014); toast MSG30 “Meeting updated successfully.”; MSG33 “This meeting can no longer be edited.” if the status has changed; failure MSG36. |
+| Dialog title | “Create meeting” for a new Meeting, “Edit meeting” when editing. A new Meeting is saved as Draft and only its Organizer sees it until it is submitted for approval (BR-013). |
+| Meeting name * | Text input, required, max 300 characters; e.g. “Sprint 6 planning meeting”. Errors under MSG31: “Meeting title is required.”, “Meeting title must not exceed 300 characters.” |
+| Description | Textarea, optional, max 4,000 characters (MSG31 “Description must not exceed 4000 characters.”). |
+| Meeting date * | Date picker (dd/mm/yyyy), required; the date of the sitting. |
+| Start * | Time picker (hh:mm), required. Together with the date it forms the Planned Start Time (BR-013); for a new Meeting it must be later than the current time (BR-013). |
+| End * | Time picker (hh:mm), required; forms the Planned End Time, which must be later than the Planned Start Time (BR-013). |
+| Mode * | Segmented control: In-person, Online, Hybrid. Invalid values are rejected (MSG31 “Invalid meeting mode.”). |
+| Confidentiality level | Segmented control: Normal (default), Internal, Secret. |
+| Location | Text input, max 300 characters, e.g. “Room 2.1, floor 2”, hint “Meeting room or address.”; shown for In-person and Hybrid Meetings and required for them (BR-013); labelled “In-person location” for a Hybrid Meeting. Error MSG31 “Location must not exceed 300 characters.” |
+| Online link | Text/URL input, optional, max 1,000 characters (hint “Optional, up to 1,000 characters.”); shown for Online and Hybrid Meetings. When left blank, the TrustCabinet online meeting room is used by default and the field shows the placeholder “Leave blank: TrustCabinet meeting room”. |
+| Participants * | Only when creating. Search box “Search by name or email to add participants” lists active internal users who are not chosen yet (“No one matches, or that person is already chosen.” when none); picking a person adds one row with the person’s name and email (“me” beside the signed-in user), a Meeting Role dropdown (Chair, Secretary, Member; Member by default) and a remove button “Remove from list”. Choosing Chair for one person turns the previous Chair into Member, so there is exactly one Chair; a Secretary is optional; the Organizer need not be on the list; Guests cannot be added here. “No one chosen yet” when empty. Invalid list (nobody chosen, no Chair, a person listed twice, an inactive user) shows MSG277 “The meeting participant list is not valid.” under the field. Participants are saved with the Meeting in one save, each with a Pending response, and no invitation is sent while the Meeting is Draft. |
+| Cancel | Outline button; with unsaved inputs shows the confirm dialog “Discard the Meeting being drafted?” (edit: “Discard unsaved changes?”) with the buttons “Discard meeting” / “Discard changes” and “Keep drafting” / “Keep editing”. |
+| Create meeting / Save changes | Primary button (“Create meeting” when creating, “Save changes” when editing). Validates the fields and the participant list (BR-013); invalid input shows MSG31 “Invalid meeting information.” and highlights the fields, an invalid participant list shows MSG277. Create: the Meeting is saved with status Draft, the creator is recorded as Member and the chosen participants are saved with it (BR-013), toast MSG29 “Meeting created successfully.”, and the Meeting detail opens; a Secretary can still be assigned later on the Participants tab; failure shows MSG35. Edit: allowed only in Draft or Rejected and does not change the status (BR-014); toast MSG30 “Meeting updated successfully.”; MSG33 “This meeting can no longer be edited.” if the status has changed; failure MSG36. |
 
 #### 4.5 Meeting Detail – General Information
 
@@ -3159,7 +3172,7 @@ On the screen, s/he can also:
 
 - Run Status-dependent Actions: use the header buttons allowed for the current status and role: Edit and Submit for approval (Member, Draft/Rejected – UC-14, UC-17), Approve / Reject (assigned Approver – UC-18), Publish (Member, Approved – UC-19), Reschedule (Member, Published – UC-14), Start Meeting (Chair or Secretary, Published – UC-20) and End Meeting (Chair, In Progress – UC-21).
 
-- Respond to Invitation: (invitee other than the Chair, Published Meeting, not yet answered) answer “Bạn có tham dự cuộc họp này?” [Will you attend this meeting?] with Attend [Tham dự] or Not attending [Không tham dự]; the answer is recorded once and cannot be changed (UC-31).
+- Respond to Invitation: (invitee other than the Chair, Published Meeting, not yet answered) answer “Will you attend this meeting?” with Attend or Not attending; the answer is recorded once and cannot be changed (UC-31).
 
 - Back to Meetings: click “‹ Meetings” to return to the previous list or calendar.
 
@@ -3167,27 +3180,27 @@ Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Meeting header | Meeting name with status chip (e.g. Draft [Nháp]), confidentiality chip (e.g. Normal [Thường]) and, once the user has answered the invitation, a response chip “Đã xác nhận tham dự” [Attending] or “Không tham dự” [Not attending]; second line: weekday, date and planned time range (e.g. “Thứ Năm, 15/10/2026 · 08:30–09:30”) and mode · location. |
-| Action buttons | Change with status and role: Draft/Rejected – Edit [Sửa thông tin] and Submit for approval [Gửi duyệt] (Member); Pending Approval – Reject [Từ chối] and Approve [Duyệt] (assigned Approver); Approved – Publish [Công bố] (Member); Published – Reschedule [Dời lịch] (Member) and Start meeting [Bắt đầu cuộc họp] (Chair or Secretary); In Progress – red End meeting [Kết thúc cuộc họp] (Chair), which asks for confirmation and remains available with open Votes or incomplete attendance. Buttons the user may not use are hidden. |
-| Lifecycle bar | Read-only steps Draft [Nháp] · Pending Approval [Chờ duyệt] · Approved [Đã duyệt] · Published [Đã công bố] · In Progress [Đang họp] · Ended [Đã kết thúc]; the current step is highlighted. |
-| Attendance question [Bạn có tham dự cuộc họp này?] | Bar under the lifecycle bar and above the tabs, with the buttons Attend [Tham dự] and Not attending [Không tham dự]. Shown only while the server says the user may answer: the user has a current invitation, is not the Chair, has not answered, and the Meeting is Published. From InProgress on, the detail no longer asks (attendance takes its place); the server still accepts an answer in InProgress. One click sends the answer; the bar then disappears and the response chip appears beside the title. There is no way to change the answer. Choosing Not attending adds “Cuộc họp không còn hiện trên lịch của bạn.” to the toast. Messages: MSG105 (recorded), MSG154 (same answer again), MSG285 (already answered), MSG286 (Chair), MSG107 (no longer answerable). (UC-31, BR-046, BR-047, BR-048) |
-| Tabs | General Information [Thông tin chung] (selected), Participants [Thành phần tham dự], Meeting Content [Nội dung cuộc họp], Documents [Tài liệu], Voting [Biểu quyết], Recordings [Bản ghi], Summary [Tóm tắt], Minutes [Biên bản]. The Bản ghi tab stays locked until the Meeting starts (“Mở khi cuộc họp bắt đầu”) and the Biên bản tab until it has Ended (“Mở khi cuộc họp kết thúc”); a Cancelled Meeting locks both (“Cuộc họp đã huỷ”). The Secretary collecting voice samples keeps Bản ghi open before the start. |
-| Time [Thời gian] | Read-only planned date and time range of the Meeting; once the Meeting has started, the actual start/end times are also shown (UC-15). |
-| Mode [Hình thức] / Location [Địa điểm] | Read-only: In-person / Online / Hybrid and the in-person location (e.g. “Phòng 2.1, tầng 2”). |
-| Online link [Link trực tuyến] | Read-only external link, or “Phòng họp trực tuyến TrustCabinet” when the internal online room is used. |
-| Confidentiality [Mức độ] | Read-only chip: Normal / Internal / Secret. |
-| Organizer [Người tổ chức] | Read-only name of the Member. |
-| Approver [Người duyệt] | Read-only name of the assigned Approver; shows “Chosen when submitting for approval” [Chọn khi gửi duyệt] before submission. |
-| Description [Mô tả] | Read-only multi-line text. |
-| Readiness checklist [Sẵn sàng gửi duyệt] | Shown to the Member while Draft or Rejected. Each item is marked Complete [Đủ] (green) or Missing [Thiếu] (amber) with a hint where to fix it: time, mode and location set (required for submission); Secretary assigned; Chair assigned (“assigned by the Secretary on the Participants tab”); number of Meeting Content items. Chair and Secretary are mandatory at publication (BR-021). |
-| History [Lịch sử] | Read-only timeline of lifecycle actions, e.g. “Draft created – Nguyễn Minh Anh · 09/10 15:02”, followed by submission, approval/rejection (with reason), publication, rescheduling, start and end, each with actor and time. History records cannot be changed (BR-022, BR-023). |
+| Meeting header | Meeting name with status chip (e.g. Draft), confidentiality chip (e.g. Normal) and, once the user has answered the invitation, a response chip “Attending” or “Not attending”; second line: weekday, date and planned time range (e.g. “Thursday, 15/10/2026 · 08:30–09:30”) and mode · location. |
+| Action buttons | Change with status and role: Draft/Rejected – Edit and Submit for approval (Member); Pending Approval – Reject and Approve (assigned Approver); Approved – Publish (Member); Published – Reschedule (Member) and Start meeting (Chair or Secretary); In Progress – red End meeting (Chair), which asks for confirmation and remains available with open Votes or incomplete attendance. Buttons the user may not use are hidden. |
+| Lifecycle bar | Read-only steps Draft · Pending Approval · Approved · Published · In Progress · Ended; the current step is highlighted. |
+| Attendance question | Bar under the lifecycle bar and above the tabs, with the buttons Attend and Not attending. Shown only while the server says the user may answer: the user has a current invitation, is not the Chair, has not answered, and the Meeting is Published. From InProgress on, the detail no longer asks (attendance takes its place); the server still accepts an answer in InProgress. One click sends the answer; the bar then disappears and the response chip appears beside the title. There is no way to change the answer. Choosing Not attending adds “The meeting no longer appears on your calendar.” to the toast. Messages: MSG105 (recorded), MSG154 (same answer again), MSG285 (already answered), MSG286 (Chair), MSG107 (no longer answerable). (UC-31, BR-046, BR-047, BR-048) |
+| Tabs | General Information (selected), Participants, Meeting Content, Documents, Voting, Recordings, Summary, Minutes. The Recordings tab stays locked until the Meeting starts (“Opens when the meeting starts”) and the Minutes tab until it has Ended (“Opens when the meeting ends”); a Cancelled Meeting locks both (“The meeting was cancelled”). The Secretary collecting voice samples keeps Recordings open before the start. |
+| Time | Read-only planned date and time range of the Meeting; once the Meeting has started, the actual start/end times are also shown (UC-15). |
+| Mode / Location | Read-only: In-person / Online / Hybrid and the in-person location (e.g. “Room 2.1, floor 2”). |
+| Online link | Read-only external link, or “TrustCabinet online meeting room” when the internal online room is used. |
+| Confidentiality | Read-only chip: Normal / Internal / Secret. |
+| Organizer | Read-only name of the Member. |
+| Approver | Read-only name of the assigned Approver; shows “Chosen when submitting for approval” before submission. |
+| Description | Read-only multi-line text. |
+| Readiness checklist | Shown to the Member while Draft or Rejected. Each item is marked Complete (green) or Missing (amber) with a hint where to fix it: time, mode and location set (required for submission); Secretary assigned; Chair assigned (“assigned by the Secretary on the Participants tab”); number of Meeting Content items. Chair and Secretary are mandatory at publication (BR-021). |
+| History | Read-only timeline of lifecycle actions, e.g. “Draft created – Nguyen Minh Anh · 09/10 15:02”, followed by submission, approval/rejection (with reason), publication, rescheduling, start and end, each with actor and time. History records cannot be changed (BR-022, BR-023). |
 | Error states | A missing or inaccessible Meeting shows a not-found page without revealing whether it exists (BR-016, BR-017); load failure shows MSG37 “Unable to load meeting details. Please try again.” |
 
 #### 4.6 Submit Meeting for Approval
 
 Figure 34: Submit Meeting for Approval
 
-The Submit Meeting for Approval dialog opens over the Meeting detail when the Member clicks “Submit for approval” [Gửi duyệt] on a Draft Meeting, or resubmits a Rejected Meeting after correcting it. The Organizer chooses the Approver and may leave a message; after submission the Meeting becomes Pending Approval and locks general Meeting information until a decision is made; the assigned Secretary can still manage Agenda Items under BR-059 (UC-17).
+The Submit Meeting for Approval dialog opens over the Meeting detail when the Member clicks “Submit for approval” on a Draft Meeting, or resubmits a Rejected Meeting after correcting it. The Organizer chooses the Approver and may leave a message; after submission the Meeting becomes Pending Approval and locks general Meeting information until a decision is made; the assigned Secretary can still manage Agenda Items under BR-059 (UC-17).
 
 This screen allows the Member to:
 
@@ -3207,13 +3220,13 @@ Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Submit for approval [Gửi duyệt] (header) | Primary button on the detail of a Draft or Rejected Meeting, visible to its Member; opens the dialog. Submission requires the mandatory Meeting information and a valid planned schedule (BR-013); otherwise the Meeting stays Draft/Rejected and the missing items are shown in the readiness checklist. |
-| Dialog title | “Submit meeting for approval” [Gửi cuộc họp để duyệt]. |
-| Approver [Người duyệt] * | Dropdown, required; each option shows name · position, e.g. “Võ Thị Lan · Trưởng phòng Kỹ thuật”. Hint: “Only users who may approve meetings are listed, excluding you.” [Chỉ hiện người có quyền duyệt cuộc họp, không gồm bạn]. Lists active accounts holding the approve-meeting permission, never the Member (BR-019). |
-| Message to approver [Lời nhắn cho người duyệt] | Textarea, optional (placeholder “Không bắt buộc”); delivered to the Approver together with the approval request. |
-| Information notice | Read-only blue box: “After submitting, you cannot edit general Meeting information until the meeting is approved or rejected; the assigned Secretary may still manage Agenda Items.” [Sau khi gửi, bạn không sửa được thông tin chung cho tới khi cuộc họp được duyệt hoặc bị từ chối; Secretary được phân công vẫn có thể quản lý Agenda Items.] (BR-018). |
-| Cancel [Huỷ] | Text button; closes the dialog without changes. |
-| Submit [Gửi duyệt] | Primary button. Re-checks that the Meeting is still Draft or Rejected and the approver is eligible, assigns the approver, changes the status to Pending Approval, records the submission in the history and notifies the approver (BR-018, BR-019, BR-022, BR-023); a success toast is shown. Errors: MSG41 “This meeting can no longer be submitted for approval.”, MSG42 “Unable to submit the meeting for approval. Please try again.”; an ineligible approver must be replaced by another eligible one. |
+| Submit for approval (header) | Primary button on the detail of a Draft or Rejected Meeting, visible to its Member; opens the dialog. Submission requires the mandatory Meeting information and a valid planned schedule (BR-013); otherwise the Meeting stays Draft/Rejected and the missing items are shown in the readiness checklist. |
+| Dialog title | “Submit meeting for approval”. |
+| Approver * | Dropdown, required; each option shows name · position, e.g. “Vo Thi Lan · Head of Engineering”. Hint: “Only users who may approve meetings are listed, excluding you.”. Lists active accounts holding the approve-meeting permission, never the Member (BR-019). |
+| Message to approver | Textarea, optional (placeholder “Optional”); delivered to the Approver together with the approval request. |
+| Information notice | Read-only blue box: “After submitting, you cannot edit general Meeting information until the meeting is approved or rejected; the assigned Secretary may still manage Agenda Items.” (BR-018). |
+| Cancel | Text button; closes the dialog without changes. |
+| Submit | Primary button. Re-checks that the Meeting is still Draft or Rejected and the approver is eligible, assigns the approver, changes the status to Pending Approval, records the submission in the history and notifies the approver (BR-018, BR-019, BR-022, BR-023); a success toast is shown. Errors: MSG41 “This meeting can no longer be submitted for approval.”, MSG42 “Unable to submit the meeting for approval. Please try again.”; an ineligible approver must be replaced by another eligible one. |
 
 #### 4.7 Approve / Reject Meeting
 
@@ -3237,21 +3250,21 @@ Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Meeting header | Meeting name with the Pending Approval [Chờ duyệt] chip and confidentiality chip; second line: planned date and time and “Submitted by <Member> · dd/mm hh:mm” [Gửi bởi …]. |
-| Approve [Duyệt] | Primary button, visible only to the Approver assigned to the current approval cycle (BR-019). Re-checks authorization and Pending Approval status, changes the status to Approved and records the decision with actor and time (BR-020, BR-022, BR-023); toast MSG43 “Meeting approved successfully.” |
-| Reject [Từ chối] | Red outlined button, visible only to the assigned Approver; opens the reject dialog. |
-| Dialog title | “Reject meeting” [Từ chối cuộc họp]. |
-| Rejection reason [Lý do từ chối] * | Textarea, required, trimmed, max 1,000 characters; e.g. “Mục 3 chưa có tài liệu quy trình ký. Bổ sung rồi gửi lại.” Errors: MSG83 “Rejection reason is required.” (BR-020), MSG84 “Rejection reason must not exceed 1000 characters.” |
-| Warning notice | Read-only amber box: “The meeting moves to Rejected. The organizer is notified with the reason.” [Cuộc họp chuyển sang Bị từ chối. Người tổ chức nhận thông báo kèm lý do.] |
-| Cancel [Huỷ] | Text button; closes the dialog without a decision. |
-| Reject (dialog) [Từ chối] | Red primary button. Changes the status to Rejected and stores the reason in the status history (BR-020, BR-022, BR-023); toast MSG44 “Meeting rejected successfully.” |
+| Meeting header | Meeting name with the Pending Approval chip and confidentiality chip; second line: planned date and time and “Submitted by <Member> · dd/mm hh:mm”. |
+| Approve | Primary button, visible only to the Approver assigned to the current approval cycle (BR-019). Re-checks authorization and Pending Approval status, changes the status to Approved and records the decision with actor and time (BR-020, BR-022, BR-023); toast MSG43 “Meeting approved successfully.” |
+| Reject | Red outlined button, visible only to the assigned Approver; opens the reject dialog. |
+| Dialog title | “Reject meeting”. |
+| Rejection reason * | Textarea, required, trimmed, max 1,000 characters; e.g. “Item 3 has no signing procedure document yet. Add it and resubmit.” Errors: MSG83 “Rejection reason is required.” (BR-020), MSG84 “Rejection reason must not exceed 1000 characters.” |
+| Warning notice | Read-only amber box: “The meeting moves to Rejected. The organizer is notified with the reason.” |
+| Cancel | Text button; closes the dialog without a decision. |
+| Reject (dialog) | Red primary button. Changes the status to Rejected and stores the reason in the status history (BR-020, BR-022, BR-023); toast MSG44 “Meeting rejected successfully.” |
 | Error messages | “This meeting is no longer awaiting approval.” when the status has changed; “Unable to complete the approval decision. Please try again.” when the decision cannot be saved; a notice when the user is no longer authorized to review the Meeting (BR-019). In each case the status is unchanged. |
 
 #### 4.8 Publish Meeting
 
 Figure 36: Publish Meeting
 
-The Publish Meeting dialog opens over the Meeting detail when the Member clicks “Publish” [Công bố] on an Approved Meeting. It checks that the Meeting has an active Chair and an active Secretary, states how many internal participants and external Guests will be invited, and warns that after publication the Organizer may change only planned time, location and link; the assigned Secretary may still manage Agenda Items under BR-059. Confirming moves the Meeting to Published and starts invitation delivery (UC-19).
+The Publish Meeting dialog opens over the Meeting detail when the Member clicks “Publish” on an Approved Meeting. It checks that the Meeting has an active Chair and an active Secretary, states how many internal participants and external Guests will be invited, and warns that after publication the Organizer may change only planned time, location and link; the assigned Secretary may still manage Agenda Items under BR-059. Confirming moves the Meeting to Published and starts invitation delivery (UC-19).
 
 This screen allows the Member to:
 
@@ -3269,20 +3282,20 @@ Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Meeting header | Meeting name with the Approved [Đã duyệt] chip and confidentiality chip; second line: planned date and time and “Approved by <Approver> · dd/mm hh:mm” [Duyệt bởi …]. |
-| Publish [Công bố] (header) | Primary button, visible only to the Member of an Approved Meeting (BR-021); opens the dialog. |
-| Dialog title | “Publish meeting” [Công bố cuộc họp]. |
-| Chair check [Chủ trì] | Read-only item marked Complete [Đủ] with the Chair’s name (e.g. “Chủ trì: Trần Quốc Bảo”), or Missing [Thiếu] with a hint that the Secretary must assign the Chair on the Participants tab. Exactly one current Chair with an active account is required (BR-021). |
-| Secretary check [Thư ký] | Read-only item marked Complete [Đủ] with the Secretary’s name (e.g. “Thư ký: Đỗ Hải Yến”), or Missing [Thiếu]. At least one current Secretary with an active account is required (BR-021). Invitation responses do not affect these checks (BR-024). |
-| Information notice | Read-only blue box, e.g. “Invitations will be sent to 4 internal people and 1 external guest. After publishing, only the time, location and link can be rescheduled.” [Lời mời sẽ gửi tới 4 người nội bộ và 1 khách ngoài. Sau khi công bố chỉ còn dời được thời gian, địa điểm và link.] (BR-015). |
-| Cancel [Huỷ] | Text button; closes the dialog without changes. |
-| Publish and send invitations [Công bố và gửi lời mời] | Primary button; disabled while a check is Missing. Re-checks that the Meeting is still Approved with a valid planned schedule and the required Chair/Secretary (BR-021), changes the status to Published and records the action in the history (BR-022, BR-023). Invitations are sent asynchronously: in-app notification and email to internal participants, an email with a secure meeting-specific guest invitation to external Guests (BR-031, BR-032, BR-052); a delivery failure is retried and does not revert the Published status. Messages: MSG45 “Meeting published successfully.”, MSG46 “This meeting can no longer be published.”, MSG47 “Unable to publish the meeting. Please try again.” |
+| Meeting header | Meeting name with the Approved chip and confidentiality chip; second line: planned date and time and “Approved by <Approver> · dd/mm hh:mm”. |
+| Publish (header) | Primary button, visible only to the Member of an Approved Meeting (BR-021); opens the dialog. |
+| Dialog title | “Publish meeting”. |
+| Chair check | Read-only item marked Complete with the Chair’s name (e.g. “Chair: Tran Quoc Bao”), or Missing with a hint that the Secretary must assign the Chair on the Participants tab. Exactly one current Chair with an active account is required (BR-021). |
+| Secretary check | Read-only item marked Complete with the Secretary’s name (e.g. “Secretary: Do Hai Yen”), or Missing. At least one current Secretary with an active account is required (BR-021). Invitation responses do not affect these checks (BR-024). |
+| Information notice | Read-only blue box, e.g. “Invitations will be sent to 4 internal people and 1 external guest. After publishing, only the time, location and link can be rescheduled.” (BR-015). |
+| Cancel | Text button; closes the dialog without changes. |
+| Publish and send invitations | Primary button; disabled while a check is Missing. Re-checks that the Meeting is still Approved with a valid planned schedule and the required Chair/Secretary (BR-021), changes the status to Published and records the action in the history (BR-022, BR-023). Invitations are sent asynchronously: in-app notification and email to internal participants, an email with a secure meeting-specific guest invitation to external Guests (BR-031, BR-032, BR-052); a delivery failure is retried and does not revert the Published status. Messages: MSG45 “Meeting published successfully.”, MSG46 “This meeting can no longer be published.”, MSG47 “Unable to publish the meeting. Please try again.” |
 
 #### 4.9 Reschedule Meeting
 
 Figure 37: Reschedule Meeting
 
-The Reschedule Meeting dialog opens over the detail of a Published Meeting when the Member clicks “Reschedule” [Dời lịch]. It is the reschedule path of Update Meeting: only the planned date and time, the location and the online link can be changed, while the Meeting name and confidentiality level are locked. Saving keeps the Meeting Published and notifies every invitee of the new schedule (UC-14). The same header carries “Start meeting” for the Chair (UC-20).
+The Reschedule Meeting dialog opens over the detail of a Published Meeting when the Member clicks “Reschedule”. It is the reschedule path of Update Meeting: only the planned date and time, the location and the online link can be changed, while the Meeting name and confidentiality level are locked. Saving keeps the Meeting Published and notifies every invitee of the new schedule (UC-14). The same header carries “Start meeting” for the Chair (UC-20).
 
 This screen allows the Member to:
 
@@ -3302,24 +3315,86 @@ Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Meeting header | Meeting name with the Published [Đã công bố] chip and confidentiality chip; second line: current planned date and time and mode · location. |
-| Reschedule [Dời lịch] (header) | Secondary button, visible only to the Member while the Meeting is Published and has not started (BR-015); opens the dialog. |
-| Start meeting [Bắt đầu cuộc họp] (header) | Primary button for the assigned Chair or Secretary of a Published Meeting. Requires exactly one active Chair and at least one active Secretary (BR-024); sets status In Progress, records the actual start time and notifies invited internal participants in-app (BR-022, BR-023); the Meeting Content tab switches to the running mode. Messages: MSG110 “Meeting started successfully.”, MSG112 “This meeting cannot be started.”, MSG115 “Unable to start the meeting. Please try again.” |
-| Meeting date [Ngày họp] | Date picker (dd/mm/yyyy), pre-filled with the current date of the Meeting. |
-| Start [Bắt đầu] / End [Kết thúc] | Time pickers (hh:mm), pre-filled. The new planned start must be later than the current time (BR-015) and the end must be later than the start (BR-013). |
-| Location [Địa điểm] | Text input, max 300 characters, pre-filled, e.g. “Phòng 3.2, tầng 3”. |
-| Online link [Link trực tuyến] | Text/URL input, optional, max 1,000 characters; blank means the TrustCabinet online meeting room. |
-| Meeting name [Tên cuộc họp] | Read-only (greyed) with the hint “Published, cannot be changed” [Đã công bố, không đổi được] (BR-015). |
-| Confidentiality level [Mức độ] | Read-only (greyed) with the hint “Published, cannot be changed” [Đã công bố, không đổi được] (BR-015). |
-| Information notice | Read-only blue box, e.g. “5 invitees will receive a notification and an email with the new schedule.” [5 người được mời sẽ nhận thông báo và email lịch mới.] Existing invitation responses are kept. |
-| Cancel [Huỷ] | Text button; closes the dialog without changes. |
-| Save and notify [Lưu và thông báo] | Primary button. Validates the fields (BR-013, BR-015, MSG31 for invalid input), saves the new schedule, keeps the Published status, records the change in the history (BR-022, BR-023) and queues notifications and emails to all current invitees; a delivery failure does not undo the change. Success: MSG138 “Meeting rescheduled successfully. Invitees will be notified.” If the Meeting is no longer Published or has started: MSG33 “This meeting can no longer be edited.”; save failure: MSG36 “Unable to update the meeting. Please try again.” |
+| Meeting header | Meeting name with the Published chip and confidentiality chip; second line: current planned date and time and mode · location. |
+| Reschedule (header) | Secondary button, visible only to the Member while the Meeting is Published and has not started (BR-015); opens the dialog. |
+| Start meeting (header) | Primary button for the assigned Chair or Secretary of a Published Meeting. Requires exactly one active Chair and at least one active Secretary (BR-024); sets status In Progress, records the actual start time and notifies invited internal participants in-app (BR-022, BR-023); the Meeting Content tab switches to the running mode. Messages: MSG110 “Meeting started successfully.”, MSG112 “This meeting cannot be started.”, MSG115 “Unable to start the meeting. Please try again.” |
+| Meeting date | Date picker (dd/mm/yyyy), pre-filled with the current date of the Meeting. |
+| Start / End | Time pickers (hh:mm), pre-filled. The new planned start must be later than the current time (BR-015) and the end must be later than the start (BR-013). |
+| Location | Text input, max 300 characters, pre-filled, e.g. “Room 3.2, floor 3”. |
+| Online link | Text/URL input, optional, max 1,000 characters; blank means the TrustCabinet online meeting room. |
+| Meeting name | Read-only (greyed) with the hint “Published, cannot be changed” (BR-015). |
+| Confidentiality level | Read-only (greyed) with the hint “Published, cannot be changed” (BR-015). |
+| Information notice | Read-only blue box, e.g. “5 invitees will receive a notification and an email with the new schedule.” Existing invitation responses are kept. |
+| Cancel | Text button; closes the dialog without changes. |
+| Save and notify | Primary button. Validates the fields (BR-013, BR-015, MSG31 for invalid input), saves the new schedule, keeps the Published status, records the change in the history (BR-022, BR-023) and queues notifications and emails to all current invitees; a delivery failure does not undo the change. Success: MSG138 “Meeting rescheduled successfully. Invitees will be notified.” If the Meeting is no longer Published or has started: MSG33 “This meeting can no longer be edited.”; save failure: MSG36 “Unable to update the meeting. Please try again.” |
+
+#### 4.10 Cancel Meeting
+
+Figure 38: Cancel Meeting
+
+The Cancel Meeting dialog opens from the red “Cancel meeting” button in the header of the Meeting details, shown only to the Member who organizes the Meeting and only before it starts. It asks for a reason and says who will be informed; a Cancelled Meeting stays as a read-only record (UC-22, BR-028).
+
+This screen allows the Member to:
+
+- Cancel Meeting: enter the required reason and confirm; the Meeting becomes Cancelled and the reason is kept in its status history (UC-22).
+
+- Keep Meeting: close the dialog with “Keep meeting”; nothing changes (UC-22).
+
+Field Description
+
+| Field Name | Description |
+| --- | --- |
+| Title | “Cancel meeting?” with the Meeting name below it. |
+| Cancellation reason | Text area, required, at most 1,000 characters with a live counter, e.g. 41/1,000. Blank shows MSG262; too long shows MSG345. (BR-028) |
+| Who is informed | Sentence that depends on the status: Published – every invitee gets a notification and an email with the reason; Pending Approval – the Approver is told there is nothing left to review; otherwise nobody is notified. Each ends with “This cannot be undone.” (BR-031) |
+| Keep meeting | Secondary button; closes the dialog. |
+| Cancel meeting | Red button; shows “Cancelling…” while saving, then MSG261 and the Meeting shows as Cancelled. A Meeting that has already started or ended shows MSG263. |
+
+#### 4.11 Start Meeting
+
+Figure 39: Start Meeting
+
+The Chair or the Secretary starts a Published Meeting with “Start meeting” in the header of the Meeting details. At or after the planned time the Meeting starts at once; earlier, a confirmation asks first. A Meeting without an active Secretary cannot start (UC-20, BR-024).
+
+This screen allows the Chair and the Secretary to:
+
+- Start Meeting: start the Published Meeting; it becomes In Progress and its actual start time is recorded (UC-20).
+
+- Start Early: confirm starting before the planned time (UC-20).
+
+Field Description
+
+| Field Name | Description |
+| --- | --- |
+| Start earlier than scheduled | Confirmation dialog shown only before the planned start, with the planned time; buttons Cancel and Start now. |
+| Cannot start yet | Information dialog shown when the Meeting has no active Secretary: “The meeting needs at least one Secretary.” with a single Close button. (BR-024) |
+| Result | MSG110 on success; the status changes to In Progress and the participants are notified. If the Meeting can no longer be started, MSG112 is shown. (BR-035) |
+
+#### 4.12 End Meeting
+
+Figure 40: End Meeting
+
+The Chair ends an In Progress Meeting with “End meeting” in the header of the Meeting details. A confirmation explains that the Meeting cannot be reopened and that the online room closes (UC-21, BR-025).
+
+This screen allows the Chair to:
+
+- End Meeting: confirm; the Meeting becomes Ended, its actual end time is recorded and the online room closes (UC-21).
+
+Field Description
+
+| Field Name | Description |
+| --- | --- |
+| Title | “End meeting?” |
+| Message | “‹Meeting name› will end and cannot be reopened. The online room closes and everyone is disconnected.” For an In-person Meeting the sentence about the online room is left out. |
+| Cancel | Secondary button; closes the dialog. |
+| End meeting | Red button; shows MSG111. Open Votes, unmarked attendance and pending Agenda Items do not block the end; if the actor is no longer the Chair or the Meeting is no longer In Progress, MSG114 is shown. (BR-025, BR-026) |
+| Notes card | On the General Information tab of an In Progress Meeting: “View notes” for the Chair, “Open notes” for the Secretary. |
 
 ### 5. FE-05 – Agenda Management
 
 #### 5.1 Meeting Detail – Meeting Content Tab
 
-Figure 38: Meeting Detail – Meeting Content tab
+Figure 41: Meeting Detail – Meeting Content tab
 
 The Meeting Detail – Meeting Content tab shows the agenda of the selected Meeting. Agenda items belong directly to the Meeting and are listed in order with presenter and the number of attached documents; an item has no duration or planned time. Every user related to the meeting can view the agenda; the Secretary builds it (add, edit, delete, drag-and-drop reorder) while the Meeting is Draft, WaitingApproval, Rejected, Approved, Published or InProgress. When the Meeting is InProgress, the same tab switches to the Meeting Facilitation screen (5.3) for the Chair (UC-26, UC-23a, UC-23b, UC-23c, UC-23d). Title, Presenter, Description and document links can be edited, and Items can be reordered, whatever their execution status, Done Items included; only Pending Items can be deleted. The complete Agenda automatically reflects successfully saved changes for its authorized viewers.
 
@@ -3345,25 +3420,25 @@ Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Meeting header | Read-only: back link “‹ Meetings” [‹ Cuộc họp], meeting title with status chip (e.g. Draft [Nháp], In Progress [Đang họp]) and confidentiality chip (e.g. Normal [Thường]); second line: planned date and time and mode · location (e.g. “Thursday, 15/10/2026 · 08:30–09:30 · Hybrid · Room 2.1, floor 2”). |
-| Tabs | Meeting Content [Nội dung cuộc họp] is selected. Other tabs: General Information, Participants, Documents, Voting, Recordings, Summary, Minutes. |
-| Add content [Thêm nội dung] | Primary button; opens the Add / Edit Agenda Item Drawer. Visible only to the assigned Secretary and only while the Meeting is Draft, WaitingApproval, Rejected, Approved, Published or InProgress (BR-058, BR-059). |
+| Meeting header | Read-only: back link “‹ Meetings”, meeting title with status chip (e.g. Draft, In Progress) and confidentiality chip (e.g. Normal); second line: planned date and time and mode · location (e.g. “Thursday, 15/10/2026 · 08:30–09:30 · Hybrid · Room 2.1, floor 2”). |
+| Tabs | Meeting Content is selected. Other tabs: General Information, Participants, Documents, Voting, Recordings, Summary, Minutes. |
+| Add content | Primary button; opens the Add / Edit Agenda Item Drawer. Visible only to the assigned Secretary and only while the Meeting is Draft, WaitingApproval, Rejected, Approved, Published or InProgress (BR-058, BR-059). |
 | Drag handle | Shown on every row, including Done Items, to the active assigned Secretary while Agenda planning is permitted. Items of any execution status can be reordered; the new order is saved as one change (UC-23d). MSG63 confirms success; MSG143 reports invalid or outdated order; MSG71 reports a save failure. |
 | # (Order number) | The saved position of the Item in the Meeting agenda. Deleting a Pending Item does not renumber remaining positions; gaps are permitted. New Items are appended after the last position. |
-| Content [Nội dung] | Column: agenda item title in bold. The Documents [Tài liệu] column shows the number of attached meeting documents (e.g. “2 tài liệu”, “Chưa có”). While the Meeting is InProgress a Status [Trạng thái] column shows the execution chips Done [Đã xong], In discussion [Đang bàn] and Concluded [Đã kết luận]. |
-| Presenter [Người trình bày] | Column: name of the presenter; an external Guest is marked “(guest)” [(khách)]. Empty when no presenter is set. Editable whatever the Item’s status. |
+| Content | Column: agenda item title in bold. The Documents column shows the number of attached meeting documents (e.g. “2 documents”, “None yet”). While the Meeting is InProgress a Status column shows the execution chips Done, In discussion and Concluded. |
+| Presenter | Column: name of the presenter; an external Guest is marked “(guest)”. Empty when no presenter is set. Editable whatever the Item’s status. |
 | Row action | Secretary only, while Agenda planning is permitted. Edit is offered on every row and permits Title, Presenter, Description and document links whatever the Item’s status (UC-23b). Delete is offered only on Pending rows (UC-23c, BR-063); MSG142 reports an attempted deletion of an Item that has started. MSG67 applies when planning is no longer permitted; MSG61/MSG62 confirm success and MSG69/MSG70 report save failure. |
 | Empty and error states | When the Meeting has no agenda items an empty agenda message is shown (UC-26 AF-1). A meeting the user may not access shows the not-found page and no agenda data (BR-016, BR-017); load failure shows MSG128 “Unable to load the meeting agenda. Please try again.” |
 
 5.1b Meeting Content Tab – Meeting InProgress
 
-Figure 39: Meeting Content tab while the Meeting is InProgress (Secretary view)
+Figure 42: Meeting Content tab while the Meeting is InProgress (Secretary view)
 
-Once the Meeting is InProgress the agenda list gains a Status [Trạng thái] column (Done [Đã xong], Concluded [Đã kết luận], In discussion [Đang bàn]) and the Secretary keeps full control of it. Every row, including Done and InProgress Items, has a drag handle and an Edit action; Delete [Xoá] appears only on Pending rows (UC-23b, UC-23c, UC-23d, BR-063). The Chair’s execution controls are on the Meeting Facilitation screen (5.3).
+Once the Meeting is InProgress the agenda list gains a Status column (Done, Concluded, In discussion) and the Secretary keeps full control of it. Every row, including Done and InProgress Items, has a drag handle and an Edit action; Delete appears only on Pending rows (UC-23b, UC-23c, UC-23d, BR-063). The Chair’s execution controls are on the Meeting Facilitation screen (5.3).
 
 #### 5.2 Add / Edit Agenda Item Drawer
 
-Figure 40: Add / Edit Agenda Item Drawer
+Figure 43: Add / Edit Agenda Item Drawer
 
 The Add / Edit Agenda Item Drawer slides in from the right of the Meeting Content tab, so the agenda stays visible behind it, when the Secretary clicks “Add content” or chooses Edit on an item. It collects the content to discuss (title), an optional presenter, a note and a checklist of the Meeting’s documents linked to the item, with Cancel and Save buttons. Items can be added or edited only while the Meeting is Draft, WaitingApproval, Rejected, Approved, Published or InProgress (UC-23a, UC-23b). All four fields stay editable whatever the Item’s status.
 
@@ -3385,17 +3460,17 @@ Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Drawer title | “Add content” [Thêm nội dung] in create mode; the edit mode reuses the drawer with the current values. |
-| Content to discuss [Nội dung cần bàn] * | Text input, required (*); the title of the agenda item. Empty shows the field error “Agenda item title is required.” (MSG66). |
-| Presenter [Người trình bày] | Dropdown, optional; the hint “Không bắt buộc, có thể chọn sau.” is shown under it. Lists the current internal participants and external Guests of the Meeting; a Guest is shown with “(guest)” [(khách)], e.g. “Ngô Thanh Vân (khách)”. Editable whatever the Item’s status. (BR-064, BR-065) |
-| Note [Ghi chú] | Textarea, optional; description of what will be presented or discussed. Editable whatever the Item’s status. |
-| Documents [Tài liệu] | Checklist of the documents already uploaded to this Meeting (file type badge and file name); the ticked ones are linked to the item (FE-07, UC-36b). The drawer has no “+ Add document” menu and no upload: files are uploaded in the Documents tab. A document not available to the Meeting gives “One or more selected documents are not available to this meeting.” (MSG66). Editable whatever the Item’s status. |
-| Cancel [Huỷ] | Text button; closes the drawer without saving. |
-| Save [Lưu] | Primary button. Validates the fields and saves. Create: a Pending item is added at the end of the Meeting agenda, toast MSG60; Edit: toast MSG61. MSG67 if the Meeting is no longer Draft, WaitingApproval, Rejected, Approved, Published or InProgress or the user is no longer its Secretary (BR-058, BR-059); failure MSG68 / MSG69. Successful changes automatically refresh the complete Agenda for authorized viewers. |
+| Drawer title | “Add content” in create mode; the edit mode reuses the drawer with the current values. |
+| Content to discuss * | Text input, required (*); the title of the agenda item. Empty shows the field error “Agenda item title is required.” (MSG66). |
+| Presenter | Dropdown, optional; the hint “Optional, can be chosen later.” is shown under it. Lists the current internal participants and external Guests of the Meeting; a Guest is shown with “(guest)”, e.g. “Ngo Thanh Van (guest)”. Editable whatever the Item’s status. (BR-064, BR-065) |
+| Note | Textarea, optional; description of what will be presented or discussed. Editable whatever the Item’s status. |
+| Documents | Checklist of the documents already uploaded to this Meeting (file type badge and file name); the ticked ones are linked to the item (FE-07, UC-36b). The drawer has no “+ Add document” menu and no upload: files are uploaded in the Documents tab. A document not available to the Meeting gives “One or more selected documents are not available to this meeting.” (MSG66). Editable whatever the Item’s status. |
+| Cancel | Text button; closes the drawer without saving. |
+| Save | Primary button. Validates the fields and saves. Create: a Pending item is added at the end of the Meeting agenda, toast MSG60; Edit: toast MSG61. MSG67 if the Meeting is no longer Draft, WaitingApproval, Rejected, Approved, Published or InProgress or the user is no longer its Secretary (BR-058, BR-059); failure MSG68 / MSG69. Successful changes automatically refresh the complete Agenda for authorized viewers. |
 
 #### 5.3 Meeting Facilitation
 
-Figure 41: Meeting Facilitation
+Figure 44: Meeting Facilitation
 
 The Meeting Facilitation screen is the Meeting Content tab of a Meeting that is InProgress, after the Chair or the Secretary has started the Meeting (UC-20). It shows the agenda with the execution status and actual times of each item, a card for the current agenda item and a preview of the online room. The Chair sets which item is being discussed, completes it and moves to the next one, may create a vote for the current item and finally ends the Meeting; the assigned Secretary may continue to create, update, delete and reorder Agenda Items, while agenda execution remains Chair-only; other authorized viewers follow the same progress read-only and in real time (UC-24, UC-25, UC-26, UC-21). The Chair must start the first Pending Item in the current order and may complete it regardless of Planned Duration; the next Item never starts automatically. Pending Items stay Pending when the Meeting ends.
 
@@ -3421,29 +3496,29 @@ Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Meeting header | Read-only: title with status chip In Progress [Đang họp] and confidentiality chip; second line “Started 08:32 · 21 minutes elapsed” [Bắt đầu … · đã họp … phút] and “Present 4/5” [Có mặt 4/5] taken from attendance (6.3). |
-| Join online room [Vào phòng trực tuyến] | Secondary button; shown for Online or Hybrid Meetings; opens the Meeting Lobby (8.1). |
-| End meeting [Kết thúc cuộc họp] | Chair-only End Meeting confirmation; available while InProgress regardless of open Votes, attendance completeness or remaining Pending Items. End records actual time/history and completes only the InProgress Agenda Item; it closes room access but preserves Votes and ballots without automatically closing them. No new ballots after Ended. MSG111 success; MSG114/MSG116 on authority/status/save failure. (BR-024, BR-025, BR-026) |
-| Agenda list | One row per agenda item: order number, title, presenter, number of documents and a status/action cell; there is no duration column. A Done item shows its actual time range (e.g. 08:32–08:44); the current item is highlighted and shows “In discussion since 08:44 · 9 minutes” [Đang thảo luận từ … · … phút]. The panel is 360px wide and has no drag handles; reordering is done in the Meeting Content tab (5.1). |
+| Meeting header | Read-only: title with status chip In Progress and confidentiality chip; second line “Started 08:32 · 21 minutes elapsed” and “Present 4/5” taken from attendance (6.3). |
+| Join online room | Secondary button; shown for Online or Hybrid Meetings; opens the Meeting Lobby (8.1). |
+| End meeting | Chair-only End Meeting confirmation; available while InProgress regardless of open Votes, attendance completeness or remaining Pending Items. End records actual time/history and completes only the InProgress Agenda Item; it closes room access but preserves Votes and ballots without automatically closing them. No new ballots after Ended. MSG111 success; MSG114/MSG116 on authority/status/save failure. (BR-024, BR-025, BR-026) |
+| Agenda list | One row per agenda item: order number, title, presenter, number of documents and a status/action cell; there is no duration column. A Done item shows its actual time range (e.g. 08:32–08:44); the current item is highlighted and shows “In discussion since 08:44 · 9 minutes”. The panel is 360px wide and has no drag handles; reordering is done in the Meeting Content tab (5.1). |
 | Item status | Done or InProgress status is shown read-only. Only the first Pending Item offers Set as Current to the active assigned Chair when no Item is InProgress. |
-| Set as current [Đặt hiện tại] | Chair only, while Meeting is InProgress. Starts only the first Pending Item in the current order and records actual start time. MSG72 reports another current Item; MSG144 reports selecting a later Pending Item; MSG73 reports other ineligible conditions; MSG75 reports save failure; MSG64 confirms success. (BR-060, BR-061, BR-062) |
-| Current item card [Mục hiện tại · 2] | Read-only: order number and title of the current item and its attached documents (e.g. “2 documents · De-xuat-bieu-quyet.docx, So-sanh-eCabinet.pdf”); file names open the Document Viewer (7.5). |
-| Create a vote for this item [Tạo biểu quyết cho mục này] | Secondary button in the current item card; Chair only, while the Meeting is InProgress (BR-090, BR-092, BR-093); opens the Create & Open Vote Dialog (11.2) linked to the current item. |
-| Complete item [Hoàn thành mục] | Chair only, for the current InProgress Item. Completion is allowed regardless of Planned Duration and records actual end time and elapsed duration. The Meeting stays InProgress and the next Item does not start automatically. MSG65 confirms success; MSG74 reports ineligible conditions; MSG76 reports save failure. (BR-060, BR-061, BR-062) |
-| Online room preview | Read-only grid of tiles with the names of users connected to the online room; a tile such as “Room 2.1” [Phòng 2.1] shows the in-person room of a Hybrid Meeting, and “Waiting to join” [Chờ vào] marks an empty slot. |
+| Set as current | Chair only, while Meeting is InProgress. Starts only the first Pending Item in the current order and records actual start time. MSG72 reports another current Item; MSG144 reports selecting a later Pending Item; MSG73 reports other ineligible conditions; MSG75 reports save failure; MSG64 confirms success. (BR-060, BR-061, BR-062) |
+| Current item card | Read-only: order number and title of the current item and its attached documents (e.g. “2 documents · De-xuat-bieu-quyet.docx, So-sanh-eCabinet.pdf”); file names open the Document Viewer (7.5). |
+| Create a vote for this item | Secondary button in the current item card; Chair only, while the Meeting is InProgress (BR-090, BR-092, BR-093); opens the Create & Open Vote Dialog (11.2) linked to the current item. |
+| Complete item | Chair only, for the current InProgress Item. Completion is allowed regardless of Planned Duration and records actual end time and elapsed duration. The Meeting stays InProgress and the next Item does not start automatically. MSG65 confirms success; MSG74 reports ineligible conditions; MSG76 reports save failure. (BR-060, BR-061, BR-062) |
+| Online room preview | Read-only grid of tiles with the names of users connected to the online room; a tile such as “Room 2.1” shows the in-person room of a Hybrid Meeting, and “Waiting to join” marks an empty slot. |
 | Real-time update | The complete Agenda automatically refreshes for authorized users viewing the Meeting after successful creation, editing, deletion, reordering, start, completion or completion of the current Item when the Meeting ends. Failed changes do not produce a successful Agenda update. |
 
 ### 6. FE-06 – Meeting Participant Management
 
 #### 6.1 Meeting Detail – Participants Tab
 
-Figure 42: Meeting Detail – Participants tab (Secretary view)
+Figure 45: Meeting Detail – Participants tab (Secretary view)
 
-Figure 43: Change Role dialog – the Chair hands over the Chair role
+Figure 46: Change Role dialog – the Chair hands over the Chair role
 
-Figure 44: Change Role dialog – the Secretary changes a role
+Figure 47: Change Role dialog – the Secretary changes a role
 
-The Meeting Detail – Participants tab shows current internal participants and external Guests. The assigned Secretary manages the roster, roles and additional permissions; the Organizer may assign the missing Secretary. From Published onward, the Chair may view the roster and invitation responses by default, while a Member or verified Guest needs the relevant additional permission. A Member or verified Guest with View Invitation Responses can see invitee names and email in response rows without gaining roster browsing or search access. View-only access does not permit changes. (UC-29, UC-30a–UC-32, BR-039, BR-016, BR-017)
+The Meeting Detail – Participants tab shows current internal participants and external Guests. The assigned Secretary manages the roster and roles; the Organizer may assign the missing Secretary. Everyone who can open the Meeting sees the roster and the invitation responses; a verified Guest sees names but not other people’s email addresses. View-only access does not permit changes. (UC-29, UC-30a–UC-32, BR-039, BR-016, BR-017)
 
 This screen allows the Secretary to:
 
@@ -3451,9 +3526,9 @@ This screen allows the Secretary to:
 
 - Search Participants: type a name or email to filter the roster (UC-29).
 
-- Manage Meeting Role: click the pencil button “Đổi vai trò” [Change role] on the row of a current internal participant, choose one role in the Change Role dialog and click Save [Lưu]; before publication the Secretary may also make the person Chair, and the former Chair becomes Member in the same save (UC-30b).
+- Manage Meeting Role: click the pencil button “Change role” on the row of a current internal participant, choose one role in the Change Role dialog and click Save; before publication the Secretary may also make the person Chair, and the former Chair becomes Member in the same save (UC-30b).
 
-- Hand Over Chair: (Chair, from publication onward) click “Đổi vai trò” on the row of the person who will take over, choose Chair [Chủ tọa] and click “Giao Chủ tọa” [Hand over Chair]; there is no separate hand-over button and no list of recipients (UC-34).
+- Hand Over Chair: (Chair, from publication onward) click “Change role” on the row of the person who will take over, choose Chair and click “Hand over Chair”; there is no separate hand-over button and no list of recipients (UC-34).
 
 - Remove Participant: click “Remove” and confirm to remove an internal participant from the Meeting (UC-30c).
 
@@ -3473,35 +3548,34 @@ Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Meeting header | Read-only: back link “‹ Meetings” [‹ Cuộc họp], meeting title with status chip (e.g. Draft [Nháp], In Progress [Đang họp]) and confidentiality chip (e.g. Normal [Thường]); second line: planned date and time and mode · location (e.g. “Thursday, 15/10/2026 · 08:30–09:30 · Hybrid · Room 2.1, floor 2”). |
-| Tabs | Participants [Thành phần tham dự] is selected. Other tabs: General Information, Meeting Content, Documents, Voting, Recordings, Summary, Minutes. |
-| Search [Tìm người tham dự] | Text input, optional, empty by default; filters the roster by full name or email. |
-| Invite external guest [Mời khách ngoài] | Secondary button; opens the Add Participant Dialog on the External guests tab. Secretary only. |
-| Add participants [Thêm thành phần] | Primary button; opens the Add Participant Dialog. Shown to the Secretary; when the Meeting has no Secretary it is replaced for the Member by “Add Secretary” [Thêm Thư ký] (BR-036, BR-037). Hidden while the Meeting is Pending Approval or Ended (BR-036, BR-037, BR-016, BR-017, BR-030). |
-| Participant [Thành phần] | Column: internal full name, with “(Tôi)” [me] after the name of the signed-in user, or Guest self-declared display name, optional Guest job title and invited email; the response label of UC-32 sits beside the name; each email is shown on one line cut with “…” when too long, and a long email wraps before “@” or “.” rather than in the middle of a word. On a phone the attendance and the role chip share one row; use invitation name before profile completion. Mark Guest explicitly; do not represent display information as verified identity. |
-| Meeting role [Vai trò trong cuộc họp] | Internal participants have Chair [Chủ trì], Secretary [Thư ký] or Member [Thành viên]; Guests have fixed Guest [Khách] access. Change role [Đổi vai trò] opens the Change Role dialog (6.1b, 6.1c). Giving the Chair role changes both roles together: the current Chair becomes Member and the selected person becomes Chair, as the Chair option itself states “Bạn sẽ thành Thành viên.” A Secretary must remain in Published/InProgress; preparation may temporarily have none. Success MSG100; replacement failure MSG146; required-role restriction MSG109. (BR-039, BR-040, BR-041, BR-042) |
-| Row action [Thao tác] | Secretary and Chair: pencil button “Đổi vai trò” [Change role] and trash button “Gỡ khỏi cuộc họp” [Remove from the meeting] for internal participants; trash button “Thu hồi lời mời” [Revoke invitation] only for Guests (a Guest has no role to change). The Chair’s own row has no actions: to move the Chair role, use Change role on the recipient’s row. View-only users see no management actions. Removal ends the assignment’s additional permissions and access, while independent valid access remains. Required-role restriction MSG109; removal success MSG103; failure MSG104; status restriction MSG98. (BR-036, BR-037, BR-044, BR-041, BR-042) |
-| Response label [Đã xác nhận tham dự / Không tham dự] | Shown beside the name after publication to the assigned Secretary and current Chair by default, and to a Member or verified Guest with View Invitation Responses. Shows “Đã xác nhận tham dự” [Attending] or “Không tham dự” [Not attending] for each current invitee who answered; an invitee who has not answered and the Chair have no label. There are no totals, and nobody answers on this tab. This permission displays identity in response rows but does not grant roster browsing or search. Responses do not set attendance. (UC-32, BR-043, BR-016, BR-017, BR-047, BR-048) |
-| Pagination | “Showing 1–6 of 6 participants” [Hiển thị 1–6 trong 6 thành phần] with page-size choices 20, 50 and 100 (invitations are still sent when the Meeting is published, BR-031, BR-032). |
+| Meeting header | Read-only: back link “‹ Meetings”, meeting title with status chip (e.g. Draft, In Progress) and confidentiality chip (e.g. Normal); second line: planned date and time and mode · location (e.g. “Thursday, 15/10/2026 · 08:30–09:30 · Hybrid · Room 2.1, floor 2”). |
+| Tabs | Participants is selected. Other tabs: General Information, Meeting Content, Documents, Voting, Recordings, Summary, Minutes. |
+| Search | Text input, optional, empty by default; filters the roster by full name or email. |
+| Invite external guest | Secondary button; opens the Add Participant Dialog on the External guests tab. Secretary only. |
+| Add participants | Primary button; opens the Add Participant Dialog. Shown to the Secretary; when the Meeting has no Secretary it is replaced for the Member by “Add Secretary” (BR-036, BR-037). Hidden while the Meeting is Pending Approval or Ended (BR-036, BR-037, BR-016, BR-017, BR-030). |
+| Participant | Column: internal full name, with “me” after the name of the signed-in user, or Guest self-declared display name, optional Guest job title and invited email; the response label of UC-32 sits beside the name; each email is shown on one line cut with “…” when too long, and a long email wraps before “@” or “.” rather than in the middle of a word. On a phone the attendance and the role chip share one row; use invitation name before profile completion. Mark Guest explicitly; do not represent display information as verified identity. |
+| Meeting role | Internal participants have Chair, Secretary or Member; Guests have fixed Guest access. Change role opens the Change Role dialog (6.1b, 6.1c). Giving the Chair role changes both roles together: the current Chair becomes Member and the selected person becomes Chair, as the Chair option itself states “You will become Member.” A Secretary must remain in Published/InProgress; preparation may temporarily have none. Success MSG100; replacement failure MSG146; required-role restriction MSG109. (BR-039, BR-040, BR-041, BR-042) |
+| Row action | Secretary and Chair: pencil button “Change role” and trash button “Remove from the meeting” for internal participants; trash button “Revoke invitation” only for Guests (a Guest has no role to change). The Chair’s own row has no actions: to move the Chair role, use Change role on the recipient’s row. View-only users see no management actions. Removal ends the assignment’s access, while independent valid access remains. Required-role restriction MSG109; removal success MSG103; failure MSG104; status restriction MSG98. (BR-036, BR-037, BR-044, BR-041, BR-042) |
+| Response label | Shown beside the name after publication to the assigned Secretary and current Chair by default, and to a Member or verified Guest with View Invitation Responses. Shows “Attending” or “Not attending” for each current invitee who answered; an invitee who has not answered and the Chair have no label. There are no totals, and nobody answers on this tab. This permission displays identity in response rows but does not grant roster browsing or search. Responses do not set attendance. (UC-32, BR-043, BR-016, BR-017, BR-047, BR-048) |
+| Pagination | “Showing 1–6 of 6 participants” with page-size choices 20, 50 and 100 (invitations are still sent when the Meeting is published, BR-031, BR-032). |
 | Error states | A Meeting the user is not authorized for shows the not-found page without roster data (BR-016, BR-017); load failure shows MSG95 “Unable to load meeting participants. Please try again.” |
-| Additional permissions [Quyền bổ sung] | The Secretary may grant or revoke additional Meeting permissions on current internal participants or Guest invitations without changing their role. Available grants are not limited to View Participants and View Responses; the final catalogue and grant matrix are pending. These two views continue to check their respective permission. (BR-016, BR-017) |
 
-Change Role Dialog. The Change Role dialog opens from the “Đổi vai trò” [Change role] button on one internal participant’s row (UC-30b, UC-34). The Secretary (Draft, Rejected, Approved, Published, InProgress) and the Chair of a Published or InProgress Meeting use it. A person is given exactly one role; there is no list of recipients and no separate Hand over Chair button.
+Change Role Dialog. The Change Role dialog opens from the “Change role” button on one internal participant’s row (UC-30b, UC-34). The Secretary (Draft, Rejected, Approved, Published, InProgress) and the Chair of a Published or InProgress Meeting use it. A person is given exactly one role; there is no list of recipients and no separate Hand over Chair button.
 
 | Field Name | Description |
 | --- | --- |
-| Dialog title | “Đổi vai trò” [Change role]. |
+| Dialog title | “Change role”. |
 | Person | Read-only avatar, full name and email of the participant whose role changes. |
-| Role [Vai trò] | One radio per role, each with a short description of what the role allows: Chair [Chủ tọa] “Điều hành cuộc họp, chuyển mục nghị sự, tắt micro người dự.”; Secretary [Thư ký] “Soạn chương trình nghị sự, quản lý thành phần.”; Member [Thành viên] “Xem cuộc họp và vào phòng họp.” The person’s current role is selected when the dialog opens. |
-| Chair option | Offered only when the signed-in user may move the Chair role and this person may take it: the person is a current active internal Member (not a Guest, not the Secretary, account not locked) (BR-041, BR-042), and either the signed-in user is the Chair of a Published or InProgress Meeting, or the Meeting is not yet Published, or the Chair’s account is locked and the signed-in user is the Secretary (BR-041, BR-042). When it is not offered (6.1c) the list shows only Secretary and Member. The line under Chair adds “Bạn sẽ thành Thành viên.” when the signed-in user is the Chair handing over, or “<name> sẽ thành Thành viên.” naming the Chair who steps down. If nobody on the roster can take the Chair role, no row offers it; MSG258 is returned by the API but never shown. |
-| Cancel [Huỷ] | Outline button; closes the dialog without changes. |
-| Save [Lưu] / Hand over Chair [Giao Chủ tọa] | Primary button, disabled until a role different from the current one is chosen; labelled “Giao Chủ tọa” when Chair is chosen and “Lưu” otherwise; shows “Đang lưu…” while sending. Success closes the dialog and shows a toast: MSG257 “Giao vai trò Chủ tọa thành công.” after a hand-over, MSG100 “Cập nhật vai trò cuộc họp thành công.” for other changes, MSG154 when nothing changed. Refusals show a toast after the dialog closes: MSG256 (a Secretary tried to move the Chair role while the Chair’s account is active), MSG259 (the recipient is not an eligible active internal Member), MSG260 (the user is no longer the Chair), MSG109 (the Meeting would lose its required Chair or Secretary); MSG102 “Unable to update the meeting role. Please try again.” appears inside the dialog when saving fails. The roster is then read again. |
+| Role | One radio per role, each with a short description of what the role allows: Chair “Runs the meeting, moves between agenda items, mutes attendees.”; Secretary “Prepares the agenda, manages the participants.”; Member “Views the meeting and joins the meeting room.” The person’s current role is selected when the dialog opens. |
+| Chair option | Offered only when the signed-in user may move the Chair role and this person may take it: the person is a current active internal Member (not a Guest, not the Secretary, account not locked) (BR-041, BR-042), and either the signed-in user is the Chair of a Published or InProgress Meeting, or the Meeting is not yet Published, or the Chair’s account is locked and the signed-in user is the Secretary (BR-041, BR-042). When it is not offered (6.1c) the list shows only Secretary and Member. The line under Chair adds “You will become Member.” when the signed-in user is the Chair handing over, or “<name> will become Member.” naming the Chair who steps down. If nobody on the roster can take the Chair role, no row offers it; MSG258 is returned by the API but never shown. |
+| Cancel | Outline button; closes the dialog without changes. |
+| Save / Hand over Chair | Primary button, disabled until a role different from the current one is chosen; labelled “Hand over Chair” when Chair is chosen and “Save” otherwise; shows “Saving…” while sending. Success closes the dialog and shows a toast: MSG257 “Chair role handed over successfully.” after a hand-over, MSG100 “Meeting role updated successfully.” for other changes, MSG154 when nothing changed. Refusals show a toast after the dialog closes: MSG256 (a Secretary tried to move the Chair role while the Chair’s account is active), MSG259 (the recipient is not an eligible active internal Member), MSG260 (the user is no longer the Chair), MSG109 (the Meeting would lose its required Chair or Secretary); MSG102 “Unable to update the meeting role. Please try again.” appears inside the dialog when saving fails. The roster is then read again. |
 
 #### 6.2 Add Participant Dialog
 
-For a Guest invitation, enter name/email and optional additional Meeting permissions. Secret shows inline warning: “Khách được truy cập tài liệu và tham gia như Thành viên của cuộc họp này.” No extra confirmation/approval step. Guest has no Chair/Secretary role selector.
+For a Guest invitation, enter name and email. Secret shows inline warning: “The guest may access the documents and take part as a Member of this meeting.” No extra confirmation/approval step. Guest has no Chair/Secretary role selector.
 
-Figure 45: Add Participant Dialog
+Figure 48: Add Participant Dialog
 
 The Add Participant Dialog opens from the Participants tab with “Add participants” (Internal users tab) or “Invite external guest” (External guests tab). The Secretary searches active internal users, ticks the people to add and chooses their meeting role, or invites an external Guest by name and email. When the Meeting has no Secretary yet, the Member uses the same dialog to add the missing Secretary (UC-30a).
 
@@ -3521,30 +3595,29 @@ Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Dialog title | “Add participants” [Thêm thành phần]. |
-| Tabs | Internal users [Người trong hệ thống] (default) / External guests [Khách mời ngoài]. |
-| User search | Text input on the Internal users tab, e.g. “Phạm”; filters active internal users by name or email. |
+| Dialog title | “Add participants”. |
+| Tabs | Internal users (default) / External guests. |
+| User search | Text input on the Internal users tab, e.g. “Pham”; filters active internal users by name or email. |
 | User result list | Select one or more active internal accounts by checkbox. Current participants cannot be added again. Organizer recovery may instead assign Secretary to one existing active Member without creating a duplicate. All selected users are added together, or none are added if any selection is invalid. No organisational-unit invitation. For the missing Secretary, select exactly one user. (BR-038) |
-| Meeting role [Vai trò trong cuộc họp] | Required; Member [Thành viên] by default, Chair [Chủ trì] or Secretary [Thư ký]. One shared role applies to the entire selection. The missing Secretary assignment is one user as Secretary, without additional permissions. A selection must not create a second Chair; use Edit Role & Permissions to replace the current Chair. (BR-039, BR-040, BR-041, BR-042) |
+| Meeting role | Required; Member by default, Chair or Secretary. One shared role applies to the entire selection. The missing Secretary assignment is one user as Secretary. A selection must not create a second Chair; use Change role on the recipient’s row to replace the current Chair. (BR-039, BR-040, BR-041, BR-042) |
 | Guest name | External guests tab. Text input, required. |
 | Guest email | External guests tab. Email input, required, valid format. One current invitation per email per Meeting and the email must not belong to a current internal participant (BR-049, BR-050, BR-051). The Guest receives an email with a verification link once the Meeting is Published or InProgress (BR-052). |
-| Cancel [Huỷ] | Text button; closes the dialog. |
-| Add <n> people [Thêm <n> người] | Shows the number selected and submits the entire selection. New invitations start Pending. All selected people are saved together; no one is added when validation or saving fails. Success MSG96 and the number added; invalid participant information MSG97/MSG145; invalid additional permissions MSG152; status restriction MSG98; save failure MSG99. Invitation delivery failure does not cancel successful additions. (BR-031, BR-032) |
-| Additional permissions [Quyền bổ sung] | Additional permissions for current internal participants and Guest invitations supplement existing role permissions for this Meeting. Display the grantable permissions from the agreed catalogue; do not hardcode a two-option ceiling. View Participants and View Responses are examples. The catalogue and grant matrix are pending. |
+| Cancel | Text button; closes the dialog. |
+| Add <n> people | Shows the number selected and submits the entire selection. New invitations start Pending. All selected people are saved together; no one is added when validation or saving fails. Success MSG96 and the number added; invalid participant information MSG97/MSG145; status restriction MSG98; save failure MSG99. Invitation delivery failure does not cancel successful additions. (BR-031, BR-032) |
 
 #### 6.3 Attendance Check
 
-Figure 46: Attendance Check – the Secretary records attendance
+Figure 49: Attendance Check – the Secretary records attendance
 
-Figure 47: Attendance Check – participant view
+Figure 50: Attendance Check – participant view
 
-Attendance Check is the Attendance [Điểm danh] column of the participant table on the Participants tab of the Meeting detail, shown while the Meeting is InProgress or Ended; it is not a separate screen. The assigned Secretary marks each current internal participant and external Guest Present or Absent by choosing a value in the cell; choosing a value saves it at once, and there is no Save button and no Present/Absent total. Other participants read the attendance. A person not yet recorded has no official attendance value and is shown as “Chưa điểm danh”, which is not Absent. Invitation responses and online-room presence never determine attendance. Saved attendance is available for the meeting minutes. In the online meeting room the same attendance is also available in the Attendance panel (8.7). (UC-33, BR-043, BR-056, BR-057)
+Attendance Check is the Attendance column of the participant table on the Participants tab of the Meeting detail, shown while the Meeting is InProgress or Ended; it is not a separate screen. The assigned Secretary marks each current internal participant and external Guest Present or Absent by choosing a value in the cell; choosing a value saves it at once, and there is no Save button and no Present/Absent total. Other participants read the attendance. A person not yet recorded has no official attendance value and is shown as “Not recorded”, which is not Absent. Invitation responses and online-room presence never determine attendance. Saved attendance is available for the meeting minutes. In the online meeting room the same attendance is also available in the Attendance panel (8.7). (UC-33, BR-043, BR-056, BR-057)
 
 This screen allows the Secretary to:
 
 - View Attendance: view every participant and Guest of the Meeting with meeting role, invitation response label and current attendance in the participant table (UC-33).
 
-- Record Attendance: (Secretary) choose Present [Có mặt] or Absent [Vắng] in the Attendance cell of a person; each choice is saved immediately (UC-33).
+- Record Attendance: (Secretary) choose Present or Absent in the Attendance cell of a person; each choice is saved immediately (UC-33).
 
 - Revise Attendance: (Secretary) choose another value for the same person while attendance editing is still permitted (UC-33).
 
@@ -3552,17 +3625,17 @@ Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Meeting header | Read-only: title with status chip In Progress [Đang họp] and confidentiality chip; second line actual start time (e.g. “Started 08:32”) and mode · location. |
+| Meeting header | Read-only: title with status chip In Progress and confidentiality chip; second line actual start time (e.g. “Started 08:32”) and mode · location. |
 | Save result | There is no Save button: choosing a value sends that person’s attendance at once, and the cell shows the chosen value while the request runs. Success MSG147 “Meeting attendance saved successfully.”; invalid value MSG148; status restriction MSG149. MSG151 “The participant or attendance data has changed. Please reload and review before saving.” when someone else changed the same person’s attendance or the person is no longer on the roster: nothing is saved, the table is reloaded and the Secretary chooses again, no unsaved choice is kept. MSG150 “Unable to confirm the attendance save result. Please reload the data before trying again.” when the result cannot be confirmed; the Secretary reloads to see what was saved. MSG289 “Unable to load attendance data.” with a Retry button when the attendance cannot be read; a failed load is never shown as an empty roster. Attendance completeness never blocks End Meeting. (BR-056, BR-057) |
-| Participant [Thành phần] | Column: avatar initials, full name (with “(Tôi)” for the signed-in user) and email of each current internal participant and external Guest, with the response label of UC-32 beside the name. |
-| Role [Vai trò] | Read-only column: Chair [Chủ tọa], Secretary [Thư ký], Member [Thành viên] or Guest [Khách], each as a square chip of its own tint. |
-| Attendance [Điểm danh] | For the Secretary a small dropdown: dot and text Present [Có mặt] (green dot) or Absent [Vắng] (grey dot); a dashed empty dropdown reading “Điểm danh” while the person has never been recorded. For everyone else a read-only dot and text, or “Chưa điểm danh” when never recorded. The tooltip reads “<name> điểm danh lúc <hh:mm dd/mm/yyyy>” (who recorded it and when). Each person’s attendance has its own version. Invitation responses and online-room connections never select or save official attendance automatically. Revision is allowed only while InProgress. (BR-043, BR-056, BR-057) On a phone the attendance control and the role chip share one row. |
+| Participant | Column: avatar initials, full name (with “(me)” for the signed-in user) and email of each current internal participant and external Guest, with the response label of UC-32 beside the name. |
+| Role | Read-only column: Chair, Secretary, Member or Guest, each as a square chip of its own tint. |
+| Attendance | For the Secretary a small dropdown: dot and text Present (green dot) or Absent (grey dot); a dashed empty dropdown reading “Record attendance” while the person has never been recorded. For everyone else a read-only dot and text, or “Not recorded” when never recorded. The tooltip reads “<name> recorded attendance at <hh:mm dd/mm/yyyy>” (who recorded it and when). Each person’s attendance has its own version. Invitation responses and online-room connections never select or save official attendance automatically. Revision is allowed only while InProgress. (BR-043, BR-056, BR-057) On a phone the attendance control and the role chip share one row. |
 
 #### 6.4 Invitation Response
 
-Figure 48: Invitation Response – before answering
+Figure 51: Invitation Response – before answering
 
-Figure 49: Invitation Response – after answering
+Figure 52: Invitation Response – after answering
 
 The Invitation Response screen is a mobile-friendly page opened from the invitation email; an external Guest reaches it after Guest Verification (1.3). Internal users normally answer on the card in the calendar list (4.2) or at the top of the Meeting detail (4.5); this page gives the same answer from a phone. The invitee sees the meeting title, status, confidentiality level, planned time, mode and location, his/her own meeting role and the Chair, and answers Accept or Decline once; after that the answer is shown and cannot be changed. The Chair does not answer. An invitee who never answers is treated as attending (UC-31, UC-04, BR-046, BR-047, BR-048).
 
@@ -3579,27 +3652,27 @@ Field Description
 | Field Name | Description |
 | --- | --- |
 | App bar | TrustCabinet logo and name; the page needs no sidebar so it works on a phone. |
-| Invitation header | Read-only: eyebrow “Meeting invitation” [Lời mời họp], meeting title, status chip (e.g. Published [Đã công bố]) and confidentiality chip (e.g. Normal [Thường]). |
-| Time [Thời gian] | Read-only planned start and end of the Meeting, e.g. “Thursday, 15/10/2026 · 08:30–09:30”. |
-| Mode [Hình thức] | Read-only mode and location, e.g. “Hybrid · Room 2.1” [Kết hợp · Phòng 2.1]. |
-| Your role [Vai trò của bạn] | Read-only meeting role of the invitee: Chair, Secretary, Participant [Thành viên] or Guest. |
-| Chair [Chủ trì] | Read-only name of the Chair of the Meeting. |
-| Attend [Tham dự] | Button; records Accepted. Shown only while the invitation has no answer. Only the owner of a current invitation can respond (BR-046). |
-| Not attending [Không tham dự] | Button; records Declined; the Meeting then disappears from the invitee’s own calendar. Shown only while the invitation has no answer. A Guest may answer only Accept or Decline (BR-046). |
-| Answer note [Bạn chỉ trả lời một lần] | While unanswered, an info box: “You answer only once and cannot change it. If you do not answer you are still counted as attending.” After answering, the buttons are replaced by a green box, e.g. “Bạn đã chọn: Tham dự · 10/10 09:02. Câu trả lời không đổi lại được.” The response and time are recorded once (BR-046). |
+| Invitation header | Read-only: eyebrow “Meeting invitation”, meeting title, status chip (e.g. Published) and confidentiality chip (e.g. Normal). |
+| Time | Read-only planned start and end of the Meeting, e.g. “Thursday, 15/10/2026 · 08:30–09:30”. |
+| Mode | Read-only mode and location, e.g. “Hybrid · Room 2.1”. |
+| Your role | Read-only meeting role of the invitee: Chair, Secretary, Participant or Guest. |
+| Chair | Read-only name of the Chair of the Meeting. |
+| Attend | Button; records Accepted. Shown only while the invitation has no answer. Only the owner of a current invitation can respond (BR-046). |
+| Not attending | Button; records Declined; the Meeting then disappears from the invitee’s own calendar. Shown only while the invitation has no answer. A Guest may answer only Accept or Decline (BR-046). |
+| Answer note | While unanswered, an info box: “You answer only once and cannot change it. If you do not answer you are still counted as attending.” After answering, the buttons are replaced by a green box, e.g. “You chose: Attend · 10/10 09:02. The answer cannot be changed.” The response and time are recorded once (BR-046). |
 | Messages | Success MSG105 “Meeting invitation response recorded successfully.”; MSG154 “No changes to save.” when the same answer is sent again; MSG285 “You have already answered this invitation. Your answer cannot be changed.” when a different answer is sent after answering; MSG286 for the Chair; MSG106 invalid response; MSG107 “This meeting invitation can no longer be answered.” when the Meeting is no longer Published/InProgress or the invitation was revoked or expired (BR-053, BR-054, BR-044); MSG108 save failure. |
 
 ### 7. FE-07 – Personal Document Library & Meeting Document Management
 
 #### 7.1 Document Library – Empty State
 
-Figure 50: Document Library – Empty State
+Figure 53: Document Library – Empty State
 
-The Document Library – Empty State screen is what a signed-in internal user sees on opening Document Library [Kho tài liệu] from the sidebar before he/she has created any folder or uploaded any file. The folder panel holds only All documents with 0 files, and the file area shows an empty-state panel explaining how the library is used. The New folder and Upload buttons inside the panel do the same as those at the top of the page; a file uploaded while All documents is selected is stored at the root of the library. Once the library holds folders or files, the page is the Personal Document Library (7.2). External Guests have no personal library (UC-37, UC-39, UC-41a).
+The Document Library – Empty State screen is what a signed-in internal user sees on opening Document Library from the sidebar before he/she has created any folder or uploaded any file. The folder panel holds only All documents with 0 files, and the file area shows an empty-state panel explaining how the library is used. The New folder and Upload buttons inside the panel do the same as those at the top of the page; a file uploaded while All documents is selected is stored at the root of the library. Once the library holds folders or files, the page is the Personal Document Library (7.2). External Guests have no personal library (UC-37, UC-39, UC-41a).
 
 This screen allows any signed-in internal user (Member, Approver, System Admin, Chair, Secretary, Participant) to:
 
-- Open Document Library: click Document Library [Kho tài liệu] in the sidebar to open his/her own library page (UC-37).
+- Open Document Library: click Document Library in the sidebar to open his/her own library page (UC-37).
 
 - View Empty Library: see that his/her library has no folders or files yet and read how it is used (UC-37).
 
@@ -3611,19 +3684,19 @@ Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Sidebar item [Kho tài liệu] | Navigation item in the Business [Nghiệp vụ] group; highlighted when this page is open. |
-| Page title | Read-only “Document Library” [Kho tài liệu]. |
-| Page subtitle | Read-only: “Your private documents — only you can see and manage what is here.” [Tài liệu riêng của bạn — chỉ bạn thấy và quản lý được những gì ở đây.] |
-| New folder [Thư mục mới] / Upload [Tải lên] | Shown both in the page header and inside the empty-state panel; both pairs do the same. New folder creates a folder at the root of the library (UC-41a); Upload opens the file picker and stores the chosen file at the root of the library (UC-39, BR-069). |
-| Folder panel | Shows only All documents [Tất cả tài liệu] with the count 0, selected; no folder exists yet. |
+| Sidebar item | Navigation item in the Business group; highlighted when this page is open. |
+| Page title | Read-only “Document Library”. |
+| Page subtitle | Read-only: “Your private documents — only you can see and manage what is here.” |
+| New folder / Upload | Shown both in the page header and inside the empty-state panel; both pairs do the same. New folder creates a folder at the root of the library (UC-41a); Upload opens the file picker and stores the chosen file at the root of the library (UC-39, BR-069). |
+| Folder panel | Shows only All documents with the count 0, selected; no folder exists yet. |
 | Empty-state panel | Dashed panel with a document icon in the file area, holding the title, explanation text, file hint and the New folder and Upload buttons. |
-| Empty-state title | Read-only: “No documents yet” [Chưa có tài liệu nào]. |
-| Explanation text | Read-only: “Upload documents to the library, put them into folders, then attach them to meetings where you are Chair or Secretary. A document not attached to any meeting can be read only by you.” [Tải tài liệu lên kho, xếp vào thư mục, rồi gắn vào cuộc họp mà bạn làm Chủ trì hoặc Thư ký. Tài liệu chưa gắn cuộc họp nào chỉ mình bạn đọc được.] |
-| File hint | Read-only small text: “Accepts PDF and DOCX, up to 10 MB per file.” [Nhận PDF và DOCX, tối đa 10 MB mỗi tệp.] (BR-069) |
+| Empty-state title | Read-only: “No documents yet”. |
+| Explanation text | Read-only: “Upload documents to the library, put them into folders, then attach them to meetings where you are Chair or Secretary. A document not attached to any meeting can be read only by you.” |
+| File hint | Read-only small text: “Accepts PDF and DOCX, up to 10 MB per file.” (BR-069) |
 
 #### 7.2 Personal Document Library
 
-Figure 51: Personal Document Library
+Figure 54: Personal Document Library
 
 The Personal Document Library is the Document Library page once the user’s library holds folders or files; an empty library shows the empty state (7.1). Each internal user has a private library: folders on the left and the file table on the right, with size, upload date and the number of meetings that use each file. Files have no versions; to change a document the user uploads a new file. Uploading a file to the library does not attach it to a meeting; files are attached through the Add Document to Meeting Dialog (7.4). A file uploaded straight into a meeting lands in a folder named after that meeting. External Guests have no personal library (UC-37, UC-39, UC-40, UC-41).
 
@@ -3649,21 +3722,21 @@ Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Page header | Read-only title “Document Library” [Kho tài liệu] with the subtitle “Your private documents — only you can see and manage what is here.” Only the owner’s own documents are listed. |
-| New folder [Thư mục mới] | Secondary button; creates a folder inside the selected folder, or at the root when All documents is selected. Nesting is limited to five levels (UC-41a). |
-| Upload [Tải lên] | Primary button; opens the file picker and uploads the chosen file into the selected folder (UC-39). Only PDF and DOCX files up to 10 MB are accepted (BR-069); a file that cannot be stored is rejected with an error and nothing is saved. |
-| Folder panel | Tree of All documents [Tất cả tài liệu] (default, selected) and the user’s folders, each with the number of files. A folder named after a meeting (e.g. “Họp kế hoạch Sprint 6 - 15/10/2026”) holds files uploaded straight into that meeting. Each folder has a menu: Rename, Move, Delete (only when empty) (UC-41). |
-| Search [Tìm theo tên tệp…] | Text input, optional, empty by default; matches the file name within the selected folder. |
-| File type filter [Mọi loại tệp] | Dropdown. Values: All file types (default), PDF and Word (DOCX). |
-| File name [Tên tệp] | Column: file icon and file name, e.g. “Ke-hoach-kinh-doanh-2027.docx”. |
-| Size [Dung lượng] | Column: file size, e.g. 1,2 MB / 640 KB. |
-| Uploaded [Ngày tải lên] | Column: upload date, format dd/mm/yyyy. |
-| Used in [Đang dùng trong] | Column: number of meetings the file has been attached to, e.g. “2 meetings” [2 cuộc họp], or “Not used” [Chưa dùng] in italics. A file not attached to any meeting can be read only by its owner. |
-| Actions [Thao tác] | Icon buttons per row: open preview, download, rename, move to another folder and delete from the library (UC-40). Delete asks for confirmation and states that meetings using the file keep it (BR-074, BR-075, BR-076). |
+| Page header | Read-only title “Document Library” with the subtitle “Your private documents — only you can see and manage what is here.” Only the owner’s own documents are listed. |
+| New folder | Secondary button; creates a folder inside the selected folder, or at the root when All documents is selected. Nesting is limited to five levels (UC-41a). |
+| Upload | Primary button; opens the file picker and uploads the chosen file into the selected folder (UC-39). Only PDF and DOCX files up to 10 MB are accepted (BR-069); a file that cannot be stored is rejected with an error and nothing is saved. |
+| Folder panel | Tree of All documents (default, selected) and the user’s folders, each with the number of files. A folder named after a meeting (e.g. “Sprint 6 planning meeting - 15/10/2026”) holds files uploaded straight into that meeting. Each folder has a menu: Rename, Move, Delete (only when empty) (UC-41). |
+| Search | Text input, optional, empty by default; matches the file name within the selected folder. |
+| File type filter | Dropdown. Values: All file types (default), PDF and Word (DOCX). |
+| File name | Column: file icon and file name, e.g. “Ke-hoach-kinh-doanh-2027.docx”. |
+| Size | Column: file size, e.g. 1,2 MB / 640 KB. |
+| Uploaded | Column: upload date, format dd/mm/yyyy. |
+| Used in | Column: number of meetings the file has been attached to, e.g. “2 meetings”, or “Not used” in italics. A file not attached to any meeting can be read only by its owner. |
+| Actions | Icon buttons per row: open preview, download, rename, move to another folder and delete from the library (UC-40). Delete asks for confirmation and states that meetings using the file keep it (BR-074, BR-075, BR-076). |
 
 #### 7.3 Meeting Detail – Documents Tab
 
-Figure 52: Meeting Detail – Documents Tab
+Figure 55: Meeting Detail – Documents Tab
 
 The Meeting Detail – Documents tab lists the documents attached to the selected Meeting in three groups: By meeting content, with one block per Agenda Item in agenda order; Voting, with the documents of each Vote the user can see and the user's own read state; and General documents, linked to no Agenda Item. A file linked to several Agenda Items appears under each of them and is uploaded only once; a document linked to a Vote appears only in the Voting group, and a document linked only to a Draft Vote is not shown to a Member or Guest at all (BR-079, BR-080). The Meeting keeps its own reference to each file, so deleting the file from a personal library does not remove it from the Meeting. Anyone who can view the Meeting reads its documents; until the Meeting ends the Chair and the Secretary add documents from the computer or their personal library, attach them to an Agenda Item, unlink them from an item and remove them from the Meeting (UC-35a, UC-35b, UC-36a, UC-36b, UC-36c, UC-36d, BR-079, BR-080).
 
@@ -3677,32 +3750,32 @@ This screen allows users who can view the meeting (Member, Approver, Chair, Secr
 
 On the screen, the Chair and the Secretary can also:
 
-- Add Document: click “Thêm tài liệu chung” [Add general document] to add files from the computer or the personal library through the Add Document to Meeting Dialog (UC-36a).
+- Add Document: click “Add general document” to add files from the computer or the personal library through the Add Document to Meeting Dialog (UC-36a).
 
 - Attach to Agenda Item: click the paperclip of an Agenda Item block to attach Meeting documents, files from the computer or files from the personal library to that item (UC-36b).
 
-- Unlink or Remove Document: use the row buttons Remove from this item [Gỡ khỏi mục này], shown under an Agenda Item, and Remove from the meeting [Gỡ khỏi cuộc họp]; both ask for confirmation (UC-36d, UC-36c).
+- Unlink or Remove Document: use the row buttons Remove from this item, shown under an Agenda Item, and Remove from the meeting; both ask for confirmation (UC-36d, UC-36c).
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Meeting header | Read-only: back link “‹ Meetings” [‹ Cuộc họp], meeting title with status chip (e.g. Draft [Nháp], In Progress [Đang họp]) and confidentiality chip (e.g. Normal [Thường]); second line: planned date and time and mode · location (e.g. “Thursday, 15/10/2026 · 08:30–09:30 · Hybrid · Room 2.1, floor 2”). |
-| Tabs | Documents [Tài liệu] is selected. Other tabs: General Information, Participants, Meeting Content, Voting, Recordings, Summary, Minutes. |
-| Grouping [Theo nội dung họp / Biểu quyết / Tài liệu chung] | Segmented control: By meeting content (default), Voting and General documents; each segment shows its number of documents, a document counted once even when it is under several items (UC-35a). On a phone the labels shorten to “Nội dung” and “Chung”. |
-| Agenda Item block | Collapsible block per Agenda Item, numbered by its place in the agenda list rather than the stored position, with title and number of documents; a block that has documents is open and an empty one is folded. Tooltip: “A document can be attached to several items.” [Một tài liệu có thể gắn ở nhiều mục.]. |
-| Attach to item | Paperclip button on each Agenda Item block, Chair and Secretary only, tooltip “Thêm tài liệu cho mục này” [Add documents to this item]; opens the Add Document to Meeting Dialog (7.4) for that item, with the sources In the meeting [Trong cuộc họp], From the computer [Tải từ máy] and From my library [Từ kho của tôi] (UC-36b). |
-| Document row | File type badge, file name, page count and number of comments, e.g. “Ke-hoach-kinh-doanh-2027.pdf · 14 pages · 4 comments”. The page count is shown only when it is known (a PDF whose page count was recorded) and is left out otherwise. Who added the document and when are shown in a tooltip on the name. Clicking the row opens the Document Viewer (7.5). A Download [Tải về] button follows the name unless the Meeting is Secret (BR-081); on a phone the row buttons move under the name together. |
-| Vote documents | In the Voting group, one block per Vote with its title and status chip, in the order the Votes were created; a Draft Vote is listed only for the Chair and the Secretary (BR-086, BR-087). Each document shows Read [Đã đọc], with the confirmation time in a tooltip, once the user has confirmed reading it, and Not read [Chưa đọc] only while the user can still confirm it as a voter of the Open Vote in an In Progress Meeting (UC-42). Documents are attached to a Vote on the Voting tab (UC-68), not here. Empty state: “Chưa có biểu quyết nào có tài liệu.” [No Vote has documents yet.] |
-| Row actions [Gỡ khỏi mục này / Gỡ khỏi cuộc họp] | Icon buttons for the Chair and the Secretary until the Meeting ends: Remove from this item [Gỡ khỏi mục này], under an Agenda Item only, unlinks the document from that item (UC-36d); Remove from the meeting [Gỡ khỏi cuộc họp] removes the document from every item. Both ask for confirmation; its comments are kept as history but no longer listed (UC-36c, BR-074, BR-075, BR-076). |
-| Add document [Thêm tài liệu] | Button “Thêm tài liệu chung” [Add general document], Chair and Secretary only; opens the Add Document to Meeting Dialog (7.4) to add files from the computer or the personal library. |
+| Meeting header | Read-only: back link “‹ Meetings”, meeting title with status chip (e.g. Draft, In Progress) and confidentiality chip (e.g. Normal); second line: planned date and time and mode · location (e.g. “Thursday, 15/10/2026 · 08:30–09:30 · Hybrid · Room 2.1, floor 2”). |
+| Tabs | Documents is selected. Other tabs: General Information, Participants, Meeting Content, Voting, Recordings, Summary, Minutes. |
+| Grouping | Segmented control: By meeting content (default), Voting and General documents; each segment shows its number of documents, a document counted once even when it is under several items (UC-35a). On a phone the labels shorten to “Content” and “General”. |
+| Agenda Item block | Collapsible block per Agenda Item, numbered by its place in the agenda list rather than the stored position, with title and number of documents; a block that has documents is open and an empty one is folded. Tooltip: “A document can be attached to several items.”. |
+| Attach to item | Paperclip button on each Agenda Item block, Chair and Secretary only, tooltip “Add documents to this item”; opens the Add Document to Meeting Dialog (7.4) for that item, with the sources In the meeting, From the computer and From my library (UC-36b). |
+| Document row | File type badge, file name, page count and number of comments, e.g. “Ke-hoach-kinh-doanh-2027.pdf · 14 pages · 4 comments”. The page count is shown only when it is known (a PDF whose page count was recorded) and is left out otherwise. Who added the document and when are shown in a tooltip on the name. Clicking the row opens the Document Viewer (7.5). A Download button follows the name unless the Meeting is Secret (BR-081); on a phone the row buttons move under the name together. |
+| Vote documents | In the Voting group, one block per Vote with its title and status chip, in the order the Votes were created; a Draft Vote is listed only for the Chair and the Secretary (BR-086, BR-087). Each document shows Read, with the confirmation time in a tooltip, once the user has confirmed reading it, and Not read only while the user can still confirm it as a voter of the Open Vote in an In Progress Meeting (UC-42). Documents are attached to a Vote on the Voting tab (UC-68), not here. Empty state: “No Vote has documents yet.” |
+| Row actions | Icon buttons for the Chair and the Secretary until the Meeting ends: Remove from this item, under an Agenda Item only, unlinks the document from that item (UC-36d); Remove from the meeting removes the document from every item. Both ask for confirmation; its comments are kept as history but no longer listed (UC-36c, BR-074, BR-075, BR-076). |
+| Add document | Button “Add general document”, Chair and Secretary only; opens the Add Document to Meeting Dialog (7.4) to add files from the computer or the personal library. |
 | Access rules | Anyone who can currently view the Meeting reads its documents, including the Approver and a verified Guest while the Meeting is Published or In Progress (BR-055). There is no separate reading permission (BR-079, BR-080). After the Meeting ends every add, link and remove control is hidden and the documents are read-only (BR-070, BR-071, BR-079, BR-080). |
 
 #### 7.4 Add Document to Meeting Dialog
 
-Figure 53: Add Document to Meeting Dialog
+Figure 56: Add Document to Meeting Dialog
 
-The Add Document to Meeting Dialog opens from “Thêm tài liệu chung” on the Documents tab, from the paperclip of an Agenda Item block, or for a Draft Vote on the Voting tab. Its source switch offers From the computer [Tải từ máy] and From my library [Từ kho của tôi], and also In the meeting [Trong cuộc họp] when it was opened for an Agenda Item or a Vote. A document selected from the personal library stays in that library; a file uploaded from the computer is also stored in the uploader’s personal library, in the folder of the meeting. Files from the computer are queued and sent one at a time, so the dialog closes at once and a tray in the corner follows the uploads; documents chosen from the library or the meeting are added together, or none is added (UC-36a, UC-36b, UC-68a, BR-070, BR-071).
+The Add Document to Meeting Dialog opens from “Add general document” on the Documents tab, from the paperclip of an Agenda Item block, or for a Draft Vote on the Voting tab. Its source switch offers From the computer and From my library, and also In the meeting when it was opened for an Agenda Item or a Vote. A document selected from the personal library stays in that library; a file uploaded from the computer is also stored in the uploader’s personal library, in the folder of the meeting. Files from the computer are queued and sent one at a time, so the dialog closes at once and a tray in the corner follows the uploads; documents chosen from the library or the meeting are added together, or none is added (UC-36a, UC-36b, UC-68a, BR-070, BR-071).
 
 This screen allows the Chair or the Secretary to:
 
@@ -3714,23 +3787,23 @@ This screen allows the Chair or the Secretary to:
 
 On the screen, s/he can also:
 
-- Cancel: click “Huỷ” [Cancel] to close the dialog without adding anything; when files are already chosen, the dialog asks before discarding them.
+- Cancel: click “Cancel” to close the dialog without adding anything; when files are already chosen, the dialog asks before discarding them.
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Dialog title | “Thêm tài liệu chung” [Add general document], “Thêm tài liệu cho mục <n>” [Add documents to item n] or “Thêm tài liệu cho biểu quyết” [Add documents to the Vote]. |
-| Tabs | Segmented control “Lấy tài liệu từ” [Take documents from]: In the meeting [Trong cuộc họp] (for an Agenda Item or a Vote only), From the computer [Tải từ máy] and From my library [Từ kho của tôi]. |
+| Dialog title | “Add general document”, “Add documents to item n” or “Add documents to the Vote”. |
+| Tabs | Segmented control “Take documents from”: In the meeting (for an Agenda Item or a Vote only), From the computer and From my library. |
 | Library file list | From my library: one folder at a time with a breadcrumb back to the library root; rows with checkbox, file type badge, file name, page count and size. Only the user’s own library files are listed, and the choice is kept while moving between folders. At least one file must be selected (MSG249); a file already in this Meeting is refused with MSG165. The note under the list says the Meeting uses the document’s current name, and renaming it in the library later does not rename it in the Meeting. |
-| Upload area | Drop zone “Drag files here or click to choose” [Kéo tệp vào đây hoặc bấm để chọn]. Only PDF or DOCX, at most 10 MB each, and at most 10 files totalling 100 MB per submission; the extension must be .pdf or .docx and must match the file’s content. Before reading any file the system checks the user’s authority: a user who is no longer the Chair or Secretary receives MSG162 whatever the files are, and one who can no longer view the Meeting receives MSG174. A submission of more than 10 files or more than 100 MB, or a request that declares more than 101 MB, shows MSG288 before the files are received; a missing file, an invalid request, a file name that cannot be used, a file of the wrong type, or a PDF that needs a password, has no page or cannot be read shows MSG164 naming the files at fault; in every case nothing is added (MSG162, MSG164, MSG174, MSG288, BR-069). |
-| Access notice | Info box: “Ai xem được cuộc họp đều đọc được tài liệu đã thêm.” [Anyone who can view the Meeting can read the added documents.] (BR-079, BR-080) |
-| Cancel [Huỷ] | Text button “Huỷ” [Cancel]; closes the dialog, after asking when files are already chosen. |
-| Add <n> documents [Thêm <n> tài liệu] | Primary button showing the number of selected files, e.g. “Thêm 1 tài liệu” [Add 1 document], or “Gắn 1 tài liệu” [Attach 1 document] for In the meeting. Files from the computer go to the upload tray and are sent one at a time; a file that fails is reported in the tray, with “Thử lại” [Retry] when retrying can help, and does not stop the others. Documents from the library or the meeting are added together or not at all. |
+| Upload area | Drop zone “Drag files here or click to choose”. Only PDF or DOCX, at most 10 MB each, and at most 10 files totalling 100 MB per submission; the extension must be .pdf or .docx and must match the file’s content. Before reading any file the system checks the user’s authority: a user who is no longer the Chair or Secretary receives MSG162 whatever the files are, and one who can no longer view the Meeting receives MSG174. A submission of more than 10 files or more than 100 MB, or a request that declares more than 101 MB, shows MSG288 before the files are received; a missing file, an invalid request, a file name that cannot be used, a file of the wrong type, or a PDF that needs a password, has no page or cannot be read shows MSG164 naming the files at fault; in every case nothing is added (MSG162, MSG164, MSG174, MSG288, BR-069). |
+| Access notice | Info box: “Anyone who can view the Meeting can read the added documents.” (BR-079, BR-080) |
+| Cancel | Text button “Cancel”; closes the dialog, after asking when files are already chosen. |
+| Add <n> documents | Primary button showing the number of selected files, e.g. “Add 1 document”, or “Attach 1 document” for In the meeting. Files from the computer go to the upload tray and are sent one at a time; a file that fails is reported in the tray, with “Retry” when retrying can help, and does not stop the others. Documents from the library or the meeting are added together or not at all. |
 
 #### 7.5 Document Viewer – Preview & Comments
 
-Figure 54: Document Viewer – Preview & Comments
+Figure 57: Document Viewer – Preview & Comments
 
 The Document Viewer opens when a user clicks a document on the Documents tab, on an Agenda Item or in the Documents panel of the online room; opened from the room, it opens in a new browser tab so the call continues. It renders the document in the browser – a PDF page by page, a DOCX as one continuous scrollable document – with zoom, next to the comments panel. Users who can view the Meeting preview the document and download it unless the Meeting is Secret (UC-35b), and comment and reply until the Meeting ends (UC-38). Opened from a Vote the user has still to cast, it also offers read confirmation once the last page is reached (UC-42).
 
@@ -3754,23 +3827,23 @@ Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Back link [‹ Tài liệu] | Returns to the Documents tab of the Meeting; in a tab opened from the room it closes that tab. |
-| Document header | Read-only: file type badge, file name (e.g. “Du-thao-nghi-quyet-HDQT.pdf”), confidentiality chip of the Meeting (e.g. Secret [Mật] in red) and the meeting title. |
+| Back link | Returns to the Documents tab of the Meeting; in a tab opened from the room it closes that tab. |
+| Document header | Read-only: file type badge, file name (e.g. “Du-thao-nghi-quyet-HDQT.pdf”), confidentiality chip of the Meeting (e.g. Secret in red) and the meeting title. |
 | Page indicator [Trang 2 / 6] | Read-only current page and total number of pages; updates while scrolling. Shown for PDF documents only. |
 | Zoom − / + | Two square buttons that decrease or increase the zoom level of the preview. |
-| Download [Tải về] | Secondary button; downloads the original file. In a Secret Meeting it is replaced by the chip “View online only” [Chỉ xem trực tuyến] (BR-081). |
+| Download | Secondary button; downloads the original file. In a Secret Meeting it is replaced by the chip “View online only” (BR-081). |
 | Preview pane | Read-only rendering made in the browser with no server conversion – PDF pages, or a DOCX as one continuous scrollable document; a comment refers to a page, not to a highlighted passage. A file the browser cannot draw shows MSG383 and a file no longer in storage shows MSG382, both without a retry button (UC-35b). No name or time is stamped on the document, and a Secret document is not given a watermark. Each view of a Secret Meeting’s document is recorded in the audit log (BR-009, BR-010, BR-011). |
-| Comments panel [Góp ý] | Panel beside the document with refresh and close buttons. Each comment shows the author, the page of a PDF comment and the time, the text and a “Trả lời” [Reply] link; replies are indented under it, one level deep. A Guest’s comment shows the name the Guest gave with the label Guest [Khách]. Empty state: “Chưa có góp ý nào.” [No comments yet.] (UC-38) |
-| Comment box [Viết góp ý…] | Textarea, required to send, at most 4,000 characters (MSG348); for a PDF the option “Gắn trang <n>” [Attach page n] links the comment to the page being viewed, a DOCX comment has no page. Ctrl+Enter sends. Hidden after the Meeting ends, when comments are read-only (BR-079, BR-080, MSG251). |
-| Send [Gửi góp ý] | Primary button; posts the comment or reply, which appears in the list and increases the comment count on the Documents tab (UC-38). |
+| Comments panel | Panel beside the document with refresh and close buttons. Each comment shows the author, the page of a PDF comment and the time, the text and a “Reply” link; replies are indented under it, one level deep. A Guest’s comment shows the name the Guest gave with the label Guest. Empty state: “No comments yet.” (UC-38) |
+| Comment box | Textarea, required to send, at most 4,000 characters (MSG348); for a PDF the option “Attach page n” links the comment to the page being viewed, a DOCX comment has no page. Ctrl+Enter sends. Hidden after the Meeting ends, when comments are read-only (BR-079, BR-080, MSG251). |
+| Send | Primary button; posts the comment or reply, which appears in the list and increases the comment count on the Documents tab (UC-38). |
 
 ### 8. FE-08 – Online Meeting Room Management
 
 #### 8.1 Meeting Lobby
 
-Figure 55: Meeting Lobby
+Figure 58: Meeting Lobby
 
-Figure 56: Meeting Lobby – microphone list open
+Figure 59: Meeting Lobby – microphone list open
 
 The Meeting Lobby is the pre-join screen of the Online Meeting Room, laid out like Google Meet. It opens when a user clicks “Join online room” on an In Progress Online or Hybrid meeting, or when a verified Guest continues to the room. The page has its own top bar with the TrustCabinet mark and the signed-in account; the left side shows the camera preview with the microphone and camera switches and the device pickers, the right side the meeting and the Join button (UC-43, UC-45a, UC-45b, UC-45d, UC-04). The second image shows the open device tray (UC-45d) and, when recording applies to the Meeting, the notice that the meeting is recorded for the minutes and the recording is deleted automatically after 180 days.
 
@@ -3786,27 +3859,27 @@ This screen allows the Chair, Secretary, Participant and a verified Guest to:
 
 On the screen, s/he can also:
 
-- Back to the Meeting: click “‹ Back to the meeting page” [Quay lại trang cuộc họp].
+- Back to the Meeting: click “‹ Back to the meeting page”.
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
 | Top bar | TrustCabinet mark on the left; full name, email and initials avatar of the signed-in user on the right. |
-| Camera preview | Dark rounded area showing the selected camera; “Camera is off” [Camera đang tắt] when the camera is off or not permitted by the browser. |
-| Microphone / Camera switches | Two round icon buttons on the bottom edge of the preview, with tooltips such as “Turn off microphone” [Tắt micro]; a switched-off device is shown in light red. A voice level indicator shows while the microphone receives sound. |
+| Camera preview | Dark rounded area showing the selected camera; “Camera is off” when the camera is off or not permitted by the browser. |
+| Microphone / Camera switches | Two round icon buttons on the bottom edge of the preview, with tooltips such as “Turn off microphone”; a switched-off device is shown in light red. A voice level indicator shows while the microphone receives sound. |
 | Device pickers [Micro / Loa / Camera] | Three pill buttons under the preview, each opening the devices detected by the browser (e.g. “MacBook Pro Microphone”). Without browser permission they read e.g. “No permission to use the microphone, or no microphone” and are disabled; the Speaker picker is hidden in browsers that cannot choose an audio output. In the room the same pickers open from the arrow beside the microphone and camera buttons (UC-45d). |
-| Heading | “Ready to join?” [Sẵn sàng tham gia?] followed by the meeting title. |
+| Heading | “Ready to join?” followed by the meeting title. |
 | Confidentiality chip | Shown only for a Secret Meeting. |
-| Room presence | e.g. “6 people in the room” [Đang có 6 người trong phòng], or “No one else is here” [Không có người nào khác ở đây]. |
-| Vào phòng [Join room] | Primary pill button; reads “Joining…” while connecting. The system re-checks that the user can still view the Meeting, that it is In Progress and that it has an online room (BR-025, BR-052, BR-053, BR-054, BR-044). On success the user enters the Video Grid with the chosen devices. Pressing Join while the room cannot be reached (never entered) keeps the lobby and shows MSG480 under the button; pressing Join tries again (UC-43 EX-11). |
-| Room unavailable message | When the Meeting has not started, the page waits with “The room opens only while the meeting is in progress.” [Phòng họp chỉ mở khi cuộc họp đang diễn ra.] and opens the lobby by itself when the Meeting starts. When the Meeting has ended or was cancelled, or is held in person only, the page shows only a message and “Back to the meeting page”; after a dropped connection it also offers “Rejoin” [Vào lại]. Device-permission messages show once in the lobby; {device} is “micro và camera” when both are blocked; the listen sentence is omitted when only the camera is blocked (MSG334–MSG337). |
+| Room presence | e.g. “6 people in the room”, or “No one else is here”. |
+| Join room | Primary pill button; reads “Joining…” while connecting. The system re-checks that the user can still view the Meeting, that it is In Progress and that it has an online room (BR-025, BR-052, BR-053, BR-054, BR-044). On success the user enters the Video Grid with the chosen devices. Pressing Join while the room cannot be reached (never entered) keeps the lobby and shows MSG480 under the button; pressing Join tries again (UC-43 EX-11). |
+| Room unavailable message | When the Meeting has not started, the page waits with “The room opens only while the meeting is in progress.” and opens the lobby by itself when the Meeting starts. When the Meeting has ended or was cancelled, or is held in person only, the page shows only a message and “Back to the meeting page”; after a dropped connection it also offers “Rejoin”. Device-permission messages show once in the lobby; {device} is “microphone and camera” when both are blocked; the listen sentence is omitted when only the camera is blocked (MSG334–MSG337). |
 
 #### 8.2 Online Meeting Room – Video Grid
 
-Figure 57: Online Meeting Room – Video Grid
+Figure 60: Online Meeting Room – Video Grid
 
-Figure 58: Online Meeting Room – call in a floating window
+Figure 61: Online Meeting Room – call in a floating window
 
 The Online Meeting Room – Video Grid is the full-screen main view of the online room, laid out like Google Meet: a one-line blue header with a gold bottom edge, a navy stage with the video tiles, the call controls centred at the bottom as icons with tooltips, and the People and Chat panel buttons at the bottom right. The header back button opens the Meeting detail without leaving the call. Leaving the room does not change the meeting lifecycle; only the Chair ends the meeting (UC-43, UC-44, UC-45a, UC-45b, UC-46, UC-49, UC-50). The second image shows the call in the floating window (UC-49): the main window says that the meeting is in the floating window and offers to bring it back.
 
@@ -3834,26 +3907,26 @@ Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Room header | Back button ‹ (asks for confirmation, as Leave does), meeting title, chip “6 people in the room” [6 người trong phòng] and the confidentiality chip for a Secret Meeting. |
-| Video tile | Camera image, or a circle with the user’s initials when the camera is off; name label with a crossed microphone when muted, “(Bạn)” [You] for the local user and the gold tag “Chủ toạ” [Chair]. |
+| Room header | Back button ‹ (asks for confirmation, as Leave does), meeting title, chip “6 people in the room” and the confidentiality chip for a Secret Meeting. |
+| Video tile | Camera image, or a circle with the user’s initials when the camera is off; name label with a crossed microphone when muted, “You” for the local user and the gold tag “Chair”. |
 | Active speaker highlight | Blue border around the tile of the person currently speaking. |
 | Pager ‹ 1 / 2 › | Shown when more people are connected than the stage can display. |
-| Microphone [Tắt micro / Bật micro] | Icon button, red when off; the arrow ⌃ beside it opens the microphone and speaker pickers. A user muted by the Chair is told so and may turn the microphone on again (UC-45a, UC-47). |
-| Camera [Tắt camera / Bật camera] | Icon button, red when off; the arrow ⌃ opens the camera picker (UC-45b). |
-| Share screen [Chia sẻ màn hình] | Icon button, highlighted while sharing (8.4, UC-45c). |
-| Floating window [Mở cửa sổ nổi] | Icon button in browsers that support it; while the call is in the floating window the stage shows “The meeting is in a floating window” with “Bring the meeting back to this window”. |
-| Raise hand [Giơ tay] | Icon button; the raised hand shows on the person’s tile and in the Participants panel. The Chair sees the queue of raised hands in order and invites one person at a time to speak (UC-50). |
-| Leave [Rời phòng] | Red button. Confirmation “Leave the meeting room – The meeting continues with the others. You can rejoin while the meeting is in progress.” with Stay [Ở lại] and Leave [Rời phòng]. The meeting stays In Progress; when the Chair ends the meeting every connected user is disconnected (UC-44, BR-025). |
-| Participants / Chat [Người dự / Chat] | Icon buttons at the bottom right that open the side panels (8.3, 8.4); Chat shows the number of unread messages. |
-| Connection banners | “Connection lost, reconnecting…” [Mất kết nối, đang kết nối lại…] while reconnecting (MSG333); when the connection cannot be restored the room shows MSG332 with Rejoin — only for a drop while already in the room (a Join press that never connected stays in the lobby with MSG480). A banner with a button appears when the browser blocks audio playback. |
+| Microphone | Icon button, red when off; the arrow ⌃ beside it opens the microphone and speaker pickers. A user muted by the Chair is told so and may turn the microphone on again (UC-45a, UC-47). |
+| Camera | Icon button, red when off; the arrow ⌃ opens the camera picker (UC-45b). |
+| Share screen | Icon button, highlighted while sharing (8.4, UC-45c). |
+| Floating window | Icon button in browsers that support it; while the call is in the floating window the stage shows “The meeting is in a floating window” with “Bring the meeting back to this window”. |
+| Raise hand | Icon button; the raised hand shows on the person’s tile and in the Participants panel. The Chair sees the queue of raised hands in order and invites one person at a time to speak (UC-50). |
+| Leave | Red button. Confirmation “Leave the meeting room – The meeting continues with the others. You can rejoin while the meeting is in progress.” with Stay and Leave. The meeting stays In Progress; when the Chair ends the meeting every connected user is disconnected (UC-44, BR-025). |
+| Participants / Chat | Icon buttons at the bottom right that open the side panels (8.3, 8.4); Chat shows the number of unread messages. |
+| Connection banners | “Connection lost, reconnecting…” while reconnecting (MSG333); when the connection cannot be restored the room shows MSG332 with Rejoin — only for a drop while already in the room (a Join press that never connected stays in the lobby with MSG480). A banner with a button appears when the browser blocks audio playback. |
 
 #### 8.3 In-Room Participants Panel
 
-Figure 59: In-Room Participants Panel
+Figure 62: In-Room Participants Panel
 
-Figure 60: In-Room Participants Panel – attendance
+Figure 63: In-Room Participants Panel – attendance
 
-The In-Room Participants Panel is the white 360 px panel on the right of the online room, opened with the Participants icon at the bottom right. It lists the users currently connected to the room with their meeting role. Every connected user can view the list; only the Chair can mute another user (UC-46, UC-47). A separate Attendance [Điểm danh] panel beside Participants and Chat lets the Secretary record attendance without leaving the room (UC-33).
+The In-Room Participants Panel is the white 360 px panel on the right of the online room, opened with the Participants icon at the bottom right. It lists the users currently connected to the room with their meeting role. Every connected user can view the list; only the Chair can mute another user (UC-46, UC-47). A separate Attendance panel beside Participants and Chat lets the Secretary record attendance without leaving the room (UC-33).
 
 This screen allows users connected to the room (Chair, Secretary, Participant, Guest) to:
 
@@ -3865,23 +3938,23 @@ On the screen, the Chair can also:
 
 On the screen, the Secretary can also:
 
-- Record Attendance: open the Attendance [Điểm danh] panel and choose Present [Có mặt] or Absent [Vắng] for a person; each choice is saved at once (UC-33). Other users read the attendance in the same panel.
+- Record Attendance: open the Attendance panel and choose Present or Absent for a person; each choice is saved at once (UC-33). Other users read the attendance in the same panel.
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Panel title [Người dự (6)] | Title with the number of users currently connected (UC-46). |
-| Participant row | Initials avatar, full name with “(Bạn)” [You] for the local user, and the meeting role below: Chủ toạ [Chair], Thư ký [Secretary], Thành viên [Member], Khách mời [Guest]. |
+| Panel title | Title with the number of users currently connected (UC-46). |
+| Participant row | Initials avatar, full name with “You” for the local user, and the meeting role below: Chair, Secretary, Member, Guest. |
 | Speaking indicator | Green dot while the user is speaking. |
 | Microphone state | Microphone icon; shown red and crossed out when the microphone is off. |
-| Tắt mic [Mute] | Outline button shown only to the Chair, on other users whose microphone is on. The user is told “The Chair has muted your microphone. You can turn it back on when you need to speak.” (UC-47). |
+| Mute | Outline button shown only to the Chair, on other users whose microphone is on. The user is told “The Chair has muted your microphone. You can turn it back on when you need to speak.” (UC-47). |
 | Not provided | Muting everyone and removing a user from the room are not provided; raising a hand is UC-50. |
-| Attendance panel [Điểm danh] | Opened with its own icon at the bottom right, beside Participants and Chat. One row per current internal participant and Guest, ordered Chair, Secretary, Member, Guest and then by name: avatar, full name, meeting role and the Attendance cell. The Secretary sees the dashed dropdown “Điểm danh” (never recorded), “Có mặt” or “Vắng”; everyone else reads a dot and text, or “Chưa điểm danh”. Same data, same cell and same rules as the Attendance column of the Participants tab (III.6.3): no Save button, no Present/Absent totals, joining the room never marks anyone Present; MSG151, MSG150 and MSG289 as in III.6.3. “Bạn không còn xem được điểm danh của cuộc họp này.” when access is lost. |
+| Attendance panel | Opened with its own icon at the bottom right, beside Participants and Chat. One row per current internal participant and Guest, ordered Chair, Secretary, Member, Guest and then by name: avatar, full name, meeting role and the Attendance cell. The Secretary sees the dashed dropdown “Record attendance” (never recorded), “Present” or “Absent”; everyone else reads a dot and text, or “Not recorded”. Same data, same cell and same rules as the Attendance column of the Participants tab (III.6.3): no Save button, no Present/Absent totals, joining the room never marks anyone Present; MSG151, MSG150 and MSG289 as in III.6.3. “You can no longer view the attendance of this meeting.” when access is lost. |
 
 #### 8.4 Screen Sharing & Chat
 
-Figure 61: Screen Sharing & Chat
+Figure 64: Screen Sharing & Chat
 
 The Screen Sharing & Chat layout appears when a connected user presents his/her screen and/or opens the Chat panel. The shared screen takes the main stage and the video tiles move to a strip beside it. Chat lives only in the room: messages are seen by the people currently in the room and are not kept after the meeting (UC-45c, UC-48).
 
@@ -3901,20 +3974,20 @@ Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Shared screen stage | Main area showing the shared screen; caption “Phạm Thị Lan is presenting” [Phạm Thị Lan đang trình bày]; the presenter sees “You are presenting to everyone” [Bạn đang trình bày cho mọi người]. |
+| Shared screen stage | Main area showing the shared screen; caption “Pham Thi Lan is presenting”; the presenter sees “You are presenting to everyone”. |
 | Video tile strip | Video tiles beside the shared screen, as in the Video Grid. |
-| Share screen [Chia sẻ màn hình / Dừng chia sẻ] | Toolbar toggle, highlighted while sharing; the browser asks which screen, window or tab to share (UC-45c). |
+| Share screen | Toolbar toggle, highlighted while sharing; the browser asks which screen, window or tab to share (UC-45c). |
 | Chat panel title | “Chat”. |
-| Chat notice | “Messages are visible only to people in the room and are not kept after the meeting.” [Tin nhắn chỉ hiện với người đang trong phòng và không được lưu lại sau cuộc họp.] |
-| Message list | Messages in time order with sender (“Bạn” [You] for the user’s own messages) and time hh:mm; “No messages yet.” [Chưa có tin nhắn nào.] when empty. A user who joins later does not see earlier messages. |
+| Chat notice | “Messages are visible only to people in the room and are not kept after the meeting.” |
+| Message list | Messages in time order with sender (“You” for the user’s own messages) and time hh:mm; “No messages yet.” when empty. A user who joins later does not see earlier messages. |
 | Message box | Textarea “Type a message — Enter to send, Shift+Enter for a new line”, at most 1,000 characters with a counter (e.g. “0/1000”). |
-| Gửi [Send] | Primary button, enabled when the message is not blank. If sending fails: “Could not send the message. Please try again.” [Không gửi được tin nhắn. Vui lòng thử lại.] |
+| Send | Primary button, enabled when the message is not blank. If sending fails: “Could not send the message. Please try again.” |
 
 #### 8.5 In-Room Voting Panel
 
-Figure 62: In-Room Voting Panel
+Figure 65: In-Room Voting Panel
 
-The In-Room Voting Panel opens from the Voting icon next to Participants and Chat and shows the Voting tab of the meeting detail page in a side panel. When the Chair opens a Vote, everyone in the room who has not voted in it sees a notice with “Vote” [Bỏ phiếu] that opens the panel (UC-62b, UC-65).
+The In-Room Voting Panel opens from the Voting icon next to Participants and Chat and shows the Voting tab of the meeting detail page in a side panel. When the Chair opens a Vote, everyone in the room who has not voted in it sees a notice with “Vote” that opens the panel (UC-62b, UC-65).
 
 This screen allows users connected to the room (Chair, Secretary, Participant, Guest) to:
 
@@ -3926,16 +3999,16 @@ Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Panel title [Biểu quyết] | Title of the panel; label “Planned” [Chưa làm] in the wireframe. |
-| Vote status line | Status chip “Open” [Đang mở] (green) followed by “Opened at 13:58 · secret ballot”. A Vote belongs to the Meeting, not to an Agenda Item. |
-| Vote question | Read-only bold text, e.g. “Thông qua kế hoạch kinh doanh năm 2027”. |
-| Ballot progress | “Voted 7/11” [Đã bỏ phiếu 7/11]: ballots cast out of eligible voters; no option results while the Vote is open, and for a secret ballot no indication of who has just voted. |
-| Vote options | Radio cards, exactly one may be selected: Đồng ý [Agree], Không đồng ý [Disagree], Không ý kiến [Abstain]. |
-| Gửi phiếu [Submit vote] | Primary button, shown only to eligible users who still have access and have not voted. Hint: “A submitted ballot cannot be changed or withdrawn.” After submission the panel only confirms the ballot (BR-090, BR-092, BR-093, BR-091). |
+| Panel title | Title of the panel; label “Planned” in the wireframe. |
+| Vote status line | Status chip “Open” (green) followed by “Opened at 13:58 · secret ballot”. A Vote belongs to the Meeting, not to an Agenda Item. |
+| Vote question | Read-only bold text, e.g. “Approve the 2027 business plan”. |
+| Ballot progress | “Voted 7/11”: ballots cast out of eligible voters; no option results while the Vote is open, and for a secret ballot no indication of who has just voted. |
+| Vote options | Radio cards, exactly one may be selected: Agree, Disagree, Abstain. |
+| Submit vote | Primary button, shown only to eligible users who still have access and have not voted. Hint: “A submitted ballot cannot be changed or withdrawn.” After submission the panel only confirms the ballot (BR-090, BR-092, BR-093, BR-091). |
 
 #### 8.6 In-Room Documents Panel
 
-Figure 63: In-Room Documents Panel
+Figure 66: In-Room Documents Panel
 
 The In-Room Documents Panel opens from the Documents icon in the bottom bar of the online room. It shows the Documents tab in a room layout and is read-only: the current Agenda Item comes first with its documents open and the other items folded, and a document opens in the Document Viewer in a new browser tab so the call is not interrupted (UC-35a, UC-35b). On a phone the panel sits behind the ⋯ menu together with Meeting content and Attendance.
 
@@ -3949,22 +4022,46 @@ Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Panel title [Tài liệu (5)] | Title with the number of Meeting documents, each counted once. |
-| Online-only chip [Chỉ xem trực tuyến] | Shown for a Secret Meeting, whose documents cannot be downloaded (BR-081). |
-| Current item group | “Current item · 2. Báo cáo kế hoạch kinh doanh 2027” [Mục đang bàn]; follows the Chair when the current Agenda Item changes. |
-| Document row | File type badge, file name, page count and number of comments; tooltip “Opens in a new tab · you stay in the room” [Mở ở tab mới · bạn vẫn ở trong phòng]. |
-| Other items [Mục khác] | Collapsed rows with order number, title and number of documents; expanding one lists its documents. |
-| Votes [Biểu quyết] | Shown when a Vote the user can see has documents: one collapsed block per Vote with its status and documents, each with Read [Đã đọc] or Not read [Chưa đọc] as on the Documents tab (7.3). |
-| General documents [Tài liệu chung] | Documents linked to no Agenda Item and to no Vote; a document of a Vote is listed in the Votes group only. |
+| Panel title | Title with the number of Meeting documents, each counted once. |
+| Online-only chip | Shown for a Secret Meeting, whose documents cannot be downloaded (BR-081). |
+| Current item group | “Current item · 2. 2027 business plan report”; follows the Chair when the current Agenda Item changes. |
+| Document row | File type badge, file name, page count and number of comments; tooltip “Opens in a new tab · you stay in the room”. |
+| Other items | Collapsed rows with order number, title and number of documents; expanding one lists its documents. |
+| Votes | Shown when a Vote the user can see has documents: one collapsed block per Vote with its status and documents, each with Read or Not read as on the Documents tab (7.3). |
+| General documents | Documents linked to no Agenda Item and to no Vote; a document of a Vote is listed in the Votes group only. |
 | Read-only rule | No add, link or remove actions in the room; documents added from the Documents tab appear in the panel without reloading. To show a page to everyone, the presenter shares the screen (8.4). |
+
+#### 8.7 My Recorded Speech
+
+Figure 67: My Recorded Speech
+
+My Recorded Speech is a side panel of the online room, opened from the My recording button. It lists only the sentences recorded from the user’s own microphone, so each person can listen to them again and delete a sentence (UC-53, BR-113).
+
+This screen allows the Chair, Secretary, Participant and a verified Guest to:
+
+- View My Sentences: see the own sentences with time, length, text and state (UC-53).
+
+- Play Sentence: listen to one sentence again (UC-53).
+
+- Delete Sentence: delete one own sentence after confirming; its text and audio are removed for good (UC-53).
+
+Field Description
+
+| Field Name | Description |
+| --- | --- |
+| Panel header | Title “My recording” and a close button; the note “Each sentence you say is saved separately and turned into text.” |
+| Saved to the system | Group with its count; each card shows time and length (e.g. 13:15 · 6 seconds), a state chip (Transcribed, Transcribing) and the text. |
+| Not yet delivered | Group for sentences still on this device, labelled Sending or Waiting to resend; they are resent automatically. |
+| Play / Delete | Icon buttons on each card; Delete asks for confirmation, then MSG322. A sentence removed by the Chair or the Secretary shows “Removed from the minutes”. |
+| View the whole recording | Link at the bottom; opens the Meeting recordings in a new tab so the call continues. |
 
 ### 9. FE-09 – Meeting Recording
 
 #### 9.1 Meeting Detail – Recordings Tab
 
-Figure 64: Meeting Detail – Recordings Tab
+Figure 68: Meeting Detail – Recordings Tab
 
-The Meeting Detail – Recordings tab [Bản ghi] is the media library of a meeting. TrustCabinet never records meetings itself: after the meeting has Ended, the Secretary uploads the audio file(s) recorded outside the system, the system transcribes each file and shows the speaker-attributed transcript here, and the Secretary then generates the meeting summary from it. Authorized users of the meeting can view the media library and play the audio; the transcript and the upload controls are available only to the assigned Secretary (UC-51a, UC-51b, UC-52, UC-54, UC-55, UC-58).
+The Meeting Detail – Recordings tab is the media library of a meeting. TrustCabinet never records meetings itself: after the meeting has Ended, the Secretary uploads the audio file(s) recorded outside the system, the system transcribes each file and shows the speaker-attributed transcript here, and the Secretary then generates the meeting summary from it. Authorized users of the meeting can view the media library and play the audio; the transcript and the upload controls are available only to the assigned Secretary (UC-51a, UC-51b, UC-52, UC-54, UC-55, UC-58).
 
 This screen allows the Secretary to:
 
@@ -3990,23 +4087,23 @@ Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Meeting header | Back link “‹ Cuộc họp”, meeting title with status chip (e.g. Đã kết thúc [Ended]) and confidentiality chip (e.g. Thường [Normal]); second line: actual time and date “08:32–09:41 · 15/10/2026” and mode · location “Kết hợp · Phòng 2.1, tầng 2” [Hybrid · Room 2.1, floor 2]. |
-| Tabs | Thông tin chung, Thành phần tham dự, Nội dung cuộc họp, Tài liệu, Biểu quyết, Bản ghi [Recordings] (selected), Tóm tắt [Summary], Biên bản [Minutes]. |
-| Transcript panel header | “Transcript · hop-sprint6.m4a”: the file whose transcript is shown, with a processing status chip: Đang xử lý [Processing], Xử lý xong [Processed] (green) or Lỗi [Failed] with a “Xử lý lại” [Reprocess] button. |
+| Meeting header | Back link “‹ Meetings”, meeting title with status chip (e.g. Ended) and confidentiality chip (e.g. Normal); second line: actual time and date “08:32–09:41 · 15/10/2026” and mode · location “Hybrid · Room 2.1, floor 2”. |
+| Tabs | General Information, Participants, Meeting Content, Documents, Voting, Recordings (selected), Summary, Minutes. |
+| Transcript panel header | “Transcript · hop-sprint6.m4a”: the file whose transcript is shown, with a processing status chip: Processing, Processed (green) or Failed with a “Reprocess” button. |
 | Transcript segment | One row per segment: start time (hh:mm:ss, e.g. 00:00:12), speaker dropdown and the transcribed text. Transcription runs on the uploaded file after upload; there is no real-time transcription and no translation. |
-| Speaker dropdown | Lists the meeting’s internal participants and Guests; changing it re-assigns that segment (UC-55). A voice not yet identified is shown as “Người nói 3” [Speaker 3] with an amber border. |
-| Transcript footer | Read-only: “Đoạn 1–5 trong 214” [Segments 1–5 of 214] and “Sửa lần cuối 15/10 10:20” [Last edited]. |
-| Upload drop zone | Dashed area “Kéo thả file audio vào đây” [Drag and drop an audio file here], hint “MP3, M4A, WAV · tối đa 300 MB”, button “Chọn file” [Choose file] that opens the Upload Audio Dialog. Shown only to the Secretary and only after the meeting has Ended (UC-52). |
-| File đã tải lên [Uploaded files] | Media library list; each file shows the name (e.g. hop-sprint6.m4a) and “1 giờ 09 phút · 64 MB · Đỗ Hải Yến” [duration · size · uploaded by] (UC-51a). Audio files only – the system stores no video. |
-| Rejected file message | Red inline box for a file that failed validation, e.g. “ghi-am-phong.wma: định dạng không hỗ trợ. Chọn file MP3, M4A hoặc WAV.” [unsupported format. Choose an MP3, M4A or WAV file.]; files over 300 MB are rejected in the same way. The user can choose another file. |
-| Tạo tóm tắt từ transcript [Generate summary from transcript] | Primary button, enabled when at least one transcript is Processed. Sends the edited transcript to the AI provider to create a Draft summary and opens the Meeting Summary tab (UC-58). |
+| Speaker dropdown | Lists the meeting’s internal participants and Guests; changing it re-assigns that segment (UC-55). A voice not yet identified is shown as “Speaker 3” with an amber border. |
+| Transcript footer | Read-only: “Segments 1–5 of 214” and “Last edited 15/10 10:20”. |
+| Upload drop zone | Dashed area “Drag and drop an audio file here”, hint “MP3, M4A, WAV · up to 300 MB”, button “Choose file” that opens the Upload Audio Dialog. Shown only to the Secretary and only after the meeting has Ended (UC-52). |
+| Uploaded files | Media library list; each file shows the name (e.g. hop-sprint6.m4a) and “1 h 09 min · 64 MB · Do Hai Yen” (duration · size · uploaded by) (UC-51a). Audio files only – the system stores no video. |
+| Rejected file message | Red inline box for a file that failed validation, e.g. “ghi-am-phong.wma: unsupported format. Choose an MP3, M4A or WAV file.”; files over 300 MB are rejected in the same way. The user can choose another file. |
+| Generate summary from transcript | Primary button, enabled when at least one transcript is Processed. Sends the edited transcript to the AI provider to create a Draft summary and opens the Meeting Summary tab (UC-58). |
 | Visibility rule | Other authorized users of the meeting (Member, Approver, Chair, Participant, System Admin) see only the media library and can play the audio (UC-51a, UC-51b); the transcript, upload and summary actions are shown only to the assigned Secretary. |
 
 #### 9.2 Upload Audio Dialog
 
-Figure 65: Upload Audio Dialog
+Figure 69: Upload Audio Dialog
 
-The Upload Audio Dialog [Tải audio lên] is opened by the Secretary from the Recordings tab with “Choose file” or by dropping a file on the upload area. Because the system never records meetings, this dialog is the only way to add a recording: the Secretary chooses an audio file (no video), confirms that attendees were informed of and agreed to the recording, and uploads it. After a successful upload the system starts transcription automatically and the progress is shown on the Recordings tab (UC-52).
+The Upload Audio Dialog is opened by the Secretary from the Recordings tab with “Choose file” or by dropping a file on the upload area. Because the system never records meetings, this dialog is the only way to add a recording: the Secretary chooses an audio file (no video), confirms that attendees were informed of and agreed to the recording, and uploads it. After a successful upload the system starts transcription automatically and the progress is shown on the Recordings tab (UC-52).
 
 This screen allows the Secretary to:
 
@@ -4022,19 +4119,71 @@ Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Tải audio lên [Upload audio] | Dialog title. The dialog is available only to the assigned Secretary of the meeting and only when the meeting is Ended. |
-| Drop zone | Dashed area “Kéo tệp vào đây hoặc bấm để chọn” [Drag a file here or click to choose] with the hint “MP3, M4A, WAV · tối đa 300 MB”. Accepts one audio file at a time. |
+| Upload audio | Dialog title. The dialog is available only to the assigned Secretary of the meeting and only when the meeting is Ended. |
+| Drop zone | Dashed area “Drag a file here or click to choose” with the hint “MP3, M4A, WAV · up to 300 MB”. Accepts one audio file at a time. |
 | File validation | A file with another format (e.g. .wma or any video file) or larger than 300 MB is rejected immediately with an inline error naming the file and the accepted formats; the user can choose another file. |
 | Selected file row | File name and size (e.g. “hop-sprint6.m4a · 64 MB”) with a progress bar and percentage (e.g. 64%) while uploading. |
-| Recording consent [Xác nhận đồng ý ghi âm] | Checkbox, required, unticked by default: “Tôi xác nhận người tham dự đã được thông báo và đồng ý ghi âm theo Luật Bảo vệ dữ liệu cá nhân 91/2025/QH15 và Nghị định 356/2025/NĐ-CP.” [I confirm that attendees were informed and consented to the recording under Law 91/2025/QH15 on Personal Data Protection and Decree 356/2025/ND-CP.] Required because the recording is personal data. |
-| Huỷ [Cancel] | Ghost button; closes the dialog and discards the selected file; an upload in progress is cancelled. |
-| Tải lên [Upload] | Primary button, enabled when a valid file is selected and the consent box is ticked. Uploads the file, adds it to the media library with uploader and upload time, and starts transcription automatically (status Processing on the Recordings tab). If the upload fails, an error is shown and the Secretary can try again. |
+| Recording consent | Checkbox, required, unticked by default: “I confirm that attendees were informed and consented to the recording under Law 91/2025/QH15 on Personal Data Protection and Decree 356/2025/ND-CP.” Required because the recording is personal data. |
+| Cancel | Ghost button; closes the dialog and discards the selected file; an upload in progress is cancelled. |
+| Upload | Primary button, enabled when a valid file is selected and the consent box is ticked. Uploads the file, adds it to the media library with uploader and upload time, and starts transcription automatically (status Processing on the Recordings tab). If the upload fails, an error is shown and the Secretary can try again. |
+
+#### 9.3 Room Microphone Recorder
+
+Figure 70: Room Microphone Recorder
+
+The room microphone recorder is a floating card at the bottom right of every page of an In-person Meeting that is In Progress, shown to its Secretary. It records the sound of the meeting room in takes and keeps recording while the Secretary moves between tabs; for a Hybrid Meeting the Secretary’s microphone in the online room is the room microphone instead (UC-52a, BR-107, BR-108).
+
+This screen allows the Secretary to:
+
+- Turn Room Microphone On: confirm that attendees were informed (first take only) and start a take (UC-52a).
+
+- Turn Room Microphone Off: save the take into the Meeting’s room recording (UC-52a).
+
+- Minimize Card: shrink the card and drag it aside (UC-52a).
+
+Field Description
+
+| Field Name | Description |
+| --- | --- |
+| Microphone button | Left button of the card; turns the room microphone on or off. The first time it asks for the recording confirmation and an optional purpose, as in 9.2. (BR-109) |
+| State | Recording (with elapsed time); Take left open – Continue recording / Save recorded part; Recording on another device – stop it there; Slow network. |
+| Minimize | Icon button at the top corner; the minimized card keeps showing the recording state. |
+| Recording indicator | While a take is open, everyone viewing the Meeting sees a red “Recording” label beside the title. |
+| Messages | MSG363 when a take is saved; MSG359 if the Meeting is not In Progress; MSG360 if the microphone is on at another device; MSG295 if the actor is not the Secretary. |
+
+#### 9.4 My Voice ID
+
+Figure 71: My Voice ID
+
+My Voice ID is reached from the account menu by every signed-in internal user. Voice ID needs its own consent, separate from recording consent, and can be withdrawn at any time; voice features are kept only in protected form (UC-56, BR-116, BR-117, BR-121).
+
+This screen allows every signed-in internal user to:
+
+- Give Voice ID Consent: read the notice, tick the box and turn Voice ID on (UC-56b).
+
+- Record Voice Sample: read a passage aloud, listen back and save or record again (UC-56c).
+
+- Play / Delete Voice Sample: listen to or delete an own sample (UC-56d, UC-56e).
+
+- Withdraw Consent: turn Voice ID off; every sample is deleted (UC-56f).
+
+Field Description
+
+| Field Name | Description |
+| --- | --- |
+| Page header | Title “My voice” with the note “Voice ID helps the Secretary know who is speaking in the transcript of meetings you attend.” |
+| Consent card | Shown before consent: the notice (purpose, data kept, rights, sensitive data), an unticked checkbox and “Turn on Voice ID”, enabled only once ticked. MSG305 after consent. |
+| Tabs | “Recorded by me” and “Recorded for me by others”, each with its count. |
+| Notice changed | Yellow banner when the notice version changed: open it to read and accept again. |
+| Voice samples | Card with the status chip On, the date since, the count n/5 and a tip to record one more sample; each sample has Play and Delete (MSG311). |
+| Record voice sample | Dialog with the passage; while recording the button counts “Keep reading… (n seconds)” until the minimum length, then Save sample or Record again. 6–60 seconds of clear speech from one person (BR-118, BR-119); MSG307 when saved. |
+| Turn off and delete samples | Red button; asks for confirmation, deletes all samples and shows MSG306. (BR-117) |
 
 ### 10. FE-10 – Transcription, Speaker Identification & Meeting Summary
 
 #### 10.1 Speaker-Attributed Transcript
 
-Figure 66: Speaker-Attributed Transcript
+Figure 72: Speaker-Attributed Transcript
 
 The Speaker-Attributed Transcript screen is the transcript editor inside the Recordings tab, used by the Secretary after the system has transcribed an uploaded audio file. The transcript is split into timed segments; the system separates the voices as “Speaker 1, 2, …” and may suggest a name for each voice, but never assigns a person by itself: the Secretary confirms the suggestion or assigns each unknown voice to a person from the meeting attendee list – once for all segments of that voice – and corrects the wording before generating the summary. There is no real-time transcription and no translation (UC-51b, UC-54, UC-55, UC-58).
 
@@ -4057,51 +4206,74 @@ Field Description
 | Field Name | Description |
 | --- | --- |
 | Audio file selector | Dropdown listing the uploaded audio files of the meeting, e.g. “hop-sprint6.m4a”; default the latest file. |
-| Processing status chip | Đang xử lý [Processing] / Xử lý xong [Processed] / Lỗi [Failed]. Editing is possible only when the file is Processed. |
-| Tìm trong transcript [Search in transcript] | Text input; filters or highlights segments containing the keyword. |
-| Tạo tóm tắt [Generate summary] | Primary button; sends the current edited transcript to the AI provider and opens the Meeting Summary tab with a new Draft (UC-58). |
+| Processing status chip | Processing / Processed / Failed. Editing is possible only when the file is Processed. |
+| Search in transcript | Text input; filters or highlights segments containing the keyword. |
+| Generate summary | Primary button; sends the current edited transcript to the AI provider and opens the Meeting Summary tab with a new Draft (UC-58). |
 | Audio player | Play/pause button, current position (e.g. 00:14:02), seek bar and total duration (e.g. 01:09:12) (UC-51b). |
 | Segment time | Start time of the segment (hh:mm:ss); clicking it moves the player to that point and plays it. The segment being played is highlighted. |
-| Speaker dropdown | Per segment; lists the meeting’s internal participants and Guests. Changing it affects only that segment. A name the system filled in automatically is shown as assigned and marked as filled in by the system, and the Secretary may change or clear it. An unassigned voice is shown as “Người nói 3” [Speaker 3] with an amber border (UC-55). |
+| Speaker dropdown | Per segment; lists the meeting’s internal participants and Guests. Changing it affects only that segment. A name the system filled in automatically is shown as assigned and marked as filled in by the system, and the Secretary may change or clear it. An unassigned voice is shown as “Speaker 3” with an amber border (UC-55). |
 | Segment text | Transcribed text; click to edit inline, saved when leaving the field. The last-edit time is updated (UC-55). |
-| Gán “Người nói 3” [Assign “Speaker 3”] card | Opened when an unassigned voice is selected; hint “Chọn trong danh sách tham dự. Áp dụng cho mọi đoạn của giọng này (12 đoạn).” [Choose from the attendee list. Applies to all segments of this voice (12 segments).] Radio list of attendees, e.g. “Ngô Thanh Vân · khách” [Guest], “Phạm Đức Long”, “Lê Thu Hà”; one must be selected. |
-| Gán cho 12 đoạn [Assign to 12 segments] | Primary button; assigns the selected attendee to every segment of that voice in one step and refreshes the transcript (UC-55). |
+| Assign “Speaker 3” card | Opened when an unassigned voice is selected; hint “Choose from the attendee list. Applies to all segments of this voice (12 segments).” Radio list of attendees, e.g. “Ngo Thanh Van · guest”, “Pham Duc Long”, “Le Thu Ha”; one must be selected. |
+| Assign to 12 segments | Primary button; assigns the selected attendee to every segment of that voice in one step and refreshes the transcript (UC-55). |
 | Visibility rule | Viewing and editing the transcript is limited to the assigned Secretary of the meeting (permission matrix, Transcript – View / Edit). |
 
 #### 10.2 Meeting Summary
 
-Figure 67: Meeting Summary
+Figure 73: Meeting Summary
 
-The Meeting Summary card [Tóm tắt] on the Biên bản tab shows the AI draft of the Meeting's content, written from the Meeting's own record, and the review that makes it usable. The draft always has three sections — I. Mục tiêu và phạm vi cuộc họp, II. Nội dung thảo luận và đánh giá, III. Kết luận và phân công thực hiện — and is always labelled as written by AI. Only the current Chair and Secretary see and correct it; after they approve it the other participants read it. Correcting it withdraws the approval, and the minutes use only an approved draft. Vote results are copied from the data and are never written by the model; action items stay plain text with no assignee or deadline. There is no publish step (UC-58, UC-59, UC-60, UC-61).
+The Meeting Summary card on the Minutes tab shows the AI draft of the Meeting's content, written from the Meeting's own record, and the review that makes it usable. The draft always has three sections — I. Objectives and scope of the meeting, II. Discussion and assessment, III. Conclusions and assignments — and is always labelled as written by AI. Only the current Chair and Secretary see and correct it; after they approve it the other participants read it. Correcting it withdraws the approval, and the minutes use only an approved draft. Vote results are copied from the data and are never written by the model; action items stay plain text with no assignee or deadline. There is no publish step (UC-58, UC-59, UC-60, UC-61).
 
 This screen allows the current Chair and the current Secretary to:
 
 - View Meeting Summary: read the three sections, the label saying the text was written by AI, the model and time, who asked for it, who approved it and who last corrected it (UC-59).
 
-- Generate Meeting Summary: click “Tạo dự thảo” [Generate summary], or “Tạo lại” [Regenerate] over an existing draft, to queue a new draft from the Meeting's transcript (UC-58). The page asks again every 5 seconds while the AI writes.
+- Generate Meeting Summary: click “Generate summary”, or “Regenerate” over an existing draft, to queue a new draft from the Meeting's transcript (UC-58). The page asks again every 5 seconds while the AI writes.
 
 - Edit Meeting Summary: correct the text of the three sections before approving it (UC-60).
 
-- Approve Meeting Summary: click “Duyệt dự thảo” [Approve draft] to vouch for the content; the other participants can read it from then on (UC-61).
+- Approve Meeting Summary: click “Approve draft” to vouch for the content; the other participants can read it from then on (UC-61).
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Meeting header | Read-only: back link, Meeting title, status chip Đã kết thúc [Ended], confidentiality chip, actual time and place. |
-| Nhãn AI [AI label] | Read-only chip “Nội dung do AI tạo — cần rà soát” [AI-written — needs review] on every draft, reviewed or not. |
-| Trạng thái dự thảo [Draft status] | Read-only: Chờ AI [Queued], AI đang viết [Running], Đã có dự thảo [Ready], Viết không được [Failed] with the reason, and an empty state when there is none. |
-| Tạo dự thảo / Tạo lại [Generate summary / Regenerate] | Primary button, shown to the current Chair and Secretary while the Meeting is InProgress or Ended. Queues the request; the earlier draft stays readable while the AI writes, and the page asks again every 5 seconds. |
-| Ba mục [Sections] | Three text boxes — I. Mục tiêu và phạm vi cuộc họp, II. Nội dung thảo luận và đánh giá, III. Kết luận và phân công thực hiện — limited to 2,000, 12,000 and 8,000 characters. |
-| Sửa dự thảo [Edit draft] | Secondary button on a finished draft; saving withdraws the review. |
-| Lưu [Save] | Saves the three sections and withdraws the review, so the other participants stop seeing the draft until it is approved again. |
-| Duyệt dự thảo [Approve draft] | Secondary button on a finished draft; records the reviewer and the time. From then on everyone who may read the Meeting reads the draft. |
-| Người duyệt và người sửa [Reviewer and editor] | Read-only: who approved the draft and when, and who last corrected it and when. |
-| Máy AI và thời điểm [Model and time] | Read-only: the model name, the time the draft was written and the person who asked for it. |
-| Nguồn từng phần [Sources] | Read-only, for each part of section II: the agenda item title and the stretch of the Meeting the part was written from, e.g. “09:12–09:31 · 42 câu”, to check against the Bản ghi tab. |
-| Cơ sở dự thảo [What the draft is based on] | Read-only, shown to the current Chair and Secretary before asking: sentences recorded, voices not yet named, transcripts running or failed, agenda items and how many were timed, closed votes. |
-| Quyền xem [Visibility rule] | Read-only note: before approval only the current Chair and Secretary see the draft; after approval everyone who may read the Meeting sees it read-only; correcting it withdraws the approval. |
-| Không có bước công bố [No publish step] | No Publish button: the summary is not published outside the Meeting. |
+| Meeting header | Read-only: back link, Meeting title, status chip Ended, confidentiality chip, actual time and place. |
+| AI label | Read-only chip “AI-written — needs review” on every draft, reviewed or not. |
+| Draft status | Read-only: Queued, Running, Ready, Failed with the reason, and an empty state when there is none. |
+| Generate summary / Regenerate | Primary button, shown to the current Chair and Secretary while the Meeting is InProgress or Ended. Queues the request; the earlier draft stays readable while the AI writes, and the page asks again every 5 seconds. |
+| Sections | Three text boxes — I. Objectives and scope of the meeting, II. Discussion and assessment, III. Conclusions and assignments — limited to 2,000, 12,000 and 8,000 characters. |
+| Edit draft | Secondary button on a finished draft; saving withdraws the review. |
+| Save | Saves the three sections and withdraws the review, so the other participants stop seeing the draft until it is approved again. |
+| Approve draft | Secondary button on a finished draft; records the reviewer and the time. From then on everyone who may read the Meeting reads the draft. |
+| Reviewer and editor | Read-only: who approved the draft and when, and who last corrected it and when. |
+| Model and time | Read-only: the model name, the time the draft was written and the person who asked for it. |
+| Sources | Read-only, for each part of section II: the agenda item title and the stretch of the Meeting the part was written from, e.g. “09:12–09:31 · 42 sentences”, to check against the Recordings tab. |
+| What the draft is based on | Read-only, shown to the current Chair and Secretary before asking: sentences recorded, voices not yet named, transcripts running or failed, agenda items and how many were timed, closed votes. |
+| Visibility rule | Read-only note: before approval only the current Chair and Secretary see the draft; after approval everyone who may read the Meeting sees it read-only; correcting it withdraws the approval. |
+| No publish step | No Publish button: the summary is not published outside the Meeting. |
+
+#### 10.3 Collect Voice Samples for Attendees
+
+Figure 74: Collect Voice Samples for Attendees
+
+The voice collection dialog opens from a user row on the Users screen, for holders of the Voice sample collection permission. It records a sample for a person under that person’s own Voice ID consent, asking for agreement on every take (UC-57, BR-118, BR-119, BR-124).
+
+This screen allows a holder of the Voice sample collection permission to:
+
+- View Voice Collection: see the person’s consent and the samples collected for the person (UC-57a).
+
+- Record Voice Sample for Attendee: confirm the person agreed to this take, record, listen back and save (UC-57b).
+
+- Play / Delete Collected Sample: listen to or delete a collected sample (UC-57c, UC-57d).
+
+Field Description
+
+| Field Name | Description |
+| --- | --- |
+| Person | Name and email of the person and the consent status. Without consent under the current notice, recording is not possible. |
+| Agreement for this take | Required checkbox, ticked before each recording. |
+| Passage and recorder | Passage to read, Start/Stop, play back, Save sample or Record again; 6–60 seconds of clear speech; at most 50 collected samples. MSG473 when saved, and the person is notified. |
+| Collected samples | List with date and collector; Play and Delete (MSG474) on each. |
 
 ### 11. FE-11 – Voting Management
 
@@ -4109,9 +4281,9 @@ Scope: create/open/cast only while Meeting is InProgress. End Meeting is indepen
 
 #### 11.1 Meeting Detail – Voting Tab
 
-Figure 68: Meeting Detail – Voting Tab
+Figure 75: Meeting Detail – Voting Tab
 
-The Meeting Detail – Voting tab [Biểu quyết] lists every Vote that belongs directly to the selected Meeting. It remains readable after Ended; casting stops at Meeting end. While InProgress, the header shows the actual start time, elapsed time and the current Agenda Item. The Chair creates/opens during InProgress, and may close outstanding Open Votes during InProgress or after Ended; other users involved in the Meeting see the same list read-only. Votes are never held before or after the Meeting and have no deadline or quorum (UC-62a, UC-62b, UC-63, UC-64, UC-66).
+The Meeting Detail – Voting tab lists every Vote that belongs directly to the selected Meeting. It remains readable after Ended; casting stops at Meeting end. While InProgress, the header shows the actual start time, elapsed time and the current Agenda Item. The Chair creates/opens during InProgress, and may close outstanding Open Votes during InProgress or after Ended; other users involved in the Meeting see the same list read-only. Votes are never held before or after the Meeting and have no deadline or quorum (UC-62a, UC-62b, UC-63, UC-64, UC-66).
 
 This screen allows the Chair to:
 
@@ -4135,25 +4307,25 @@ Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Meeting header | Read-only: Meeting title, status chip InProgress [Đang họp], confidentiality chip (e.g. Normal [Thường]), actual start time and elapsed time (“Bắt đầu 08:32 · đã họp 22 phút”) and the current Agenda Item (“Mục hiện tại: 2. …”). |
-| Tabs | General Information · Participants · Meeting Agenda · Documents · Voting · Recordings · Summary · Minutes [Thông tin chung · Thành phần tham dự · Nội dung cuộc họp · Tài liệu · Biểu quyết · Bản ghi · Tóm tắt · Biên bản]; Voting is selected. |
-| Vote count [n biểu quyết] | Read-only number of Votes that belong to the Meeting. |
-| Create vote [Tạo biểu quyết] | Primary button, visible only to the current Chair and enabled only while the Meeting is InProgress (BR-090, BR-092, BR-093). Opens the Create & Open Vote Dialog. |
-| Vote status chip | Draft [Nháp] (dashed card), Open [Đang mở], Closed [Đã đóng]; after the Chair records a conclusion the Vote shows its conclusion. Lifecycle: Draft → Open → Closed → Concluded. |
-| Vote content | Bold text of the motion, e.g. “Thông qua phạm vi biểu quyết chỉ trong cuộc họp”. |
-| Vote meta | Read-only: linked Agenda Item (“Mục 2”), ballot type public [công khai] or secret [bỏ phiếu kín] and opening time (“mở 08:51”). |
-| Turnout bar [Đã bỏ phiếu] | Progress bar with “cast / eligible” count (e.g. 3/5), shown for an open Vote and updated as ballots arrive. Individual choices are not shown while the Vote is open. |
-| Eligibility note | Read-only text, e.g. “5 người đủ điều kiện: Chủ trì, Thư ký, Thành viên, Khách mời.” Counts the current holders of the roles selected for this Vote; the list is fixed when the Vote opens, and attendance does not decide eligibility (BR-090, BR-055, BR-091). |
-| Close voting [Đóng phiếu] | Chair only; close and tally an existing Open Vote while Meeting is InProgress or Ended. End Meeting is independently available and never requires this action. After Meeting Ended no new ballot is accepted, even if Vote remains Open. (BR-026, BR-090, BR-099, BR-092, BR-093) |
-| Edit [Sửa] | Button on a Draft Vote, Chair only; opens the dialog pre-filled. An open or closed Vote can no longer be edited. |
-| Delete [Xoá] | Button on a Draft Vote, Chair only; asks for confirmation and deletes the Draft Vote. An open or closed Vote cannot be deleted (UC-63, BR-086, BR-087). |
-| Open vote [Mở biểu quyết] | Primary button on a Draft Vote, Chair only, enabled while the Meeting is InProgress (BR-092, BR-093). Eligible voters see the Vote immediately in Cast Vote. |
+| Meeting header | Read-only: Meeting title, status chip InProgress, confidentiality chip (e.g. Normal), actual start time and elapsed time (“Started 08:32 · 22 min in”) and the current Agenda Item (“Current item: 2. …”). |
+| Tabs | General Information · Participants · Meeting Agenda · Documents · Voting · Recordings · Summary · Minutes; Voting is selected. |
+| Vote count | Read-only number of Votes that belong to the Meeting. |
+| Create vote | Primary button, visible only to the current Chair and enabled only while the Meeting is InProgress (BR-090, BR-092, BR-093). Opens the Create & Open Vote Dialog. |
+| Vote status chip | Draft (dashed card), Open, Closed; after the Chair records a conclusion the Vote shows its conclusion. Lifecycle: Draft → Open → Closed → Concluded. |
+| Vote content | Bold text of the motion, e.g. “Approve voting only within the meeting”. |
+| Vote meta | Read-only: linked Agenda Item (“Item 2”), ballot type public or secret and opening time (“opened 08:51”). |
+| Turnout bar | Progress bar with “cast / eligible” count (e.g. 3/5), shown for an open Vote and updated as ballots arrive. Individual choices are not shown while the Vote is open. |
+| Eligibility note | Read-only text, e.g. “5 people eligible: Chair, Secretary, Member, Guest.” Counts the current holders of the roles selected for this Vote; the list is fixed when the Vote opens, and attendance does not decide eligibility (BR-090, BR-055, BR-091). |
+| Close voting | Chair only; close and tally an existing Open Vote while Meeting is InProgress or Ended. End Meeting is independently available and never requires this action. After Meeting Ended no new ballot is accepted, even if Vote remains Open. (BR-026, BR-090, BR-099, BR-092, BR-093) |
+| Edit | Button on a Draft Vote, Chair only; opens the dialog pre-filled. An open or closed Vote can no longer be edited. |
+| Delete | Button on a Draft Vote, Chair only; asks for confirmation and deletes the Draft Vote. An open or closed Vote cannot be deleted (UC-63, BR-086, BR-087). |
+| Open vote | Primary button on a Draft Vote, Chair only, enabled while the Meeting is InProgress (BR-092, BR-093). Eligible voters see the Vote immediately in Cast Vote. |
 
 #### 11.2 Create & Open Vote Dialog
 
-Figure 69: Create & Open Vote Dialog
+Figure 76: Create & Open Vote Dialog
 
-The Create & Open Vote Dialog opens over the Voting tab when the Chair clicks “Create vote” (or “Edit” on a Draft Vote). The title shows the Agenda Item the Vote is linked to, normally the current item (“Tạo biểu quyết · Mục 2”). The Vote belongs directly to the Meeting, can only be created while the Meeting is InProgress and has no deadline or quorum (UC-63, UC-64).
+The Create & Open Vote Dialog opens over the Voting tab when the Chair clicks “Create vote” (or “Edit” on a Draft Vote). The title shows the Agenda Item the Vote is linked to, normally the current item (“Create vote · Item 2”). The Vote belongs directly to the Meeting, can only be created while the Meeting is InProgress and has no deadline or quorum (UC-63, UC-64).
 
 This screen allows the Chair to:
 
@@ -4171,21 +4343,21 @@ Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Dialog title [Tạo biểu quyết · Mục n] | Read-only; shows the linked Agenda Item of the Meeting (by default the current Agenda Item). |
-| Vote content [Nội dung biểu quyết] * | Text input, required; the motion put to the vote, e.g. “Thông qua phạm vi biểu quyết chỉ trong cuộc họp”. Empty content blocks saving. |
-| Options [Phương án] | List of text inputs, pre-filled with Agree [Đồng ý], Disagree [Không đồng ý], Abstain [Không ý kiến]. Each option must be non-empty and options must be distinct; at least two options are required. |
+| Dialog title | Read-only; shows the linked Agenda Item of the Meeting (by default the current Agenda Item). |
+| Vote content * | Text input, required; the motion put to the vote, e.g. “Approve voting only within the meeting”. Empty content blocks saving. |
+| Options | List of text inputs, pre-filled with Agree, Disagree, Abstain. Each option must be non-empty and options must be distinct; at least two options are required. |
 | Drag handle | Icon at the left of each option; drag to reorder the options shown to voters. |
 | Remove option | Icon at the right of each option; removes that option (not allowed below two options). |
-| Add option [+ Thêm phương án] | Link button; appends an empty option row. |
-| Ballot type [Hình thức] | Segmented control: Public [Công khai] (default) – each voter’s choice is shown with the result; Secret ballot [Bỏ phiếu kín] – only totals are shown. |
-| Eligible voters [Người được bỏ phiếu] | Multi-select of meeting roles: Chair [Chủ trì], Secretary [Thư ký], Member [Thành viên], Guest [Khách mời]; all selected by default and at least one required. Eligible voters are the current holders of the selected roles when the Vote opens; the list and its count are then fixed. A Guest votes with the invitation identity, not the display name or room connection. (BR-090, BR-055, BR-091) |
-| Cancel [Huỷ] | Link button; closes the dialog, nothing is saved. |
-| Save draft [Lưu nháp] | Button; saves the Vote with status Draft. Allowed only while the Meeting is InProgress and the user is its current Chair (BR-092, BR-093). |
-| Open vote [Mở biểu quyết] | Primary button; saves and opens the Vote (status Open, opening time recorded). If the Meeting is no longer InProgress the Vote is not created and the reason is shown (BR-090). |
+| Add option | Link button; appends an empty option row. |
+| Ballot type | Segmented control: Public (default) – each voter’s choice is shown with the result; Secret ballot – only totals are shown. |
+| Eligible voters | Multi-select of meeting roles: Chair, Secretary, Member, Guest; all selected by default and at least one required. Eligible voters are the current holders of the selected roles when the Vote opens; the list and its count are then fixed. A Guest votes with the invitation identity, not the display name or room connection. (BR-090, BR-055, BR-091) |
+| Cancel | Link button; closes the dialog, nothing is saved. |
+| Save draft | Button; saves the Vote with status Draft. Allowed only while the Meeting is InProgress and the user is its current Chair (BR-092, BR-093). |
+| Open vote | Primary button; saves and opens the Vote (status Open, opening time recorded). If the Meeting is no longer InProgress the Vote is not created and the reason is shown (BR-090). |
 
 #### 11.3 Cast Vote
 
-Figure 70: Cast Vote
+Figure 77: Cast Vote
 
 The Cast Vote screen (shown here in its compact/mobile layout) is opened by an eligible voter from the open Vote card, the in-room meeting panel. It shows one open Vote of the InProgress Meeting and lets the voter submit exactly one ballot (UC-65).
 
@@ -4199,17 +4371,17 @@ Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Screen title [Biểu quyết] | Read-only header. |
-| Status chip | Open [Đang mở] with opening time (“Mở lúc 08:51”). When the Vote has been closed the options are disabled and the screen states that voting has ended. |
+| Screen title | Read-only header. |
+| Status chip | Open with opening time (“Opened at 08:51”). When the Vote has been closed the options are disabled and the screen states that voting has ended. |
 | Vote content | Read-only bold text of the motion. |
-| Vote context | Read-only: Meeting title · Agenda Item · ballot type, e.g. “Họp kế hoạch Sprint 6 · Mục 2 · công khai”. |
-| Options | Radio group, required, one choice only; values are the options defined by the Chair (e.g. Agree [Đồng ý], Disagree [Không đồng ý], Abstain [Không ý kiến]). The selected option is highlighted. |
-| Submit ballot [Gửi phiếu] | Primary button, enabled when an option is selected. Accepted only while the Meeting is InProgress, the Vote is Open and the user is on the eligible list fixed when the Vote opened – a current Chair, Secretary, Participant or verified Guest in a selected role – and has not voted yet (BR-090, BR-092, BR-093, BR-091). After submission the screen shows the recorded choice and the turnout. |
-| Immutability note [Phiếu đã gửi không sửa được.] | Read-only hint: a submitted ballot cannot be changed or withdrawn. |
+| Vote context | Read-only: Meeting title · Agenda Item · ballot type, e.g. “Sprint 6 planning meeting · Item 2 · public”. |
+| Options | Radio group, required, one choice only; values are the options defined by the Chair (e.g. Agree, Disagree, Abstain). The selected option is highlighted. |
+| Submit ballot | Primary button, enabled when an option is selected. Accepted only while the Meeting is InProgress, the Vote is Open and the user is on the eligible list fixed when the Vote opened – a current Chair, Secretary, Participant or verified Guest in a selected role – and has not voted yet (BR-090, BR-092, BR-093, BR-091). After submission the screen shows the recorded choice and the turnout. |
+| Immutability note | Read-only hint: a submitted ballot cannot be changed or withdrawn. |
 
 #### 11.4 Vote Result & Conclusion
 
-Figure 71: Vote Result & Conclusion
+Figure 78: Vote Result & Conclusion
 
 The Vote Result & Conclusion screen is shown on the Voting tab after the Chair closes a Vote. It presents the tally per option and, for a public Vote, each person’s choice. The Chair then records the conclusion Passed, NotPassed or Deferred; the tally and conclusion are carried into the Meeting Minutes (UC-62b, UC-67).
 
@@ -4226,53 +4398,53 @@ Field Description
 | Field Name | Description |
 | --- | --- |
 | Vote content | Read-only bold text of the motion. |
-| Status chip | Closed [Đã đóng]; after the conclusion is saved the chip shows the conclusion. |
-| Result summary | Read-only, e.g. “4/5 người đã bỏ phiếu · công khai · mở 08:51, đóng 08:55”: voters / eligible, ballot type, opening and closing time. |
+| Status chip | Closed; after the conclusion is saved the chip shows the conclusion. |
+| Result summary | Read-only, e.g. “4/5 people voted · public · opened 08:51, closed 08:55”: voters / eligible, ballot type, opening and closing time. |
 | Option result rows | One row per option: option label, bar and “count · percentage”, e.g. Agree 3 · 75%, Disagree 0 · 0%, Abstain 1 · 25%; percentages are calculated on ballots cast. Calculated by the system when the Vote is closed (BR-099). |
-| Conclusion [Kết luận] * | Segmented control, required: Passed [Thông qua], NotPassed [Không thông qua], Deferred [Hoãn]. Enabled only for the current Chair and only after the Vote is closed (BR-099, BR-092, BR-093). |
-| Conclusion note [Ghi chú kết luận] | Text input, optional, e.g. “Áp dụng từ Sprint 6.”; included with the conclusion in the minutes. |
-| Record conclusion [Ghi kết luận] | Primary button, Chair only; saves the conclusion on the Vote. Other users see the conclusion read-only. |
-| Public ballots [Phiếu công khai] | For a public Vote, list every person on the eligible list, internal or Guest, with the saved choice, or “Không bỏ phiếu” [Did not vote] for someone who cast no ballot (e.g. Phạm Đức Long · Thành viên – Không bỏ phiếu). Guest uses the self-declared display profile without exposing a legal identity claim. Attendance is reference only. A secret Vote hides all voter-choice links. (BR-090, BR-092, BR-093, BR-055) |
-| Minutes note [Kết luận đưa vào biên bản (FE-12).] | Read-only hint: the tally and the recorded conclusion are included in the Meeting Minutes; no separate resolution is created (BR-099). |
+| Conclusion * | Segmented control, required: Passed, NotPassed, Deferred. Enabled only for the current Chair and only after the Vote is closed (BR-099, BR-092, BR-093). |
+| Conclusion note | Text input, optional, e.g. “Applies from Sprint 6.”; included with the conclusion in the minutes. |
+| Record conclusion | Primary button, Chair only; saves the conclusion on the Vote. Other users see the conclusion read-only. |
+| Public ballots | For a public Vote, list every person on the eligible list, internal or Guest, with the saved choice, or “Did not vote” for someone who cast no ballot (e.g. Pham Duc Long · Member – Did not vote). Guest uses the self-declared display profile without exposing a legal identity claim. Attendance is reference only. A secret Vote hides all voter-choice links. (BR-090, BR-092, BR-093, BR-055) |
+| Minutes note | Read-only hint: the tally and the recorded conclusion are included in the Meeting Minutes; no separate resolution is created (BR-099). |
 
 ### 12. FE-12 – Meeting Minutes & Approval
 
 #### 12.1 Minutes Editor
 
-Figure 72: Minutes Editor
+Figure 79: Minutes Editor
 
-The Minutes Editor is the Biên bản tab of an InProgress or Ended Meeting as seen by its current Chair or Secretary. The draft is filled from one fixed template — Biên bản cuộc họp theo Mẫu 1.4 Nghị định 30/2020/NĐ-CP — with the Meeting's information, attendance, each agenda item's recorded conclusion, the Vote results and conclusions, and the three sections of the approved AI draft when there is one. The Secretary edits the HTML text in the word-processor editor with a live preview of the paper, saves explicitly, and downloads the same text as a Word file; the minutes of a Secret Meeting cannot be downloaded. The Secretary sends the finished minutes to the Chair for approval (UC-72); the Chair approves and issues them (UC-73), or returns them with a reason (UC-74).
+The Minutes Editor is the Minutes tab of an InProgress or Ended Meeting as seen by its current Chair or Secretary. The draft is filled from one fixed template — meeting minutes, Form 1.4 of Decree 30/2020/ND-CP — with the Meeting's information, attendance, each agenda item's recorded conclusion, the Vote results and conclusions, and the three sections of the approved AI draft when there is one. The Secretary edits the HTML text in the word-processor editor with a live preview of the paper, saves explicitly, and downloads the same text as a Word file; the minutes of a Secret Meeting cannot be downloaded. The Secretary sends the finished minutes to the Chair for approval (UC-72); the Chair approves and issues them (UC-73), or returns them with a reason (UC-74).
 
 This screen allows the current Chair and the current Secretary to:
 
 - View Meeting Minutes: read the latest revision as the paper that will be printed, with its revision number, status and last save time (UC-69).
 
-- Generate Meeting Minutes: click “Tạo biên bản” [Create minutes], or “Điền từ dữ liệu cuộc họp” [Fill from meeting data] over an existing draft, to fill the fixed template from the Meeting's records and the approved AI draft (UC-70).
+- Generate Meeting Minutes: click “Create minutes”, or “Fill from meeting data” over an existing draft, to fill the fixed template from the Meeting's records and the approved AI draft (UC-70).
 
 - Edit Meeting Minutes: correct the text in the word-processor editor; the preview on the right follows the text (UC-71).
 
-- Save: click “Lưu” [Save] to save the text; the draft is not saved automatically.
+- Save: click “Save” to save the text; the draft is not saved automatically.
 
-Download Word: click “Tải Word” [Download Word] to save “Biên bản - <tên cuộc họp>.docx”; not available for a Secret Meeting (UC-71).
+Download Word: click “Download Word” to save a Word file named after the Meeting; not available for a Secret Meeting (UC-71).
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
 | Meeting header | Read-only: Meeting title, status chip, confidentiality chip, actual time and place. |
-| Mẫu biên bản [Template] | Read-only: one fixed template, Biên bản cuộc họp theo Mẫu 1.4 Nghị định 30/2020/NĐ-CP. There is no template chooser. |
-| Trạng thái và lần sửa [Status and revision] | Read-only: revision number, status Bản nháp [Draft], who created the minutes and when, and when they were last saved. A correction that is not issued yet is labelled “Đính chính · bản nháp / chờ duyệt / bị trả lại” [Correction · draft / waiting for approval / returned]. |
-| Tạo biên bản / Tạo lại [Create minutes / Rebuild] | Button; fills the template from the Meeting's records and the approved AI draft. Building again replaces all corrections after confirmation, and is not offered once the minutes are submitted or issued. |
-| Soạn thảo HTML [HTML editor] | Word-processor area: toolbar with paragraph style, font size, colour, alignment, lists, tables, page break, find and replace; switches to a plain-text view and back, and the preview follows the text. The server filters the HTML before saving. Template marks: “## ” section heading, “### ” sub-heading, “@@ left \| right” two-column line, “**bold**”, “- ” bullet, “^ ” centred and “~ ” small line. |
-| Xem trước [Preview] | Read-only paper that follows the text as it is typed and is laid out as it will print: heading, two-column opening, sections I–III, closing line and the Secretary and Chair name block with space to sign the printed copy by hand. |
-| Lưu [Save] | Saves the text with the time the draft was read. If someone else saved first, the page says so and the newer text is not overwritten. |
-| Tải Word [Download Word] | Downloads “Biên bản - <tên cuộc họp>.docx” built from the same text. Not available for a Secret Meeting, where the minutes are read on the screen only. |
-| Quyền xem [Visibility rule] | Read-only note: only the current Chair and Secretary see and correct a draft; everyone else sees the minutes only after they are issued; someone who is neither receives no draft at all. |
-| Ghi chú nhiệm vụ [Task note] | Read-only: “2. Nhiệm vụ, sản phẩm và thời hạn” is text in the minutes; no assignee, due date or progress is tracked. |
+| Template | Read-only: one fixed template, meeting minutes, Form 1.4 of Decree 30/2020/ND-CP. There is no template chooser. |
+| Status and revision | Read-only: revision number, status Draft, who created the minutes and when, and when they were last saved. A correction that is not issued yet is labelled “Correction · draft / waiting for approval / returned”. |
+| Create minutes / Rebuild | Button; fills the template from the Meeting's records and the approved AI draft. Building again replaces all corrections after confirmation, and is not offered once the minutes are submitted or issued. |
+| HTML editor | Word-processor area: toolbar with paragraph style, font size, colour, alignment, lists, tables, page break, find and replace; switches to a plain-text view and back, and the preview follows the text. The server filters the HTML before saving. Template marks: “## ” section heading, “### ” sub-heading, “@@ left \| right” two-column line, “**bold**”, “- ” bullet, “^ ” centred and “~ ” small line. |
+| Preview | Read-only paper that follows the text as it is typed and is laid out as it will print: heading, two-column opening, sections I–III, closing line and the Secretary and Chair name block with space to sign the printed copy by hand. |
+| Save | Saves the text with the time the draft was read. If someone else saved first, the page says so and the newer text is not overwritten. |
+| Download Word | Downloads a Word file, named after the Meeting, built from the same text. Not available for a Secret Meeting, where the minutes are read on the screen only. |
+| Visibility rule | Read-only note: only the current Chair and Secretary see and correct a draft; everyone else sees the minutes only after they are issued; someone who is neither receives no draft at all. |
+| Task note | Read-only: “2. Tasks, deliverables and deadlines” is text in the minutes; no assignee, due date or progress is tracked. |
 
 #### 12.2 Finalized Meeting Minutes
 
-Figure 73: Finalized Meeting Minutes
+Figure 80: Finalized Meeting Minutes
 
 The Finalized Meeting Minutes screen is the Minutes tab after the Chair has approved and issued the minutes. The issued minutes are the official record of the Meeting and can no longer be edited; the Meeting itself remains Ended. Every user allowed to view the Meeting’s minutes sees this read-only version (UC-69, UC-73).
 
@@ -4288,18 +4460,18 @@ Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Status chip | Issued [Đã ban hành]. |
-| Seal summary | Read-only, e.g. “Lần sửa 2 · ban hành bởi Chủ tọa lúc 15/10/2026 14:40”: issued revision, Chair who issued and issue time (UC-73). |
-| Download PDF [Tải PDF] | Button; downloads the issued revision as PDF. |
-| Information banner | Read-only: “Biên bản đã ban hành là hồ sơ chính thức của cuộc họp: không sửa được, mọi sửa đổi thực hiện bằng lần sửa mới (UC-75).” – the issued minutes cannot be edited; a correction is a new revision (BR-137, BR-138). |
-| Minutes document | Read-only page: title “BIÊN BẢN CUỘC HỌP”, Meeting name, date and actual time, full content (attendance, content from the published summary, vote conclusions). |
-| Empty state [Trạng thái trống] | When no revision is issued yet, a reader sees that no minutes have been issued yet and no Draft card. |
+| Status chip | Issued. |
+| Seal summary | Read-only, e.g. “Revision 2 · issued by the Chair at 15/10/2026 14:40”: issued revision, Chair who issued and issue time (UC-73). |
+| Download PDF | Button; downloads the issued revision as PDF. |
+| Information banner | Read-only: “The issued minutes are the official record of the meeting: they cannot be edited, and any change is made as a new revision (UC-75).” (BR-137, BR-138). |
+| Minutes document | Read-only page: title “MEETING MINUTES”, Meeting name, date and actual time, full content (attendance, content from the published summary, vote conclusions). |
+| Empty state | When no revision is issued yet, a reader sees that no minutes have been issued yet and no Draft card. |
 
 ### 13. FE-13 – Email & In-App Notification
 
 #### 13.1 Notification Panel
 
-Figure 74: Notification Panel
+Figure 81: Notification Panel
 
 The Notification Panel opens from the bell at the bottom of the sidebar and is anchored next to it, over the current page. Every signed-in user uses it to read in-app notifications, mark them as read and open the related meeting (UC-76, UC-77a, UC-77b, UC-78).
 
@@ -4318,19 +4490,19 @@ Field Description
 | Field Name | Description |
 | --- | --- |
 | Notification bell | Icon in the sidebar footer next to the user’s name, with a badge showing the unread count; updated in real time without reloading the page. |
-| Panel header [Thông báo] | Title with “n new” chip [2 mới] = unread count. Opening the panel does not change any read status. |
-| Mark all as read [Đánh dấu tất cả đã đọc] | Link button; applies to all unread notifications of the user, including those not displayed (BR-033, BR-034); with no unread items the count simply stays 0. |
+| Panel header | Title with “n new” chip = unread count. Opening the panel does not change any read status. |
+| Mark all as read | Link button; applies to all unread notifications of the user, including those not displayed (BR-033, BR-034); with no unread items the count simply stays 0. |
 | Notification icon | Icon at the left of each item indicating the event type. |
-| Notification title | Event name, e.g. Meeting published [Cuộc họp đã được công bố], Meeting approved [Cuộc họp đã được duyệt], Meeting rejected [Cuộc họp bị từ chối]; shown bold while unread. |
-| Notification message | Detail text including the meeting name, e.g. “Bạn được mời tham dự cuộc họp ‘Họp Hội đồng quản trị quý IV’.” |
-| Time | Relative time, e.g. “51 minutes ago” [51 phút trước], “3 hours ago” [3 giờ trước], “Yesterday” [Hôm qua]. |
+| Notification title | Event name, e.g. Meeting published, Meeting approved, Meeting rejected; shown bold while unread. |
+| Notification message | Detail text including the meeting name, e.g. “You are invited to the meeting ‘Q4 Board of Directors meeting’.” |
+| Time | Relative time, e.g. “51 minutes ago”, “3 hours ago”, “Yesterday”. |
 | Unread indicator | Blue dot and tinted background on unread items; removed when the item is read. Marking an already-read item leaves the count unchanged. |
 | Notification item (click) | Marks the item as read if unread and opens the linked meeting after re-checking the user’s access; protected content is not shown if access is denied (BR-016, BR-017, BR-033, BR-034). A failure to save the read status does not block opening an authorized meeting. |
 | Messages | MSG40 “Unable to load notifications. Please try again.”; MSG39 “The requested notification page is unavailable.” |
 
 #### 13.2 Meeting Invitation Email
 
-Figure 75: Meeting Invitation Email
+Figure 82: Meeting Invitation Email
 
 This email is sent asynchronously to internal participants and external Guests when a Meeting is published, or when a person is added to a Published or InProgress Meeting. Its buttons lead to the Invitation Response screen (6.4); a Guest first verifies the invited email with a one-time code on Guest Verification (1.3) (UC-31, UC-04).
 
@@ -4348,22 +4520,22 @@ Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Subject / heading [Thư mời họp] | “Meeting invitation: <meeting name>”, e.g. “Thư mời họp: Họp Hội đồng quản trị quý IV”, under the TrustCabinet logo. |
-| Salutation | Recipient name and meeting role, e.g. “Kính gửi ông Ngô Đình Phúc, … với vai trò Khách mời” (Guest). |
-| Meeting information | Box with the Meeting’s planned date and time range, location and Chair, e.g. “14/10/2026 · 13:00 – 15:00”, “Phòng họp A3, tầng 5”, “Chủ trì: Nguyễn Minh Châu”. |
-| Attend [Tham dự] | Primary button link; opens the Invitation Response screen with Attend pre-selected. |
-| Decline [Không tham dự] | Button link; opens the Invitation Response screen with Decline pre-selected. Internal participants other than the Chair and Guests answer once and cannot change the answer afterwards (BR-046). |
-| View details [Xem chi tiết] | Link; opens the meeting details (after sign-in or Guest verification). Access is limited to the invited Meeting (BR-052). |
-| Security note | “Link chỉ dùng cho địa chỉ email này. Khi mở, ông sẽ được yêu cầu nhập mã xác minh.” Guest links are meeting-specific, require email verification, expire after the configured period and stop working when the invitation is revoked (BR-052, BR-053, BR-054, BR-044). |
+| Subject / heading | “Meeting invitation: <meeting name>”, e.g. “Meeting invitation: Q4 Board of Directors meeting”, under the TrustCabinet logo. |
+| Salutation | Recipient name and meeting role, e.g. “Dear Mr Ngo Dinh Phuc, … as Guest”. |
+| Meeting information | Box with the Meeting’s planned date and time range, location and Chair, e.g. “14/10/2026 · 13:00 – 15:00”, “Meeting room A3, floor 5”, “Chair: Nguyen Minh Chau”. |
+| Attend | Primary button link; opens the Invitation Response screen with Attend pre-selected. |
+| Decline | Button link; opens the Invitation Response screen with Decline pre-selected. Internal participants other than the Chair and Guests answer once and cannot change the answer afterwards (BR-046). |
+| View details | Link; opens the meeting details (after sign-in or Guest verification). Access is limited to the invited Meeting (BR-052). |
+| Security note | “This link works only for this email address. When you open it, you will be asked for a verification code.” Guest links are meeting-specific, require email verification, expire after the configured period and stop working when the invitation is revoked (BR-052, BR-053, BR-054, BR-044). |
 | Delivery | Sent through a background queue; a delivery failure is retried and does not undo publishing or the roster change (BR-031, BR-032). |
 
-### 15. FE-15 – Reporting & Statistics
+### 14. FE-14 – Reporting & Statistics
 
-#### 15.1 Reports & Statistics
+#### 14.1 Reports & Statistics
 
-Figure 76: Reports & Statistics
+Figure 83: Reports & Statistics
 
-The Reports & Statistics screen is reached from Reports [Báo cáo] in the sidebar. It shows key figures on Meetings for a selected period, a monthly chart and a breakdown by Meeting status, and exports the same report as an Excel file. Every signed-in internal user sees only the Meetings they may read, the System Admin as for anyone else (BR-149, BR-150, PO 09/11/2026 Q1). (UC-79a, UC-79b).
+The Reports & Statistics screen is reached from Reports in the sidebar. It shows key figures on Meetings for a selected period, a monthly chart and a breakdown by Meeting status, and exports the same report as an Excel file. Every signed-in internal user sees only the Meetings they may read, the System Admin as for anyone else (BR-149, BR-150, PO 09/11/2026 Q1). (UC-79a, UC-79b).
 
 This screen allows the System Admin, Member, Approver, Chair, Secretary and Participant (within their own scope) to:
 
@@ -4377,16 +4549,177 @@ Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Page header | Title “Reports & Statistics” [Báo cáo & thống kê] with the period covered, e.g. “Số liệu 05/2026 – 10/2026”. |
-| Period [Từ tháng – Đến tháng] | Month pickers (Từ tháng, Đến tháng), required; the start month must not be after the end month, at most 24 months. A Meeting belongs to the month of its planned start. (BR-149, BR-150) |
-| Export Excel [Xuất Excel] | Button; downloads the report for the current period and scope as an Excel file (UC-79b). |
-| Meetings [Cuộc họp] | KPI tile: number of Meetings in the period, e.g. 75. |
-| Attendance rate [Tỉ lệ tham dự] | KPI tile: share of invitees recorded Present in attendance of Ended Meetings, e.g. 87%; based on attendance, not on invitation responses (BR-043). Unmarked invitees are not Absent; display an unmarked count so incomplete attendance is visible. |
-| Average duration [Thời lượng trung bình] | KPI tile: average meeting duration in minutes with one decimal, from the actual start to the actual end; meetings missing either time are left out, e.g. 95.5 (BR-151). |
-| Average turnaround [Thời gian ban hành trung bình] | KPI tile: average time in hours from the actual end of a Meeting to the first issue of its minutes, e.g. 30.5 (BR-151). |
-| Meetings per month [Số cuộc họp theo tháng] | Bar chart, one bar per month of the period (T5…T10) with the value above each bar; the current, incomplete month is drawn lighter with the note “Tháng 10 tính tới ngày 14.” |
-| By status [Theo trạng thái] | Table with columns Status [Trạng thái] (chip, e.g. Ended, Published, Pending Approval, Draft), Count [Số] and % of all Meetings in the period. |
+| Page header | Title “Reports & Statistics” with the period covered, e.g. “Data 05/2026 – 10/2026”. |
+| Period | Month pickers (From month, To month), required; the start month must not be after the end month, at most 24 months. A Meeting belongs to the month of its planned start. (BR-149, BR-150) |
+| Export Excel | Button; downloads the report for the current period and scope as an Excel file (UC-79b). |
+| Meetings | KPI tile: number of Meetings in the period, e.g. 75. |
+| Attendance rate | KPI tile: share of invitees recorded Present in attendance of Ended Meetings, e.g. 87%; based on attendance, not on invitation responses (BR-043). Unmarked invitees are not Absent; display an unmarked count so incomplete attendance is visible. |
+| Average duration | KPI tile: average meeting duration in minutes with one decimal, from the actual start to the actual end; meetings missing either time are left out, e.g. 95.5 (BR-151). |
+| Average turnaround | KPI tile: average time in hours from the actual end of a Meeting to the first issue of its minutes, e.g. 30.5 (BR-151). |
+| Meetings per month | Bar chart, one bar per month of the period (T5…T10) with the value above each bar; the current, incomplete month is drawn lighter with the note “October counted up to the 14th.” |
+| By status | Table with columns Status (chip, e.g. Ended, Published, Pending Approval, Draft), Count and % of all Meetings in the period. |
 | Scope and errors | Figures and exports include only Meetings the user may access, for the System Admin as for anyone else (BR-149, BR-150). If statistics cannot be loaded or the export fails, an error message with a retry option is shown and no file is produced. |
+
+### 15. FE-15 – Working Calendar & Meeting Time Search
+
+#### 15.1 Calendar Sharing
+
+Figure 84: Calendar Sharing
+
+The Calendar Sharing screen opens from the account menu. Its first tab lists who can see the user’s calendar and, for a Member, whose calendars are shared with the user. Sharing shows busy or free hours only, never meeting content, and Secret meetings are never shared (UC-80f, BR-140, BR-141, BR-142, BR-143).
+
+This screen allows every signed-in internal user (the second list only for a Member) to:
+
+- View Calendar Shares: see both lists with state, level and dates (UC-80f).
+
+- Respond to Calendar Share: Accept or Decline a pending request on its row (UC-80c).
+
+- Change, Withdraw or Stop Share: open the ⋮ menu of a row (UC-80d, UC-80e).
+
+- Share or Request Calendar: open the dialogs of 15.2 (UC-80a, UC-80b).
+
+Field Description
+
+| Field Name | Description |
+| --- | --- |
+| Tabs | “Sharing list” and “Shared calendars” (15.5). |
+| People who can see my calendar | Card with the Share calendar button; one row per person: avatar, name, email, state chip (Waiting for you, Sharing, Waiting for reply), level (Normal meetings / Normal and Internal) and date range. |
+| Calendars shared with me | Card with the Request calendar button; same row layout. A request from a deactivated account can only be declined. |
+| Row actions | Only what the user can do now: Accept / Decline on the row, the others under ⋮ – Change share, Request change, Withdraw request, Stop sharing / Stop viewing. A pending change shows as “Change requested: …”. |
+| Ended shares (N) | Link that shows or hides declined, withdrawn and stopped shares. A stopped share shows no hours; opening it shows MSG439. Shares past their end date are not listed. |
+
+#### 15.2 Request / Share Calendar Dialog
+
+Figure 85: Request / Share Calendar Dialog
+
+Two dialogs start a share: a Member asks another user to see his or her calendar (Request calendar), or the owner shares directly with a Member (Share calendar), always at Level 1 (UC-80a, UC-80b, BR-142, BR-143).
+
+This screen allows a Member (request) and every internal user (direct share) to:
+
+- Request Calendar Share: choose the owner, level and dates, then Send request (UC-80a).
+
+- Share Calendar Directly: choose a Member and dates, then Share (UC-80b).
+
+Field Description
+
+| Field Name | Description |
+| --- | --- |
+| Note | “If the person agrees, you see their busy hours, not meeting names or content.” |
+| View calendar of / Share with | Required; search by name or email over the eligible users. A person with a pending or active share is marked “Already” and cannot be chosen; for a direct share only users who can create meetings are listed (MSG455). |
+| Level | Request only: Normal meetings, or Normal and Internal; Secret meetings never show. A direct share is always Normal meetings. |
+| Sharing period | Required date range with shortcuts 1 week, 1 month, 3 months; starts today or later, at most 365 days (MSG443). |
+| Buttons | Cancel; Send request (MSG435) or Share (MSG441). The other side is notified. |
+
+#### 15.3 Respond to Calendar Share
+
+Figure 86: Respond to Calendar Share
+
+Accepting a request opens a dialog where the owner may grant less than was asked: a lower level or a shorter period. The same dialog approves a change request (UC-80c, BR-140, BR-141).
+
+This screen allows the person who was asked to:
+
+- Accept Share: confirm the level and period and accept (UC-80c).
+
+- Decline Share: decline after confirming (UC-80c).
+
+Field Description
+
+| Field Name | Description |
+| --- | --- |
+| Requester | Avatar, name and email; the line “Requested: ‹level›, ‹period›. You may grant less.” |
+| Level | Radio: Normal meetings, or Normal and Internal; not wider than requested. |
+| Sharing period | Date range with shortcuts, only within the requested range (MSG443). |
+| Buttons | Cancel; Accept (MSG436, or MSG442 for a change). Decline asks first and shows MSG437 (MSG452 for a change); a sender who was deactivated gives MSG468. |
+
+#### 15.4 Change or Stop Calendar Share
+
+Figure 87: Change or Stop Calendar Share
+
+From the ⋮ menu of a share, the viewer asks for a higher level or a longer period, the owner lowers the level or changes the dates at once, and either side can stop the share (UC-80d, UC-80e, BR-142, BR-143).
+
+This screen allows the viewer and the calendar owner to:
+
+- Request Change: the viewer asks to raise the level or extend the period; one request at a time (UC-80d).
+
+- Change Share: the owner lowers the level or changes the dates; it applies at once (UC-80d).
+
+- Withdraw or Stop: withdraw a request, or stop an active share after confirming (UC-80e).
+
+Field Description
+
+| Field Name | Description |
+| --- | --- |
+| Current share | Sentence “Currently sharing: ‹level›, ‹period›”. |
+| Level / Period | A request must raise the level or extend the period, at most 365 days from the original start (MSG443). The owner may only lower the level, and keeps the start date or moves it to today or later. |
+| Messages | MSG454 change request sent; MSG442 change applied; MSG450 wrong state. |
+| Stop sharing | Confirmation “Stop sharing with ‹name›?”; for the viewer “Stop viewing ‹name›’s calendar? You will need to request again.” MSG451; the other side is notified. Withdraw uses the same kind of confirmation (MSG438). |
+
+#### 15.5 Shared Calendar – Week View
+
+Figure 88: Shared Calendar – Week View
+
+The Shared calendars tab shows a Member a week of busy hours of the people who share with him or her. Only busy blocks at the shared level are drawn, never a title, location, attendee or confidentiality level (UC-81c, BR-144, BR-145).
+
+This screen allows a Member to:
+
+- View Shared Calendar: browse weeks and show or hide people (UC-81c).
+
+Field Description
+
+| Field Name | Description |
+| --- | --- |
+| Week navigation | This week, previous, next and the date range; the working hours on the right, e.g. 08:00 – 17:00. |
+| People | One coloured chip per person; click to show or hide. A stopped share keeps its chip with “Stopped” and no hours; opening it shows MSG439. |
+| Week grid | Hours × 7 days; busy blocks coloured by person. Days outside a share’s period show “?” (unknown), never as free. |
+| Empty state | “Nobody shares a calendar with you yet.” with Request calendar. On a phone one day is shown at a time. |
+
+#### 15.6 Find Meeting Time
+
+Figure 89: Find Meeting Time
+
+Find meeting time is a sidebar item for users who can create meetings. It finds slots where the chosen people are free, using only calendars shared with the user (UC-81a, BR-144, BR-145, BR-146, BR-147).
+
+This screen allows a Member to:
+
+- Find Meeting Time Slots: set duration, dates, weekdays, hours, buffer and rounding, choose people and search (UC-81a).
+
+- Request Calendar Share: ask a person shown as not sharing (UC-80a).
+
+- Choose Slot: open a slot to see who is free and create a draft (UC-81b).
+
+Field Description
+
+| Field Name | Description |
+| --- | --- |
+| Tabs | “Find slots” and “Shared calendars” (same content as 15.5). |
+| Meeting length | Dropdown, 15 minutes to 8 hours. |
+| Date range / Weekdays | Starts today, at most 31 days long and 365 days ahead; weekday toggles Mon–Sun. |
+| Working hours / Avoid lunch break | Start–end time; optional lunch break range. |
+| Meeting buffer (i) / Round start time | Buffer kept before and after every busy period: none, 15, 30, 45 minutes, 1–4 hours (default 30 minutes). Rounding: 5, 10, 15, 30 minutes, 1 or 2 hours. |
+| Main attendees | Required; at most 10 people besides the user. Each row shows the shared level, or “Calendar not shared” with Request calendar sharing. Chips “+ Name” add people who share with the user. |
+| Include my calendar | Checkbox, unticked by default. |
+| Find | Button (“Finding…” while working); errors in the search values are shown on the fields; MSG448 if the user may no longer create meetings. |
+| Results | Number of slots, then one row of start times per day (at most 200). Choosing a time shows who is Free, Busy or Unknown and the Create draft button. |
+
+#### 15.7 Create Draft Meeting from Slot
+
+Figure 90: Create Draft Meeting from Slot
+
+Create draft opens the meeting form filled with the chosen slot and people. The slot is checked again against the same shared data before saving; the new Meeting is a Draft and follows the normal approval flow (UC-81b, UC-13, BR-148).
+
+This screen allows a Member to:
+
+- Create Draft Meeting from Slot: complete the form and create the Draft Meeting (UC-81b).
+
+Field Description
+
+| Field Name | Description |
+| --- | --- |
+| Slot | Read-only bar with the date and time of the chosen slot, e.g. “Monday, 16/11/2026 · 08:00 – 10:00”. |
+| Meeting name / Description | Name required; description optional. |
+| Attendees | People from the search; the first becomes Chair, the others Members and the user Secretary; ↑/↓ buttons reorder the list. |
+| Mode / Location / Meeting link / Confidentiality | As in 4.4; Confidentiality required. |
+| Buttons | Cancel (asks “Discard the meeting being drafted?” if something was typed); Create draft – MSG29. If someone became busy in the meantime, MSG446 and the search runs again; invalid values MSG31, wrong people MSG277, saving error MSG35. |
 
 ### 16. Background Job Inventory
 
@@ -4396,7 +4729,7 @@ Runs inside the backend every 5 seconds. Each cycle creates the “meeting start
 
 #### 16.2 Deliver Queued Emails (JOB-02)
 
-Runs inside the backend only when email sending is enabled, through Resend or an SMTP server. It queues the invitation emails of Published Meetings that have not been queued yet, then sends queued emails (invitations, updates, cancellations, reminders, the issued-minutes notice) one at a time, and waits 5 seconds before polling again when the queue is empty. A failed email is retried with exponential back-off up to the configured number of attempts (8 by default) and then marked permanently failed (API-03, 17.3).
+Runs inside the backend only when email sending through Resend is enabled. It queues the invitation emails of Published Meetings that have not been queued yet, then sends queued emails (invitations, updates, cancellations, reminders, the issued-minutes notice) one at a time, and waits 5 seconds before polling again when the queue is empty. A failed email is retried with exponential back-off up to the configured number of attempts (8 by default) and then marked permanently failed (API-03, 17.3).
 
 #### 16.3 Transcribe Recordings (JOB-03)
 
@@ -4440,7 +4773,7 @@ Runs inside the backend every 30 seconds. It compares the online meeting rooms w
 | Caller | TrustCabinet frontend → Google Identity Services; the backend is not involved at this step. |
 | Auth | Public OAuth 2.0 Client ID only; no client secret is used by this flow. |
 | Request / Response | In: client_id. Out: callback with response.credential = Google ID token (JWT); a cancelled popup or Google error yields no credential and the login page shows MSG03 itself. |
-| Failure handling | If the GIS script fails to load or no credential is returned, the SPA shows 'Đăng nhập bằng Google không thành công' (MSG03) without calling the backend. |
+| Failure handling | If the GIS script fails to load or no credential is returned, the SPA shows 'Google sign-in was unsuccessful.' (MSG03) without calling the backend. |
 | Configuration | The public Google Client ID, which must be the same in the frontend and the backend. |
 
 #### 17.2 POST: /api/auth/google – Google ID token verification (API-02)
@@ -4454,16 +4787,16 @@ Runs inside the backend every 30 seconds. It compares the online meeting rooms w
 | Failure handling | Invalid/malformed tokens collapse to MSG03 and are logged without the token. First sign-in auto-links the account by verified email and writes an audit entry. Network failure fetching Google certificates is not caught (surfaces as HTTP 500). |
 | Configuration | Google sign-in can be switched on or off, and the Google Client ID is set by configuration; the system checks it at startup when sign-in is enabled. |
 
-#### 17.3 Email Delivery – Resend or SMTP (API-03)
+#### 17.3 Email Delivery – Resend (API-03)
 
-| URL | Resend's email API over HTTPS; or the configured SMTP host and port (default port 587) when SMTP is used instead |
+| URL | Resend's email API over HTTPS |
 | --- | --- |
 | Purpose | Delivers the system's emails: meeting invitations, updates and cancellations with an .ics calendar file, meeting reminders, the issued-minutes notice, guest presenter notices, guest verification codes and password-reset links. |
-| Caller | TrustCabinet backend → Resend Email, or the SMTP server when SMTP is chosen. Queued emails go through the email queue worker (JOB-02); password-reset links and guest verification codes are sent at once. |
-| Auth | Resend API key sent as a bearer token over HTTPS; when SMTP is used instead, username/password over STARTTLS (default), SSL-on-connect or none (internal relay only). Credentials are kept in user-secrets/environment variables. |
+| Caller | TrustCabinet backend → Resend Email. Queued emails go through the email queue worker (JOB-02); password-reset links and guest verification codes are sent at once. |
+| Auth | Resend API key sent as a bearer token over HTTPS. Credentials are kept in user-secrets/environment variables. |
 | Request / Response | MIME message: From (FromName/FromAddress), To, Subject, plain-text body; invitations add text/calendar METHOD:REQUEST attachment 'thu-moi-hop.ics' and cancellations add text/calendar METHOD:CANCEL attachment 'huy-hop.ics'. Reset links are {ApplicationBaseUrl}/reset-password#token=… (token in URL fragment). |
 | Failure handling | Queued emails are retried: up to 8 attempts with exponential back-off, then marked permanently failed. Password-reset emails and guest codes are sent immediately; a failed reset email is reported to the administrator (MSG15). Delivery runs only when email sending is enabled; Resend reports later delivery events through API-09. |
-| Configuration | Resend API address and key (or SMTP host, port, security mode and credentials), sender address and name, retry limits and timeouts, and the application base URL used in links; set by configuration, with credentials kept out of the code base. |
+| Configuration | Resend API address and key, sender address and name, retry limits and timeouts, and the application base URL used in links; set by configuration, with credentials kept out of the code base. |
 
 #### 17.4 LiveKit server – RoomService API and access tokens (API-04)
 
@@ -4496,13 +4829,13 @@ Runs inside the backend every 30 seconds. It compares the online meeting rooms w
 | Auth | The outside API key is entered by the System Admin and stored encrypted; it is never returned to the browser or written to a log. The team's own server is reachable only inside the team's private network. |
 | Request / Response | Input: the transcript text, the agenda and the closed vote results of one Meeting, never audio or voice data. Output: the draft of the three sections; the model used is stored with the draft. |
 | Failure handling | A draft waits in a queue and is written one Meeting at a time (Queued, Running, Ready, Failed); a failed draft is shown and can be asked for again. When no AI server is ready the request is refused (MSG394). The draft never becomes the minutes by itself: the Chair or the Secretary reviews it first. |
-| Status | Only a Normal Meeting may be sent to the outside API; Internal, Secret and Top Secret Meetings always use the team's own server (BR-129, ADR-0056). |
+| Status | Only a Normal Meeting may be sent to the outside API; Internal and Secret Meetings always use the team's own server (BR-129). |
 
 #### 17.7 File Storage – SeaweedFS (API-07)
 
-| URL | SeaweedFS over an S3-compatible API, through the configured service address and bucket, reachable only on the app server's Docker network (a local SeaweedFS container in development; ADR-0084). |
+| URL | SeaweedFS over an S3-compatible API, through the configured service address and bucket, reachable only on the app server's Docker network (a local SeaweedFS container in development). |
 | --- | --- |
-| Purpose | Keeps the bytes of every uploaded document in the team's self-hosted S3 store (SeaweedFS) on the app server's own disk, separate from the application process (ADR-0084). Files are served only through the application, which checks the permission of the caller on every request. |
+| Purpose | Keeps the bytes of every uploaded document in the team's self-hosted S3 store (SeaweedFS) on the app server's own disk, separate from the application process. Files are served only through the application, which checks the permission of the caller on every request. |
 | Caller | TrustCabinet backend (document upload, view and download) → File Storage (SeaweedFS). |
 | Auth | Access key and secret key kept in user-secrets/environment variables, never in the code base; the bucket is private and has no public address. |
 | Request / Response | Input: the file bytes with their stored name. Output: the stored bytes when the file is read; the system never gives the browser a direct address of the bucket. |
@@ -4517,7 +4850,7 @@ Runs inside the backend every 30 seconds. It compares the online meeting rooms w
 | Caller | TrustCabinet backend: the transcription queue (JOB-03), the live sentence recording of each participant's microphone, and Voice ID sample enrolment (UC-56c). |
 | Auth | A shared key sent as a bearer token when the worker is configured with one; the key is kept outside the code base. The worker is reachable only on the private network. |
 | Request / Response | In: the audio file and the run parameters. Out: timed lines with a voice label, one voice vector per voice and a confidence score per word; for /v1/embed, one voice vector after the sample's quality checks. |
-| Failure handling | When the main worker cannot be reached, the request goes to the backup worker, which is then asked first for a short while (ADR-0081). A worker error marks the transcript Failed with a reason the Secretary sees (UC-54a); a sample that fails the checks is refused with a message. |
+| Failure handling | When the main worker cannot be reached, the request goes to the backup worker, which is then asked first for a short while. A worker error marks the transcript Failed with a reason the Secretary sees (UC-54a); a sample that fails the checks is refused with a message. |
 | Configuration | Worker address, backup address, shared key and timeouts; set by configuration. |
 
 #### 17.9 POST: /api/email/resend/webhook – Email delivery webhook (API-09)
@@ -4537,13 +4870,13 @@ Runs inside the backend every 30 seconds. It compares the online meeting rooms w
 
 TrustCabinet is a self-hosted web application installed for a single organisation (TrustSoft) on its own infrastructure. Users interact with it only through a web browser; the server communicates with a small number of backing services and external systems. This section states what each interface must provide so that the system communicates correctly with its users and with the hardware and software around it. Detailed protocols and APIs are given in Section I.5.2 (External API Inventory) and in Report 4 (SDS).
 
-- User interface: A single-page web application opened in a standard web browser; no client installation, plug-in or browser extension is required. All screens, labels, system messages (catalogued in Section V.2 with MSGnn codes), notifications and emails are in Vietnamese in v1. Dates are shown as dd/MM/yyyy and times in 24-hour format in Vietnam time (UTC+7). The interface is designed desktop-first (laptop and desktop screens of 1280 px width or more) and remains usable at 1024 px; the external-Guest invitation and email-verification screens, invitation response, voting, notifications and document viewing are also usable on mobile browsers (360 px width or more). Native mobile apps are out of scope (Report 1, LI-10).
+- User interface: A single-page web application opened in a standard web browser; no client installation, plug-in or browser extension is required. All screens, labels, system messages (catalogued in Section V.2 with MSGnn codes), notifications and emails are in Vietnamese in v1. Dates are shown as dd/MM/yyyy and times in 24-hour format in Vietnam time (UTC+7). Every screen works on laptop and desktop screens of 1280 px width or more, remains usable at 1024 px, and also works in a phone browser 390 px wide; below 640 px a top bar and a bottom tab bar replace the sidebar. Native mobile apps are out of scope (Report 1, LI-10).
 
 - Hardware interface: The system requires no special-purpose hardware. Clients: any PC, laptop, tablet or phone able to run a supported browser; joining the online meeting room additionally requires a microphone and speakers/headset, and optionally a camera, granted to the browser by the user. The system never activates a user's microphone or camera on its own and never records on its own: audio is captured only in the browser, under the user's control (Report 1, LI-01). Server: a single x86-64 host (physical or virtual) running Linux inside TrustSoft's network; recommended baseline 8 vCPU, 16 GB RAM and 500 GB of storage for documents and meeting audio, excluding speech/AI processing. Speech recognition runs in a separate CPU-only speech worker, on the same host or on another machine the server reaches; no GPU is needed (Report 2, risk R03).
 
-- Software interfaces: (1) PostgreSQL 17 - the system's single relational data store for all business data, audit log and outbox queues. (2) Redis - short-lived security data (refresh-session and password-reset credentials) with automatic expiry. (3) Resend Email (outbound email API; any standards-compliant SMTP server can be used instead) - outgoing invitation (with .ics calendar attachment), reminder, approval and password-reset emails. (4) Google Identity Services / Google OpenID Connect - optional 'Sign in with Google' for internal users whose Google email is linked to an existing account; email/password sign-in must remain available when Google is unreachable. (5) Self-hosted media server (LiveKit SFU) - audio, video and screen-sharing for the online meeting room. (6) AI drafting service - writes the draft of the Meeting content from the transcript, the agenda and the vote results. It is the team's own AI server, or for a Normal Meeting an outside AI API chosen by the System Admin; it receives text only, and the model used is recorded with every draft. Speech recognition and speaker identification run inside the system and send nothing outside. No other third-party system (HRM, ERP, calendar, chat) is integrated in v1 (Report 1, LI-07).
+- Software interfaces: (1) PostgreSQL 17 - the system's single relational data store for all business data, audit log and outbox queues. (2) Redis - short-lived security data (refresh-session and password-reset credentials) with automatic expiry. (3) Resend Email (outbound email API) - outgoing invitation (with .ics calendar attachment), reminder, approval and password-reset emails. (4) Google Identity Services / Google OpenID Connect - optional 'Sign in with Google' for internal users whose Google email is linked to an existing account; email/password sign-in must remain available when Google is unreachable. (5) Self-hosted media server (LiveKit SFU) - audio, video and screen-sharing for the online meeting room. (6) AI drafting service - writes the draft of the Meeting content from the transcript, the agenda and the vote results. It is the team's own AI server, or for a Normal Meeting an outside AI API chosen by the System Admin; it receives text only, and the model used is recorded with every draft. (7) SeaweedFS - the self-hosted S3-compatible store that keeps the files of uploaded documents, reachable only on the server's internal network. (8) Speech worker - the in-house, CPU-only service that transcribes audio and compares voices; it sends nothing outside the system. No other third-party system (HRM, ERP, calendar, chat) is integrated in v1 (Report 1, LI-07).
 
-- Communication interfaces: All browser-server traffic uses HTTPS (TLS 1.2 or later) on a single origin; plain HTTP is redirected to HTTPS or refused. Data is exchanged as JSON (UTF-8) over a REST-style API. Real-time in-app notifications, agenda and vote updates use a WebSocket channel secured with TLS (WSS) and fall back to automatic reconnection when the connection drops. Online meeting media is transmitted with WebRTC and is always encrypted in transit (DTLS-SRTP); a relay (TURN) path over TLS is available for clients behind restrictive firewalls. Outgoing email is sent over SMTP with TLS (implicit TLS or STARTTLS). Calls from the server to Google and to any external speech/AI provider use HTTPS only. A health-check endpoint is exposed for monitoring the running instance.
+- Communication interfaces: All browser-server traffic uses HTTPS (TLS 1.2 or later) on a single origin; plain HTTP is redirected to HTTPS or refused. Data is exchanged as JSON (UTF-8) over a REST-style API. Real-time in-app notifications, agenda and vote updates use a WebSocket channel secured with TLS (WSS) and fall back to automatic reconnection when the connection drops. Online meeting media is transmitted with WebRTC and is always encrypted in transit (DTLS-SRTP); a relay (TURN) path over TLS is available for clients behind restrictive firewalls. Calls from the server to Google, to the Resend email API and to any external speech/AI provider use HTTPS only. A health-check endpoint is exposed for monitoring the running instance.
 
 ### 2. Quality Attributes
 
@@ -4553,14 +4886,14 @@ The quality attributes below are stated as measurable targets for a single-organ
 
 | Requirement | Description |
 | --- | --- |
-| Learnability and training time | An internal Member with basic computer skills must be able to find an upcoming meeting, respond to an invitation, open a meeting document, cast a vote after a guided introduction of no more than 30 minutes. A Member, Secretary, Chair or System Admin must be able to complete their full role workflow (e.g. create, submit and publish a meeting; manage sessions, agenda and participants; upload audio and approve the summary; issue minutes) after no more than 2 hours of training. An external Guest must be able to verify their email and respond to an invitation without any training. |
-| Vietnamese user interface | All user-facing text - menus, labels, buttons, field hints, validation and system messages, notifications, emails and exported reports - is in Vietnamese with correct diacritics (UTF-8). Searches must handle Vietnamese text with diacritics correctly. Terminology must be consistent with the glossary of this SRS (e.g. the same Vietnamese term for Meeting, Agenda Item, Secretary throughout). |
-| Consistency | All screens share the same layout (navigation menu, header with notification bell and user menu, content area), the same placement of primary and secondary actions, the same date/time format, and the same visual badge for each lifecycle status (meeting, session, agenda item, vote, minutes). Lists use the same search, filter, sort and pagination controls, and empty results show a no-results message rather than an error. |
-| Responsive, desktop-first layout | All features are fully usable on desktop/laptop screens of 1280 px width or more and remain usable at 1024 px. The external-Guest invitation and email-verification screens, Respond to Meeting Invitation, voting, notification list and document viewing must be usable on mobile browsers of 360 px width or more without horizontal scrolling or loss of function. |
+| Learnability and training time | An internal Member with basic computer skills must be able to find an upcoming meeting, respond to an invitation, open a meeting document, cast a vote after a guided introduction of no more than 30 minutes. A Member, Secretary, Chair or System Admin must be able to complete their full role workflow (e.g. create, submit and publish a meeting; manage the agenda and participants; upload audio and approve the summary; issue minutes) after no more than 2 hours of training. An external Guest must be able to verify their email and respond to an invitation without any training. |
+| Vietnamese user interface | All user-facing text - menus, labels, buttons, field hints, validation and system messages, notifications, emails and exported reports - is in Vietnamese with correct diacritics (UTF-8). Searches must handle Vietnamese text with diacritics correctly. Terminology must be consistent with the glossary of this SRS (one term for each of Meeting, Agenda Item, Secretary and the other glossary entries throughout). |
+| Consistency | All screens share the same shell (a vertical sidebar on a desktop; a top bar and a bottom tab bar on a phone), the same placement of primary and secondary actions, the same date and time format, and the same badge for each status (meeting, agenda item, vote, minutes). Lists use the same search, filter, sort and paging controls, and an empty result shows a no-results message rather than an error. |
+| Responsive, desktop-first layout | All features are fully usable on desktop and laptop screens of 1280 px width or more and remain usable at 1024 px. Every screen also works in a phone browser 390 px wide without horizontal scrolling or loss of function; below 640 px a top bar and a bottom tab bar replace the sidebar, and touch targets are at least 40 px. |
 | Browser support | The application must work correctly on the two most recent stable versions of Google Chrome, Microsoft Edge, Mozilla Firefox and Safari (desktop), and on Chrome for Android and Safari on iOS for the mobile-capable screens. The online meeting room requires a WebRTC-capable browser; when the browser or device permissions are not suitable, the system tells the user what is missing instead of failing silently. |
 | Accessibility basics | Screens should follow the basic WCAG 2.1 Level AA practices: every form field has a visible label, all functions are reachable with the keyboard with a visible focus indicator, text has a contrast ratio of at least 4.5:1, status and errors are not conveyed by colour alone, and pages remain usable when the browser zoom is set to 200%. |
 | Clear error messages with codes | Every error or warning shown to a user uses the wording and code defined in the System Messages catalogue (Section V.2, MSGnn), explains in plain Vietnamese what happened and what the user can do next, is displayed next to the affected field when it concerns a field, and never shows stack traces or technical internals. Data already entered in a form is preserved after a validation error. |
-| Confirmation of destructive and irreversible actions | Before any action that deletes, cancels, revokes or cannot be undone - e.g. deleting an agenda item or document, cancelling a session, removing a participant or revoking a Guest, deactivating an account, rejecting a meeting, closing a vote, issuing minutes - the system asks the user to confirm in a dialog that names the affected object and states the consequence. Actions that cannot be reversed must say so explicitly. |
+| Confirmation of destructive and irreversible actions | Before any action that deletes, cancels, revokes or cannot be undone - e.g. deleting an agenda item or document, cancelling a meeting, removing a participant or revoking a Guest, deactivating an account, rejecting a meeting, closing a vote, issuing minutes - the system asks the user to confirm in a dialog that names the affected object and states the consequence. Actions that cannot be reversed must say so explicitly. |
 | Feedback on long-running operations | Any operation that takes longer than 1 second shows a loading indicator, and the user cannot submit the same form twice. File uploads show progress, and audio processing (transcription and summary generation) shows its current status (e.g. queued, processing, completed, failed) so that the Secretary does not need to wait on the page. |
 
 #### 2.2 Performance
@@ -4572,7 +4905,7 @@ The quality attributes below are stated as measurable targets for a single-organ
 | Search and list views | Paginated meeting, document, user, notification and audit-log lists, including search, filter and sort, return the first page within 2 s for 95% of requests | Data volume up to 10,000 meetings, 50,000 documents and 1,000,000 audit-log entries |
 | Document upload and preview | Documents up to 10 MB per file are accepted; after the transfer completes the file is stored and listed within 5 s; in-browser preview of a document up to 10 MB opens within 3 s | Up to 10 simultaneous uploads; transfer time depends on the user's network |
 | Meeting audio upload and AI processing | Audio files up to 300 MB are accepted. The upload is acknowledged and the file queued within 5 s after transfer. The speaker-attributed transcript is ready within 1.5 x the audio duration (e.g. a 60-minute recording within 90 minutes) after processing starts, and a summary is generated within 5 minutes of the Secretary's request | One recording processed at a time per processing worker; speech recognition always runs on the in-house speech worker, and the summary target applies to whichever language model is selected (in-house, or the outside API for a Normal meeting); queued jobs wait their turn without blocking other functions |
-| Notification and real-time update latency | In-app notifications and the unread count reach a connected recipient within 10 s of the triggering event; current-agenda and vote-status changes are visible to other users in the same session within 2 s; an email is handed to the email service within 2 minutes; 'starting soon' reminders are sent 15 minutes (± 1 minute) before a session starts | Normal operation, mail server reachable; email retries do not delay in-app delivery |
+| Notification and real-time update latency | In-app notifications and the unread count reach a connected recipient within 10 s of the triggering event; current-agenda and vote-status changes are visible to other users in the same meeting within 2 s; an email is handed to the email service within 2 minutes; 'starting soon' reminders are sent 15 minutes (± 1 minute) before a meeting starts | Normal operation, email service reachable; email retries do not delay in-app delivery |
 | Concurrent users | The system remains fully functional with 200 signed-in users, of whom up to 100 perform operations at the same time, without errors or time-outs and within the response-time targets above | Single-server Docker deployment with the recommended baseline hardware |
 | Online meeting room capacity | Each meeting room supports up to 30 participants with audio and video plus one screen share, with a hard limit of 50 connected users; joining the room takes ≤ 5 s; mouth-to-ear audio delay ≤ 400 ms; at least 3 rooms can run at the same time. The 50-connection limit is enforced by the LiveKit room service, which refuses the next connection while the room is full. | Participants inside the company network or on a stable connection of ≥ 2 Mbps per participant; self-hosted media server on the deployment host |
 | Report generation and export | A statistics report covering up to 12 months of data is displayed within 5 s and exported to a file within 10 s | Data volume as in 'Search and list views'; up to 5 users generating reports at the same time |
@@ -4585,15 +4918,15 @@ The quality attributes below are stated as measurable targets for a single-organ
 | Authentication required | Every page and API function requires a signed-in internal user, except the sign-in page, the password-reset page reached from a valid reset link, the external-Guest invitation and email-verification pages, and the health check. Sign-in with Google is accepted only after Google's identity assertion has been verified and only for an existing, linked internal account; it never creates an account (BR-003). Sign-in failure messages must not reveal whether an account or email exists (BR-004). |
 | Password policy and protection | Passwords must be at least 12 characters long; no mandatory character-class rules are imposed, and long passphrases must be accepted. Passwords are never stored or logged in a readable or reversible form and are never displayed, including to administrators. A password-reset link is valid for at most 60 minutes and can be used only once. |
 | Sign-in rate limiting | Sign-in attempts are limited per minute (MSG414): at most 5 password sign-in attempts per email address and 60 auth attempts per IP address in each 60-second window; exceeding the limit returns 429 with a Retry-After hint, and the message shown does not reveal the failure count. No account is locked for failed sign-in and there is no unlock action. Repeated failed attempts against guest-verification codes and password-reset requests are likewise throttled. |
-| Session and token expiry | Short-lived access credentials expire after at most 15 minutes and are renewed silently while the user remains signed in; after at most 7 days the user must sign in again. Signing out immediately ends the session. Deactivating an account terminates all its active sessions (BR-001), and changes to a user's roles or status take effect on the user's next request. Session credentials must not be readable by page scripts and must not be sent to other sites. Sign-out revokes only the refresh token, so an access token already issued stays usable until it expires. |
+| Session and token expiry | Short-lived access credentials expire after at most 15 minutes and are renewed silently while the user remains signed in; after at most 7 days the user must sign in again. Signing out immediately ends the session. Deactivating an account terminates all its active sessions (BR-001), and changes to a user's roles or status take effect on the user's next request. The refresh credential is an HttpOnly, SameSite=Strict cookie that page scripts cannot read and that is not sent to other sites; the short-lived access token is kept only in memory. Sign-out revokes only the refresh token, so an access token already issued stays usable until it expires. |
 | Role-based access control and least privilege | Every request is authorised on the server against the user's current system-role permissions and their relationship with the meeting (Organizer, Approver, Chair, Secretary, Member or Guest) (BR-016, BR-017, BR-030); anything not explicitly permitted is denied. Hiding a button in the user interface is never the only protection. A user who is not authorised for a meeting is told it is not found, so its existence is not disclosed. Only the System Admin can change role-permission configuration, and every change is audited (BR-009, BR-010, BR-011, BR-007). |
-| Document security levels | Every document carries one security level: Normal, Internal, Secret. Access to view, preview, download, comment on or attach a document is granted only when both the user's relationship with the document (owner or authorised meeting relationship) and the document's level permit it; documents a user may not access never appear in their search results, lists, notifications or emails. Viewing or downloading a Secret document is recorded in the audit log, and Secret content is never included in email bodies or attachments. |
+| Document security levels | A document has no security level of its own; a Meeting document takes the level of its Meeting: Normal, Internal or Secret. A personal-library document is visible only to its owner, and to the System Admin, read-only and audited, once the owner's account is deactivated. A Meeting document is visible to everyone who may read the Meeting; the documents of a Secret Meeting can be read on screen but not downloaded, and Secret content is never included in email bodies or attachments. Documents a user may not read never appear in their lists, search results, notifications or emails. |
 | External Guest access scope | A Guest requires a secure current Meeting invitation and invited-email verification by a one-time code expiring within 15 minutes. After providing self-declared display information, the Guest uses Member participation rights only in this Meeting, including all attached documents, comments, voting and room controls. Access expires and revocation takes effect on each protected request. No internal account, Chair/Secretary role, delegated authority, room moderation or personal library is granted. For one invitation a new verification code can be requested at most once per minute, and at most 20 codes are sent in any 24 hours. (BR-049, BR-050, BR-051, BR-052, BR-053, BR-054, BR-044, BR-055) |
-| Encryption of data in transit | All communication between browsers and the server, between the server and external services (Google, SMTP, any external speech/AI provider) and all meeting media must be encrypted in transit (TLS 1.2 or later; encrypted WebRTC media). The system must not be served over unencrypted HTTP in production. |
-| Protection of stored data and backups | Uploaded documents and meeting audio are stored only on TrustSoft's own infrastructure and are reachable only through the application's access checks, never through a public or guessable URL. Secrets (signing keys, database, Redis and SMTP credentials) are kept out of the source code and configuration repository. The database and file storage are backed up at least daily; backups are stored separately from the production host with access restricted to authorised administrators. |
-| Audit logging | The system records security and governance events - sign-in success/failure, sign-in rate limiting, password reset, Google account linking, user and role changes, meeting lifecycle transitions, access to Secret documents, audio upload and deletion, summary approval, vote closing, the issue of minutes - with actor, time, action, target object and source IP address (BR-009, BR-010, BR-011, BR-022, BR-023). Audit entries cannot be modified or deleted through the application; only the System Admin can view and search them (UC-12). Passwords, tokens and verification codes are never written to any log. |
-| Personal data protection and audio consent (Decree 13/2023/ND-CP) | Personal data (account details, Guest name and email, voices in meeting audio, attendance) is processed only for the stated meeting-management purpose. A meeting audio file can be uploaded only after the Secretary confirms that participants were informed and consented and states the purpose; each recording has a retention date, after which (or on a justified request) it is erased and the erasure is recorded. The online meeting room stores only join/leave times, never media or chat content. If an external speech/AI provider is selected, audio and transcripts are sent only to that provider, only for processing, and must not be retained or used by it for other purposes. |
-| Integrity of issued minutes, vote conclusions and stored documents | Once a Vote Conclusion is recorded or minutes are issued, their content cannot be changed by anyone, including administrators. Issued minutes, vote conclusions and lifecycle histories are retained as immutable records, and each stored document version can be verified against the fingerprint taken at upload. |
+| Encryption of data in transit | All communication between browsers and the server, between the server and external services (Google, Resend, any external speech/AI provider) and all meeting media must be encrypted in transit (TLS 1.2 or later; encrypted WebRTC media). The system must not be served over unencrypted HTTP in production. |
+| Protection of stored data and backups | Uploaded documents and meeting audio are stored only on TrustSoft's own infrastructure and are reachable only through the application's access checks, never through a public or guessable URL. Secrets (signing keys, database, Redis and Resend credentials) are kept out of the source code and configuration repository. The database is dumped before every deployment that changes the application, and the 14 latest dumps are kept, readable only by the server's administrator account. The dumps sit on the same host, so the operator copies them to separate storage to survive the loss of the host. |
+| Audit logging | The system records security and governance events - sign-in success and failure, password-reset links and resets, Google account linking, user and role changes, AI settings changes, guest verification, viewing a document of a Secret Meeting, reading a deactivated account's library, attendance, recording upload, download and erasure, room-microphone takes, transcript and speech-clip edits and exports, Voice ID consent and voice samples, calendar sharing, the issue of minutes, report export and the system's clean-up runs - with actor, time, action, target object and source IP address (BR-009, BR-010, BR-011). Meeting status changes are recorded separately in the append-only status history of each meeting (BR-022, BR-023). Audit entries cannot be modified or deleted through the application; only the System Admin can view and search them (UC-12). Passwords, tokens and verification codes are never written to any log. |
+| Personal data protection and recording consent (Law 91/2025/QH15, Decree 356/2025/ND-CP) | Personal data (account details, Guest name and email, voices in meeting audio, attendance) is processed only for the stated meeting-management purpose. A meeting audio file can be uploaded only after the Secretary confirms that participants were informed and consented and states the purpose; each recording has a retention date, after which (or on a justified request) it is erased and the erasure is recorded. The online room itself stores only join and leave times and never the chat; audio is kept only as the recordings and per-microphone sentences of FE-09. Audio and voice samples never leave the system. Only for a Normal Meeting, and only when the System Admin has chosen an outside AI API, is the transcript text sent to that API to write the draft; the provider must not keep it or use it for anything else. A voice used for Voice ID is sensitive personal data: it is kept only encrypted, under a separate consent the person can withdraw, and withdrawal erases every sample. |
+| Integrity of issued minutes, vote conclusions and stored documents | Once a Vote Conclusion is recorded or minutes are issued, their content cannot be changed by anyone, including administrators. Issued minutes, vote conclusions and lifecycle histories are retained as immutable records, and each stored file can be checked against the SHA-256 fingerprint taken at upload. |
 | Upload safety | Uploaded files are accepted only within the allowed size limits and file types; the file type is determined from the file content, not from its name. Files are never executed by the server, and audio uploads accept audio formats only (no video, Report 1, LI-03). All stored documents together take at most 250 GB, counting files not yet purged; a file that would exceed it is not stored. Minutes content is HTML filtered by the server before saving, so nothing in it can run in a browser; it holds at most 300,000 characters and 64 levels of nesting, and the Word and PDF files keep only the first 63 columns of a table. |
 
 #### 2.4 Reliability
@@ -4602,7 +4935,7 @@ The quality attributes below are stated as measurable targets for a single-organ
 | --- | --- |
 | No loss of committed data | A business operation (e.g. approving a meeting, recording a vote, issuing minutes) is either completed in full or not at all; a failure part-way never leaves partially saved data. After an unplanned restart no confirmed transaction is lost. |
 | Reliable asynchronous delivery | Invitation and notification emails are queued and retried automatically (up to 8 attempts with increasing intervals) until delivered or marked failed; a failure to deliver never reverts the meeting state that triggered it (BR-031, BR-032). Delivery status is traceable. |
-| Recoverable AI processing | If transcription or summary generation fails or the provider is unavailable, the uploaded audio is kept, the job is marked failed with a reason, and the Secretary can retry without re-uploading. AI output is always a draft until reviewed and approved by the Secretary. |
+| Recoverable AI processing | If transcription or summary generation fails or the provider is unavailable, the uploaded audio is kept, the job is marked failed with a reason, and the Secretary can retry without re-uploading. AI output is always a draft until the current Chair or Secretary has reviewed and approved it. |
 | Defect target | No Critical defect may remain open at acceptance (Report 2 quality objectives); system-level defects are tracked in Reports 5.3-5.5. |
 
 #### 2.5 Availability
@@ -4611,7 +4944,7 @@ The quality attributes below are stated as measurable targets for a single-organ
 | --- | --- |
 | Service availability | The system is available at least 99% of the time during TrustSoft working hours (Monday-Friday, 08:00-18:00, UTC+7), excluding planned maintenance announced to users at least 24 hours in advance and performed outside working hours where possible. |
 | Recovery time and data loss | After a server failure the service can be restored from backup within 4 hours (RTO), losing at most the last 24 hours of data (RPO). |
-| Graceful degradation | If Google sign-in, the mail server, the media server or the speech/AI provider is unavailable, the rest of the system keeps working: users can still sign in with email and password, emails are queued for later delivery, and meeting, document, voting and minutes functions remain usable. |
+| Graceful degradation | If Google sign-in, the email service, the media server or the speech/AI provider is unavailable, the rest of the system keeps working: users can still sign in with email and password, emails are queued for later delivery, and meeting, document, voting and minutes functions remain usable. |
 | Health monitoring | The running instance exposes a health check reporting status and version so that operators can detect an outage within 5 minutes. |
 
 #### 2.6 Maintainability
@@ -4627,15 +4960,15 @@ The quality attributes below are stated as measurable targets for a single-organ
 
 | Requirement | Description |
 | --- | --- |
-| Self-hosted containerised deployment | The complete system (application, PostgreSQL, Redis and media server) can be deployed on a single Linux host inside TrustSoft's network using Docker Compose, without any paid or cloud-only service; outgoing email can use the organisation's own SMTP server instead of Resend, and the outside language-model API for Normal meetings is optional (Report 2, constraints 2 and 5). |
+| Self-hosted containerised deployment | The complete system (application, PostgreSQL, Redis, the SeaweedFS file store and the media server) can be deployed on a single Linux host inside TrustSoft's network using Docker Compose; outgoing email is sent through the Resend email service, and the outside language-model API for Normal meetings is optional (Report 2, constraints 2 and 5). |
 | Single deployable application | The web front end and the API are delivered as one application served from the same origin; a new environment can be installed from the documented procedure within 1 working day by a person with basic Linux and Docker knowledge. |
-| Environment independence | All environment-specific values (URLs, credentials, SMTP and Google settings, speech/AI provider endpoint) are supplied by configuration, so the same build runs in development, test and production. |
+| Environment independence | All environment-specific values (URLs, credentials, Resend and Google settings, speech/AI provider endpoint) are supplied by configuration, so the same build runs in development, test and production. |
 
 #### 2.8 Compliance
 
 | Requirement | Description |
 | --- | --- |
-| Personal data protection | Processing of personal data, including voices in uploaded meeting audio, complies with Decree 13/2023/ND-CP on personal data protection: stated purpose, recorded consent, defined retention and recorded erasure. |
+| Personal data protection | Processing of personal data, including voices in uploaded meeting audio, complies with the Personal Data Protection Law 91/2025/QH15 and Decree 356/2025/ND-CP: stated purpose, recorded consent, defined retention and recorded erasure. |
 | Issued minutes and records | Minutes are approved and issued by the Chair (UC-73) with a complete audit trail; they carry no CA-issued digital signature. Issued minutes, vote conclusions and lifecycle histories are retained as immutable records. |
 | Licensing | All third-party libraries, tools and services used must be free, open-source or student-licensed, with licences compatible with internal deployment at TrustSoft (Report 2, constraint 2). |
 
@@ -4655,7 +4988,7 @@ The quality attributes below are stated as measurable targets for a single-organ
 | BR-008 | A change to a role's capabilities or to a user's role takes effect from the user's next action, without ending the session. |
 | BR-009 | Account and role administration changes and every sign-in are recorded in the audit log. |
 | BR-010 | Issuing minutes, viewing a document of a Secret Meeting, exporting a report and sharing a calendar are recorded in the audit log. |
-| BR-011 | Recording or playing a voice sample, adding or removing a meeting document, and reading a deactivated account's library are recorded in the audit log. |
+| BR-011 | Recording, playing or deleting a voice sample, and reading a deactivated account's library, are recorded in the audit log. |
 | BR-012 | Only a role with the user-administration capability views the audit log; the audit log is read-only and nobody can edit or delete it. |
 | BR-013 | A new Meeting starts in Draft; its planned start is later than now and its planned end is later than its planned start. |
 | BR-014 | Meeting information can be edited only in Draft or Rejected; editing does not change the status. |
@@ -4897,20 +5230,20 @@ The quality attributes below are stated as measurable targets for a single-organ
 | 103 | MSG97 | Field error / Form error | UC-30a – Add Meeting Participant / Exception Flows | Invalid meeting participant information.Field messages:- The selected user is not available.- This user is already a meeting participant.- A valid meeting role is required.- The Member may only assign a missing Secretary during preparation.- Guest name and email are required.- Guest email is invalid.- This guest email is already invited to the meeting.- This email is already represented by an internal meeting participant. |
 | 104 | MSG98 | Dialog | UC-30a, UC-30b, UC-30c / Exception Flows | The meeting participant list cannot be modified in its current status. |
 | 105 | MSG99 | Toast | UC-30a – Add Meeting Participant / Exception Flows | Unable to add the meeting participant. Please try again. |
-| 106 | MSG100 | Toast | UC-30b – Manage Meeting Role & Additional Permissions / Normal Flow | Meeting role updated successfully. |
-| 107 | MSG101 | Field error | UC-30b – Manage Meeting Role & Additional Permissions / Exception Flows | A valid meeting role is required. |
-| 108 | MSG102 | Toast | UC-30b – Manage Meeting Role & Additional Permissions / Exception Flows; UC-34 / EX-3 | Unable to update the meeting role. Please try again. |
+| 106 | MSG100 | Toast | UC-30b – Manage Meeting Role / Normal Flow | Meeting role updated successfully. |
+| 107 | MSG101 | Field error | UC-30b – Manage Meeting Role / Exception Flows | A valid meeting role is required. |
+| 108 | MSG102 | Toast | UC-30b – Manage Meeting Role / Exception Flows; UC-34 / EX-3 | Unable to update the meeting role. Please try again. |
 | 109 | MSG103 | Toast | UC-30c – Remove Meeting Participant / Normal Flow | Meeting participant removed successfully. |
 | 110 | MSG104 | Toast | UC-30c – Remove Meeting Participant / Exception Flows | Unable to remove the meeting participant. Please try again. |
 | 111 | MSG105 | Toast | UC-31 – Respond to Meeting Invitation / Normal Flow | Meeting invitation response recorded successfully. |
 | 112 | MSG106 | Field error / Form error | UC-31 – Respond to Meeting Invitation / Exception Flows | Invalid meeting invitation response. |
 | 113 | MSG107 | Dialog | UC-31 – Respond to Meeting Invitation / Exception Flows | This meeting invitation can no longer be answered. |
 | 114 | MSG108 | Toast | UC-31 – Respond to Meeting Invitation / Exception Flows | Unable to save the meeting invitation response. Please try again. |
-| 115 | MSG109 | Dialog | UC-30b – Manage Meeting Role & Additional Permissions / Exception Flows; UC-30c – Remove Meeting Participant / Exception Flows | The meeting must retain its required Chair and Secretary. Assign a replacement first. |
+| 115 | MSG109 | Dialog | UC-30b – Manage Meeting Role / Exception Flows; UC-30c – Remove Meeting Participant / Exception Flows | The meeting must retain its required Chair and Secretary. Assign a replacement first. |
 | 116 | MSG110 | Toast | UC-20 – Start Meeting / Normal Flow | Meeting started successfully. |
 | 117 | MSG111 | Toast | UC-21 – End Meeting / Normal Flow | Meeting ended successfully. |
 | 118 | MSG112 | Dialog | UC-20 – Start Meeting / Exception Flows | This meeting cannot be started. |
-| 119 | MSG113 | Dialog | Retired; formerly UC-52 (Meeting Session) / End Meeting gate | Retired with Meeting Sessions (ADR-0013); formerly “Complete or cancel all unfinished meeting sessions before ending the meeting.” This code must not be reused. |
+| 119 | MSG113 | Dialog | Retired; formerly UC-52 (Meeting Session) / End Meeting gate | Retired with Meeting Sessions; formerly “Complete or cancel all unfinished meeting sessions before ending the meeting.” This code must not be reused. |
 | 120 | MSG114 | Dialog | UC-21 – End Meeting / Exception Flows | This meeting cannot be ended. |
 | 121 | MSG115 | Toast | UC-20 – Start Meeting / Exception Flows | Unable to start the meeting. Please try again. |
 | 122 | MSG116 | Toast | UC-21 – End Meeting / Exception Flows | Unable to end the meeting. Please try again. |
@@ -4941,17 +5274,17 @@ The quality attributes below are stated as measurable targets for a single-organ
 | 155 | MSG160 | Form error | UC-35b / EX-4 | Unable to download the document. Please try again. |
 | 156 | MSG161 | Toast | UC-36a / Normal Flow | Documents added to the Meeting successfully. |
 | 157 | MSG162 | Form error | UC-36a / EX-1 | You no longer have permission to add documents to this Meeting. |
-| 158 | MSG163 | Retired | ADR-0020 | Retired: document addition and Agenda Item linking are separate operations under ADR-0020. Do not reuse. |
+| 158 | MSG163 | Retired | Access by meeting right | Retired: document addition and Agenda Item linking are separate operations. Do not reuse. |
 | 159 | MSG164 | Field error / Form error | UC-36a / EX-2, UC-36b / AF-1, UC-39 / EX-1, UC-68a / AF-1 | Select valid PDF or DOCX files, each no larger than 10 MB. |
 | 160 | MSG165 | Form error | UC-36a / EX-4 | One or more selected documents are already attached to the Meeting. |
 | 161 | MSG166 | Form error | UC-36a / EX-5 | Unable to add the documents. No documents were added. Please try again. |
 | 162 | MSG167 | Toast | UC-36c / Normal Flow | Document removed from the Meeting successfully. |
-| 163 | MSG168 | Retired | ADR-0020 | Retired: Meeting Minutes no longer lock document removal under ADR-0020. Do not reuse. |
+| 163 | MSG168 | Retired | Access by meeting right | Retired: Meeting Minutes no longer lock document removal. Do not reuse. |
 | 164 | MSG169 | Form error | UC-36c / EX-2 | You no longer have permission to remove documents from this Meeting. |
 | 165 | MSG170 | Form error | UC-36b, UC-36d / EX-2; UC-36c / EX-3; UC-68a / EX-2 | This document is no longer attached to the Meeting. Refresh the document list. |
 | 166 | MSG171 | Form error | UC-36c / EX-4 | Unable to remove the document. It remains attached to the Meeting. Please try again. |
 | 167 | MSG172 | Form error | UC-36a / EX-6 | Documents cannot be added after the Meeting has ended. |
-| 168 | MSG173 | Retired | ADR-0020 | Retired: Agenda Item status no longer locks document links under ADR-0020. Do not reuse. |
+| 168 | MSG173 | Retired | Access by meeting right | Retired: Agenda Item status no longer locks document links. Do not reuse. |
 | 169 | MSG174 | Form error | UC-36a / EX-7 (also a former Chair or Secretary who can no longer view the Meeting) and UC-27 / EX-4 · Implemented; UC-36b / EX-7, UC-36c / EX-5, UC-36d / EX-7 reserved | This Meeting is not accessible. |
 | 170 | MSG175 | Form error | UC-37 / EX-2; UC-40a / EX-1; UC-40b / EX-1; UC-40c / EX-1; UC-41b / EX-1; UC-41c / EX-1; UC-41d / EX-1; UC-37a / EX-1 | This personal-library item is not available. |
 | 171 | MSG176 | Form error | UC-37 / EX-1; UC-37a / EX-2 | Unable to load your personal document library. Please try again. |
@@ -5016,20 +5349,20 @@ The quality attributes below are stated as measurable targets for a single-organ
 | 230 | MSG235 | Notification | UC-67 / Normal Flow | Vote conclusion recorded successfully. |
 | 231 | MSG236 | Form error | UC-67 / EX-4 | Unable to record the vote conclusion. No conclusion was recorded. Please try again. |
 | 232 | MSG237 | Retired | FE-11 | Retired: closing or cancelling the UI does not require a system message. Do not reuse. |
-| 213 | MSG238 | Dành sẵn, chưa triển khai | UC-36b / Normal Flow | Documents attached to the Agenda Item successfully. |
-| 214 | MSG239 | Dành sẵn, chưa triển khai | UC-36d / Normal Flow | Document detached from the Agenda Item successfully. |
-| 215 | MSG240 | Dành sẵn, chưa triển khai | UC-36b / EX-1 | You no longer have permission to link documents in this Meeting. |
-| 216 | MSG241 | Dành sẵn, chưa triển khai | UC-36d / EX-1 | You no longer have permission to unlink documents in this Meeting. |
-| 217 | MSG242 | Dành sẵn, chưa triển khai | UC-36b, UC-36d / EX-3 | Select an available Agenda Item in this Meeting. |
-| 218 | MSG243 | Dành sẵn, chưa triển khai | UC-36b / EX-4 | One or more selected documents are already attached to the Agenda Item. |
-| 219 | MSG244 | Dành sẵn, chưa triển khai | UC-36b / EX-5 | Unable to link the document. No links were changed. Please try again. |
-| 220 | MSG245 | Dành sẵn, chưa triển khai | UC-36d / EX-5 | Unable to unlink the document. No links were changed. Please try again. |
-| 221 | MSG246 | Dành sẵn, chưa triển khai | UC-36d / EX-4 | This document is no longer linked to the selected Agenda Item. Refresh the document list. |
-| 222 | MSG247 | Dành sẵn, chưa triển khai | UC-36b, UC-36d / EX-6 | Document links cannot be changed after the Meeting has ended. |
-| 223 | MSG248 | Dành sẵn, chưa triển khai | UC-36c / EX-1 | Documents cannot be removed after the Meeting has ended. |
-| 224 | MSG249 | Dành sẵn, chưa triển khai | UC-36a / EX-2 | Select one or more available documents from your personal library. |
+| 213 | MSG238 | Reserved, not implemented | UC-36b / Normal Flow | Documents attached to the Agenda Item successfully. |
+| 214 | MSG239 | Reserved, not implemented | UC-36d / Normal Flow | Document detached from the Agenda Item successfully. |
+| 215 | MSG240 | Reserved, not implemented | UC-36b / EX-1 | You no longer have permission to link documents in this Meeting. |
+| 216 | MSG241 | Reserved, not implemented | UC-36d / EX-1 | You no longer have permission to unlink documents in this Meeting. |
+| 217 | MSG242 | Reserved, not implemented | UC-36b, UC-36d / EX-3 | Select an available Agenda Item in this Meeting. |
+| 218 | MSG243 | Reserved, not implemented | UC-36b / EX-4 | One or more selected documents are already attached to the Agenda Item. |
+| 219 | MSG244 | Reserved, not implemented | UC-36b / EX-5 | Unable to link the document. No links were changed. Please try again. |
+| 220 | MSG245 | Reserved, not implemented | UC-36d / EX-5 | Unable to unlink the document. No links were changed. Please try again. |
+| 221 | MSG246 | Reserved, not implemented | UC-36d / EX-4 | This document is no longer linked to the selected Agenda Item. Refresh the document list. |
+| 222 | MSG247 | Reserved, not implemented | UC-36b, UC-36d / EX-6 | Document links cannot be changed after the Meeting has ended. |
+| 223 | MSG248 | Reserved, not implemented | UC-36c / EX-1 | Documents cannot be removed after the Meeting has ended. |
+| 224 | MSG249 | Reserved, not implemented | UC-36a / EX-2 | Select one or more available documents from your personal library. |
 | 225 | MSG250 | Retired | Retired; formerly UC-23b / EX-4 | Retired on 18/10/2026 (PO 16/10/2026): Agenda Items no longer have a Planned Duration and Presenter is not locked. This code must not be reused. |
-| 226 | MSG251 | Dành sẵn, chưa triển khai | UC-38 / EX-5 | Comments are read-only after the Meeting has ended. |
+| 226 | MSG251 | Reserved, not implemented | UC-38 / EX-5 | Comments are read-only after the Meeting has ended. |
 | 233 | MSG252 | Form error | UC-65 / EX-8 | Confirm that you have read all vote documents before casting your ballot. |
 | 234 | MSG253 | Toast | UC-42 / Normal Flow | Document read confirmed. |
 | 235 | MSG254 | Form error | UC-42 / EX-1 | Scroll to the last page of the document before confirming that you have read it. |
@@ -5146,11 +5479,11 @@ The quality attributes below are stated as measurable targets for a single-organ
 | 346 | MSG321 | Inline error | System-level, not shown in a Use Case (UC-45a / AF-2) | A spoken sentence cannot exceed 60 seconds. |
 | 347 | MSG322 | Toast / Inline success | UC-55d / Normal Flow, UC-53 / Normal Flow | Spoken sentence deleted. |
 | 348 | MSG323 | Inline error | UC-55d / EX-1, UC-53 / EX-1 | Only the speaker or the Secretary may delete this sentence. |
-| 349 | MSG324 | Retired | Retired — the recording method follows the Meeting format (ADR-0040) | Retired: nobody chooses the recording method any more; it follows the Meeting format. |
-| 350 | MSG325 | Retired | Retired — the recording method follows the Meeting format (ADR-0040) | Retired: nobody chooses the recording method any more; it follows the Meeting format. |
-| 351 | MSG326 | Retired | Retired — the recording method follows the Meeting format (ADR-0040) | Retired: nobody chooses the recording method any more; it follows the Meeting format. |
-| 352 | MSG327 | Retired | Retired — the recording method follows the Meeting format (ADR-0040) | Retired: nobody chooses the recording method any more; it follows the Meeting format. |
-| 353 | MSG344 | Retired | Retired — the online room no longer records the whole call (ADR-0040) | Retired: the online room records each person’s own microphone instead of the whole call. |
+| 349 | MSG324 | Retired | Retired — the recording method follows the Meeting format | Retired: nobody chooses the recording method any more; it follows the Meeting format. |
+| 350 | MSG325 | Retired | Retired — the recording method follows the Meeting format | Retired: nobody chooses the recording method any more; it follows the Meeting format. |
+| 351 | MSG326 | Retired | Retired — the recording method follows the Meeting format | Retired: nobody chooses the recording method any more; it follows the Meeting format. |
+| 352 | MSG327 | Retired | Retired — the recording method follows the Meeting format | Retired: nobody chooses the recording method any more; it follows the Meeting format. |
+| 353 | MSG344 | Retired | Retired — the online room no longer records the whole call | Retired: the online room records each person’s own microphone instead of the whole call. |
 | 354 | MSG351 | Toast / Inline success | UC-55c / Normal Flow | Sentence excluded from meeting record. |
 | 355 | MSG352 | Toast / Inline success | UC-55c / AF-1 | Sentence restored to meeting record. |
 | 356 | MSG353 | Inline error | UC-55c / EX-1 | Only the Chair or Secretary may exclude a sentence from the meeting record. |
@@ -5244,19 +5577,19 @@ The quality attributes below are stated as measurable targets for a single-organ
 | 453 | MSG453 | Page | UC-80f / EX-1, UC-81a / EX-3, UC-81b / EX-3, UC-81c / EX-1 | Unable to load the calendar sharing data. Please try again. |
 | 454 | MSG454 | Toast | UC-80d / Normal Flow | Calendar share change request sent. |
 | 455 | MSG455 | Form error | UC-80b / EX-1 | This person cannot receive a calendar share. |
-| 463 | MSG463 | Dành sẵn, chưa triển khai | UC-79a / EX-1, UC-79b / EX-1 | The report period is invalid. Choose up to 24 months, with the start month not after the end month. |
-| 464 | MSG464 | Dành sẵn, chưa triển khai | UC-79a / EX-2 | Unable to load the report. Please try again. |
-| 465 | MSG465 | Dành sẵn, chưa triển khai | UC-79b / EX-2 | Unable to export the report. Please try again. |
+| 463 | MSG463 | Reserved, not implemented | UC-79a / EX-1, UC-79b / EX-1 | The report period is invalid. Choose up to 24 months, with the start month not after the end month. |
+| 464 | MSG464 | Reserved, not implemented | UC-79a / EX-2 | Unable to load the report. Please try again. |
+| 465 | MSG465 | Reserved, not implemented | UC-79b / EX-2 | Unable to export the report. Please try again. |
 | 466 | MSG466 | Table message | UC-79a / AF-2 | There are no meetings you can view in this period. |
 | 467 | MSG467 | Form error | UC-80a / EX-6, UC-80b / EX-6 | Unable to load the candidate list. |
 | 468 | MSG468 | Toast | UC-80c / EX-5 | The sender's account has been deactivated. You cannot accept this share. |
-| 469 | MSG469 | Dành sẵn, chưa triển khai | UC-12 / EX-1 | The audit log filter is invalid. Check the period and the selected values. |
-| 470 | MSG470 | Dành sẵn, chưa triển khai | UC-12 / EX-2 | Unable to load the audit log. Please try again. |
+| 469 | MSG469 | Reserved, not implemented | UC-12 / EX-1 | The audit log filter is invalid. Check the period and the selected values. |
+| 470 | MSG470 | Reserved, not implemented | UC-12 / EX-2 | Unable to load the audit log. Please try again. |
 | 471 | MSG473 | Toast / Inline success | UC-57b / Normal Flow | Voice sample recorded for the attendee. |
 | 472 | MSG474 | Toast / Inline success | UC-57d / Normal Flow | Voice sample deleted. |
 | 473 | MSG475 | Inline error | UC-57b / EX-2 | This person has not agreed to Voice ID under the current terms. They can enable it on the My voice page. |
 | 474 | MSG476 | Inline error | UC-57b / EX-3 | This person already has 50 collected voice samples. Delete a collected sample before recording a new one. |
-| 475 | MSG477 | Inline error | UC-57b / EX-4 | Retired: the meeting-path collection was removed (ADR-0075). Do not reuse this code. |
+| 475 | MSG477 | Inline error | UC-57b / EX-4 | Retired: the meeting-path collection was removed. Do not reuse this code. |
 | 491 | MSG483 | Inline error | UC-57b / EX-4 | Confirm the person agreed to this recording. |
 | 477 | MSG478 | Dialog / Banner | UC-52c / EX-8 | Hybrid Meetings are recorded live with the room microphone to match the timing of remote speech; audio files cannot be uploaded. |
 | 478 | MSG479 | Dialog | UC-54a / EX-3 | The combined recording is for listening only. Its speech has already been transcribed from the room and per-microphone recordings. |

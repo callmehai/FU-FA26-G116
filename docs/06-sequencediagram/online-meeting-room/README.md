@@ -9,6 +9,10 @@ MSG123, MSG124, MSG280 → MSG284, MSG328 → MSG343, MSG350).
 - Phòng chỉ mở khi cuộc họp `InProgress`. Trước giờ họp màn chờ hiện MSG117 và tự mở khi cuộc họp bắt đầu (UC-43 AF-3);
   cuộc họp đã kết thúc hiện MSG331, đã huỷ hiện MSG350.
 - Lifeline `:Room Service` là dịch vụ phòng họp mà UC nhắc tới; sơ đồ không vẽ tên sản phẩm hay giao thức bên dưới (convention §10).
+  Ngoại lệ là UC-43: theo review của GVHD trên Report 4 (25/11/2026), sơ đồ vẽ rõ `:LiveKit Gateway` ký access token
+  (JWT, chỉ vào đúng phòng này), trình duyệt mở WebSocket báo hiệu `/rtc` tới `:Room Service (LiveKit SFU)`, trao đổi
+  SDP và ICE, và webhook `participant_joined` để backend ghi phiên vào phòng (`CallRoomService.JoinAsync`,
+  `LiveKitGateway.CreateJoinTicket`, `HandleWebhookAsync`).
 - Micro, camera, chia sẻ màn hình, chọn thiết bị, chat và cửa sổ nổi chạy ở trình duyệt, nói chuyện thẳng với
   dịch vụ phòng họp nên không có controller hay database; UC-43, UC-47 đi qua backend để kiểm quyền.
 - **Guest** là actor trong đặc tả (UC-43 AF-2) nhưng chưa được cài: chờ xác thực Guest (SCRUM-25).

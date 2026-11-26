@@ -23,7 +23,7 @@ Nguồn: [Master Use Case Inventory](../01-requirements/00-master-use-case-inven
 
 Trang thứ tám, *System Overview* (id `system-overview`, đặt cuối file để số trang cũ giữ nguyên), là hình đầu Report 3
 §I.4.3, chú thích "Figure n: System Overview Use Case Diagram" (note 60 §6.1 mục 7, note 61 §4). Actor nối với **gói
-Feature** (FE-01 → FE-13, FE-15, FE-16; không có FE-14) chứ không nối từng UC. Một actor nối với một gói khi actor đó là
+Feature** (FE-01 → FE-15; từ 25/11/2026 Báo cáo là FE-14 và Lịch làm việc là FE-15, không còn bỏ trống số 14) chứ không nối từng UC. Một actor nối với một gói khi actor đó là
 Primary hoặc Secondary Actor của ít nhất một UC trong Feature theo đặc tả Report 3 §II. Chair và Secretary khái quát hoá
 lên Participant; Approver và System Admin lên Member vì cả hai giữ quyền tạo cuộc họp (`ReferenceData.cs`, Report 3 §I.4.1 và ma trận §I.4.4). Ba actor ngoài: OAuth Provider (FE-01), Resend
 Email (FE-01, FE-04, FE-06), AI Drafting Service (FE-10). Id ô: `ov-<actor>`, `ov-fe-xx`, cạnh `assoc-ov-<actor>-fe-xx`
@@ -89,7 +89,7 @@ Trước đợt này file còn ở baseline 10/10/2026 (70 UC). Đã bổ sung:
 - **UC mới:** UC-37a (System Admin); UC-34, UC-42, UC-68, UC-27, UC-49, UC-50, UC-53, UC-56, UC-22 vào trang
   các actor có trong cột Actor của inventory. UC-56 có mặt trên cả 6 trang actor người nội bộ (kể cả Approver).
   **UC-57** *Collect Voice Samples for Attendees* (SCRUM-152) chỉ có trên trang Secretary, độc lập.
-- **FE-16 (SCRUM-137/SCRUM-142):** *Find Meeting Time* và *Manage Calendar Sharing* trên trang Member;
+- **FE-15 Lịch làm việc (SCRUM-137/SCRUM-142; FE-16 trước 25/11/2026):** *Find Meeting Time* và *Manage Calendar Sharing* trên trang Member;
   *Manage Calendar Sharing* `<<extend>>` *Find Meeting Time* (ở mức UC gom: UC-80a `<<extend>>` UC-81a).
   Các UC con 84b/84c/84d/84e là thao tác trong cùng oval chia sẻ, không vẽ oval riêng.
 - **Đổi tên theo FE-09/FE-10:** *View & Play Meeting Audio* → *View & Play Meeting Recordings* (UC-51),

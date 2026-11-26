@@ -1,4 +1,4 @@
-# Chia sẻ lịch và tìm giờ họp — FE-16 (sơ bộ, chưa có code)
+# Chia sẻ lịch và tìm giờ họp — FE-15 (sơ bộ, chưa có code)
 
 Các sequence UC-80a → UC-80f, UC-81a → UC-81c tuân theo [convention chung](../README.md). Đặc tả sơ bộ nằm tại
 [NOTE-dac-ta-so-bo-scrum-137-142.md](../../notes/NOTE-dac-ta-so-bo-scrum-137-142.md) (SCRUM-142 chia sẻ lịch,

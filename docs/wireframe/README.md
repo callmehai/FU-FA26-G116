@@ -16,15 +16,16 @@ Một phiên bản mới (ví dụ v5 → v6) nộp đủ ba phần:
 
 Chỉ sửa HTML bằng tay. Plugin và ảnh luôn sinh ra từ HTML bằng script trong `_tools/`. Giữ file HTML và thư mục `figma-v<N>` của bản cũ.
 
-## Bản hiện có — v14
+## Bản hiện có — v15
 
 | Thành phần | Đường dẫn | Vai trò |
 |---|---|---|
-| HTML | [TrustCabinet-wireframe-v14.html](TrustCabinet-wireframe-v14.html) | Bản thiết kế gốc. |
-| Plugin Figma | [figma-v14/](figma-v14/) (`manifest.json`, `code.js`, `README.md`) | Dựng lại màn trong Figma Desktop. |
-| Ảnh | [screens/](screens/) | PNG từng màn của v14. |
+| HTML | [TrustCabinet-wireframe-v15.html](TrustCabinet-wireframe-v15.html) | Bản thiết kế gốc. |
+| Plugin Figma | [figma-v15/](figma-v15/) (`manifest.json`, `code.js`, `README.md`) | Dựng lại màn trong Figma Desktop. |
+| Ảnh | [screens/](screens/) | PNG từng màn của v15. |
 | Tool | [_tools/](_tools/) | Sinh plugin và ảnh từ HTML. |
 
+Bản v14 giữ nguyên để đối chiếu: [TrustCabinet-wireframe-v14.html](TrustCabinet-wireframe-v14.html), [figma-v14/](figma-v14/).
 Bản v13 giữ nguyên để đối chiếu: [TrustCabinet-wireframe-v13.html](TrustCabinet-wireframe-v13.html), [figma-v13/](figma-v13/).
 Bản v12 giữ nguyên để đối chiếu: [TrustCabinet-wireframe-v12.html](TrustCabinet-wireframe-v12.html), [figma-v12/](figma-v12/).
 
@@ -104,7 +105,7 @@ Ví dụ nâng từ v5 lên v6:
 | `<script>` đầu | Builder: hàm nhỏ trả về chuỗi HTML (`B`, `C`, `F`, `T`, `DL`, `SH`, `SPR`…) |
 | Dữ liệu mẫu | `M`, `MS` (cuộc họp mẫu), `WHO` (người mẫu), `DTABS` (tab trang chi tiết), `VOTE`, `ROLES`… |
 | `const LUONG = [...]` | Luồng cuộc họp S01–S17. Mỗi bước có `frames`, mỗi frame có `fig: 'x.y'`: số màn trong Figma |
-| `const GROUPS = [...]` | 15 nhóm FE-01 → FE-16 (trừ FE-14 Tổng quan cá nhân: UC-69 đã bỏ 15/11/2026). Mỗi phần tử trong `screens` là **một màn** (một frame trong Figma, một file PNG) |
+| `const GROUPS = [...]` | 15 nhóm FE-01 → FE-15 (từ v15 đánh số liền; nhóm Tổng quan cá nhân UC-69 đã bỏ 15/11/2026). Mỗi phần tử trong `screens` là **một màn** (một frame trong Figma, một file PNG) |
 | Cuối script | Render bảng màn, nút **Kích thước thật** |
 
 Một màn được khai báo theo một trong hai cách:
@@ -161,7 +162,8 @@ Class bố cục dùng thẳng trong HTML: `row` (ngang, căn giữa), `col` (d�
 
 - **Đánh số:** biến thể của một màn có sẵn thì thêm hậu tố chữ (`11.1b`, `7.4b`); màn mới hẳn lấy số tiếp
   theo trong nhóm (`11.5`). **Không đánh số lại màn đã có**: Figma, tên ảnh và tài liệu đều tham chiếu theo
-  số. Plugin chỉ nhận dạng `số.số` hoặc `số.số` + một chữ thường.
+  số. Ngoại lệ duy nhất là v15, khi nhóm FE-15, FE-16 thành FE-14, FE-15 theo Report 1–4: màn 15.x thành 14.x,
+  16.x thành 15.x, ảnh `screen-15_*`, `screen-16_*` cũ đã thay bằng ảnh theo số mới. Plugin chỉ nhận dạng `số.số` hoặc `số.số` + một chữ thường.
 - **Vị trí:** đặt màn vào đúng chỗ trong mảng `screens` của nhóm. Thứ tự trong mảng là thứ tự frame trong
   section Figma.
 - **Màn điện thoại:** thêm `phone: 1`. Khung 390×780, nội dung thường là `<div class="ph">…</div>`.

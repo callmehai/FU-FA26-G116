@@ -15,9 +15,16 @@ Nguồn của từng thành phần:
 - reverse proxy, dữ liệu và dịch vụ ngoài: `deploy/docker-compose.yml`, `deploy/Caddyfile`,
   `docker-compose.yml` ở gốc repo và `workers/speech`.
 
-| Source | Ảnh |
-|---|---|
-| [kien-truc-phan-mem.drawio](kien-truc-phan-mem.drawio) | [kien-truc-phan-mem.png](kien-truc-phan-mem.png) |
+| Sơ đồ | Source | Ảnh |
+|---|---|---|
+| Kiến trúc phần mềm (Report 4, Figure 1.1) | [kien-truc-phan-mem.drawio](kien-truc-phan-mem.drawio) | [kien-truc-phan-mem.png](kien-truc-phan-mem.png) |
+| Triển khai vật lý (Report 4, Figure 1.2) | [trien-khai-vat-ly.drawio](trien-khai-vat-ly.drawio) | [trien-khai-vat-ly.png](trien-khai-vat-ly.png) |
+
+Sơ đồ triển khai vật lý là UML deployment diagram của server `app`, thêm theo review của GVHD trên Report 4
+(25/11/2026). Nguồn: `deploy/docker-compose.yml` (container, image, cổng, volume), `deploy/Caddyfile` (`/rtc` sang
+LiveKit, còn lại sang app), `deploy/livekit.yaml` (webhook về `app:8080`), [deploy/README.md](../../deploy/README.md)
+(máy Lightsail, firewall, backup `pg_dump`, máy AI qua Tailscale §11, Resend §8). Đường nối là đường truyền
+(communication path), mũi tên chỉ bên mở kết nối; hai đầu là trao đổi hai chiều.
 
 ## Quy ước
 
@@ -43,7 +50,7 @@ Nguồn của từng thành phần:
 ## Những gì cố ý không vẽ
 
 - Phụ thuộc giữa từng package và class — xem [15-package-diagram](../15-package-diagram/README.md).
-- Google Fonts mà trình duyệt tải về, và GitHub Actions/Lightsail của phần deploy.
+- Google Fonts mà trình duyệt tải về. GitHub Actions và máy Lightsail chỉ có trên sơ đồ triển khai.
 
 ## Sửa và xuất lại
 
@@ -52,8 +59,9 @@ PNG và thay ảnh ở mục I.1 của Report 4 (`docs/08-reports/source/`):
 
 ```bash
 draw.io -x -f png -s 2 -o kien-truc-phan-mem.png kien-truc-phan-mem.drawio
+draw.io -x -f png -s 2 -o trien-khai-vat-ly.png trien-khai-vat-ly.drawio
 ```
 
 Sau đó đẩy lên Drive bằng `python scripts/push_diagrams.py architecture --confirm` (thư mục Diagrams ›
 Architecture diagram, xem [DIAGRAM_DRIVE_SYNC.md](../DIAGRAM_DRIVE_SYNC.md)). Dòng "View the full-size image on
-Google Drive" dưới Figure 1 của Report 4 trỏ vào file PNG đó trên Drive; cập nhật cùng file thì link giữ nguyên.
+Google Drive" dưới Figure 1.1 của Report 4 trỏ vào file PNG đó trên Drive; cập nhật cùng file thì link giữ nguyên.

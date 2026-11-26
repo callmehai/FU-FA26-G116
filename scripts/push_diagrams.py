@@ -142,6 +142,13 @@ GROUPS: tuple[Group, ...] = (
             Source(
                 local=ROOT / "docs" / "07-classdiagram",
                 patterns=("*.drawio", "*.png"),
+                # FE-15 and FE-16 became FE-14 and FE-15 on 25/11/2026 (no gap at the dropped FE-14).
+                renames={
+                    "feature-14-reporting-class-diagram.drawio": "feature-15-reporting-class-diagram.drawio",
+                    "feature-14-reporting-class-diagram.drawio.png": "feature-15-reporting-class-diagram.drawio.png",
+                    "feature-15-calendar-sharing-class-diagram.drawio": "feature-16-calendar-sharing-class-diagram.drawio",
+                    "feature-15-calendar-sharing-class-diagram.drawio.png": "feature-16-calendar-sharing-class-diagram.drawio.png",
+                },
             ),
         ),
     ),

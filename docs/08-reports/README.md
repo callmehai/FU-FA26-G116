@@ -339,7 +339,7 @@ dùng cho mục I: kiến trúc, ERD, bảng thực thể; phần mục II của
 chưa có trong Report 4; `--write` (đóng Word trước) thêm class diagram `N.1` còn thiếu (sequence chuyển sang `N.2`,
 số mục và số Figure đi theo), thêm heading UC + ảnh + caption `Figure N.k: Sequence Diagram of UC-xx – Tên` cho UC còn thiếu,
 đánh lại số trong mục, và điền alt text bằng chính caption cho ảnh chưa có. Ảnh đã có không bị đụng trừ khi đưa
-`--refresh UC-01,FE-16` (hoặc `all`): khi đó thay byte ảnh, giữ bề rộng, chiều cao theo tỉ lệ mới. Tên UC trong ảnh lấy
+`--refresh UC-01,FE-15` (hoặc `all`): khi đó thay byte ảnh, giữ bề rộng, chiều cao theo tỉ lệ mới. Tên UC trong ảnh lấy
 từ dòng `title` của file `.txt`, nên heading Report 4 phải trùng dòng đó (đã đồng bộ theo Report 3). Mục lục vẫn cập nhật bằng Word.
 
 **Report 3 đồng bộ Markdown gần nhất:** 24/10/2026, gộp sáu dòng Change Log 24/10 của KhanhPG thành
