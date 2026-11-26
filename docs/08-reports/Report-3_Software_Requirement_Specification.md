@@ -89,7 +89,7 @@ Table of Contents
 | 25/11/2026 | M | LocHD | Email via Resend only (16.3, API-03); features FE-01–FE-15; no Vietnamese or decision-record references; one font size in the permission matrix; entity and UC descriptions rewritten, UC-28 row added; 3.3 and IV checked against the code. |
 | 25/11/2026 | M | KhanhPG | IV.2.3 Audit logging: event list matched to the events the system records; meeting status changes, summary approval, vote closing and rate-limited sign-ins are not audit events (status changes stay in the status history). BR-011: adding or removing a meeting document is not an audit event, deleting a voice sample is; UC-36a POST-1 no longer cites BR-011. |
 | 26/11/2026 | M | LocHD | Participants: additional Meeting permissions removed from the entity table, permission matrix, MSG table and Participants screen; FE-07 intro without dated notes, storage quota stated; 9.4 and 15.4 images fit one page. |
-| 26/11/2026 | M | LocHD | Section III screens matched to wireframe v16 and the running app: 46 images replaced; 2.1, 3.3, 4.1, 4.2, 4.5, 4.12, 9.1, 9.4, 12.1, 13.1, 14.1, 15.5 and 15.6 rewritten where they differ; detail tabs without Summary. |
+| 26/11/2026 | M | LocHD | Section III screens matched to wireframe v16 and the running app: 47 images replaced; 2.1, 3.3, 4.1, 4.2, 4.5, 4.12, 9.1, 9.4, 10.1, 10.2, 12.1, 13.1, 14.1, 15.5 and 15.6 rewritten where they differ; detail tabs without Summary. |
 
 *A - Added M - Modified D - Deleted
 
@@ -4184,72 +4184,75 @@ Field Description
 
 Figure 72: Speaker-Attributed Transcript
 
-The Speaker-Attributed Transcript screen is the transcript editor inside the Recordings tab, used by the Secretary after the system has transcribed an uploaded audio file. The transcript is split into timed segments; the system separates the voices as “Speaker 1, 2, …” and may suggest a name for each voice, but never assigns a person by itself: the Secretary confirms the suggestion or assigns each unknown voice to a person from the meeting attendee list – once for all segments of that voice – and corrects the wording before generating the summary. There is no real-time transcription and no translation (UC-51b, UC-54, UC-55, UC-58).
+The Speaker-Attributed Transcript opens under a recording on the Recordings tab once the system has transcribed it. The transcript is split into timed sentences grouped into turns; the system separates the voices as “Speaker 1, 2, …”, suggests a name when a voice matches a consented voice sample, and fills the name in by itself only when the match is clear. The Secretary names each voice from the attendee list – once for all sentences of that voice – corrects the wording and can transcribe the recording again. Everyone who may view the Meeting reads the transcript and listens to it. There is no real-time transcription and no translation (UC-51b, UC-54, UC-55).
 
-This screen allows the Secretary to:
+This screen allows everyone who can view the Meeting to:
 
-- Select Audio File: choose which uploaded file’s transcript to work on (UC-54).
+- Play Meeting Audio: play the whole file, or the whole Meeting for the Combined recording, skip 5 seconds back or forward, change the speed, or click a sentence to listen from it (UC-51b).
 
-- Play Meeting Audio: play, pause and seek the audio, or click a segment time to listen to exactly that segment (UC-51b).
+- View Speaker-Attributed Transcript: read the turns with start time, speaker and text, and download the transcript as a .txt file (UC-54).
 
-- View Speaker-Attributed Transcript: read the segments with start time, speaker and text, and search the transcript (UC-54).
+On the screen, the Secretary can also:
 
-- Edit Transcript Text: click a segment to correct its text (UC-55).
+- Name a Voice: choose a person for a speaker, once for all sentences of that voice; accept the suggested name or remove it (UC-55).
 
-- Assign Speaker: confirm the name the system suggests for a voice, assign an unknown voice to an attendee for all of its segments, or change the speaker of a single segment (UC-55).
+- Change Speaker of One Sentence: give a single sentence another speaker (UC-55).
 
-- Generate Meeting Summary: click “Generate summary” to create the AI draft summary from the edited transcript (UC-58).
+- Edit Transcript Text: click a sentence to correct its text; Enter saves, Esc cancels (UC-55).
+
+- Delete Turn: delete the audio and text of a turn for good, after confirming.
+
+- Transcribe Again: run the transcription again, e.g. after a voice sample was enrolled; corrected text and names are kept where the new transcript still matches (UC-54).
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Audio file selector | Dropdown listing the uploaded audio files of the meeting, e.g. “hop-sprint6.m4a”; default the latest file. |
-| Processing status chip | Processing / Processed / Failed. Editing is possible only when the file is Processed. |
-| Search in transcript | Text input; filters or highlights segments containing the keyword. |
-| Generate summary | Primary button; sends the current edited transcript to the AI provider and opens the Meeting Summary tab with a new Draft (UC-58). |
-| Audio player | Play/pause button, current position (e.g. 00:14:02), seek bar and total duration (e.g. 01:09:12) (UC-51b). |
-| Segment time | Start time of the segment (hh:mm:ss); clicking it moves the player to that point and plays it. The segment being played is highlighted. |
-| Speaker dropdown | Per segment; lists the meeting’s internal participants and Guests. Changing it affects only that segment. A name the system filled in automatically is shown as assigned and marked as filled in by the system, and the Secretary may change or clear it. An unassigned voice is shown as “Speaker 3” with an amber border (UC-55). |
-| Segment text | Transcribed text; click to edit inline, saved when leaving the field. The last-edit time is updated (UC-55). |
-| Assign “Speaker 3” card | Opened when an unassigned voice is selected; hint “Choose from the attendee list. Applies to all segments of this voice (12 segments).” Radio list of attendees, e.g. “Ngo Thanh Van · guest”, “Pham Duc Long”, “Le Thu Ha”; one must be selected. |
-| Assign to 12 segments | Primary button; assigns the selected attendee to every segment of that voice in one step and refreshes the transcript (UC-55). |
-| Visibility rule | Viewing and editing the transcript is limited to the assigned Secretary of the meeting (permission matrix, Transcript – View / Edit). |
+| Recording row | The recording on the Recordings tab, opened with “Listen and view the transcript”: file name, source chip, transcription status chip (e.g. Transcribed), length, size and save time. |
+| Transcription status | While waiting or running: “Waiting for a transcription slot” and a progress line with the time already spent. On failure: “Could not transcribe: <reason>” with Run again (Secretary). A recording without speech says “No speech was heard in the recording.” |
+| Audio player | Listen to the whole file (the whole Meeting for the Combined recording), back 5 seconds, play/pause, forward 5 seconds, playback speed, volume and mute, and a position bar with the current and total time (UC-51b). |
+| Machine label | Chip “Speech recognition” with the hint “Machine-made text may be wrong — click a sentence to listen again.”, and the icon buttons Download transcript (.txt) and Transcribe again (Secretary). |
+| Speakers row | One entry per voice: colour dot, the name or “Speaker N”, and the total speaking time. For the Secretary the name is a dropdown: the best-matching person first (“Best voice match: <name>”), “All <name> (n segments of the same voice)”, the attendees, invited Guests labelled “Guest”, and “Remove name”. A name the system filled in says “Assigned by the system because the voice clearly matches <name>” (UC-55). |
+| Turn | Start time, the speaker’s name with a dropdown “Change the speaker of this sentence only” (Secretary), and the sentences of the turn read as one paragraph; a long turn folds with Open / Collapse this turn. A corrected sentence is marked “edited”, with who corrected it in a tooltip. |
+| Edit text | Secretary: clicking a sentence opens an inline box with Cancel and Save; Enter saves, Esc cancels (UC-55). |
+| Delete turn | Secretary: after confirmation the audio and text of the turn are deleted for good; the other turns keep their corrected text and assigned names. |
+| Transcribe again | Secretary: asks first, then the machine redoes the transcript from the start, e.g. to use a new model or a voice sample just enrolled; corrected text and assigned names are kept on the sentences and voices that still match. |
+| Visibility rule | Everyone who may view the Meeting reads the transcript and listens; naming voices, correcting text, deleting turns and transcribing again are only for the assigned Secretary. Names are suggested only from voice samples given under Voice ID consent (9.4), never for Guests. |
 
 #### 10.2 Meeting Summary
 
 Figure 73: Meeting Summary
 
-The Meeting Summary card on the Minutes tab shows the AI draft of the Meeting's content, written from the Meeting's own record, and the review that makes it usable. The draft always has three sections — I. Objectives and scope of the meeting, II. Discussion and assessment, III. Conclusions and assignments — and is always labelled as written by AI. Only the current Chair and Secretary see and correct it; after they approve it the other participants read it. Correcting it withdraws the approval, and the minutes use only an approved draft. Vote results are copied from the data and are never written by the model; action items stay plain text with no assignee or deadline. There is no publish step (UC-58, UC-59, UC-60, UC-61).
+The Meeting Summary is the “Content draft” card at the top of the Minutes tab: the AI draft of the Meeting’s content, written by the local language model from the agenda, the Votes and the transcript, and the review that makes it usable. The draft always has three sections — I. Objectives and scope of the meeting, II. Discussion and assessment, III. Conclusions and assignments — and is always labelled as written by AI. Only the current Chair and Secretary see and correct it; after they approve it the other participants read it. Correcting it withdraws the approval, and the minutes use the draft as it stands. Vote results are copied from the data and are never written by the model; action items stay plain text with no assignee or deadline. There is no publish step (UC-58, UC-59, UC-60, UC-61).
 
 This screen allows the current Chair and the current Secretary to:
 
-- View Meeting Summary: read the three sections, the label saying the text was written by AI, the model and time, who asked for it, who approved it and who last corrected it (UC-59).
+- View Meeting Summary: read the three sections, each folded to a one-line preview and opened in place, the AI label, the model and time, who approved it and who last corrected it (UC-59).
 
-- Generate Meeting Summary: click “Generate summary”, or “Regenerate” over an existing draft, to queue a new draft from the Meeting's transcript (UC-58). The page asks again every 5 seconds while the AI writes.
+- Generate Meeting Summary: click “Create draft”, or “Regenerate” over an existing draft after confirming, to have the AI write a new draft once the Meeting has Ended (UC-58). The draft appears by itself when the AI has finished.
 
-- Edit Meeting Summary: correct the text of the three sections before approving it (UC-60).
+- Edit Meeting Summary: open a section and correct its text in place, then “Save draft” or “Undo” in the bar at the bottom of the screen (UC-60).
 
-- Approve Meeting Summary: click “Approve draft” to vouch for the content; the other participants can read it from then on (UC-61).
+- Approve Meeting Summary: click “Approve” to vouch for the content; the other participants can read it from then on (UC-61).
+
+- Assign Speaker Names: open “Assign speaker names” to listen to each voice that has no name yet and choose the person, before the draft is written (Secretary).
 
 Field Description
 
 | Field Name | Description |
 | --- | --- |
-| Meeting header | Read-only: back link, Meeting title, status chip Ended, confidentiality chip, actual time and place. |
-| AI label | Read-only chip “AI-written — needs review” on every draft, reviewed or not. |
-| Draft status | Read-only: Queued, Running, Ready, Failed with the reason, and an empty state when there is none. |
-| Generate summary / Regenerate | Primary button, shown to the current Chair and Secretary while the Meeting is InProgress or Ended. Queues the request; the earlier draft stays readable while the AI writes, and the page asks again every 5 seconds. |
-| Sections | Three text boxes — I. Objectives and scope of the meeting, II. Discussion and assessment, III. Conclusions and assignments — limited to 2,000, 12,000 and 8,000 characters. |
-| Edit draft | Secondary button on a finished draft; saving withdraws the review. |
-| Save | Saves the three sections and withdraws the review, so the other participants stop seeing the draft until it is approved again. |
-| Approve draft | Secondary button on a finished draft; records the reviewer and the time. From then on everyone who may read the Meeting reads the draft. |
-| Reviewer and editor | Read-only: who approved the draft and when, and who last corrected it and when. |
-| Model and time | Read-only: the model name, the time the draft was written and the person who asked for it. |
-| Sources | Read-only, for each part of section II: the agenda item title and the stretch of the Meeting the part was written from, e.g. “09:12–09:31 · 42 sentences”, to check against the Recordings tab. |
-| What the draft is based on | Read-only, shown to the current Chair and Secretary before asking: sentences recorded, voices not yet named, transcripts running or failed, agenda items and how many were timed, closed votes. |
-| Visibility rule | Read-only note: before approval only the current Chair and Secretary see the draft; after approval everyone who may read the Meeting sees it read-only; correcting it withdraws the approval. |
-| No publish step | No Publish button: the summary is not published outside the Meeting. |
+| Meeting header | Read-only: back link, Meeting title, status chip Ended, confidentiality chip, actual time and place. The right column keeps the Status history and the Notes card. |
+| Draft status | Chip beside the title: Queued, AI writing, Failed (the earlier draft is kept), Not approved (amber) or Approved (green, with who approved it and when in a tooltip). With no draft yet: “No draft yet. Click “Create draft” to have the AI summarise the agenda, the votes and the transcript.” |
+| Create draft / Regenerate | Button for the current Chair and Secretary once the Meeting has Ended. It is blocked, with the reason in a tooltip, while a recording is still being transcribed, when nothing was said in the Meeting or when the AI is not available. Regenerate asks first: the new draft replaces the current one, corrections and approval included. |
+| Readiness notes | Shown before asking: “n recordings are being transcribed; the draft can be created when they finish.”; “n voices without a name will appear as “Speaker N” in the draft.” with the button Assign speaker names; failed transcripts that are left out; agenda items that were never started, so the transcript cannot be split by item. When the transcript was corrected after the draft was written, a line says so with Regenerate. |
+| AI label | Read-only chip “AI-generated content — review required” on every draft, reviewed or not. |
+| Sections | I. Objectives and scope of the meeting, II. Discussion and assessment, III. Conclusions and assignments, each folded to its heading and first line and opened in place; limited to 2,000, 12,000 and 8,000 characters, with a counter and the flag “Too long”. |
+| Sources | Under section II: “From the recording:” with each agenda item and the stretch of the Meeting its part was written from, e.g. “Sprint 5 results: 08:35–08:58”, the number of sentences in a tooltip, to check against the Recordings tab. |
+| Save bar | Appears at the bottom of the screen when a section has changed: “Unsaved changes” with Undo and Save draft. Saving an approved draft asks first, because it withdraws the approval. Approve is blocked until the changes are saved or undone. |
+| Approve | Primary button while the draft is not approved; records the reviewer and the time. From then on everyone who may read the Meeting reads the draft. |
+| Model and editor | Read-only line under the sections: “AI wrote at <time> (<model>), <name> edited at <time>”. |
+| Assign speaker names | Side sheet (Secretary only) listing the voices that have no name, each with a sample sentence to listen to and a choice of person; it ends with Create draft or Regenerate draft. |
+| Visibility rule | Before approval only the current Chair and Secretary see the draft; after approval everyone who may read the Meeting sees it read-only; correcting it withdraws the approval. There is no Publish button: the summary is not published outside the Meeting. |
 
 #### 10.3 Collect Voice Samples for Attendees
 
@@ -4412,7 +4415,7 @@ Field Description
 
 Figure 79: Minutes Editor
 
-The Minutes Editor is the Minutes tab of an InProgress or Ended Meeting as seen by its current Chair or Secretary. It has two cards. “Content draft” holds sections I–III that the local language model writes from the transcript, for the Chair or the Secretary to review and approve. “Minutes” is filled from one fixed template — meeting minutes, Form 1.4 of Decree 30/2020/ND-CP — with the Meeting’s information, attendance, each agenda item’s recorded conclusion, the Vote results and conclusions, and the approved content draft. The text is edited in a word-processor editor and saved explicitly; the Secretary sends the minutes to the Chair for approval (UC-72); the Chair approves and issues them (UC-73), or returns them with a reason (UC-74). The right column keeps the Status history and the Notes card.
+The Minutes Editor is the Minutes tab of an InProgress or Ended Meeting as seen by its current Chair or Secretary. It has two cards. “Content draft” holds sections I–III that the local language model writes from the transcript, for the Chair or the Secretary to review and approve. “Minutes” is filled from one fixed template — meeting minutes, Form 1.4 of Decree 30/2020/ND-CP — with the Meeting’s information, attendance, each agenda item’s recorded conclusion, the Vote results and conclusions, and the content draft as it stands; a notice warns when that draft is not approved yet. The text is edited in a word-processor editor and saved explicitly; the Secretary sends the minutes to the Chair for approval (UC-72); the Chair approves and issues them (UC-73), or returns them with a reason (UC-74). The right column keeps the Status history and the Notes card.
 
 This screen allows the current Chair and the current Secretary to:
 
@@ -4424,7 +4427,7 @@ This screen allows the current Chair and the current Secretary to:
 
 - View Meeting Minutes: read the latest revision as the paper that will be printed, with its status and last save time (UC-69).
 
-- Generate Meeting Minutes: click “Create draft minutes”, or “Rebuild” over an existing draft, to fill the fixed template from the Meeting’s records and the approved content draft (UC-70).
+- Generate Meeting Minutes: click “Create draft minutes”, or “Rebuild” over an existing draft, to fill the fixed template from the Meeting’s records and the content draft (UC-70).
 
 - Edit Meeting Minutes: click “Edit” to correct the text in the word-processor editor, then Save or Cancel (UC-71).
 
@@ -4441,8 +4444,8 @@ Field Description
 | Approve / Create draft / Regenerate | Buttons of the Content draft card. Approve is shown while the draft is not approved. Create draft writes the first draft; Regenerate asks before overwriting the current one (UC-58, UC-61). |
 | Assign speaker names | Button that opens a side sheet to put a name on each voice the transcript could not identify. |
 | Minutes | Card titled “Minutes” with the status chip Draft, Waiting for approval, Returned or Issued; a correction that is not issued yet is labelled “Correction · draft / waiting for approval / returned”. With more than one revision, a version dropdown chooses the revision to read. |
-| Minutes toolbar | In order: Download ▾ (Word, PDF; hidden for a Secret Meeting), Rebuild, Edit and Submit for approval. Rebuild fills the template again from the Meeting’s records and the approved draft and replaces all corrections after confirmation; it is not offered once the minutes are submitted or issued. With no minutes yet only “Create draft minutes” is shown. |
-| Paper | Read-only page laid out as it will print: the two-column heading (agency and national motto), the title “MINUTES”, sections I–III, the closing line and the Secretary and Chair name block with space to sign the printed copy by hand. Footer “Last saved <time>”. With no approved AI draft the card notes “There is no AI draft, so sections I–III are empty.” |
+| Minutes toolbar | In order: Download ▾ (Word, PDF; hidden for a Secret Meeting), Rebuild, Edit and Submit for approval. Rebuild fills the template again from the Meeting’s records and the content draft and replaces all corrections after confirmation; it is not offered once the minutes are submitted or issued. With no minutes yet only “Create draft minutes” is shown. |
+| Paper | Read-only page laid out as it will print: the two-column heading (agency and national motto), the title “MINUTES”, sections I–III, the closing line and the Secretary and Chair name block with space to sign the printed copy by hand. Footer “Last saved <time>”. With no AI draft the card notes “There is no AI draft, so sections I–III are empty.” |
 | Editor | Edit replaces the paper with the word-processor editor: paragraph style, font size, colour, alignment, lists, tables, page break, find and replace; Cancel and Save, with no auto-save. The server filters the HTML before saving. If someone else saved first, the page says so and the newer text is not overwritten. |
 | Visibility rule | Only the current Chair and Secretary see and correct a draft; everyone else sees the minutes only after they are issued, and the content draft only once it is approved. |
 | Task note | Read-only: “2. Tasks, deliverables and deadlines” is text in the minutes; no assignee, due date or progress is tracked. |
