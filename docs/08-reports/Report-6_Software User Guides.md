@@ -281,7 +281,7 @@ There is no self-registration. The administrator creates every account (section 
 
 | Email | Role | Can do |
 | --- | --- | --- |
-| quantri@trustcabinet.local | Quản trị viên | Manage users, roles, AI settings, read the audit log |
+| quantri@trustcabinet.local | Quản trị viên | Manage users, roles, read the audit log |
 | thuky@trustcabinet.local | Thư ký | Create meetings, collect voice samples for others |
 | chutoa@trustcabinet.local | Chủ toạ | Create and approve meetings |
 | thanhvien@trustcabinet.local | Thành viên | Attend, read documents, vote |
@@ -349,7 +349,7 @@ Figure 3: Work calendar — a week with one approved meeting
 | Cuộc họp (Meetings) | The list of meetings you take part in, with search and filters. |
 | Tìm giờ họp (Find a time) | Finds a time when the people you need are free (only for roles that can create meetings). |
 | Báo cáo (Reports) | Meeting statistics over a period, exportable to Excel. |
-| Quản trị (Administration) | Users, roles, AI settings and the audit log (administrators only). |
+| Quản trị (Administration) | Users, roles and the audit log (administrators only). |
 | Your name (bottom) | Account menu: Kho tài liệu (Document library), Giọng nói của tôi (My voice), Chia sẻ lịch (Calendar sharing), Đăng xuất (Sign out). |
 | Bell (bottom) | Notifications; the red badge counts the unread ones. |
 
