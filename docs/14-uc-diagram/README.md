@@ -19,6 +19,10 @@ Nguồn: [Master Use Case Inventory](../01-requirements/00-master-use-case-inven
 | Guest | [uc-guest.png](uc-guest.png) |
 | Tổng thể (System Overview) | [uc-system-overview.png](uc-system-overview.png) |
 
+## Bỏ AI Drafting Service và hình tổng thể khỏi Report 3 (26/11/2026)
+
+Theo review Report 3 của KhanhPG và quyết định của nhóm (26/11/2026), dự thảo AI chạy trên máy của nhóm nên không còn là actor ngoài: bỏ ô *AI Drafting Service* và cạnh nối *Generate / Regenerate Meeting Summary* trên trang Chair, Secretary, và ô `ov-ai` trên trang System Overview; xuất lại `uc-chair.png`, `uc-secretary.png`, `uc-system-overview.png`. Hình System Overview không còn trong Report 3 §I.4.3 (các hình sau lùi một số); trang vẫn giữ trong file. Các mục dưới đây là lịch sử.
+
 ## Sơ đồ tổng thể (25/11/2026)
 
 Trang thứ tám, *System Overview* (id `system-overview`, đặt cuối file để số trang cũ giữ nguyên), là hình đầu Report 3

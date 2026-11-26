@@ -35,28 +35,28 @@ thông báo `MSG`.
 | `BR-012` | Only a role with the user-administration capability views the audit log; the audit log is read-only and nobody can edit or delete it. |
 | `BR-013` | A new Meeting starts in Draft; its planned start is later than now and its planned end is later than its planned start. |
 | `BR-014` | Meeting information can be edited only in Draft or Rejected; editing does not change the status. |
-| `BR-015` | For a Published Meeting, only the Organizer changes the schedule or the location; the new start must be later than now. |
-| `BR-016` | Only the Organizer, the Approver, the Chair, the Secretary or a participant of a Meeting can access that Meeting. |
+| `BR-015` | For a Published Meeting, only the Member who created it changes the schedule or the location; the new start must be later than now. |
+| `BR-016` | Only the Member who created the Meeting, its Approver, the Chair, the Secretary or a participant of a Meeting can access that Meeting. |
 | `BR-017` | The participant list and the invitation responses are shown only to people who can view the Meeting. |
 | `BR-018` | Submitting for approval moves a Draft or Rejected Meeting to WaitingApproval; while it waits, its general information cannot be edited. |
 | `BR-019` | Each approval round has one valid Approver, and only that Approver approves or rejects; without an Approver the Meeting cannot be submitted. |
 | `BR-020` | Approval moves a WaitingApproval Meeting to Approved; rejection moves it to Rejected and requires a reason. |
-| `BR-021` | Only the Organizer publishes a Meeting, only from Approved, and only when it has exactly one Chair and at least one active Secretary. |
+| `BR-021` | Only the Member who created a Meeting publishes it, only from Approved, and only when it has exactly one Chair and at least one active Secretary. |
 | `BR-022` | Every status change is recorded in the history with the actor, time, action, new status and reason. |
 | `BR-023` | The status history is append-only; no entry is edited or deleted. |
 | `BR-024` | Only an active Chair or Secretary starts a Meeting, only from Published and only when both a Chair and a Secretary are assigned. |
 | `BR-025` | Only the Chair ends a Meeting, only while it is InProgress; ending the Meeting closes its online room. |
 | `BR-026` | Ending a Meeting does not close its Votes; ballots already cast are kept. |
 | `BR-027` | A Meeting still InProgress 24 hours after its planned end is ended automatically. |
-| `BR-028` | Only the Organizer cancels a Meeting, only before it starts; Cancelled is final and read-only. |
+| `BR-028` | Only the Member who created a Meeting cancels it, only before it starts; Cancelled is final and read-only. |
 | `BR-029` | A Meeting not started 24 hours after its planned start is cancelled automatically by the system. |
-| `BR-030` | Read access by status: a Member reads only Published, InProgress, Ended, or Cancelled after Published; the Chair, Secretary and Organizer read every status; the Approver reads from submission, never a Draft. |
+| `BR-030` | Read access by status: a Member reads only Published, InProgress, Ended, or Cancelled after Published; the Chair, the Secretary and the Member who created the Meeting read every status; the Approver reads from submission, never a Draft. |
 | `BR-031` | Once a Meeting is published, people are notified when invited, when their role changes or they are removed, and when the Meeting is rescheduled or cancelled. |
 | `BR-032` | A failure to send a notification does not undo the action that triggered it. |
 | `BR-033` | Each person reads and changes the status of their own notifications only. |
 | `BR-034` | Opening a link in a notification checks access again. |
 | `BR-035` | Nobody receives an in-app notification about their own action. |
-| `BR-036` | Only the current Secretary and the Chair manage the participant list; the Organizer has no separate right to it. |
+| `BR-036` | Only the current Secretary and the Chair manage the participant list; the Member who created the Meeting has no separate right to it. |
 | `BR-037` | The participant list can be edited in Draft, Rejected, Approved, Published and InProgress; in WaitingApproval it is read-only. |
 | `BR-038` | An internal participant is an active account and appears at most once in a Meeting. |
 | `BR-039` | Each participant has exactly one meeting role, Chair, Secretary or Member, independent of their system role. |
@@ -120,7 +120,7 @@ thông báo `MSG`.
 | `BR-097` | After a Public Vote closes, each voter's choice is shown. |
 | `BR-098` | Only the Chair closes and tallies a Vote, while the Meeting is InProgress or Ended; percentages are based on the ballots cast. |
 | `BR-099` | The Chair records Passed, NotPassed or Deferred for a closed Vote and cannot change it afterwards; the system never derives it from the result. |
-| `BR-100` | Only assigned participants and valid Guests join the meeting room; being only the Organizer or the Approver is not enough. |
+| `BR-100` | Only assigned participants and valid Guests join the meeting room; having only created or approved the Meeting is not enough. |
 | `BR-101` | Leaving the room or losing the connection does not change the Meeting, list, roles, attendance or Votes; a room connection is not attendance. |
 | `BR-102` | Only the Chair mutes another person's microphone; that person may unmute again. |
 | `BR-103` | Chat messages in the room are not stored. |
@@ -149,7 +149,7 @@ thông báo `MSG`.
 | `BR-126` | Only the Chair or the Secretary requests, edits and reviews the AI draft, only when the Meeting is Ended and has at least one recorded sentence. |
 | `BR-127` | Other people read the AI draft only after it has been reviewed. |
 | `BR-128` | The AI writes only from the meeting record; it does not write attendance, guess names or write vote results. |
-| `BR-129` | By default the AI runs on the team's own server; the Admin may choose an outside API for Normal Meetings; access keys are stored encrypted. |
+| `BR-129` | The AI draft is written only by the team's own language model inside the system; no transcript is sent to an outside AI service. |
 | `BR-130` | Minutes follow one fixed template (Form 1.4, Decree 30/2020/ND-CP); templates are not managed. |
 | `BR-131` | Only the Chair or the Secretary reads and edits the minutes draft, only after the Meeting is Ended; other people see only issued minutes. |
 | `BR-132` | Minutes of a Secret Meeting cannot be downloaded as Word or PDF. |
@@ -161,9 +161,9 @@ thông báo `MSG`.
 | `BR-138` | Issued minutes never change; a correction creates a revision from the issued version, with at most one revision not yet issued. |
 | `BR-139` | Issued and superseded minutes are read and downloaded by everyone who can read the Meeting except Guests; drafts only by the Chair and the Secretary. |
 | `BR-140` | Calendar sharing has two levels: level 1 covers Normal Meetings, level 2 Normal and Internal; Secret Meetings are never shared. |
-| `BR-141` | The viewer sees only busy, free, unknown or not shared, never the title, location, attendees or sensitivity; only Organizers use calendar sharing. |
+| `BR-141` | The viewer sees only busy, free, unknown or not shared, never the title, location, attendees or sensitivity; only users who may create Meetings use calendar sharing. |
 | `BR-142` | Each pair of calendar owner and viewer has at most one Pending or Effective share. |
-| `BR-143` | A share stops when the viewer is no longer an Organizer or is deactivated, and expires after its end date. |
+| `BR-143` | A share stops when the viewer is no longer allowed to create Meetings or is deactivated, and expires after its end date. |
 | `BR-144` | Days outside the shared range are unknown; a person who has not shared counts as neither free nor busy. |
 | `BR-145` | A Meeting above the shared level counts as free; the searcher's own Meetings always count. |
 | `BR-146` | Only a Chair, Secretary or Member assignment in a WaitingApproval, Approved, Published, InProgress or Ended Meeting counts as busy. |

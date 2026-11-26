@@ -86,7 +86,7 @@ Chi tiết UC/BR/MSG nào đổi đã có trong bản trích và `uc-map.html`, 
   Không liệt kê từng bước AF/EX, từng số UC con, tên endpoint hay tên quyền nội bộ.
 - **Tiếng Anh**, thống nhất với ngôn ngữ report. Không lẫn câu tiếng Việt trong dòng tiếng Anh.
 - Phạm vi ID (UC/BR/MSG) chỉ ghi dạng khoảng (`BR-448–454`), giữ số hiệu để tra cứu, không diễn giải từng số.
-- Không sửa dòng lịch sử cũ để "viết lại cho hay" — dòng đã ghi là chứng cứ thời điểm. Chỉ gộp/sửa khi cả bảng đang được refactor có chủ đích như đợt 15/11/2026 (64 → 56 dòng, Report 3).
+- Không sửa dòng lịch sử cũ để "viết lại cho hay" — dòng đã ghi là chứng cứ thời điểm. Chỉ gộp/sửa khi cả bảng đang được refactor có chủ đích như đợt 15/11/2026 (64 → 56 dòng, Report 3) và đợt 26/11/2026 (76 → 10 dòng theo giai đoạn, Report 3, theo review của KhanhPG).
 
 ## Style UC Specification
 

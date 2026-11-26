@@ -9,10 +9,22 @@
     "issueDate": "2026-11-22",
     "version": "1.1",
     "changes": [
-      {"date": "2026-11-22", "version": "v1.0", "item": "All workflows", "type": "A",
-       "description": "Create System Test file from the business flows BF-01 to BF-04", "reference": "docs/09-bussinessflow"},
-      {"date": "2026-11-24", "version": "v1.1", "item": "WorkFlow1, WorkFlow4", "type": "M",
-       "description": "Review PR 507: add password reset (UC-07) and correction of issued minutes (UC-75); correct WF04 TC01, TC04, TC05, WF06 TC02, WF07 TC02 to match the app; short Note, detail in a hidden AI context column", "reference": "PR 507"}
+      {
+        "date": "22/11/2026",
+        "version": "1.0",
+        "item": "All workflows",
+        "type": "A",
+        "description": "System test cases from the business flows BF-01 to BF-04.",
+        "reference": "Report 5.0 Test Documentation"
+      },
+      {
+        "date": "24/11/2026",
+        "version": "1.1",
+        "item": "WorkFlow1, WorkFlow4",
+        "type": "M",
+        "description": "Password reset and correction of issued minutes added; five cases corrected to match the app.",
+        "reference": "Report 5.0 Test Documentation"
+      }
     ]
   },
   "workflows": [

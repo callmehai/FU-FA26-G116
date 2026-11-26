@@ -1,1 +1,183 @@
-<mxfile host="drawio"><diagram id="deploy" name="Deployment"><mxGraphModel dx="1700" dy="940" grid="1" gridSize="10" guides="1" page="1" pageWidth="1720" pageHeight="940" math="0" shadow="0"><root><mxCell id="0"/><mxCell id="1" parent="0"/><mxCell id="client" value="«device»&lt;br&gt;&lt;b&gt;User device&lt;/b&gt; (PC or phone)" style="shape=cube;size=14;direction=south;boundedLbl=1;backgroundOutline=1;darkOpacity=0.05;darkOpacity2=0.1;whiteSpace=wrap;html=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=6;fontFamily=Helvetica;fontSize=13;strokeColor=#000000;fillColor=#ffffff;" vertex="1" parent="1"><mxGeometry x="20" y="330" width="270" height="300" as="geometry"/></mxCell><mxCell id="browser" value="«execution environment»&lt;br&gt;&lt;b&gt;Web browser&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;verticalAlign=top;align=left;spacingLeft=8;spacingTop=4;fontFamily=Helvetica;fontSize=12;strokeColor=#000000;fillColor=#f5f5f5;" vertex="1" parent="1"><mxGeometry x="40" y="390" width="230" height="220" as="geometry"/></mxCell><mxCell id="spa" value="«artifact»&lt;br&gt;&lt;b&gt;React 19 SPA&lt;/b&gt;&lt;br&gt;served by the app" style="rounded=0;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;strokeColor=#000000;fillColor=#ffffff;" vertex="1" parent="1"><mxGeometry x="60" y="445" width="190" height="60" as="geometry"/></mxCell><mxCell id="lkc" value="«artifact»&lt;br&gt;&lt;b&gt;livekit-client&lt;/b&gt;&lt;br&gt;camera · microphone" style="rounded=0;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;strokeColor=#000000;fillColor=#ffffff;" vertex="1" parent="1"><mxGeometry x="60" y="525" width="190" height="60" as="geometry"/></mxCell><mxCell id="vm" value="«device»&lt;br&gt;&lt;b&gt;AWS Lightsail VM trustcabinet-app&lt;/b&gt; · Singapore · 4 vCPU · 8 GB · Ubuntu 24.04 LTS&lt;br&gt;static IP · app.trustcabinet.workspace-hub.space · firewall: 22, 80, 443, 7881/TCP, 7882/UDP" style="shape=cube;size=14;direction=south;boundedLbl=1;backgroundOutline=1;darkOpacity=0.05;darkOpacity2=0.1;whiteSpace=wrap;html=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=6;fontFamily=Helvetica;fontSize=13;strokeColor=#000000;fillColor=#ffffff;" vertex="1" parent="1"><mxGeometry x="360" y="40" width="880" height="860" as="geometry"/></mxCell><mxCell id="docker" value="«execution environment»&lt;br&gt;&lt;b&gt;Docker Engine · Docker Compose&lt;/b&gt; (one internal network)" style="rounded=0;whiteSpace=wrap;html=1;verticalAlign=top;align=left;spacingLeft=8;spacingTop=4;fontFamily=Helvetica;fontSize=12;strokeColor=#000000;fillColor=#f5f5f5;" vertex="1" parent="1"><mxGeometry x="380" y="120" width="840" height="640" as="geometry"/></mxCell><mxCell id="caddy" value="«container»&lt;br&gt;&lt;b&gt;caddy&lt;/b&gt;&lt;br&gt;caddy:2-alpine · TLS, CSP&lt;br&gt;80, 443 TCP/UDP · volume caddy-data" style="rounded=0;whiteSpace=wrap;html=1;verticalAlign=middle;align=center;fontFamily=Helvetica;fontSize=11;strokeColor=#000000;fillColor=#ffffff;" vertex="1" parent="1"><mxGeometry x="410" y="190" width="230" height="100" as="geometry"/></mxCell><mxCell id="livekit" value="«container»&lt;br&gt;&lt;b&gt;livekit&lt;/b&gt;&lt;br&gt;livekit-server v1.13.7 (SFU)&lt;br&gt;:7880 · 7881/TCP · 7882/UDP" style="rounded=0;whiteSpace=wrap;html=1;verticalAlign=middle;align=center;fontFamily=Helvetica;fontSize=11;strokeColor=#000000;fillColor=#ffffff;" vertex="1" parent="1"><mxGeometry x="960" y="190" width="230" height="100" as="geometry"/></mxCell><mxCell id="app" value="«container»&lt;br&gt;&lt;b&gt;app&lt;/b&gt;&lt;br&gt;ASP.NET Core 10 + built SPA&lt;br&gt;:8080 · volume recordings" style="rounded=0;whiteSpace=wrap;html=1;verticalAlign=middle;align=center;fontFamily=Helvetica;fontSize=11;strokeColor=#000000;fillColor=#ffffff;" vertex="1" parent="1"><mxGeometry x="685" y="410" width="230" height="120" as="geometry"/></mxCell><mxCell id="speech" value="«container»&lt;br&gt;&lt;b&gt;speech&lt;/b&gt;&lt;br&gt;Python · sherpa-onnx&lt;br&gt;CPU only · :8090" style="rounded=0;whiteSpace=wrap;html=1;verticalAlign=middle;align=center;fontFamily=Helvetica;fontSize=11;strokeColor=#000000;fillColor=#ffffff;" vertex="1" parent="1"><mxGeometry x="410" y="420" width="200" height="100" as="geometry"/></mxCell><mxCell id="files" value="«container»&lt;br&gt;&lt;b&gt;files&lt;/b&gt;&lt;br&gt;SeaweedFS 3.97 (S3 API)&lt;br&gt;:8333 · volume files" style="rounded=0;whiteSpace=wrap;html=1;verticalAlign=middle;align=center;fontFamily=Helvetica;fontSize=11;strokeColor=#000000;fillColor=#ffffff;" vertex="1" parent="1"><mxGeometry x="410" y="630" width="230" height="100" as="geometry"/></mxCell><mxCell id="postgres" value="«container»&lt;br&gt;&lt;b&gt;postgres&lt;/b&gt;&lt;br&gt;postgres:17-alpine&lt;br&gt;:5432 · volume pgdata" style="rounded=0;whiteSpace=wrap;html=1;verticalAlign=middle;align=center;fontFamily=Helvetica;fontSize=11;strokeColor=#000000;fillColor=#ffffff;" vertex="1" parent="1"><mxGeometry x="685" y="630" width="230" height="100" as="geometry"/></mxCell><mxCell id="redis" value="«container»&lt;br&gt;&lt;b&gt;redis&lt;/b&gt;&lt;br&gt;redis:8-alpine&lt;br&gt;:6379 · tokens only" style="rounded=0;whiteSpace=wrap;html=1;verticalAlign=middle;align=center;fontFamily=Helvetica;fontSize=11;strokeColor=#000000;fillColor=#ffffff;" vertex="1" parent="1"><mxGeometry x="960" y="630" width="230" height="100" as="geometry"/></mxCell><mxCell id="backups" value="«artifact»&lt;br&gt;&lt;b&gt;~/backups&lt;/b&gt;&lt;br&gt;pg_dump before each deploy, 14 kept" style="rounded=0;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;strokeColor=#000000;fillColor=#ffffff;" vertex="1" parent="1"><mxGeometry x="685" y="785" width="230" height="70" as="geometry"/></mxCell><mxCell id="team" value="«device»&lt;br&gt;&lt;b&gt;Team machines&lt;/b&gt; (macOS) · Tailscale VPN" style="shape=cube;size=14;direction=south;boundedLbl=1;backgroundOutline=1;darkOpacity=0.05;darkOpacity2=0.1;whiteSpace=wrap;html=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=6;fontFamily=Helvetica;fontSize=13;strokeColor=#000000;fillColor=#ffffff;" vertex="1" parent="1"><mxGeometry x="1300" y="600" width="380" height="300" as="geometry"/></mxCell><mxCell id="ai1" value="«execution environment»&lt;br&gt;&lt;b&gt;Ollama&lt;/b&gt; · qwen2.5:7b-instruct&lt;br&gt;primary · :11434" style="rounded=0;whiteSpace=wrap;html=1;verticalAlign=top;align=left;spacingLeft=8;spacingTop=4;fontFamily=Helvetica;fontSize=12;strokeColor=#000000;fillColor=#f5f5f5;" vertex="1" parent="1"><mxGeometry x="1325" y="665" width="330" height="90" as="geometry"/></mxCell><mxCell id="ai2" value="«execution environment»&lt;br&gt;&lt;b&gt;Ollama&lt;/b&gt; · same model&lt;br&gt;backup · :11434" style="rounded=0;whiteSpace=wrap;html=1;verticalAlign=top;align=left;spacingLeft=8;spacingTop=4;fontFamily=Helvetica;fontSize=12;strokeColor=#000000;fillColor=#f5f5f5;" vertex="1" parent="1"><mxGeometry x="1325" y="785" width="330" height="90" as="geometry"/></mxCell><mxCell id="net" value="«device»&lt;br&gt;&lt;b&gt;Internet services&lt;/b&gt;" style="shape=cube;size=14;direction=south;boundedLbl=1;backgroundOutline=1;darkOpacity=0.05;darkOpacity2=0.1;whiteSpace=wrap;html=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=6;fontFamily=Helvetica;fontSize=13;strokeColor=#000000;fillColor=#ffffff;" vertex="1" parent="1"><mxGeometry x="1300" y="40" width="380" height="520" as="geometry"/></mxCell><mxCell id="google" value="&lt;b&gt;Google Identity Services&lt;/b&gt;&lt;br&gt;Sign-In · ID-token signing keys" style="rounded=0;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;strokeColor=#000000;fillColor=#ffffff;" vertex="1" parent="1"><mxGeometry x="1325" y="100" width="330" height="70" as="geometry"/></mxCell><mxCell id="resend" value="&lt;b&gt;Resend&lt;/b&gt; email API" style="rounded=0;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;strokeColor=#000000;fillColor=#ffffff;" vertex="1" parent="1"><mxGeometry x="1325" y="205" width="330" height="60" as="geometry"/></mxCell><mxCell id="llm" value="&lt;b&gt;Outside language-model API&lt;/b&gt;&lt;br&gt;optional · Normal meetings only" style="rounded=0;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;strokeColor=#000000;fillColor=#ffffff;" vertex="1" parent="1"><mxGeometry x="1325" y="300" width="330" height="70" as="geometry"/></mxCell><mxCell id="gha" value="&lt;b&gt;GitHub Actions&lt;/b&gt;&lt;br&gt;builds the images, deploys" style="rounded=0;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;strokeColor=#000000;fillColor=#ffffff;" vertex="1" parent="1"><mxGeometry x="1325" y="410" width="330" height="70" as="geometry"/></mxCell><mxCell id="e1" value="HTTPS :443&lt;br&gt;REST · SignalR (WSS) · /rtc" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;endSize=8;strokeColor=#000000;fontFamily=Helvetica;fontSize=11;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=8;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="spa" target="caddy"><mxGeometry x="0.27" relative="1" as="geometry"><Array as="points"><mxPoint x="325" y="475"/><mxPoint x="325" y="240"/></Array></mxGeometry></mxCell><mxCell id="e2" value="WebRTC media (DTLS-SRTP) · UDP 7882 / TCP 7881" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;endSize=8;strokeColor=#000000;fontFamily=Helvetica;fontSize=11;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=8;exitX=1;exitY=0.5;entryX=0.5;entryY=0;startArrow=open;startFill=0;" edge="1" parent="1" source="lkc" target="livekit"><mxGeometry x="0.67" relative="1" as="geometry"><Array as="points"><mxPoint x="345" y="555"/><mxPoint x="345" y="172"/><mxPoint x="1075" y="172"/></Array></mxGeometry></mxCell><mxCell id="e3" value="HTTP :8080" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;endSize=8;strokeColor=#000000;fontFamily=Helvetica;fontSize=11;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=8;exitX=1;exitY=0.75;entryX=0.5;entryY=0;" edge="1" parent="1" source="caddy" target="app"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="800" y="265"/></Array></mxGeometry></mxCell><mxCell id="e4" value="/rtc → :7880" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;endSize=8;strokeColor=#000000;fontFamily=Helvetica;fontSize=11;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=8;exitX=1;exitY=0.25;entryX=0;entryY=0.25;" edge="1" parent="1" source="caddy" target="livekit"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell><mxCell id="e5" value="API :7880 / webhook" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;endSize=8;strokeColor=#000000;fontFamily=Helvetica;fontSize=11;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=8;exitX=0.85;exitY=0;entryX=0.5;entryY=1;startArrow=open;startFill=0;" edge="1" parent="1" source="app" target="livekit"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="880" y="340"/><mxPoint x="1075" y="340"/></Array></mxGeometry></mxCell><mxCell id="e6" value="HTTP :8090" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;endSize=8;strokeColor=#000000;fontFamily=Helvetica;fontSize=11;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=8;exitX=0;exitY=0.4;entryX=1;entryY=0.5;" edge="1" parent="1" source="app" target="speech"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell><mxCell id="e7" value="S3 API :8333" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;endSize=8;strokeColor=#000000;fontFamily=Helvetica;fontSize=11;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=8;exitX=0.15;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="app" target="files"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="720" y="590"/><mxPoint x="525" y="590"/></Array></mxGeometry></mxCell><mxCell id="e8" value="TCP :5432" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;endSize=8;strokeColor=#000000;fontFamily=Helvetica;fontSize=11;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=8;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="app" target="postgres"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell><mxCell id="e9" value="TCP :6379" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;endSize=8;strokeColor=#000000;fontFamily=Helvetica;fontSize=11;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=8;exitX=0.85;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="app" target="redis"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="880" y="590"/><mxPoint x="1075" y="590"/></Array></mxGeometry></mxCell><mxCell id="e10" value="HTTPS · signing keys" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;endSize=8;strokeColor=#000000;fontFamily=Helvetica;fontSize=11;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=8;exitX=1;exitY=0.125;entryX=0;entryY=0.5;" edge="1" parent="1" source="app" target="google"><mxGeometry x="-0.76" relative="1" as="geometry"><Array as="points"><mxPoint x="1250" y="425"/><mxPoint x="1250" y="135"/></Array></mxGeometry></mxCell><mxCell id="e11" value="HTTPS · send / delivery webhook" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;endSize=8;strokeColor=#000000;fontFamily=Helvetica;fontSize=11;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=8;exitX=1;exitY=0.333;entryX=0;entryY=0.5;startArrow=open;startFill=0;" edge="1" parent="1" source="app" target="resend"><mxGeometry x="-0.41" relative="1" as="geometry"><Array as="points"><mxPoint x="1265" y="450"/><mxPoint x="1265" y="235"/></Array></mxGeometry></mxCell><mxCell id="e12" value="HTTPS (optional)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;endSize=8;strokeColor=#000000;fontFamily=Helvetica;fontSize=11;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=8;exitX=1;exitY=0.542;entryX=0;entryY=0.5;" edge="1" parent="1" source="app" target="llm"><mxGeometry x="-0.69" relative="1" as="geometry"><Array as="points"><mxPoint x="1280" y="475"/><mxPoint x="1280" y="335"/></Array></mxGeometry></mxCell><mxCell id="e13" value="HTTP :11434 over Tailscale" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;endSize=8;strokeColor=#000000;fontFamily=Helvetica;fontSize=11;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=8;exitX=1;exitY=0.75;entryX=0;entryY=0.5;" edge="1" parent="1" source="app" target="ai1"><mxGeometry x="-0.4" relative="1" as="geometry"><Array as="points"><mxPoint x="1250" y="500"/><mxPoint x="1250" y="710"/></Array></mxGeometry></mxCell><mxCell id="e14" value="backup" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;endSize=8;strokeColor=#000000;fontFamily=Helvetica;fontSize=11;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=8;exitX=1;exitY=0.917;entryX=0;entryY=0.5;" edge="1" parent="1" source="app" target="ai2"><mxGeometry x="-0.76" relative="1" as="geometry"><Array as="points"><mxPoint x="1265" y="520"/><mxPoint x="1265" y="830"/></Array></mxGeometry></mxCell><mxCell id="e15" value="SSH :22 · images, pg_dump, migrate" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;endSize=8;strokeColor=#000000;fontFamily=Helvetica;fontSize=11;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=8;exitX=0.5;exitY=1;" edge="1" parent="1" source="gha" target="vm"><mxGeometry x="0.09" relative="1" as="geometry"><Array as="points"><mxPoint x="1490" y="580"/></Array></mxGeometry></mxCell><mxCell id="e16" value="pg_dump" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;endSize=8;strokeColor=#000000;fontFamily=Helvetica;fontSize=11;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=8;exitX=0.5;exitY=1;entryX=0.5;entryY=0;dashed=1;" edge="1" parent="1" source="postgres" target="backups"><mxGeometry relative="1" as="geometry"></mxGeometry></mxCell><mxCell id="e17" value="Google Sign-In (HTTPS)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;endSize=8;strokeColor=#000000;fontFamily=Helvetica;fontSize=11;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=8;exitX=0.5;exitY=0;entryX=0.5;entryY=0;" edge="1" parent="1" source="spa" target="google"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="155" y="15"/><mxPoint x="1490" y="15"/></Array></mxGeometry></mxCell></root></mxGraphModel></diagram></mxfile>
+<mxfile host="Electron">
+  <diagram id="deploy" name="Deployment">
+    <mxGraphModel dx="1704" dy="1028" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1720" pageHeight="940" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="client" parent="1" style="shape=cube;size=14;direction=south;boundedLbl=1;backgroundOutline=1;darkOpacity=0.05;darkOpacity2=0.1;whiteSpace=wrap;html=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=6;fontFamily=Helvetica;fontSize=13;strokeColor=#000000;fillColor=#ffffff;" value="«device»&lt;br&gt;&lt;b&gt;User device&lt;/b&gt; (PC or phone)" vertex="1">
+          <mxGeometry height="300" width="270" x="20" y="330" as="geometry" />
+        </mxCell>
+        <mxCell id="browser" parent="1" style="rounded=0;whiteSpace=wrap;html=1;verticalAlign=top;align=left;spacingLeft=8;spacingTop=4;fontFamily=Helvetica;fontSize=12;strokeColor=#000000;fillColor=#f5f5f5;" value="«execution environment»&lt;br&gt;&lt;b&gt;Web browser&lt;/b&gt;" vertex="1">
+          <mxGeometry height="220" width="230" x="40" y="390" as="geometry" />
+        </mxCell>
+        <mxCell id="spa" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;strokeColor=#000000;fillColor=#ffffff;" value="«artifact»&lt;br&gt;&lt;b&gt;React 19 SPA&lt;/b&gt;&lt;br&gt;served by the app" vertex="1">
+          <mxGeometry height="60" width="190" x="60" y="445" as="geometry" />
+        </mxCell>
+        <mxCell id="lkc" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;strokeColor=#000000;fillColor=#ffffff;" value="«artifact»&lt;br&gt;&lt;b&gt;livekit-client&lt;/b&gt;&lt;br&gt;camera · microphone" vertex="1">
+          <mxGeometry height="60" width="190" x="60" y="525" as="geometry" />
+        </mxCell>
+        <mxCell id="vm" parent="1" style="shape=cube;size=14;direction=south;boundedLbl=1;backgroundOutline=1;darkOpacity=0.05;darkOpacity2=0.1;whiteSpace=wrap;html=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=6;fontFamily=Helvetica;fontSize=13;strokeColor=#000000;fillColor=#ffffff;" value="«device»&lt;br&gt;&lt;b&gt;AWS Lightsail VM trustcabinet-app&lt;/b&gt; · Singapore · 4 vCPU · 8 GB · Ubuntu 24.04 LTS&lt;br&gt;static IP · app.trustcabinet.workspace-hub.space · firewall: 22, 80, 443, 7881/TCP, 7882/UDP" vertex="1">
+          <mxGeometry height="860" width="880" x="360" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="docker" parent="1" style="rounded=0;whiteSpace=wrap;html=1;verticalAlign=top;align=left;spacingLeft=8;spacingTop=4;fontFamily=Helvetica;fontSize=12;strokeColor=#000000;fillColor=#f5f5f5;" value="«execution environment»&lt;br&gt;&lt;b&gt;Docker Engine · Docker Compose&lt;/b&gt; (one internal network)" vertex="1">
+          <mxGeometry height="640" width="840" x="380" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="caddy" parent="1" style="rounded=0;whiteSpace=wrap;html=1;verticalAlign=middle;align=center;fontFamily=Helvetica;fontSize=11;strokeColor=#000000;fillColor=#ffffff;" value="«container»&lt;br&gt;&lt;b&gt;caddy&lt;/b&gt;&lt;br&gt;caddy:2-alpine · TLS, CSP&lt;br&gt;80, 443 TCP/UDP · volume caddy-data" vertex="1">
+          <mxGeometry height="100" width="230" x="410" y="190" as="geometry" />
+        </mxCell>
+        <mxCell id="livekit" parent="1" style="rounded=0;whiteSpace=wrap;html=1;verticalAlign=middle;align=center;fontFamily=Helvetica;fontSize=11;strokeColor=#000000;fillColor=#ffffff;" value="«container»&lt;br&gt;&lt;b&gt;livekit&lt;/b&gt;&lt;br&gt;livekit-server v1.13.7 (SFU)&lt;br&gt;:7880 · 7881/TCP · 7882/UDP" vertex="1">
+          <mxGeometry height="100" width="230" x="960" y="190" as="geometry" />
+        </mxCell>
+        <mxCell id="app" parent="1" style="rounded=0;whiteSpace=wrap;html=1;verticalAlign=middle;align=center;fontFamily=Helvetica;fontSize=11;strokeColor=#000000;fillColor=#ffffff;" value="«container»&lt;br&gt;&lt;b&gt;app&lt;/b&gt;&lt;br&gt;ASP.NET Core 10 + built SPA&lt;br&gt;:8080 · volume recordings" vertex="1">
+          <mxGeometry height="120" width="230" x="685" y="410" as="geometry" />
+        </mxCell>
+        <mxCell id="speech" parent="1" style="rounded=0;whiteSpace=wrap;html=1;verticalAlign=middle;align=center;fontFamily=Helvetica;fontSize=11;strokeColor=#000000;fillColor=#ffffff;" value="«container»&lt;br&gt;&lt;b&gt;speech&lt;/b&gt;&lt;br&gt;Python · sherpa-onnx&lt;br&gt;CPU only · :8090" vertex="1">
+          <mxGeometry height="100" width="200" x="410" y="420" as="geometry" />
+        </mxCell>
+        <mxCell id="files" parent="1" style="rounded=0;whiteSpace=wrap;html=1;verticalAlign=middle;align=center;fontFamily=Helvetica;fontSize=11;strokeColor=#000000;fillColor=#ffffff;" value="«container»&lt;br&gt;&lt;b&gt;files&lt;/b&gt;&lt;br&gt;SeaweedFS 3.97 (S3 API)&lt;br&gt;:8333 · volume files" vertex="1">
+          <mxGeometry height="100" width="230" x="410" y="630" as="geometry" />
+        </mxCell>
+        <mxCell id="postgres" parent="1" style="rounded=0;whiteSpace=wrap;html=1;verticalAlign=middle;align=center;fontFamily=Helvetica;fontSize=11;strokeColor=#000000;fillColor=#ffffff;" value="«container»&lt;br&gt;&lt;b&gt;postgres&lt;/b&gt;&lt;br&gt;postgres:17-alpine&lt;br&gt;:5432 · volume pgdata" vertex="1">
+          <mxGeometry height="100" width="230" x="685" y="630" as="geometry" />
+        </mxCell>
+        <mxCell id="redis" parent="1" style="rounded=0;whiteSpace=wrap;html=1;verticalAlign=middle;align=center;fontFamily=Helvetica;fontSize=11;strokeColor=#000000;fillColor=#ffffff;" value="«container»&lt;br&gt;&lt;b&gt;redis&lt;/b&gt;&lt;br&gt;redis:8-alpine&lt;br&gt;:6379 · tokens only" vertex="1">
+          <mxGeometry height="100" width="230" x="960" y="630" as="geometry" />
+        </mxCell>
+        <mxCell id="backups" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;strokeColor=#000000;fillColor=#ffffff;" value="«artifact»&lt;br&gt;&lt;b&gt;~/backups&lt;/b&gt;&lt;br&gt;pg_dump before each deploy, 14 kept" vertex="1">
+          <mxGeometry height="70" width="230" x="685" y="785" as="geometry" />
+        </mxCell>
+        <mxCell id="team" parent="1" style="shape=cube;size=14;direction=south;boundedLbl=1;backgroundOutline=1;darkOpacity=0.05;darkOpacity2=0.1;whiteSpace=wrap;html=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=6;fontFamily=Helvetica;fontSize=13;strokeColor=#000000;fillColor=#ffffff;" value="«device»&lt;br&gt;&lt;b&gt;Team machines&lt;/b&gt; (macOS) · Tailscale VPN" vertex="1">
+          <mxGeometry height="300" width="380" x="1350" y="600" as="geometry" />
+        </mxCell>
+        <mxCell id="ai1" parent="1" style="rounded=0;whiteSpace=wrap;html=1;verticalAlign=top;align=left;spacingLeft=8;spacingTop=4;fontFamily=Helvetica;fontSize=12;strokeColor=#000000;fillColor=#f5f5f5;" value="«execution environment»&lt;br&gt;&lt;b&gt;Ollama&lt;/b&gt; · qwen2.5:7b-instruct&lt;br&gt;primary · :11434" vertex="1">
+          <mxGeometry height="90" width="330" x="1375" y="665" as="geometry" />
+        </mxCell>
+        <mxCell id="ai2" parent="1" style="rounded=0;whiteSpace=wrap;html=1;verticalAlign=top;align=left;spacingLeft=8;spacingTop=4;fontFamily=Helvetica;fontSize=12;strokeColor=#000000;fillColor=#f5f5f5;" value="«execution environment»&lt;br&gt;&lt;b&gt;Ollama&lt;/b&gt; · same model&lt;br&gt;backup · :11434" vertex="1">
+          <mxGeometry height="90" width="330" x="1375" y="785" as="geometry" />
+        </mxCell>
+        <mxCell id="net" parent="1" style="shape=cube;size=14;direction=south;boundedLbl=1;backgroundOutline=1;darkOpacity=0.05;darkOpacity2=0.1;whiteSpace=wrap;html=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=6;fontFamily=Helvetica;fontSize=13;strokeColor=#000000;fillColor=#ffffff;" value="«device»&lt;br&gt;&lt;b&gt;Internet services&lt;/b&gt;" vertex="1">
+          <mxGeometry height="345" width="380" x="1350" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="google" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;strokeColor=#000000;fillColor=#ffffff;" value="&lt;b&gt;Google Identity Services&lt;/b&gt;&lt;br&gt;Sign-In · ID-token signing keys" vertex="1">
+          <mxGeometry height="70" width="330" x="1375" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="resend" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;strokeColor=#000000;fillColor=#ffffff;" value="&lt;b&gt;Resend&lt;/b&gt; email API" vertex="1">
+          <mxGeometry height="60" width="330" x="1375" y="205" as="geometry" />
+        </mxCell>
+        <mxCell id="gha" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;strokeColor=#000000;fillColor=#ffffff;" value="&lt;b&gt;GitHub Actions&lt;/b&gt;&lt;br&gt;builds the images, deploys" vertex="1">
+          <mxGeometry height="70" width="330" x="1375" y="295" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" edge="1" parent="1" source="spa" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;endSize=8;strokeColor=#000000;fontFamily=Helvetica;fontSize=11;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=8;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" target="caddy" value="HTTPS :443&lt;br&gt;REST · SignalR (WSS) · /rtc">
+          <mxGeometry relative="1" x="0.27" as="geometry">
+            <mxPoint x="-95" as="offset" />
+            <Array as="points">
+              <mxPoint x="325" y="475" />
+              <mxPoint x="325" y="240" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e2" edge="1" parent="1" source="lkc" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;endSize=8;strokeColor=#000000;fontFamily=Helvetica;fontSize=11;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=8;exitX=1;exitY=0.5;entryX=0.5;entryY=0;startArrow=open;startFill=0;" target="livekit" value="WebRTC media (DTLS-SRTP) · UDP 7882 / TCP 7881">
+          <mxGeometry relative="1" x="0.67" as="geometry">
+            <Array as="points">
+              <mxPoint x="345" y="555" />
+              <mxPoint x="345" y="172" />
+              <mxPoint x="1075" y="172" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e3" edge="1" parent="1" source="caddy" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;endSize=8;strokeColor=#000000;fontFamily=Helvetica;fontSize=11;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=8;exitX=1;exitY=0.75;entryX=0.5;entryY=0;" target="app" value="HTTP :8080">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="800" y="265" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e4" edge="1" parent="1" source="caddy" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;endSize=8;strokeColor=#000000;fontFamily=Helvetica;fontSize=11;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=8;exitX=1;exitY=0.25;entryX=0;entryY=0.25;" target="livekit" value="/rtc → :7880">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" edge="1" parent="1" source="app" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;endSize=8;strokeColor=#000000;fontFamily=Helvetica;fontSize=11;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=8;exitX=0.85;exitY=0;entryX=0.5;entryY=1;startArrow=open;startFill=0;" target="livekit" value="API :7880 / webhook">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="880" y="340" />
+              <mxPoint x="1075" y="340" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e6" edge="1" parent="1" source="app" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;endSize=8;strokeColor=#000000;fontFamily=Helvetica;fontSize=11;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=8;exitX=0;exitY=0.4;entryX=1;entryY=0.5;" target="speech" value="HTTP :8090">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" edge="1" parent="1" source="app" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;endSize=8;strokeColor=#000000;fontFamily=Helvetica;fontSize=11;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=8;exitX=0.15;exitY=1;entryX=0.5;entryY=0;" target="files" value="S3 API :8333">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="720" y="590" />
+              <mxPoint x="525" y="590" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e8" edge="1" parent="1" source="app" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;endSize=8;strokeColor=#000000;fontFamily=Helvetica;fontSize=11;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=8;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" target="postgres" value="TCP :5432">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e9" edge="1" parent="1" source="app" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;endSize=8;strokeColor=#000000;fontFamily=Helvetica;fontSize=11;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=8;exitX=0.85;exitY=1;entryX=0.5;entryY=0;" target="redis" value="TCP :6379">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="880" y="590" />
+              <mxPoint x="1075" y="590" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e10" edge="1" parent="1" source="app" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;endSize=8;strokeColor=#000000;fontFamily=Helvetica;fontSize=11;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=8;exitX=1;exitY=0.125;entryX=0;entryY=0.5;" target="google" value="HTTPS · signing keys">
+          <mxGeometry relative="1" x="-0.76" as="geometry">
+            <Array as="points">
+              <mxPoint x="1250" y="425" />
+              <mxPoint x="1250" y="135" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e11" edge="1" parent="1" source="app" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;endSize=8;strokeColor=#000000;fontFamily=Helvetica;fontSize=11;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=8;exitX=1;exitY=0.333;entryX=0;entryY=0.5;startArrow=open;startFill=0;" target="resend" value="HTTPS · send / delivery webhook">
+          <mxGeometry relative="1" x="-0.41" as="geometry">
+            <Array as="points">
+              <mxPoint x="1265" y="450" />
+              <mxPoint x="1265" y="235" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e13" edge="1" parent="1" source="app" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;endSize=8;strokeColor=#000000;fontFamily=Helvetica;fontSize=11;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=8;exitX=1;exitY=0.75;entryX=0;entryY=0.5;" target="ai1" value="HTTP :11434 over Tailscale">
+          <mxGeometry relative="1" x="-0.4" as="geometry">
+            <Array as="points">
+              <mxPoint x="1280" y="500" />
+              <mxPoint x="1280" y="710" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e14" edge="1" parent="1" source="app" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;endSize=8;strokeColor=#000000;fontFamily=Helvetica;fontSize=11;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=8;exitX=1;exitY=0.917;entryX=0;entryY=0.5;" target="ai2" value="backup">
+          <mxGeometry relative="1" x="-0.761" as="geometry">
+            <Array as="points">
+              <mxPoint x="1320" y="520" />
+              <mxPoint x="1320" y="830" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e15" edge="1" parent="1" source="gha" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;endSize=8;strokeColor=#000000;fontFamily=Helvetica;fontSize=11;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=8;exitX=0.5;exitY=1;" target="vm" value="SSH :22 · images, pg_dump, migrate">
+          <mxGeometry relative="1" x="-0.1262" y="-10" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="1490" y="580" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e16" edge="1" parent="1" source="postgres" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;endSize=8;strokeColor=#000000;fontFamily=Helvetica;fontSize=11;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=8;exitX=0.5;exitY=1;entryX=0.5;entryY=0;dashed=1;" target="backups" value="pg_dump">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e17" edge="1" parent="1" source="spa" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;endSize=8;strokeColor=#000000;fontFamily=Helvetica;fontSize=11;labelBackgroundColor=#ffffff;jumpStyle=arc;jumpSize=8;exitX=1;exitY=0.17;exitDx=0;exitDy=0;entryX=0.5;entryY=0;" target="google" value="Google Sign-In (HTTPS)">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="305" y="455" />
+              <mxPoint x="305" y="15" />
+              <mxPoint x="1490" y="15" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

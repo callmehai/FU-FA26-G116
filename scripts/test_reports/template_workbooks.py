@@ -301,9 +301,9 @@ class Template:
             for k,v in parts.items():z.writestr(k,v)
 
 
-def cover(t,title,date):
+def cover(t,title,date,change):
     s=t.add('Cover');s.keep(20);s.clear(11)
-    for a,v in {'B2':title,'B4':'TrustCabinet','B5':'SEP490-G116','F4':'TrustCabinet Team','F5':date,'F6':'1.0','A11':date,'B11':'1.0','D11':'A','E11':'Generate English test documentation from TrustCabinet source using the supplied template.'}.items():s.put(a,v)
+    for a,v in {'B2':title,'B4':'TrustCabinet','B5':'SEP490-G116','F4':'TrustCabinet Team','F5':date,'F6':'1.0','A11':change[0],'B11':'1.0','C11':'All sheets','D11':'A','E11':change[1],'F11':'Report 5.0 Test Documentation'}.items():s.put(a,v)
     s.put('B6','=B5&"_"&B2&"_"&F6',f'SEP490-G116_{title}_1')
     return s
 
@@ -319,7 +319,7 @@ def unit_book(path,cases,meta):
     g.put('A6',' - MethodList maps every definition to its source and matrix. No KLOC or code-coverage claim is inferred from the method count.')
     g.put('A8',' - Statistics counts test definitions. Test coverage means execution rate here, not measured code coverage. N/A/B classifications remain blank until reviewed by the tester.')
     g.put('A39',' - P = Passed, F = Failed. NotRun means no verified execution evidence. Partial, Skipped and Blocked remain untested for the summary. A Theory passes only with every expected variant verified.')
-    cover(t,'UNIT TEST DOCUMENT',meta['date'])
+    cover(t,'UNIT TEST DOCUMENT',meta['date'],('13/11/2026','Unit test report: one sheet per business function.'))
     li=t.add('MethodList');li.keep(9);li.clear(9);li.put('C6','.NET 10; xUnit; source fixtures; dedicated PostgreSQL/Redis when required.');li.height(6,42)
     st=t.add('Statistics');total_pattern=deepcopy(st.data.find(f"{tag('row')}[@r='123']"));rate_patterns={r:deepcopy(st.data.find(f"{tag('row')}[@r='{r}']")) for r in range(125,130)}
     st.keep(12);st.clear(12);st.put('F4','TrustCabinet Team');st.put('F5','Pending review');st.put('F6',meta['date']);st.put('B7','One row per test definition; P/F require verified TRX. N/A/B pending review; code coverage has not been measured.');st.height(7,45)
@@ -376,7 +376,7 @@ def unit_book(path,cases,meta):
 
 
 def uat_book(path,cases,meta):
-    t=Template(path);cover(t,'USER ACCEPTANCE TEST REPORT DOCUMENT',meta['date']);s=t.add('Statistics');s.clear(10);s.keep(22)
+    t=Template(path);cover(t,'USER ACCEPTANCE TEST REPORT DOCUMENT',meta['date'],('25/11/2026','Acceptance test cases and customer feedback form created.'));s=t.add('Statistics');s.clear(10);s.keep(22)
     for a,v in {'B3':'TrustCabinet','B4':'SEP490-G116','E3':'TrustCabinet Team','E4':meta['date'],'B5':'SEP490-G116_Test_Report5.5_v1.0','B6':''}.items():s.put(a,v)
     s.height(6,55)
     for i,c in enumerate(cases,10):

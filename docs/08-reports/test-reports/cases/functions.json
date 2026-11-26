@@ -8,27 +8,19 @@
   "cover": {
     "changes": [
       {
-        "date": "2026-11-13",
+        "date": "13/11/2026",
         "version": "2.0",
         "item": "All sheets",
         "type": "A",
-        "description": "Unit test report created: one sheet per business function, with test cases listed per function.",
+        "description": "Unit test report: one sheet per business function.",
         "reference": "Report 5.0 Test Documentation"
       },
       {
-        "date": "2026-11-23",
+        "date": "23/11/2026",
         "version": "2.1",
         "item": "All sheets",
         "type": "M",
-        "description": "Test cases reduced to 604, covering all 149 functions with Normal, Abnormal and Boundary cases. Round 1 executed: all Passed.",
-        "reference": "Report 5.0 Test Documentation"
-      },
-      {
-        "date": "2026-11-23",
-        "version": "2.1",
-        "item": "Statistics, MethodList",
-        "type": "M",
-        "description": "Added summary charts; statistics follow the latest executed round. Function list reformatted.",
+        "description": "604 cases for 149 functions (Normal, Abnormal, Boundary); round 1 run, all passed; summary charts added.",
         "reference": "Report 5.0 Test Documentation"
       }
     ],

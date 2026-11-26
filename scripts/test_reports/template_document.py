@@ -198,7 +198,7 @@ def make_document(reference,destination,tests,manual,meta,build):
     # Remove the other team's change history; retain all row and cell formatting.
     for row in tables[0].findall('w:tr',N)[1:]:
         for cell in row.findall('w:tc',N):text_set(cell,'')
-    for cell,text in zip(tables[0].findall('w:tr',N)[1].findall('w:tc',N),[meta['date'],'A','TC Team','Create the English TrustCabinet test plan, test designs and source inventory using the supplied Report 5 templates. Execution and customer feedback remain pending unless evidence is imported.']):text_set(cell,text)
+    for cell,text in zip(tables[0].findall('w:tr',N)[1].findall('w:tc',N),['25/11/2026','A','HuyNT','Test plan, test design and test environment for unit, integration, system and acceptance testing.']):text_set(cell,text)
     for ti,values in {
         1:{1:'Execute source-defined xUnit methods with their fixtures and every data variant. Compare each assertion and record TRX results. This report separates isolated logic from database, Redis, source-contract and HTTP integrations.',2:'All selected definitions execute against the documented build; failures are resolved or explicitly accepted; valid execution evidence is retained.',3:'Method count is not code coverage. Theory variants require complete evidence before a method is marked Passed.'},
         2:{1:'Use existing xUnit TestServer endpoint tests for valid, invalid and unauthorized requests. Verify response status, message code, payload and persisted state according to source assertions. Inspect fake adapters and run real-service checks separately where needed.',3:'Fixed capability-protected API: 403. Inaccessible individual resource: 404. Anonymous protected request: 401.'},

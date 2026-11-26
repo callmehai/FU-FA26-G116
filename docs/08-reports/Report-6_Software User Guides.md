@@ -14,6 +14,7 @@ Report 6 – Software User Guides
 | --- | --- | --- | --- |
 | 21/11/2026 | A | HuyNQ | Initial release: deliverable package, installation guides (development machine and test server) and the user manual for the Administrator, Secretary, Chair, Member and Guest roles plus the features every user has, with screenshots from the test server. |
 | 25/11/2026 | M, D | LocHD | [PR #548] §2: email through Resend only; documents only on the self-hosted SeaweedFS, the Cloudflare R2 rows removed. |
+| 26/11/2026 | M, D | KhanhPG, LocHD | No outside AI service: the AI Configuration section and its figure removed, later figures renumbered; the sensitivity levels and the administrator’s tasks updated. |
 
 *A - Added M - Modified D - Deleted
 
@@ -92,7 +93,7 @@ The containers that deploy/docker-compose.yml starts:
 | Google Cloud Console (OAuth client) | The "Tiếp tục sử dụng dịch vụ bằng Google" (Continue with Google) sign-in | Optional — email and password sign-in works without it |
 | Resend | Invitation, notification and password-reset emails | Optional — without it no email is sent |
 | The self-hosted SeaweedFS (service files) | Storing the bytes of uploaded documents and minutes | Needed for documents; without it uploads answer MSG166 |
-| Ollama (qwen2.5:7b-instruct) or an OpenAI-compatible API | Writing the AI draft of the minutes | Optional — the rest of the minutes work without it |
+| Ollama (qwen2.5:7b-instruct) on the team’s machines | Writing the AI draft of the minutes | Optional — the rest of the minutes work without it |
 | Tailscale | Reaching a speech or AI machine of the team from the server without opening ports | Optional |
 | GitHub Actions | Continuous integration and automatic deployment of the main and app branches | Optional |
 
@@ -281,7 +282,7 @@ There is no self-registration. The administrator creates every account (section 
 
 | Email | Role | Can do |
 | --- | --- | --- |
-| quantri@trustcabinet.local | Quản trị viên | Manage users, roles, AI settings, read the audit log |
+| quantri@trustcabinet.local | Quản trị viên | Manage users, roles, read the audit log |
 | thuky@trustcabinet.local | Thư ký | Create meetings, collect voice samples for others |
 | chutoa@trustcabinet.local | Chủ toạ | Create and approve meetings |
 | thanhvien@trustcabinet.local | Thành viên | Attend, read documents, vote |
@@ -349,7 +350,7 @@ Figure 3: Work calendar — a week with one approved meeting
 | Cuộc họp (Meetings) | The list of meetings you take part in, with search and filters. |
 | Tìm giờ họp (Find a time) | Finds a time when the people you need are free (only for roles that can create meetings). |
 | Báo cáo (Reports) | Meeting statistics over a period, exportable to Excel. |
-| Quản trị (Administration) | Users, roles, AI settings and the audit log (administrators only). |
+| Quản trị (Administration) | Users, roles and the audit log (administrators only). |
 | Your name (bottom) | Account menu: Kho tài liệu (Document library), Giọng nói của tôi (My voice), Chia sẻ lịch (Calendar sharing), Đăng xuất (Sign out). |
 | Bell (bottom) | Notifications; the red badge counts the unread ones. |
 
@@ -376,7 +377,7 @@ Figure 5: Notification panel
 
 TrustCabinet also closes forgotten meetings by itself: a meeting that still has not started 24 hours after its planned start time is cancelled, and a meeting still in progress 24 hours after its planned end time is ended. This is why a meeting can be Đã huỷ without anybody pressing Cancel.
 
-Mức độ mật (Sensitivity) is shown next to the status: Thường (Normal), Nội bộ (Internal — like Normal, but the AI draft is never sent to an outside service) and Mật (Secret — like Internal, and nothing can be downloaded; every document view is logged).
+Mức độ mật (Sensitivity) is shown next to the status: Thường (Normal), Nội bộ (Internal) and Mật (Secret — nothing can be downloaded; every document view is logged).
 
 ### 2. Administrator Guide
 
@@ -385,8 +386,6 @@ As an administrator you can:
 - create, edit, deactivate and reactivate user accounts and send password-reset links;
 
 - create roles and decide which permissions each role has;
-
-- choose which AI model writes the draft minutes;
 
 - read the audit log of business and security events.
 
@@ -457,17 +456,11 @@ To add a role, click Tạo vai trò (Create role), enter a name, an optional des
 
 Figure 13: Create role dialog
 
-#### 2.4 AI Configuration
-
-Quản trị › Cấu hình AI chooses what writes the draft minutes of Normal meetings: Máy local (the organisation's own model) or API (an OpenAI-compatible service: address, model and key). Thử kết nối (Test connection) checks the settings; Lưu (Save) applies them. Internal and Secret meetings always use the local model, whatever is chosen here.
-
-Figure 14: AI configuration (API address and key blurred in this manual)
-
-#### 2.5 Audit Log
+#### 2.4 Audit Log
 
 Quản trị › Nhật ký hệ thống (Audit log) lists business and security events — sign-ins, account and role changes, meeting workflow, document access, voice consent — with time, person, object and IP address. Filter by object, period, person or event type; the eye icon shows the details. Entries cannot be edited or deleted.
 
-Figure 15: Audit log (IP addresses and the names and e-mails of real people blurred in this manual)
+Figure 14: Audit log (IP addresses and the names and e-mails of real people blurred in this manual)
 
 ### 3. Secretary Guide
 
@@ -487,7 +480,7 @@ Your account is created by the administrator with the Thư ký role (or any role
 
 Cuộc họp (Meetings) shows the meetings you take part in. The cards at the top count today's meetings, published meetings, meetings waiting for you (Cần xử lý, To do) and your drafts (Bản nháp); click one to filter the list. Search by name, filter by status, sensitivity or period, and click a column title to sort. The eye icon or the meeting name opens the meeting; Vào phòng họp appears on meetings in progress.
 
-Figure 16: Meeting list, seen by a Secretary (rows marked [QA] are test meetings on the test server)
+Figure 15: Meeting list, seen by a Secretary (rows marked [QA] are test meetings on the test server)
 
 #### 3.2 Creating a Meeting
 
@@ -501,9 +494,9 @@ Figure 16: Meeting list, seen by a Secretary (rows marked [QA] are test meetings
 
 - Click Tạo cuộc họp. The meeting is saved as Nháp (Draft).
 
-Figure 17: Create meeting — details, time and format
+Figure 16: Create meeting — details, time and format
 
-Figure 18: Create meeting — participants and their meeting roles
+Figure 17: Create meeting — participants and their meeting roles
 
 | Field | Required? | Notes |
 | --- | --- | --- |
@@ -519,19 +512,19 @@ Figure 18: Create meeting — participants and their meeting roles
 
 The meeting page shows the title, status, time and format, a banner with the next step, the tabs, and Lịch sử trạng thái (Status history) on the right. While it is a draft, Chỉnh sửa (Edit) changes the details and Huỷ cuộc họp (Cancel meeting) cancels it with a reason.
 
-Figure 19: A draft meeting — Thông tin chung (General) tab
+Figure 18: A draft meeting — Thông tin chung (General) tab
 
 In the Nội dung cuộc họp (Agenda) tab, click Thêm nội dung (Add item), enter the item, an optional presenter and notes, then Lưu. Drag the handle to reorder items; the paper-clip attaches documents to an item; the pencil and bin edit and remove it.
 
-Figure 20: Adding an agenda item
+Figure 19: Adding an agenda item
 
-Figure 21: The agenda of the sample meeting
+Figure 20: The agenda of the sample meeting
 
 #### 3.4 Participants and Guests
 
 The Thành phần tham dự (Participants) tab lists everybody with their meeting role. The person-plus icon adds people; the pencil changes a role (including handing over the Chair); the bin removes someone. The envelope icon Mời khách ngoài hệ thống invites a guest without an account by email (section 5.6). During the meeting this tab also shows attendance.
 
-Figure 22: Participants tab
+Figure 21: Participants tab
 
 #### 3.5 Meeting Documents
 
@@ -545,11 +538,11 @@ The Tài liệu (Documents) tab groups documents Theo nội dung họp (by agend
 
 Everybody who can see the meeting can read its documents. In a Secret meeting they can be read online only, never downloaded.
 
-Figure 23: Documents tab, grouped by agenda item
+Figure 22: Documents tab, grouped by agenda item
 
-Figure 24: Adding documents — upload from the computer
+Figure 23: Adding documents — upload from the computer
 
-Figure 25: Adding documents — pick from my library
+Figure 24: Adding documents — pick from my library
 
 #### 3.6 Sending for Approval
 
@@ -559,9 +552,9 @@ Figure 25: Adding documents — pick from my library
 
 - Click Gửi duyệt. The status becomes Chờ duyệt and the approver is notified.
 
-Figure 26: Choosing the approver
+Figure 25: Choosing the approver
 
-Figure 27: Waiting for approval
+Figure 26: Waiting for approval
 
 While it waits the details cannot be edited; Rút về nháp (Withdraw to draft) takes it back. If it is rejected, the banner shows the reason; edit and choose Gửi duyệt lại (Send again).
 
@@ -569,29 +562,29 @@ While it waits the details cannot be edited; Rút về nháp (Withdraw to draft)
 
 Once approved, the person who created the meeting — usually, but not necessarily, the Secretary — clicks Công bố (Publish) and confirms. Participants receive the invitation in the app and by email and can confirm attendance; the details can no longer be edited.
 
-Figure 28: An approved meeting, ready to publish
+Figure 27: An approved meeting, ready to publish
 
-Figure 29: Publish confirmation
+Figure 28: Publish confirmation
 
 A published meeting shows Bắt đầu họp (Start), Dời lịch (Reschedule — change the time, everybody is told) and Huỷ cuộc họp (Cancel — with a reason, cannot be undone). Like every participant you also answer the invitation with Tham dự or Không tham dự.
 
-Figure 30: A published meeting
+Figure 29: A published meeting
 
 #### 3.8 Starting the Meeting
 
 Click Bắt đầu họp. Starting earlier than scheduled asks for confirmation (Vẫn bắt đầu). The status becomes Đang diễn ra, the online room opens and the Chair gets Kết thúc họp (End meeting). A meeting needs a Secretary in its participants to start.
 
-Figure 31: Starting earlier than scheduled
+Figure 30: Starting earlier than scheduled
 
-Figure 32: A meeting in progress
+Figure 31: A meeting in progress
 
 #### 3.9 The Online Meeting Room
 
 Click Vào phòng họp (Join room). The lobby previews your camera and microphone, tells you the meeting is recorded for the minutes (recordings are deleted after 180 days) and offers to record your voice sample if you have none. Allow the browser to use the microphone and camera, then click Vào phòng (Enter).
 
-Figure 33: Room lobby (the browser here had no microphone)
+Figure 32: Room lobby (the browser here had no microphone)
 
-Figure 34: The online room
+Figure 33: The online room
 
 | Control | What it does |
 | --- | --- |
@@ -611,25 +604,25 @@ Figure 34: The online room
 
 As Secretary you take attendance in Điểm danh: choose each person's state from the list.
 
-Figure 35: Agenda panel in the room
+Figure 34: Agenda panel in the room
 
-Figure 36: Attendance panel
+Figure 35: Attendance panel
 
-Figure 37: Chat panel
+Figure 36: Chat panel
 
 #### 3.10 Preparing a Vote
 
 In Biểu quyết click Tạo biểu quyết (Create vote). Enter the question, the options (Đồng ý, Không đồng ý, Không ý kiến by default; Thêm phương án (Add option) adds more), choose Công khai (open — after closing everybody sees who chose what) or Bỏ phiếu kín (secret ballot), tick who may vote, then Lưu nháp (Save draft). Votes can be prepared before the meeting and opened by the Chair during it (section 4.3). A vote still in draft when the meeting ends is deleted, so open every vote you prepared before the meeting ends.
 
-Figure 38: Create vote
+Figure 37: Create vote
 
-Figure 39: A vote saved as draft
+Figure 38: A vote saved as draft
 
 #### 3.11 Recordings and Transcript
 
 In an in-person or hybrid meeting the Secretary turns on the room microphone with Bật mic phòng; in the online room each person's microphone is recorded. Turning the microphone off saves that part and sends it to speech-to-text. In an in-person meeting that is in progress or ended, Tải tệp lên (Upload file) also accepts a recording made elsewhere (MP3, M4A, WAV…), after you confirm that the participants were told about the recording. The Bản ghi (Recordings) tab plays the whole meeting, lists the speakers, and shows the transcript line by line with the speaker and time. You can correct a speaker, listen to one line, download the transcript (.txt) or the MP3, and exclude a line from the minutes. Speakers are recognised with Voice ID for people who agreed to it (section 6.3).
 
-Figure 40: Recordings tab: an uploaded recording with its transcript and two speakers (sample audio made with a synthetic voice)
+Figure 39: Recordings tab: an uploaded recording with its transcript and two speakers (sample audio made with a synthetic voice)
 
 #### 3.12 Writing the Minutes
 
@@ -645,9 +638,9 @@ The Biên bản (Minutes) tab opens when the meeting ends. It has two cards:
 
 - To correct issued minutes, click Tạo bản đính chính (Create correction); it goes through the same approval and replaces the previous version. Tải xuống downloads any version.
 
-Figure 41: Minutes tab — approved AI content draft
+Figure 40: Minutes tab — approved AI content draft
 
-Figure 42: Issued minutes in the organisation's template
+Figure 41: Issued minutes in the organisation's template
 
 | Note: the AI draft must be reviewed. In a Secret meeting the minutes are written the same way, on the organisation's own model, but they cannot be downloaded. |
 | --- |
@@ -664,15 +657,15 @@ Tìm giờ họp (Find a time) looks for slots when the main participants are fr
 
 - Free slots are listed by day. Click one to see who is free, then Tạo nháp (Create draft) to create a draft meeting at that time.
 
-Figure 43: Find a time — search settings
+Figure 42: Find a time — search settings
 
-Figure 44: Participants who have not shared their calendar
+Figure 43: Participants who have not shared their calendar
 
-Figure 45: Asking to see a calendar
+Figure 44: Asking to see a calendar
 
-Figure 46: Free slots found
+Figure 45: Free slots found
 
-Figure 47: A chosen slot, ready to create a draft
+Figure 46: A chosen slot, ready to create a draft
 
 The Lịch được chia sẻ (Shared calendars) tab shows the week of busy hours of the people who share with you; you see when they are busy, never the name or content of their meetings.
 
@@ -693,7 +686,7 @@ You can record Voice ID samples for another person, so that the transcript recog
 
 - The person is notified each time a sample is recorded for them, and can delete any sample or withdraw consent at any time.
 
-Figure 48: The Voice samples for the room microphone card in a hybrid meeting; nobody here has agreed to Voice ID yet
+Figure 47: The Voice samples for the room microphone card in a hybrid meeting; nobody here has agreed to Voice ID yet
 
 ### 4. Chair Guide
 
@@ -703,18 +696,18 @@ As a Chair you approve meetings, run them and approve their minutes. The built-i
 
 When a meeting is sent to you, you get a notification and the meeting shows Cuộc họp đang chờ bạn duyệt (Waiting for your approval).
 
-Figure 49: A meeting waiting for your approval
+Figure 48: A meeting waiting for your approval
 
 | Action | When available | What happens |
 | --- | --- | --- |
 | Duyệt (Approve) | Pending approval | Confirm the dialog. The meeting becomes Approved and the Secretary can publish it. |
 | Từ chối (Reject) | Pending approval | Enter a reason (required). The Secretary sees it, edits the meeting and may send it again. |
 
-Figure 50: Approve confirmation
+Figure 49: Approve confirmation
 
-Figure 51: Reject with a reason
+Figure 50: Reject with a reason
 
-Figure 52: Approved
+Figure 51: Approved
 
 #### 4.2 Starting and Running the Meeting
 
@@ -726,9 +719,9 @@ You can start a published meeting with Bắt đầu họp, join with Vào phòng
 
 - edit the agenda and hand the Chair over to another participant from the Participants tab.
 
-Figure 53: A meeting in progress, seen by the Chair
+Figure 52: A meeting in progress, seen by the Chair
 
-Figure 54: Speaking queue: a member has raised a hand and the Chair can invite them with Mời
+Figure 53: Speaking queue: a member has raised a hand and the Chair can invite them with Mời
 
 #### 4.3 Running a Vote
 
@@ -742,21 +735,21 @@ Figure 54: Speaking queue: a member has raised a hand and the Chair can invite t
 
 If documents are attached to the vote, every voter must open each one, read it to the last page and confirm reading it; until then Gửi phiếu stays disabled.
 
-Figure 55: Opening a vote
+Figure 54: Opening a vote
 
-Figure 56: Casting a ballot
+Figure 55: Casting a ballot
 
-Figure 57: Ballot recorded
+Figure 56: Ballot recorded
 
-Figure 58: Result of a closed vote in the meeting's Votes tab
+Figure 57: Result of a closed vote in the meeting's Votes tab
 
 #### 4.4 Ending the Meeting
 
 Click Kết thúc họp and confirm. The meeting ends and cannot be reopened; the online room closes and everybody is disconnected. Leaving the room with Rời phòng does not end the meeting.
 
-Figure 59: End meeting confirmation
+Figure 58: End meeting confirmation
 
-Figure 60: Leaving the room, which does not end the meeting
+Figure 59: Leaving the room, which does not end the meeting
 
 #### 4.5 Approving the Minutes
 
@@ -784,27 +777,27 @@ You cannot create meetings or see meetings you are not invited to.
 
 When a meeting is published you get a notification and an email. Open the meeting and answer Bạn có tham dự cuộc họp này? (Will you attend this meeting?) with Tham dự (Attend) or Không tham dự (Decline). You can answer only once. Declining removes the meeting from your calendar.
 
-Figure 61: Meeting list, seen by a Member (no Create meeting button, three cards)
+Figure 60: Meeting list, seen by a Member (no Create meeting button, three cards)
 
-Figure 62: Answering an invitation
+Figure 61: Answering an invitation
 
-Figure 63: Declining asks for confirmation
+Figure 62: Declining asks for confirmation
 
 #### 5.2 Reading Documents and Commenting
 
 Open the Tài liệu tab and click a document to read it full screen; zoom with the buttons at the top. Documents you have not opened are marked Chưa đọc. Click Góp ý (Comment) to write a comment, optionally tied to a page; others can reply. Comments close when the meeting ends or is cancelled. In a Secret meeting documents can only be read online.
 
-Figure 64: Document viewer with the comment panel open
+Figure 63: Document viewer with the comment panel open
 
 #### 5.3 Joining the Room and Voting
 
 When the meeting is in progress, click Vào phòng họp on the meeting or in the calendar (section 3.9). To speak, click Giơ tay: you see your place in the queue and the Chair invites you; Hạ tay (Lower hand) lowers your hand. When the Chair opens a vote, choose your option in Biểu quyết and click Gửi phiếu. If the vote has documents, open each one, read it to the last page and confirm; Gửi phiếu unlocks after that.
 
-Figure 65: An open vote, seen by a member
+Figure 64: An open vote, seen by a member
 
-Figure 66: After voting
+Figure 65: After voting
 
-Figure 67: Raising a hand to speak
+Figure 66: Raising a hand to speak
 
 #### 5.4 Leaving the Room
 
@@ -814,9 +807,9 @@ Click the red button and choose Rời phòng. The meeting continues and you can 
 
 After the meeting the Biểu quyết tab shows each vote's result and conclusion, the Thành phần tham dự tab shows attendance, and the Biên bản tab shows the issued minutes, which you can download.
 
-Figure 68: Votes of an ended meeting
+Figure 67: Votes of an ended meeting
 
-Figure 69: Participants and attendance of an ended meeting
+Figure 68: Participants and attendance of an ended meeting
 
 #### 5.6 Joining as a Guest
 
@@ -838,9 +831,9 @@ The link stops working when the meeting ends or the Secretary revokes the invita
 
 Kho tài liệu (Document library), in the account menu, holds your own documents in folders (up to 5 levels). Thư mục mới (New folder) creates a folder, Tải tài liệu lên (Upload documents) uploads files; the icons on each row rename, move and delete. The Đang dùng (In use) column counts the meetings that use a document. Documents added to a meeting by upload are stored here in the meeting's folder. The bar at the top right shows the storage used by the whole system.
 
-Figure 70: Document library
+Figure 69: Document library
 
-Figure 71: Creating a folder
+Figure 70: Creating a folder
 
 #### 6.2 Calendar Sharing
 
@@ -852,13 +845,13 @@ Chia sẻ lịch (Calendar sharing), in the account menu, decides which meeting 
 
 - The ⋮ menu ends a sharing; ended ones are listed under Chia sẻ đã kết thúc (Ended sharings).
 
-Figure 72: Calendar sharing, seen by a Secretary (both columns)
+Figure 71: Calendar sharing, seen by a Secretary (both columns)
 
-Figure 73: Sharing my calendar
+Figure 72: Sharing my calendar
 
-Figure 74: A request to see my calendar
+Figure 73: A request to see my calendar
 
-Figure 75: Accepting, with the period to share
+Figure 74: Accepting, with the period to share
 
 #### 6.3 My Voice (Voice ID)
 
@@ -874,13 +867,13 @@ If you agreed to an older version, the page asks you once to agree to the new te
 
 You can listen to and delete each sample and withdraw consent at any time on the same page; withdrawing deletes every sample, suggestion and name filled in by the system. Without Voice ID every other feature still works.
 
-Figure 76: Voice ID consent, terms version 1.4
+Figure 75: Voice ID consent, terms version 1.4
 
 #### 6.4 Reports
 
 Báo cáo (Reports) summarises the meetings you can see over a period of up to 24 months: average attendance, average length, time from the end of a meeting to issued minutes, meetings per month, by status and by sensitivity. Xuất Excel (Export to Excel) downloads the figures.
 
-Figure 77: Reports (figures come from the test server, where test meetings left open inflate the average length)
+Figure 76: Reports (figures come from the test server, where test meetings left open inflate the average length)
 
 #### 6.5 Frequently Asked Questions
 
