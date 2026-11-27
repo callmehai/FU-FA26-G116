@@ -721,30 +721,6 @@
         <mxCell id="DocumentComment_7" parent="DocumentComment" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=6;spacingRight=6;overflow=hidden;fontSize=11;" value="&lt;table style=&quot;width:191px;table-layout:fixed;border-collapse:collapse;font-size:11px;white-space:nowrap&quot;&gt;&lt;tr&gt;&lt;td style=&quot;width:36px;padding:0&quot;&gt;&lt;/td&gt;&lt;td style=&quot;width:118px;padding:0&quot;&gt;IsResolved&lt;/td&gt;&lt;td style=&quot;width:37px;padding:0;text-align:left;color:#000000&quot;&gt;bool&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;" vertex="1">
           <mxGeometry height="19" width="203" y="161" as="geometry" />
         </mxCell>
-        <mxCell id="AiProviderSetting" parent="1" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=28;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=13;swimlaneFillColor=#ffffff;" value="AiProviderSetting" vertex="1">
-          <mxGeometry height="161" width="188" x="585" y="2060" as="geometry" />
-        </mxCell>
-        <mxCell id="AiProviderSetting_0" parent="AiProviderSetting" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=6;spacingRight=6;overflow=hidden;fontSize=11;" value="&lt;table style=&quot;width:176px;table-layout:fixed;border-collapse:collapse;font-size:11px;white-space:nowrap&quot;&gt;&lt;tr&gt;&lt;td style=&quot;width:36px;padding:0&quot;&gt;&lt;b&gt;PK&lt;/b&gt;&lt;/td&gt;&lt;td style=&quot;width:103px;padding:0&quot;&gt;Id&lt;/td&gt;&lt;td style=&quot;width:37px;padding:0;text-align:left;color:#000000&quot;&gt;uuid&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;" vertex="1">
-          <mxGeometry height="19" width="188" y="28" as="geometry" />
-        </mxCell>
-        <mxCell id="AiProviderSetting_1" parent="AiProviderSetting" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=6;spacingRight=6;overflow=hidden;fontSize=11;" value="&lt;table style=&quot;width:176px;table-layout:fixed;border-collapse:collapse;font-size:11px;white-space:nowrap&quot;&gt;&lt;tr&gt;&lt;td style=&quot;width:36px;padding:0&quot;&gt;&lt;/td&gt;&lt;td style=&quot;width:103px;padding:0&quot;&gt;Mode&lt;/td&gt;&lt;td style=&quot;width:37px;padding:0;text-align:left;color:#000000&quot;&gt;enum&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;" vertex="1">
-          <mxGeometry height="19" width="188" y="47" as="geometry" />
-        </mxCell>
-        <mxCell id="AiProviderSetting_2" parent="AiProviderSetting" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=6;spacingRight=6;overflow=hidden;fontSize=11;" value="&lt;table style=&quot;width:176px;table-layout:fixed;border-collapse:collapse;font-size:11px;white-space:nowrap&quot;&gt;&lt;tr&gt;&lt;td style=&quot;width:36px;padding:0&quot;&gt;&lt;/td&gt;&lt;td style=&quot;width:103px;padding:0&quot;&gt;ApiBaseUrl&lt;/td&gt;&lt;td style=&quot;width:37px;padding:0;text-align:left;color:#000000&quot;&gt;string&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;" vertex="1">
-          <mxGeometry height="19" width="188" y="66" as="geometry" />
-        </mxCell>
-        <mxCell id="AiProviderSetting_3" parent="AiProviderSetting" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=6;spacingRight=6;overflow=hidden;fontSize=11;" value="&lt;table style=&quot;width:176px;table-layout:fixed;border-collapse:collapse;font-size:11px;white-space:nowrap&quot;&gt;&lt;tr&gt;&lt;td style=&quot;width:36px;padding:0&quot;&gt;&lt;/td&gt;&lt;td style=&quot;width:103px;padding:0&quot;&gt;ApiModel&lt;/td&gt;&lt;td style=&quot;width:37px;padding:0;text-align:left;color:#000000&quot;&gt;string&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;" vertex="1">
-          <mxGeometry height="19" width="188" y="85" as="geometry" />
-        </mxCell>
-        <mxCell id="AiProviderSetting_4" parent="AiProviderSetting" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=6;spacingRight=6;overflow=hidden;fontSize=11;" value="&lt;table style=&quot;width:176px;table-layout:fixed;border-collapse:collapse;font-size:11px;white-space:nowrap&quot;&gt;&lt;tr&gt;&lt;td style=&quot;width:36px;padding:0&quot;&gt;&lt;/td&gt;&lt;td style=&quot;width:103px;padding:0&quot;&gt;ApiKeyCiphertext&lt;/td&gt;&lt;td style=&quot;width:37px;padding:0;text-align:left;color:#000000&quot;&gt;bytea&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;" vertex="1">
-          <mxGeometry height="19" width="188" y="104" as="geometry" />
-        </mxCell>
-        <mxCell id="AiProviderSetting_5" parent="AiProviderSetting" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=6;spacingRight=6;overflow=hidden;fontSize=11;" value="&lt;table style=&quot;width:176px;table-layout:fixed;border-collapse:collapse;font-size:11px;white-space:nowrap&quot;&gt;&lt;tr&gt;&lt;td style=&quot;width:36px;padding:0&quot;&gt;&lt;/td&gt;&lt;td style=&quot;width:103px;padding:0&quot;&gt;ApiKeyHint&lt;/td&gt;&lt;td style=&quot;width:37px;padding:0;text-align:left;color:#000000&quot;&gt;string&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;" vertex="1">
-          <mxGeometry height="19" width="188" y="123" as="geometry" />
-        </mxCell>
-        <mxCell id="AiProviderSetting_6" parent="AiProviderSetting" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=6;spacingRight=6;overflow=hidden;fontSize=11;" value="&lt;table style=&quot;width:176px;table-layout:fixed;border-collapse:collapse;font-size:11px;white-space:nowrap&quot;&gt;&lt;tr&gt;&lt;td style=&quot;width:36px;padding:0&quot;&gt;&lt;b&gt;FK&lt;/b&gt;&lt;/td&gt;&lt;td style=&quot;width:103px;padding:0&quot;&gt;UpdatedById&lt;/td&gt;&lt;td style=&quot;width:37px;padding:0;text-align:left;color:#000000&quot;&gt;uuid?&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;" vertex="1">
-          <mxGeometry height="19" width="188" y="142" as="geometry" />
-        </mxCell>
         <mxCell id="CalendarShare" parent="1" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=28;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;fillColor=#ffffff;strokeColor=#000000;fontSize=13;swimlaneFillColor=#ffffff;" value="CalendarShare" vertex="1">
           <mxGeometry height="294" width="245" x="338" y="1250" as="geometry" />
         </mxCell>
@@ -1836,14 +1812,6 @@
           <mxGeometry relative="1" x="0.0873" as="geometry">
             <mxPoint x="930.72" y="1898.91" as="sourcePoint" />
             <mxPoint x="805" y="1878" as="targetPoint" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="r_User_AiProviderSetting" edge="1" parent="1" source="User" target="AiProviderSetting" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=ERzeroToMany;startArrow=ERzeroToOne;endFill=0;startFill=0;endSize=12;startSize=12;strokeColor=#000000;fontSize=10;jumpStyle=arc;jumpSize=6;labelBackgroundColor=#ffffff;exitX=0.0000;exitY=0.9200;entryX=1.0000;entryY=0.4969;exitDx=0;exitDy=0;entryDx=0;entryDy=0;">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="915" y="1892.1" />
-              <mxPoint x="915" y="2140" />
-            </Array>
           </mxGeometry>
         </mxCell>
         <mxCell id="r_User_CalendarShare" edge="1" parent="1" source="User" target="CalendarShare" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=ERzeroToMany;startArrow=ERmandOne;endFill=0;startFill=0;endSize=12;startSize=12;strokeColor=#000000;fontSize=10;jumpStyle=arc;jumpSize=6;labelBackgroundColor=#ffffff;exitX=0.0656;exitY=0.0000;entryX=0.5000;entryY=1.0000;exitDx=0;exitDy=0;entryDx=0;entryDy=0;">

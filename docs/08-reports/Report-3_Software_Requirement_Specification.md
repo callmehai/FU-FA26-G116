@@ -106,7 +106,7 @@ View the full-size image on Google Drive
 
 #### 3.1 Entity Relationship Diagram
 
-Figure 6 shows the data model of TrustCabinet as 42 tables: the 34 entities described in 3.2; two entities that 3.2 does not detail, AiProviderSetting (settings of the AI model that writes the draft) and CalendarShare (calendar sharing between users, FE-15); the four junction tables MeetingDocumentAgendaItem, VoteEligibleVoter, VoteDocument and DocumentReadConfirmation; and two supporting tables, MeetingInvitationDispatch and GuestVerificationChallenge, for invitation email delivery and Guest email verification. Vote and Agenda Item each belong directly to Meeting.
+Figure 6 shows the data model of TrustCabinet as 41 tables: the 34 entities described in 3.2; one entity that 3.2 does not detail, CalendarShare (calendar sharing between users, FE-15); the four junction tables MeetingDocumentAgendaItem, VoteEligibleVoter, VoteDocument and DocumentReadConfirmation; and two supporting tables, MeetingInvitationDispatch and GuestVerificationChallenge, for invitation email delivery and Guest email verification. Vote and Agenda Item each belong directly to Meeting.
 
 Figure 6: Entity Relationship Diagram
 
@@ -456,7 +456,7 @@ A comment on one Meeting document, by an internal user or a Guest; exactly one o
 
 Entity 22: Recording
 
-Audio of a Meeting: the takes of the room microphone joined into one recording, an audio file uploaded afterwards, or the combined recording the server builds for a hybrid or online Meeting. It carries the consent and the retention date that personal data requires. Report 4, IV.4 to IV.6, describes how takes are saved, how the combined recording is built and how recordings are erased.
+Audio of a Meeting: the takes of the room microphone joined into one recording, an audio file uploaded afterwards, or the combined recording the server builds for a hybrid or online Meeting. It carries the consent and the retention date that personal data requires.
 
 | No | Field | Data Type | Key | Nullable | Description |
 | --- | --- | --- | --- | --- | --- |
@@ -467,24 +467,24 @@ Audio of a Meeting: the takes of the room microphone joined into one recording, 
 | 5 | FileName | string |  | No | File name shown in the list and used when the recording is downloaded. |
 | 6 | StoragePath | string |  | No | Location of the audio file in recording storage. |
 | 7 | ContentType | string |  | No | Media type of the stored file, for example audio/wav. |
-| 8 | ByteSize | bigint |  | No | Size of the stored file in bytes. A room recording of 300 MB or more takes no more takes; the next take starts a new one (Report 4, IV.4). |
+| 8 | ByteSize | bigint |  | No | Size of the stored file in bytes. A room recording of 300 MB or more takes no more takes; the next take starts a new one. |
 | 9 | DurationMs | bigint |  | No | Duration of the audio in milliseconds. |
 | 10 | ConsentObtainedAt | timestamptz |  | Yes | Date and time participants were told recording was about to start. Null means no consent is on file, and capture must not start. |
 | 11 | ConsentPurpose | string |  | No | Stated purpose of the recording, as shown to participants. |
-| 12 | RetainUntil | timestamptz |  | Yes | Date and time the audio is due to be erased: 180 days after the first take; a combined recording takes the date of its earliest source (BR-110, Report 4, IV.6). |
+| 12 | RetainUntil | timestamptz |  | Yes | Date and time the audio is due to be erased: 180 days after the first take; a combined recording takes the date of its earliest source (BR-110). |
 | 13 | DeletedAt | timestamptz |  | Yes | Date and time the audio was erased; the row is kept as evidence. |
-| 14 | Takes | jsonb |  | Yes | Room-microphone takes in this recording, in order: offset in the audio, duration and the time each was spoken, so the transcript reads on the meeting's clock (Report 4, IV.4). Null for an uploaded file. |
+| 14 | Takes | jsonb |  | Yes | Room-microphone takes in this recording, in order: offset in the audio, duration and the time each was spoken, so the transcript reads on the meeting's clock. Null for an uploaded file. |
 | 15 | CreatedById | uuid | FK | No | User who started the first take or uploaded the file; for a combined recording, the creator of its room recording, or the meeting's Secretary (references User). |
 
 Entity 23: Transcript
 
-The text of one recording, with the speakers separated. It is produced in the background, so it stores its state (Pending, Processing, Completed or Failed), its progress and any error (Report 4, IV.1).
+The text of one recording, with the speakers separated. It is produced in the background, so it stores its state (Pending, Processing, Completed or Failed), its progress and any error.c
 
 | No | Field | Data Type | Key | Nullable | Description |
 | --- | --- | --- | --- | --- | --- |
 | 1 | Id | uuid | PK | No | Unique identifier of the transcript. |
 | 2 | RecordingId | uuid | FK, UK | No | Recording transcribed (references Recording); unique, one transcript per recording. |
-| 3 | Status | enum |  | No | Processing state. Values: Pending, Processing, Completed, Failed. A new take, an upload or the Secretary's request to run it again sets it back to Pending (Report 4, IV.1). |
+| 3 | Status | enum |  | No | Processing state. Values: Pending, Processing, Completed, Failed. A new take, an upload or the Secretary's request to run it again sets it back to Pending. |
 | 4 | Provider | string |  | No | Service or model that produced the transcript. |
 | 5 | Language | string |  | No | Language of the transcript (vi). |
 | 6 | ProgressPercent | int |  | No | Processing progress: 0–99 while the speech worker runs, 100 once the result is saved. |
@@ -942,7 +942,7 @@ Full = unrestricted  ·  Restricted = conditions apply (see footnotes)  ·  No =
 | Online meeting room | View room participants / In-room chat | No | Restricted ¹⁹ | Restricted ¹⁹ | Restricted ¹⁹ | Restricted ¹⁹ | Restricted ¹⁹ | Restricted ¹¹ |
 | Online meeting room | Moderate | No | No | No | Restricted ¹⁹ | No | No | No |
 
-Meeting roles: what a person may do inside a Meeting follows only from the meeting role they hold there (Chair, Secretary or Participant); no extra permission is given to a single participant. A Guest has the rights of a Participant, except moderating the room, keeping a personal library and sharing documents. (BR-055)
+Meeting roles: inside a Meeting, a person can do only what their role in that Meeting allows (Chair, Secretary or Participant). A role in one Meeting gives nothing in another, and no one gets an extra permission of their own. A Guest has the same rights as a Participant, except moderating the room, keeping a personal library and sharing documents (BR-055).
 
 Notes:
 
@@ -979,6 +979,8 @@ Notes:
 ¹⁹ Join requires a valid current participant assignment for an Online or Hybrid Meeting whose lifecycle permits room entry (UC-43). Having created or approved the Meeting does not by itself grant room entry. Leave, controls, room participants and chat require a connected authorized user.
 
 ²⁰ Only the personal library of a deactivated account, read-only without modifying anything, subject to audit logging and excluding documents and folders of Secret Meetings (UC-37a, BR-085, BR-009, BR-010, BR-011).
+
+f
 
 ### 5. System Functionalities
 
@@ -1074,14 +1076,9 @@ View the full-size image on Google Drive
 | --- | --- | --- | --- |
 | 1 | Process notifications (JOB-01) | Scheduled worker | Every 5 seconds: creates the “meeting starting soon” reminders and their emails, and pushes new in-app notifications to connected users. |
 | 2 | Deliver queued emails (JOB-02) | Queue worker | When email sending through Resend is enabled: queues the invitation emails of published Meetings and sends queued emails one at a time, retrying failures; polls every 5 seconds when the queue is empty. |
-| 3 | Transcribe recordings (JOB-03) | Queue worker | Every 3 seconds: transcribes the saved recordings that are waiting, one at a time, suggests speaker names and keeps the Secretary's manual corrections. |
-| 4 | Draft meeting summaries (JOB-04) | Queue worker | When the Chair or the Secretary asks: writes the AI draft of the Meeting content with the team's own language model, one Meeting at a time. |
-| 5 | Build combined recordings (JOB-05) | Scheduled worker | Every 30 seconds: builds or rebuilds the combined recording of an ended hybrid or online Meeting. |
-| 6 | Erase expired recordings (JOB-06) | Scheduled worker | Every 15 minutes: erases recordings and recorded speech past their 180-day retention and saves room-microphone takes left open for 12 hours. |
-| 7 | Cancel or end overdue meetings (JOB-07) | Scheduled worker | Every 15 minutes: cancels Meetings not started 24 hours after their planned start and ends Meetings still in progress 24 hours after their planned end. |
-| 8 | Remove expired personal data (JOB-08) | Scheduled worker | Every 60 minutes: removes unused audio, Draft votes of Cancelled Meetings, old notifications, guest verification codes and the bodies of sent emails. |
-| 9 | Purge unused document files (JOB-09) | Scheduled worker | Every hour: deletes uploaded files that no document uses any more, one day after the last document using them was removed. |
-| 10 | Reconcile online meeting rooms (JOB-10) | Scheduled worker | Every 30 seconds: closes the online room of a Meeting that is no longer in progress and removes anyone who is no longer allowed in a room. |
+| 3 | Erase expired recordings (JOB-03) | Scheduled worker | Every 15 minutes: erases recordings and recorded speech past their 180-day retention and saves room-microphone takes left open for 12 hours. |
+| 4 | Cancel or end overdue meetings (JOB-04) | Scheduled worker | Every 15 minutes: cancels Meetings not started 24 hours after their planned start and ends Meetings still in progress 24 hours after their planned end. |
+| 5 | Remove expired personal data (JOB-05) | Scheduled worker | Every 60 minutes: removes unused audio, Draft votes of Cancelled Meetings, old notifications, guest verification codes and the bodies of sent emails. |
 
 ## II. Use Case Specifications
 
@@ -4790,37 +4787,17 @@ Every 5 seconds, the system creates the “meeting starting soon” reminder, on
 
 When email sending is enabled, the system queues the invitation emails of Published Meetings and sends queued emails (invitations, updates, cancellations, reminders, the issued-minutes notice) one at a time. A failed email is retried several times, 8 by default, with a growing wait, and is then marked as failed (API-03).
 
-#### 16.3 Transcribe Recordings (JOB-03)
-
-Every 3 seconds, the system looks for saved recordings waiting to be transcribed and transcribes them one at a time, in the order they were saved, so a long recording never slows the screens down. For each recording it separates the speakers, suggests or fills in the names of consenting speakers from Voice ID, keeps the Secretary's earlier manual corrections and marks the transcript Completed or Failed with a reason the Secretary sees. A transcript interrupted by a restart is queued again.
-
-#### 16.4 Draft Meeting Summaries (JOB-04)
-
-When the Chair or the Secretary asks for it, the system writes the AI draft of the Meeting content with the team's own language model, one Meeting at a time. A failure is shown on the summary with the option to try again.
-
-#### 16.5 Build Combined Recordings (JOB-05)
-
-Every 30 seconds, for a hybrid or online Meeting that has ended and whose recordings have stopped changing, the system builds one recording that holds the meeting room and every online participant on the real clock, with long silences shortened, and rebuilds it when a source changes within 8 days. It keeps the purpose and retention date of its sources and is not transcribed again.
-
-#### 16.6 Erase Expired Recordings (JOB-06)
+#### 16.3 Erase Expired Recordings (JOB-03)
 
 Every 15 minutes, the system erases recordings and recorded speech whose retention period of 180 days has ended, together with their transcripts, keeping only the record that a recording existed, and saves a room-microphone take that has received no sound for 12 hours.
 
-#### 16.7 Cancel or End Overdue Meetings (JOB-07)
+#### 16.4 Cancel or End Overdue Meetings (JOB-04)
 
 Every 15 minutes, the system cancels a Meeting nobody started 24 hours after its planned start and ends a Meeting still in progress 24 hours after its planned end, recording the system as the actor in the status history.
 
-#### 16.8 Remove Expired Personal Data (JOB-08)
+#### 16.5 Remove Expired Personal Data (JOB-05)
 
 Every hour, the system removes data that has outlived its purpose: audio no recording uses any more, Draft votes of Cancelled Meetings, read notifications after 90 days and all notifications after 180 days, guest verification codes after one day and the bodies of sent emails after 30 days. A run that removed something writes one audit entry per rule.
-
-#### 16.9 Purge Unused Document Files (JOB-09)
-
-Every hour, the system deletes uploaded files that no personal library entry and no meeting document uses any more, one day after the last of them was removed.
-
-#### 16.10 Reconcile Online Meeting Rooms (JOB-10)
-
-Every 30 seconds, the system closes the online room of a Meeting that is no longer in progress and removes anyone who may no longer be in a room, such as a deactivated user or a removed participant.
 
 ### 17. External API Inventory
 
@@ -4908,37 +4885,37 @@ The quality attributes below are stated as measurable targets for a single-organ
 | Server response time | 95% of API requests (view, create, update, approve, respond, vote) complete within 1 s; no ordinary form submission takes longer than 3 s | Up to 100 users active simultaneously, excluding file transfer time and AI processing |
 | Search and list views | Paginated meeting, document, user, notification and audit-log lists, including search, filter and sort, return the first page within 2 s for 95% of requests | Data volume up to 10,000 meetings, 50,000 documents and 1,000,000 audit-log entries |
 | Document upload and preview | Documents up to 10 MB per file are accepted; after the transfer completes the file is stored and listed within 5 s; in-browser preview of a document up to 10 MB opens within 3 s | Up to 10 simultaneous uploads; transfer time depends on the user's network |
-| Meeting audio upload and AI processing | Audio files up to 300 MB are accepted. The upload is acknowledged and the file queued within 5 s after transfer. The speaker-attributed transcript is ready within 1.5 x the audio duration (e.g. a 60-minute recording within 90 minutes) after processing starts, and a summary is generated within 5 minutes of the Secretary's request | One recording processed at a time per processing worker; speech recognition always runs on the in-house speech worker, and the summary target applies to the in-house language model; queued jobs wait their turn without blocking other functions |
-| Notification and real-time update latency | In-app notifications and the unread count reach a connected recipient within 10 s of the triggering event; current-agenda and vote-status changes are visible to other users in the same meeting within 2 s; an email is handed to the email service within 2 minutes; 'starting soon' reminders are sent 15 minutes (± 1 minute) before a meeting starts | Normal operation, email service reachable; email retries do not delay in-app delivery |
+| Meeting audio upload and AI processing | Audio files up to 300 MB are accepted and queued within 5 s of the transfer. The speaker-attributed transcript is ready within 1.5 x the audio duration after processing starts (a 60-minute recording within 90 minutes); a summary within 5 minutes of the Secretary's request. | One recording at a time per speech worker; speech recognition and the summary run on in-house services; queued jobs do not block other functions |
+| Notification and real-time update latency | In-app notifications reach a connected user within 10 s; agenda and vote changes reach others in the same meeting within 2 s; an email is handed to the email service within 2 minutes; “starting soon” reminders go out 15 minutes (± 1 minute) before the start | Email service reachable; email retries do not delay in-app delivery |
 | Concurrent users | The system remains fully functional with 200 signed-in users, of whom up to 100 perform operations at the same time, without errors or time-outs and within the response-time targets above | Single-server Docker deployment with the recommended baseline hardware |
-| Online meeting room capacity | Each meeting room supports up to 30 participants with audio and video plus one screen share, with a hard limit of 50 connected users; joining the room takes ≤ 5 s; mouth-to-ear audio delay ≤ 400 ms; at least 3 rooms can run at the same time. The 50-connection limit is enforced by the LiveKit room service, which refuses the next connection while the room is full. | Participants inside the company network or on a stable connection of ≥ 2 Mbps per participant; self-hosted media server on the deployment host |
+| Online meeting room capacity | Each room supports 30 participants with audio and video plus one screen share, up to 50 connected users (the media server refuses more); joining takes ≤ 5 s; audio delay ≤ 400 ms; at least 3 rooms at the same time | ≥ 2 Mbps per participant; self-hosted media server |
 | Report generation and export | A statistics report covering up to 12 months of data is displayed within 5 s and exported to a file within 10 s | Data volume as in 'Search and list views'; up to 5 users generating reports at the same time |
-| Speaker recognition and transcript clean-up | By default a voice is suggested and its name filled in at a similarity of 0.6 or more, a second voice joins a person at 0.7 and an unnamed voice inherits a person's name at 0.8. A room-mic passage under 10 characters, or under 3 s and under 20 characters, with no matched voice or only filler words is left out; a per-microphone sentence of filler words only is not stored; words recognised below 40% confidence are flagged; numbers are written in digits under the Vietnamese ITN rules. | In-house speech worker with its default configuration; the thresholds are configurable |
+| Speaker recognition and transcript clean-up | A voice is suggested at a similarity of 0.6 or more, a second voice joins a person at 0.7 and an unnamed voice inherits a name at 0.8. Very short or filler-only passages are left out, words below 40% confidence are flagged and numbers are written in digits. | Speech worker with default thresholds, which are configurable |
 
 #### 2.3 Security
 
 | Requirement | Description |
 | --- | --- |
-| Authentication required | Every page and API function requires a signed-in internal user, except the sign-in page, the password-reset page reached from a valid reset link, the external-Guest invitation and email-verification pages, and the health check. Sign-in with Google is accepted only after Google's identity assertion has been verified and only for an existing, linked internal account; it never creates an account (BR-003). Sign-in failure messages must not reveal whether an account or email exists (BR-004). |
-| Password policy and protection | Passwords must be at least 12 characters long; no mandatory character-class rules are imposed, and long passphrases must be accepted. Passwords are never stored or logged in a readable or reversible form and are never displayed, including to administrators. A password-reset link is valid for at most 60 minutes and can be used only once. |
-| Sign-in rate limiting | Sign-in attempts are limited per minute (MSG414): at most 5 password sign-in attempts per email address and 60 auth attempts per IP address in each 60-second window; exceeding the limit returns 429 with a Retry-After hint, and the message shown does not reveal the failure count. No account is locked for failed sign-in and there is no unlock action. Repeated failed attempts against guest-verification codes and password-reset requests are likewise throttled. |
-| Session and token expiry | Short-lived access credentials expire after at most 15 minutes and are renewed silently while the user remains signed in; after at most 7 days the user must sign in again. Signing out immediately ends the session. Deactivating an account terminates all its active sessions (BR-001), and changes to a user's roles or status take effect on the user's next request. The refresh credential is an HttpOnly, SameSite=Strict cookie that page scripts cannot read and that is not sent to other sites; the short-lived access token is kept only in memory. Sign-out revokes only the refresh token, so an access token already issued stays usable until it expires. |
-| Role-based access control and least privilege | Every request is authorised on the server against the user's current system-role permissions and their relationship with the meeting (creator, Approver, Chair, Secretary, Member or Guest) (BR-016, BR-017, BR-030); anything not explicitly permitted is denied. Hiding a button in the user interface is never the only protection. A user who is not authorised for a meeting is told it is not found, so its existence is not disclosed. Only the System Admin can change role-permission configuration, and every change is audited (BR-009, BR-010, BR-011, BR-007). |
-| Document security levels | A document has no security level of its own; a Meeting document takes the level of its Meeting: Normal, Internal or Secret. A personal-library document is visible only to its owner, and to the System Admin, read-only and audited, once the owner's account is deactivated. A Meeting document is visible to everyone who may read the Meeting; the documents of a Secret Meeting can be read on screen but not downloaded, and Secret content is never included in email bodies or attachments. Documents a user may not read never appear in their lists, search results, notifications or emails. |
-| External Guest access scope | A Guest requires a secure current Meeting invitation and invited-email verification by a one-time code expiring within 15 minutes. After providing self-declared display information, the Guest uses Member participation rights only in this Meeting, including all attached documents, comments, voting and room controls. Access expires and revocation takes effect on each protected request. No internal account, Chair/Secretary role, delegated authority, room moderation or personal library is granted. For one invitation a new verification code can be requested at most once per minute, and at most 20 codes are sent in any 24 hours. (BR-049, BR-050, BR-051, BR-052, BR-053, BR-054, BR-044, BR-055) |
+| Authentication required | Every page and API function needs a signed-in internal user, except the sign-in page, the password-reset page, the Guest invitation and verification pages and the health check. Google sign-in works only for an existing, linked account and never creates one. Sign-in errors never reveal whether an account exists. |
+| Password policy and protection | Passwords have at least 12 characters, with no character-class rules; long passphrases are accepted. They are never stored or shown in readable form, even to administrators. A reset link is valid for at most 60 minutes and works once. |
+| Sign-in rate limiting | Per minute, at most 5 password attempts per email and 60 auth attempts per IP; beyond that the server returns 429 with Retry-After and does not reveal the failure count. No account is locked for failed sign-ins. Guest-code and password-reset requests are throttled too. |
+| Session and token expiry | Access tokens expire after 15 minutes and renew silently; after 7 days the user signs in again. Signing out ends the session, though an access token already issued works until it expires. Deactivating an account ends all its sessions; role or status changes apply on the next request. The refresh token is an HttpOnly, SameSite=Strict cookie and the access token lives only in memory. |
+| Role-based access control and least privilege | Every request is authorised on the server against the user's system-role permissions and meeting relationship (creator, Approver, Chair, Secretary, Member or Guest); anything not permitted is denied. A user who may not see a meeting is told it is not found. Only the System Admin changes role permissions, and every change is audited. |
+| Document security levels | A Meeting document takes the level of its Meeting: Normal, Internal or Secret. A personal-library document is visible only to its owner (and, read-only and audited, to the System Admin once the owner is deactivated). The documents of a Secret Meeting can be read on screen but not downloaded, and Secret content never goes into emails. Documents a user may not read never appear in lists, search, notifications or emails. |
+| External Guest access scope | A Guest needs a current Meeting invitation and email verification by a one-time code valid for 15 minutes. The Guest then has Member rights in that Meeting only (documents, comments, voting, room controls), with no internal account, Chair or Secretary role, room moderation or personal library. Expiry and revocation apply on every request. A new code can be requested once per minute, at most 20 per 24 hours. |
 | Encryption of data in transit | All communication between browsers and the server, between the server and external services (Google, Resend) and all meeting media must be encrypted in transit (TLS 1.2 or later; encrypted WebRTC media). The system must not be served over unencrypted HTTP in production. |
-| Protection of stored data and backups | Uploaded documents and meeting audio are stored only on TrustSoft's own infrastructure and are reachable only through the application's access checks, never through a public or guessable URL. Secrets (signing keys, database, Redis and Resend credentials) are kept out of the source code and configuration repository. The database is dumped before every deployment that changes the application, and the 14 latest dumps are kept, readable only by the server's administrator account. The dumps sit on the same host, so the operator copies them to separate storage to survive the loss of the host. |
-| Audit logging | The system records security and governance events - sign-in success and failure, password-reset links and resets, Google account linking, user and role changes, guest verification, viewing a document of a Secret Meeting, reading a deactivated account's library, attendance, recording upload, download and erasure, room-microphone takes, transcript and speech-clip edits and exports, Voice ID consent and voice samples, calendar sharing, the issue of minutes, report export and the system's clean-up runs - with actor, time, action, target object and source IP address (BR-009, BR-010, BR-011). Meeting status changes are recorded separately in the append-only status history of each meeting (BR-022, BR-023). Audit entries cannot be modified or deleted through the application; only the System Admin can view and search them (UC-12). Passwords, tokens and verification codes are never written to any log. |
-| Personal data protection and recording consent (Law 91/2025/QH15, Decree 356/2025/ND-CP) | Personal data (account details, Guest name and email, voices in meeting audio, attendance) is processed only for the stated meeting-management purpose. A meeting audio file can be uploaded only after the Secretary confirms that participants were informed and consented and states the purpose; each recording has a retention date, after which (or on a justified request) it is erased and the erasure is recorded. The online room itself stores only join and leave times and never the chat; audio is kept only as the recordings and per-microphone sentences of FE-09. Audio and voice samples never leave the system. The AI draft is written by the in-house language model, so transcripts never leave the system either. A voice used for Voice ID is sensitive personal data: it is kept only encrypted, under a separate consent the person can withdraw, and withdrawal erases every sample. |
+| Protection of stored data and backups | Documents and meeting audio stay on TrustSoft's own infrastructure and are reachable only through the application's access checks, never by a public URL. Secrets are kept out of the source code. The database is dumped before each deployment that changes the application; the 14 latest dumps are kept, readable only by the server administrator, and the operator copies them off the host. |
+| Audit logging | The system records security and governance events - sign-ins, password resets, user and role changes, guest verification, access to Secret documents, attendance, recording and transcript actions, Voice ID consent, calendar sharing, issued minutes and clean-up runs - with actor, time, action, target and IP address. Meeting status changes go to an append-only status history. Audit entries cannot be changed or deleted; only the System Admin can view them. Passwords, tokens and codes are never logged. |
+| Personal data protection and recording consent (Law 91/2025/QH15, Decree 356/2025/ND-CP) | Personal data (accounts, Guest name and email, voices, attendance) is used only for meeting management. A recording can be uploaded only after the Secretary confirms participants were informed and consented and states the purpose; each recording has a retention date and is erased after it, or on a justified request, with the erasure recorded. The room stores only join and leave times, never chat. Audio, voice samples, transcripts and the AI draft never leave the system. A voice used for Voice ID is sensitive data: it is kept encrypted, under a separate consent the person can withdraw, and withdrawal erases every sample. |
 | Integrity of issued minutes, vote conclusions and stored documents | Once a Vote Conclusion is recorded or minutes are issued, their content cannot be changed by anyone, including administrators. Issued minutes, vote conclusions and lifecycle histories are retained as immutable records, and each stored file can be checked against the SHA-256 fingerprint taken at upload. |
-| Upload safety | Uploaded files are accepted only within the allowed size limits and file types; the file type is determined from the file content, not from its name. Files are never executed by the server, and audio uploads accept audio formats only (no video, Report 1, LI-03). All stored documents together take at most 250 GB, counting files not yet purged; a file that would exceed it is not stored. Minutes content is HTML filtered by the server before saving, so nothing in it can run in a browser; it holds at most 300,000 characters and 64 levels of nesting, and the Word and PDF files keep only the first 63 columns of a table. |
+| Upload safety | Files are accepted only within the size limits and allowed types, the type being read from the content, not the name. The server never executes files; audio uploads accept audio formats only (no video; Report 1, LI-03). All documents together take at most 250 GB, counting files not yet purged. Minutes HTML is filtered before saving, holds at most 300,000 characters and 64 nesting levels, and exported Word and PDF keep the first 63 table columns. |
 
 #### 2.4 Reliability
 
 | Requirement | Description |
 | --- | --- |
 | No loss of committed data | A business operation (e.g. approving a meeting, recording a vote, issuing minutes) is either completed in full or not at all; a failure part-way never leaves partially saved data. After an unplanned restart no confirmed transaction is lost. |
-| Reliable asynchronous delivery | Invitation and notification emails are queued and retried automatically (up to 8 attempts with increasing intervals) until delivered or marked failed; a failure to deliver never reverts the meeting state that triggered it (BR-031, BR-032). Delivery status is traceable. |
+| Reliable asynchronous delivery | Invitation and notification emails are queued and retried automatically (up to 8 attempts with increasing intervals) until delivered or marked failed; a failure to deliver never reverts the meeting state that triggered it. Delivery status is traceable. |
 | Recoverable AI processing | If transcription or summary generation fails or the provider is unavailable, the uploaded audio is kept, the job is marked failed with a reason, and the Secretary can retry without re-uploading. AI output is always a draft until the current Chair or Secretary has reviewed and approved it. |
 | Defect target | No Critical defect may remain open at acceptance (Report 2 quality objectives); system-level defects are tracked in Reports 5.3-5.5. |
 
@@ -4973,7 +4950,7 @@ The quality attributes below are stated as measurable targets for a single-organ
 | Requirement | Description |
 | --- | --- |
 | Personal data protection | Processing of personal data, including voices in uploaded meeting audio, complies with the Personal Data Protection Law 91/2025/QH15 and Decree 356/2025/ND-CP: stated purpose, recorded consent, defined retention and recorded erasure. |
-| Issued minutes and records | Minutes are approved and issued by the Chair (UC-73) with a complete audit trail; they carry no CA-issued digital signature. Issued minutes, vote conclusions and lifecycle histories are retained as immutable records. |
+| Issued minutes and records | Minutes are approved and issued by the Chair with a complete audit trail; they carry no CA-issued digital signature. Issued minutes, vote conclusions and lifecycle histories are retained as immutable records. |
 | Licensing | All third-party libraries, tools and services used must be free, open-source or student-licensed, with licences compatible with internal deployment at TrustSoft (Report 2, constraint 2). |
 
 ## V. Requirement Appendix
@@ -5174,13 +5151,13 @@ The quality attributes below are stated as measurable targets for a single-organ
 | 31 | MSG17 | Inline error (under role row) | UC-10 – Configure Role Permissions / Exception Flows | Invalid permission configuration.<br>Field errors:<br>- roleId: Invalid role.<br>- capabilities: The list of permissions to set for the role is missing. / Invalid permissions: {permission codes}. / The permission list contains invalid values.<br>- adminUsers: Cannot save this configuration: after saving, no active account would hold the user administration permission, so no one could access the permission screen. |
 | 32 | MSG18 | Inline error (under role row) | UC-10 – Configure Role Permissions / Exception Flows | Unable to update role permissions. Please try again. |
 | 33 | MSG19 | Toast | UC-11a – Create Role / Normal Flow | Role created successfully. |
-| 34 | MSG20 | Field error / Form error | UC-11a – Create Role / Exception Flows | Invalid role information.<br>Field errors:<br>- name: Role name is required. / Role name must not exceed 64 characters.<br>- description: Description must not exceed 256 characters.<br>- capabilities: Invalid permissions: {permission codes}. |
+| 34 | MSG20 | Field error / Form error | UC-11a – Create Role / Exception Flows | Invalid role information.<br>Field errors:<br>- name: required, at most 64 characters.<br>- description: at most 256 characters.<br>- capabilities: invalid permission codes. |
 | 35 | MSG21 | Field error | UC-11a – Create Role / Exception Flows | A role with this name already exists. Please choose a different name. |
 | 36 | MSG26 | Form error | UC-11a – Create Role / Exception Flows | Unable to create the role. Please try again. |
 | 37 | MSG22 | Toast | UC-11b – Update Role / Normal Flow | Role updated successfully. |
 | 38 | MSG22 | Toast | UC-11b – Update Role / Alternative Flows | Role updated successfully. |
 | 39 | MSG24 | Form error | UC-11b – Update Role / Exception Flows | This is a predefined system role and cannot be renamed or deleted. You can still configure its permissions. |
-| 40 | MSG20 | Field error / Form error | UC-11b – Update Role / Exception Flows | Invalid role information.<br>Field errors:<br>- name: Role name is required. / Role name must not exceed 64 characters.<br>- description: Description must not exceed 256 characters.<br>- capabilities: Invalid permissions: {permission codes}. |
+| 40 | MSG20 | Field error / Form error | UC-11b – Update Role / Exception Flows | Invalid role information.<br>Field errors:<br>- name: required, at most 64 characters.<br>- description: at most 256 characters.<br>- capabilities: invalid permission codes. |
 | 41 | MSG21 | Field error | UC-11b – Update Role / Exception Flows | A role with this name already exists. Please choose a different name. |
 | 42 | MSG27 | Form error | UC-11b – Update Role / Exception Flows | Unable to update the role. Please try again. |
 | 43 | MSG23 | Toast | UC-11c – Delete Role / Normal Flow | Role deleted successfully. |
@@ -5616,6 +5593,6 @@ The quality attributes below are stated as measurable targets for a single-organ
 
 One organisation: the system serves a single organisation. It has no departments or organisational units, and no data is shared with another organisation.
 
-Data retention: recordings and recorded speech are erased 180 days after they are made; notifications, guest verification codes and the bodies of sent emails are removed once they are no longer needed (III.16.6, III.16.8).
+Data retention: recordings and recorded speech are erased 180 days after they are made; notifications, guest verification codes and the bodies of sent emails are removed once they are no longer needed recordings and recorded speech are erased 180 days after they are made. Read notifications are removed after 90 days and all notifications after 180 days, guest verification codes after one day and the bodies of sent emails after 30 days. Audio no recording uses, Draft votes of Cancelled Meetings and uploaded files no document uses any more are also removed automatically. Issued minutes, vote conclusions and status histories are kept as immutable records.
 
 Out of scope in this version: tracking tasks or action items after the meeting, signing the minutes electronically, connecting to eOffice or another document system, and native mobile apps.
