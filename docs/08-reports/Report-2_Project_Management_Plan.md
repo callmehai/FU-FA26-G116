@@ -14,19 +14,16 @@ Table of Contents
 
 | Date | A*<br>M, D | In charge | Change Description |
 | --- | --- | --- | --- |
-| 19/09/2026 | A | LocHD | Add Project Overview and Management Approach - initial version 1.0 |
-| 27/09/2026 | M, D | LocHD | Remove FE-12 Task & Action Item Lifecycle Management and renumber FE-13 to FE-15 as FE-12 to FE-14 |
-| 05/10/2026 | M, D | KhanhPG | Sync the plan with the revised FE-01–FE-16 baseline (FE-04–FE-07 split); consistent with Reports 1 and 3. |
-| 05/10/2026 | M | KhanhPG | Sync with the PO-confirmed Master UC baseline: personal library and document reuse, Secretary audio upload; attendance, summaries, audit, comments and minutes revision. |
-| 08/10/2026 | M, D | KhanhPG | Align baseline: FE-04 removed, FE-05 is Meeting Management; meeting-level schedule and voting, one minutes workflow per Meeting. |
-| 09/10/2026 | M, D | KhanhPG | Renumber FE-01–FE-15; in-meeting voting with Chair conclusions (no time-box, quorum or Resolution scope); safeguards, effort and dates preserved. |
-| 13/10/2026 | M | HaiTV | Align the plan with the decisions on documents (immutable files, folders, browser previews) and on voting (Chair-selected voters, Guests vote, no close-Votes requirement). |
-| 30/10/2026 | M | HuyNQ | Fix review findings (v1.2): fifteen features in risk R04, EX means Exception, Cancelled lifecycle added, TBDs closed, R03 lowered, no 'versioning' in Iteration 2, ToC fixed. |
-| 15/11/2026 | M, D | KhanhPG | Drop FE-14 from scope and Iteration 6; account lifecycle ends at deactivation, per-minute sign-in limit kept. |
-| 24/11/2026 | M, A, D | LocHD | Supervisor review: align with Report 1 and the built system: minutes approved, not signed; AI environment decided; in-meeting recording; FE-16 in Iteration 6; app/main branches; Actual metrics to 24/11/2026. |
-| 25/11/2026 | M | LocHD | Outgoing email through Resend only; page breaks moved onto the headings; features numbered FE-01 to FE-15 without a gap; decision-record references removed. |
-| 26/11/2026 | M | LocHD | Quality metrics: Report 5.2, 5.3 and 5.4 results to 26/11/2026; review highlights removed. |
-| 26/11/2026 | M | KhanhPG, LocHD | No outside AI service: the AI draft runs only on the team’s own language model (risk R03, technology table). |
+| 19/09/2026 | A | LocHD | Add Project Overview and Management Approach (initial version 1.0). |
+| 27/09/2026 | M, D | LocHD | Remove Task & Action Item Lifecycle Management and renumber subsequent features. |
+| 05/10/2026 | M, D | KhanhPG | Sync plan with PO-confirmed feature and UC baseline (personal library, audio upload, audit, minutes). |
+| 09/10/2026 | M, D | KhanhPG | Align meeting-level lifecycle and voting scope; renumber FE-01–FE-15 with effort and dates preserved. |
+| 13/10/2026 | M | HaiTV | Align document handling (immutable files, folders, browser previews) and in-meeting voting rules. |
+| 30/10/2026 | M | HuyNQ | Resolve v1.2 review findings: close TBDs, refine lifecycle and risks, fix Table of Contents. |
+| 15/11/2026 | M, D | KhanhPG | Drop out-of-scope features from Iteration 6; end account lifecycle at deactivation and keep sign-in rate limit. |
+| 24/11/2026 | M, A, D | LocHD | Align with supervisor review and built system: approved minutes, AI setup, recording and app/main branches. |
+| 25/11/2026 | M | LocHD | Send outgoing email via Resend only, renumber FE-01–FE-15 without gaps and adjust heading page breaks. |
+| 26/11/2026 | M | KhanhPG, LocHD | Update quality test metrics and restrict AI drafting to the team's self-hosted language model. |
 
 *A - Added M - Modified D - Deleted
 
@@ -43,9 +40,9 @@ Table of Contents
 
 ### 1. Scope and Purpose
 
-This Project Management Plan defines how group SEP490-G116 organises, executes, monitors and controls the development of TrustCabinet for TrustSoft over the fifteen-week capstone period from 14 September 2026 to 27 December 2026. It establishes the work packages, committed effort and schedule, quality objectives, responsibilities, communication and configuration practices. The product scope is aligned with Report 1 and the latest Report 3 SRS baseline (Change Log of 24/11/2026). Later scope changes require the established change-control process and a Change Log entry.
+This Project Management Plan defines how group SEP490-G116 organises, executes, monitors and controls the development of TrustCabinet (Internal Meeting and Document Management System) for TrustSoft over the fifteen-week capstone period from 14 September 2026 to 27 December 2026. Its purpose is to establish the project scope, work breakdown, schedule, effort commitment, quality objectives, team responsibilities, communication channels and configuration practices required to deliver the system on time.
 
-The work to be implemented consists of the fifteen active major features baselined in Report 1, Section V.1, each of which is traceable to a gap identified in Report 1, Section III:
+The product scope comprises fifteen active core features grouped into five functional areas:
 
 ●  	Identity and access - FE-01 Authentication & Account Security, FE-02 User & Profile Management, FE-03 Role-Based Access Control.
 
@@ -57,11 +54,11 @@ The work to be implemented consists of the fifteen active major features baselin
 
 ●  Communication and visibility - FE-13 Email & In-App Notification, FE-14 Reporting & Statistics, FE-15 Working Calendar & Meeting Time Search.
 
-Each feature is elaborated into detailed requirements in Report 3 - Software Requirement Specification during the iteration in which it is built, and is broken down into tasks in the Project Tracking workbook. The mapping between a feature and the iteration that delivers it is given in Section I.3 - Cost & Time Estimations and in Section II.1 - Project Process/Methodology.
+Each feature is elaborated into detailed requirements, designed, implemented and tested incrementally across the planned iterations, with task-level progress tracked continuously by the team.
 
-The exclusions LI-01 to LI-12 in Report 1 remain outside the effort and schedule: recording bots and server-side recording; real-time transcription, captions or in-meeting AI; video processing; translation and additional languages; bridges to external conferencing platforms; electronic and certificate-authority signatures; HRM, ERP, calendar or chat integrations and a public API; large-scale or advanced media features; conversation analytics; a native mobile client; multi-tenancy; and task assignment, action-item tracking or deadline management. Google sign-in, the Resend email service, the self-hosted LiveKit room service and the self-hosted AI services (speech and drafting) are supporting interfaces rather than a general integration layer. The active SRS also excludes a Meeting Session layer, time-boxed voting, voting deadlines, quorum and a separate Resolution object. Any proposed addition follows Section II.6.1 instead of being absorbed into the committed schedule.
+The following capabilities are explicitly excluded from the project scope: recording bots and server-side recording; real-time transcription, captions or in-meeting AI; video processing; translation and additional languages; bridges to external conferencing platforms; electronic and certificate-authority signatures; HRM, ERP, external calendar or chat integrations and a public API; large-scale or advanced media features; conversation analytics; a native mobile client; multi-tenancy; and task assignment, action-item tracking or deadline management. The project also excludes a separate Meeting Session layer, time-boxed voting, voting deadlines, quorum rules and a separate Resolution object. Google sign-in, email delivery, the self-hosted online meeting room service and self-hosted AI services (speech and drafting) serve purely as supporting interfaces. Any proposed scope addition requires formal change control rather than being absorbed into the committed schedule.
 
-TrustCabinet is a standalone capstone project. It is not a sub-project of, and carries no delivery dependency on, any other project, and it reuses no existing code base: every component listed above is built by the team within the fifteen weeks planned here. Its dependencies are documentary rather than technical. This plan is derived from Report 1 - Project Introduction, which baselines the problem, the gaps and the product scope; it drives Report 3 - Software Requirement Specification and Report 4 - Software Design Specification, which elaborate each feature in the iteration that delivers it; and it defines the test scope planned in Report 5 - Test Documentation. The work packages, effort figures and deadlines of Section I.3 are mirrored and tracked at task level in the Project Tracking workbook and in Jira.
+TrustCabinet is a standalone capstone project with no delivery dependency on any other project, and it reuses no existing code base: every component within scope is built by the team over the fifteen-week schedule. Its purpose is to provide TrustSoft with an end-to-end paperless meeting workflow—from scheduling, document preparation and online collaboration to recording, transcription, voting and approved meeting minutes—governed by clear milestones, effort commitments and quality targets.
 
 ### 2. Assumptions & Constraints
 
@@ -174,57 +171,57 @@ The buffer of 20% covers the time the team spends in meetings, reviews and retro
 
 | # | Metric | Unit | Planned | Actual | Notes / References |
 | --- | --- | --- | --- | --- | --- |
-| 1 | Effort Usage | Person-day | 300 | 300 | Effective working capacity from Section I.4; distributed over the work packages of Section I.3 and tracked per member in the Project Tracking workbook, sheet Scope. Actual to 24/11/2026: hours are not logged in Jira, so the figure is the team's estimate that the full committed effort of 300 person-days is being used. |
-| 2 | Review Defects | No of defects | 30 | 142 | Defects found in document and code reviews, before any test is executed. A higher count is a good result: it means defects are being caught at the earliest stage. Actual to 24/11/2026: 137 numbered must-fix findings in the 43 change-requesting GitHub pull-request reviews, plus 5 Jira defects found in code review (SCRUM-133, 134, 210-212). |
-| 3 | Unit Test Defects | No of defects | 40 | 1 | Written and executed by the developer who owns the module, recorded in Report 5.1 - Unit Test. Actual to 24/11/2026: Round 1 (21-23/11) ran 604 test cases covering all 149 functions, all passed, and 3 more written on 27/11/2026 for the Internal meeting rules wait for their code; 1 defect was found while writing them (SCRUM-213). |
-| 4 | Integration Test Defects | No of defects | 30 | 9 | Found when modules and APIs are combined and exercised together, recorded in Report 5.2 - Integration Test. Actual to 24/11/2026: Jira defects raised from end-to-end and manual runs (SCRUM-65-67, 105, 147-151). Round 1 of Report 5.2 (21-25/11) then ran 563 UI and 825 API test cases, all passed; 558 UI and 817 API cases stand on 27/11/2026 after removing the AI Configuration screen; the 2 UI and 3 API cases added for the Internal meeting download rules are not run yet. |
-| 5 | System Test Defects | No of defects | 15 | 1 | Found when the whole system is exercised against the functional and non-functional requirements, recorded in Reports 5.3 and 5.4. Actual to 26/11/2026: Round 1 (23-25/11) ran the 57 functional workflow cases of Report 5.3, all passed, and the 41 non-functional cases of Report 5.4: 34 passed, 1 failed (TC-SEC-009, SCRUM-215), 2 blocked, 4 skipped. |
-| 6 | Acceptance Test Defects | No of defects | 5 | N/A | Found during acceptance testing in the deployment phase, recorded in Report 5.5. No critical defect may remain open at closing. Actual to 24/11/2026: not run yet; acceptance testing is planned for the deployment phase. |
-| 7 | Timeliness | % | 90 | 70 | Total on-time deliverables / Total project deliverables. Actual to 24/11/2026: 7 of the 10 feature work packages due so far were merged by their due date, according to the merged GitHub pull requests (late: 2.5 FE-04 to FE-06, 2.6 FE-07, 3.4 FE-10). |
-| 8 | Requirement Completeness | % | 90 | 93 | Implemented and accepted requirements / Requirements baselined in Report 3. Failed if <= 75%. Actual to 24/11/2026: 41 of the 44 active Jira user stories are Done after BA Final Review; FE-11 voting (SCRUM-28, 96) and meeting notes (SCRUM-30) are still in review. |
-| 9 | Unit Test Code Coverage | % | 70 | 72 | Measured on the core business logic of the backend, excluding generated code and configuration. Checked in the testing phase of every iteration. Actual to 24/11/2026: 72.3% line coverage of the Domain and Application projects by the 1,034 tests of TrustCabinet.Application.Tests (Coverlet, app commit 5761ee98). |
+| 1 | Effort Usage | Person-day | 300 | 300 | Total effective working capacity distributed across planned work packages and tracked in the project tracking workbook. |
+| 2 | Review Defects | No of defects | 30 | 142 | Defects identified during document and pull-request code reviews prior to test execution. |
+| 3 | Unit Test Defects | No of defects | 40 | 1 | Defects found during developer-written unit testing of individual modules and functions. |
+| 4 | Integration Test Defects | No of defects | 30 | 9 | Defects found when integrating frontend, backend APIs and supporting services. |
+| 5 | System Test Defects | No of defects | 15 | 1 | Defects identified during end-to-end system testing against functional and non-functional requirements. |
+| 6 | Acceptance Test Defects | No of defects | 5 | N/A | Defects found during acceptance testing with the Product Owner; no critical defect may remain open at closure. |
+| 7 | Timeliness | % | 90 | 70 | Ratio of deliverables completed on or before their scheduled due date to total planned deliverables. |
+| 8 | Requirement Completeness | % | 90 | 93 | Ratio of implemented and accepted requirements to total baselined requirements (threshold: > 75%). |
+| 9 | Unit Test Code Coverage | % | 70 | 72 | Line coverage measured on core backend business logic, excluding generated code and configuration. |
 
 ### 6. Risks and Mitigations
 
-Risks are reviewed in the evaluation phase of every iteration. Probability and impact are re-assessed from what that iteration actually showed, a risk that has materialised is converted into an issue with an owner and a deadline in the planning phase of the next iteration, and a risk that no longer applies is closed with a note in the Change Log.
+Risks are reviewed at the end of every iteration. Probability and impact are re-assessed based on observed progress, materialised risks are converted into tracked issues with an owner and deadline, and obsolete risks are closed.
 
 | # | Risk | Prob | Impact | Mitigation |
 | --- | --- | --- | --- | --- |
-| R01 | The online meeting room (FE-08) is the team's first piece of real-time media work. Connection establishment, NAT traversal and multi-party audio and video quality may take substantially longer than estimated, putting the single largest work package of the plan at risk. | High | High | Run a feasibility study in the Initial Planning phase before the estimate is committed, and build on a proven open-source media server rather than on raw peer-to-peer connections. FE-08 is the only major feature of Iteration 4 so that the iteration carries slack for it. If the room is not demonstrable at the Iteration 4 evaluation, fall back to the reduced room agreed by the team in advance and recorded in Report 3: audio, screen sharing and chat, with a capped number of participants. |
-| R02 | Speaker-attributed transcription of Vietnamese meeting audio (FE-10) produces output too inaccurate to summarise, making the meeting summary and the minutes built on it unusable. | Medium | High | Evaluate candidate models during the Initial Planning feasibility study against three to five of the team's own recorded meetings, agree an acceptance threshold within the team before implementation starts and record it in Report 3. Keep the transcript editable so that the Secretary can correct speaker labels before the summary is generated, which keeps the feature usable even at imperfect accuracy. FE-09 and FE-10 are scheduled in Iteration 3 rather than late in the project, so that the evaluation phase of that iteration still leaves time to change approach. |
-| R03 | The environment in which the speech-processing and summarisation models run was open when this plan was first written. The Product Owner decided that speech processing runs in-house in a separate CPU-only worker (decided on 23/10/2026) and the AI draft on a self-hosted language model on the team's machines; no outside AI service is called. The remaining risk is that these models need more memory than the deployment servers have. | Low | High | Run the speech worker on a team machine that the server reaches over Tailscale, with a backup worker on the server itself, and the language model on team machines over Tailscale with a backup machine. The application keeps working while a worker is off, and the functions that need it report MSG312 or MSG394. Keep transcription and drafting behind internal interfaces so a worker can change host without changing the rest of the system. |
-| R04 | Fifteen features in fifteen weeks may exceed what five members can build in their committed 40 hours a week, particularly when other courses take back more time than the 20% buffer of Section I.4 covers. The risk surfaces late, as unfinished work carried from one iteration to the next. | High | High | Prioritise the active feature list with the Product Owner into must-have FE-01 to FE-13 and should-have FE-14 and FE-15, recording the agreed priority in Report 3. Measure effort consumed in each iteration evaluation and re-plan against actual effort. The 20% buffer in Section I.4 is excluded from committed work packages. Scope changes follow Section II.6.1 and the Change Log; retired Meeting Session and Resolution work must not be reintroduced silently. |
-| R05 | Workload is distributed unevenly, or a member becomes unavailable at a critical point, leaving a module that only one person understands. | Medium | Medium | Give every work package one accountable owner and make sure at least two members have worked on each module, by pairing on the first task of every new module. Log effort per member in Jira and review it in the weekly supervisor meeting. Reassign tasks in the planning phase of the next iteration when the distribution drifts. |
+| R01 | Real-time media features (online meeting room connection, NAT traversal and multi-party audio/video quality) involve unfamiliar complexity and may take longer than estimated. | High | High | Conduct an early feasibility study, build on a proven open-source media server rather than raw peer-to-peer connections, dedicate sufficient iteration capacity with schedule buffer, and define a reduced fallback scope (audio, screen sharing and chat) if needed. |
+| R02 | Automated Vietnamese speech transcription and speaker attribution may produce inaccurate output, affecting downstream meeting summaries and minutes. | Medium | High | Evaluate candidate speech models early against sample recordings, establish a minimum quality threshold, provide manual transcript and speaker-label editing before summary generation, and schedule audio/AI delivery early enough to adjust the approach if necessary. |
+| R03 | Self-hosted speech-processing and AI summarisation models may exceed the memory or compute capacity of the primary deployment environment. | Low | High | Decouple AI and speech services behind internal interfaces so workers can run on dedicated host machines with fallback nodes, and ensure the core application degrades gracefully with clear user feedback when an AI worker is unavailable. |
+| R04 | Planned scope across the 15-week schedule may exceed available team capacity, especially when academic coursework reduces effective hours, causing unfinished work to roll over across iterations. | High | High | Prioritise features with the Product Owner into must-have and should-have tiers, reserve an unallocated capacity buffer, track actual effort at each iteration review to re-plan early, and manage any scope changes through formal change control. |
+| R05 | Workload may be distributed unevenly, or a team member may become unavailable at a critical point, creating single-person knowledge bottlenecks. | Medium | Medium | Assign one accountable owner per work package while ensuring cross-training across modules, monitor workload balance regularly during reviews, and rebalance tasks at the start of the next iteration whenever capacity drifts. |
 
 ## II. Management Approach
 
 ### 1. Project Process/Methodology
 
-The team applies the Iterative Incremental model to this project. The system is not built in a single sequential pass, nor delivered in one release at the end: it is produced in a series of iterations, each of which runs through the full cycle of planning, requirements, analysis and design, implementation, testing and evaluation, and each of which adds a working increment to the product delivered by the previous one.
+The team applies the Iterative Incremental model to this project. Rather than building the system in a single sequential pass or delivering everything in one release at the end, the product is developed through a series of time-boxed iterations. Each iteration runs through planning, requirements, analysis and design, implementation, testing and evaluation, adding a verified working increment onto the previous baseline.
 
-Two properties of TrustCabinet made this the right model. First, the two features that carry the most uncertainty - the online meeting room (FE-08) and speaker-attributed transcription of Vietnamese audio (FE-10) - cannot be estimated reliably from a document; the team only learns what they really cost by building them. A single sequential pass would expose that cost only after the design of the whole system had been frozen, whereas an iterative cycle exposes it at the end of the iteration that contains it, while there is still time to change approach. Second, the detailed requirements of the later features are expected to be refined as the Product Owner reviews each increment. A single sequential pass would have to freeze every requirement before the first line of code is written, whereas an iterative cycle elaborates only the features of the current iteration and absorbs a later correction one iteration at a time. Compared with a purely incremental delivery, in which each increment is added to a design fixed once at the start, revisiting analysis and design inside every iteration lets the team correct a design decision as soon as the previous increment has shown it to be wrong.
+This model fits the project for two reasons. First, technically uncertain components cannot be estimated reliably upfront and are best validated early through working increments while adjustments are still inexpensive. Second, detailed requirements are progressively refined as stakeholders review each increment, allowing the team to elaborate features one iteration at a time and revisit analysis and design decisions whenever earlier increments reveal needed improvements.
 
 Figure 1: Phases of the Iterative Incremental Model
 
 View the full-size image on Google Drive
 
-The project is organised into an initial planning phase, six iterations and a deployment phase. Initial planning is performed once, lasts one week and produces no increment: it sets up the environment, fixes the architecture and carries out the feasibility study on the two risky features. Iterations 1 to 6 last two weeks each and every one of them passes through the six phases of the model:
+In this model, the project lifecycle consists of an initial planning phase, a sequence of fixed-length development iterations and a final deployment phase. Each development iteration executes six standard phases:
 
-●  	Planning - set the goal of the iteration, select from Report 1, Section V.1 the features it will deliver, break them into tasks in Jira with an owner and an estimate, and allocate the work across the team using the effort actually consumed in the previous iteration.
+●  	Planning - Define the iteration goal, select the target features, break work into tasks with estimates and allocate capacity based on prior iteration velocity.
 
-●  	Requirements - elaborate the selected features into detailed, testable requirements, confirm them with the Product Owner, the members who will build them and the Test Lead, agree their acceptance criteria, and record them as the next version of Report 3 - Software Requirement Specification. Only the features of the current iteration are elaborated in detail; the rest remain at the level baselined in Report 1.
+●  	Requirements - Elaborate the selected features into detailed, testable requirements and confirm acceptance criteria with stakeholders before design begins.
 
-●  	Analysis & design - turn those requirements into a design: extend the data model, define the API contract and the screens, and record the result as the next version of Report 4 - Software Design Specification. A design decision taken in an earlier iteration is revisited here whenever a new requirement contradicts it, rather than being worked around.
+●  	Analysis & design - Translate the iteration requirements into data models, interface contracts and UI designs, updating earlier design decisions when needed.
 
-●  	Implementation - build the increment on top of the one delivered by the previous iteration, following the coding convention and the definition of done agreed in initial planning. Every change enters the shared branch through a reviewed pull request.
+●  	Implementation - Build and integrate the working increment on top of the previous baseline, adhering to agreed coding standards and the definition of done.
 
-●  	Testing - execute unit tests on the new modules, integration tests where the new increment meets the previous one, and, from Iteration 4 onwards, regression tests over the earlier increments. Results are recorded in the corresponding Report 5 workbook.
+●  	Testing - Execute unit, integration and regression tests to verify both new functionality and compatibility with existing increments.
 
-●  	Evaluation - demonstrate the increment to the Product Owner, assess it against the goal set in the planning phase, measure the effort actually consumed and the defects found, and record what is unfinished. The conclusions of this phase are the input to the planning phase of the next iteration.
+●  	Evaluation - Demonstrate the increment to stakeholders, assess progress against the iteration goal, review actual effort and defects and feed findings into the next iteration.
 
-Deployment is the final phase, in weeks 14 and 15. It takes the feature-complete increment produced by Iteration 6 through acceptance testing, defect fixing and stabilisation, and the handover of the final software package, the documentation and the presentation.
+The deployment phase concludes the lifecycle by taking the feature-complete system through acceptance testing, defect resolution, stabilisation and final handover.
 
-The feature order across the iterations is driven by technical risk and by dependency, not by the order in which the features are listed in Report 1. The identity and access features are built first because every other feature is scoped by a role; the meeting, document and notification core follows because the meeting record is the object that audio, votes and minutes all attach to, and its approval and publication flow already needs notifications to reach the approver and the invited participants. Audio upload and AI processing (FE-09, FE-10) are then brought forward to Iteration 3, ahead of the online meeting room (FE-08), precisely because they carry the highest uncertainty: if the transcription quality turns out to be unusable, the evaluation phase of Iteration 3 reveals it at the half-way point, while there is still time to change approach or reduce the feature. The online meeting room takes Iteration 4 on its own, the governance features follow in Iteration 5, and the supporting features that depend on everything else - reporting, and the working calendar with meeting time search - are built last in Iteration 6.
+Across the iterations, work is sequenced by foundational dependencies and technical risk: core infrastructure and high-uncertainty capabilities are tackled in earlier iterations so risks are retired early, while dependent and supporting capabilities are delivered in later iterations.
 
 The phases and iterations and their dates are:
 
@@ -250,137 +247,131 @@ Time: 14/09/2026 - 20/09/2026
 
 Objectives:
 
-●  	Set up the development environment, the GitHub repository and the Jira project, and agree the branching convention, the coding convention and the definition of done that every iteration will follow.
+●  	Configure the development environment, repository, issue tracker and shared engineering conventions.
 
-●  	Fix the overall system architecture and the boundary between the web application and the audio-processing component, so that the iterations extend a stable structure instead of renegotiating it.
+●  	Establish the overall system architecture and component boundaries.
 
-●    Carry out the technical feasibility study on the two features that carry the most uncertainty: a minimal browser-to-browser meeting room (FE-08) and speaker-attributed transcription of a real Vietnamese meeting recording (FE-10).
+●  	Conduct technical feasibility studies for high-risk real-time media and speech-processing features.
 
-●  	Confirm the technology stack decision the choice of environment for the speech-processing model is carried forward under risk R03.
-
-●  	Produce the UI mock-up for the Iteration 1 scope and the initial feature list that the iterations will draw from.
-
-●  	Prepare Report 1 - Project Introduction v0.9.
+●  	Prepare initial UI mock-ups and baseline the project scope (Report 1 v0.9).
 
 Deliverables:
 
-●  	Development environment, repository and Jira project fully configured; conventions and definition of done agreed.
+●  	Configured development environment, repository, Jira workspace and team conventions.
 
-●  	UI mock-up for Iteration 1.
-
-●  	Report 1 v0.9 completed.
+●  	Initial UI mock-ups and Report 1 v0.9.
 
 Iteration 1: Identity & Access Foundation - FE-01 to FE-03 (2 weeks)
 
 Time: 21/09/2026 - 04/10/2026
 
-Iteration goal: Deliver the identity and access layer that every later feature is scoped by.
+Iteration goal: Deliver the identity and access foundation for all subsequent features.
 
 Phases of this iteration:
 
-●  	Planning - Set the iteration goal, select FE-01 to FE-03 from the feature list, break them into Jira tasks with an owner and an estimate, and allocate the work against the capacity in Section I.4.
+●  	Planning - Select FE-01 to FE-03 and allocate tasks against iteration capacity.
 
-●  	Requirements - Elaborate FE-01 to FE-03 into detailed requirements: sign-in with email and password and with a Google account linked to an existing internal account; the password policy, session expiry and per-minute sign-in limits; the account lifecycle from creation through deactivation; user profile management; and the role-permission matrix for the system actors - System Admin, Member, Approver, Chair, Secretary, Participant and Guest. Recorded as Report 3 - SRS v0.9, together with the overall requirement set.
+●  	Requirements - Elaborate authentication, user profile and role-permission requirements (Report 3 v0.9).
 
-●  	Analysis & design - Fix the data model for user, role and permission; design the authentication flow and the audit-log record; and turn the mock-up into the screen set for this iteration.
+●  	Analysis & design - Design the identity data model, authentication flows and audit structure.
 
-●  	Implementation - Build FE-01 Authentication & Account Security, FE-02 User & Profile Management and FE-03 Role-Based Access Control on the architecture fixed in initial planning.
+●  	Implementation - Build authentication, user management and role-based access control.
 
-●  	Testing - Unit tests for each module, covering the normal, failure and boundary cases; manual verification of email and Google sign-in, the sign-in limit and a permission check refusing a role that is not entitled. Results recorded in Report 5.1 - Unit Test.
+●  	Testing - Run unit tests and verify core login and authorisation flows (Report 5.1).
 
-●  	Evaluation - Demonstrate account creation, role assignment and a permission denial, and confirm the role model before any later feature is scoped against it. Record the effort consumed, the defects found and any unfinished task as input to the planning phase of Iteration 2.
+●  	Evaluation - Demonstrate account and role management; review effort and defects for Iteration 2.
 
-Increment delivered: Software Package v1.0 - a running system in which a user can sign in and an administrator can manage accounts, roles and permissions.
+Increment delivered: Software Package v1.0 (authentication, user management and RBAC).
 
-Reports delivered: Report 1 v1.0, Report 2 v1.0, Report 3 - SRS v0.9.
+Reports delivered: Report 1 v1.0, Report 2 v1.0, Report 3 v0.9.
 
 Iteration 2: Meeting, Document & Notification Core - FE-04 to FE-07, FE-13 (2 weeks)
 
 Time: 05/10/2026 - 18/10/2026
 
-Iteration goal: Deliver the meeting record that audio, votes and minutes will all attach to, together with its approval workflow and the notifications that carry it to the people involved.
+Iteration goal: Deliver core meeting management, agenda, participants, documents and notifications.
 
 Phases of this iteration:
 
-●  Planning - Set the iteration goal and select FE-04 to FE-07 and FE-13; re-estimate the remaining features using the effort actually consumed in Iteration 1.
+●  	Planning - Select FE-04 to FE-07 and FE-13; adjust estimates using Iteration 1 actuals.
 
-●  Requirements - Elaborate one independent Meeting with planned schedule and lifecycle Draft, WaitingApproval, Rejected, Approved, Published, InProgress and Ended, with Cancelled for a Meeting that will not take place; the assigned approver reviews submission, the Member who created it publishes after approval, and the Chair starts and ends execution. There is no Meeting Session layer. Define Secretary agenda preparation and participant/Guest coordination, invitation responses and official attendance. Agenda planning is allowed through InProgress and prohibited after Ended; Chair execution actions remain separate. Define the personal document library, two-source meeting attachments, preview, comments and notification events. Recorded as Report 3 SRS v1.0 with the latest approved baseline applied.
+●  	Requirements - Elaborate meeting lifecycle, agenda, participants, document library and notification rules (Report 3 v1.0).
 
-●  	Analysis & design - Extend the data model with the meeting, agenda item, approval cycle, lifecycle history, invitation, attendance, personal-document library, library folder, stored file, meeting attachment, document comment and notification entities; define ownership and access rules for personal documents separately from meeting-scoped documents; ensure that the personal library and meeting attachments only reference one immutable stored file, with a periodic cleanup of files no longer referenced; and design notification dispatch as an asynchronous job with retry. Recorded as Report 4 - SDS v1.0.
+●  	Analysis & design - Extend the data model and design document storage and asynchronous notifications (Report 4 v1.0).
 
-●  Implementation - Build FE-04 Meeting Management, FE-05 Agenda Management, FE-06 Meeting Participant Management, FE-07 Personal Document Library & Meeting Document Management and FE-13 Email & In-App Notification on top of increment 1. The increment includes manual attendance recording, My Documents, upload to My Documents, personal-library folders, adding meeting documents from either My Documents or the local computer, removing meeting documents, browser preview and document commenting.
+●  	Implementation - Build meeting, agenda, participant, document and notification modules.
 
-●  	Testing - Unit tests for the new modules and integration tests where they meet the access control delivered in Iteration 1. The test plan itself is produced in this iteration as Report 5.0 - Test Documentation.
+●  	Testing - Execute unit and integration tests for new modules and create the test plan (Report 5.0).
 
-●  	Evaluation - Demonstrate scheduling a meeting, building its agenda, managing participants and recording attendance, uploading a document into a folder of My Documents, adding one meeting document from My Documents and another directly from the local computer, previewing and commenting on meeting documents, removing a document from the meeting and deleting one from My Documents, submitting the meeting for approval, approving and publishing it, and verifying the email and in-app notifications that follow.
+●  	Evaluation - Demonstrate end-to-end meeting scheduling, documents and notifications to the Product Owner.
 
-Increment delivered: Software Package v2.0 - increment 1 plus meeting scheduling, the approval workflow, agenda and document management, and email and in-app notification. Reports delivered: Report 2 v1.1, Report 3 - SRS v1.0, Report 4 - SDS v1.0, Report 5.0 - Test Documentation.
+Increment delivered: Software Package v2.0 (meeting core, document library and notifications). Reports delivered: Report 2 v1.1, Report 3 v1.0, Report 4 v1.0, Report 5.0.
 
 Iteration 3: Meeting Audio & AI Processing - FE-09, FE-10 (2 weeks)
 
 Time: 19/10/2026 - 01/11/2026
 
-Iteration goal: Prove and deliver the part of the system that carries the most uncertainty, early enough to change approach if it fails.
+Iteration goal: Deliver meeting audio recording, transcription, speaker identification and AI drafting.
 
 Phases of this iteration:
 
-●  Planning - Set the iteration goal and select FE-09 and FE-10. Because this is the riskiest iteration, the plan reserves time inside it for a second attempt with a different model if the first does not meet the threshold agreed in initial planning.
+●  	Planning - Select FE-09 and FE-10 with contingency buffer for model tuning.
 
-●  Requirements - Elaborate meeting recording: the Secretary's room recording in takes, per-microphone sentences after the recording notice, audio upload for in-person meetings, audio formats and size limits, informed consent, stated purpose, the 180-day retention and recorded erasure. Define editable Vietnamese transcripts, speaker attribution with consent-based Voice ID, and explicit generation, review and approval of the AI draft. Speech runs on a self-hosted worker and the draft on a self-hosted language model; an external API may be used for Normal meetings only and may not retain or reuse transcripts. Recorded as Report 3 SRS v1.1.
+●  	Requirements - Define recording, audio upload, consent, retention, transcription and AI draft rules (Report 3 v1.1).
 
-●  Analysis & design - Design an asynchronous processing pipeline behind one replaceable internal provider interface, the media library, transcript editor, consent evidence, retention and erasure handling. Record the provider/model with each result and control any transfer to an external provider. Recorded as Report 4 SDS v1.1.
+●  	Analysis & design - Design the asynchronous audio-processing pipeline and internal AI provider interfaces (Report 4 v1.1).
 
-●  Implementation - Build FE-09 Meeting Recording and FE-10 Transcription, Speaker Identification & Meeting Summary on the meeting record delivered by increment 2: room recording and audio upload by the Secretary, per-microphone sentences, transcript correction, Voice ID, and explicit Generate / Regenerate and Approve actions for the AI draft.
+●  	Implementation - Build meeting recording, audio upload, transcript editing, Voice ID and AI draft generation.
 
-●  	Testing - Unit tests for upload handling and job processing; an integration test of the whole recording-to-draft flow, recorded in Report 5.2; and a measurement of transcription and summarisation quality on the team's own Vietnamese recordings against the agreed threshold.
+●  	Testing - Run unit and integration tests across the recording-to-draft pipeline and measure output quality (Report 5.2).
 
-●  	Evaluation - Compare the measured quality against the threshold set in initial planning and decide, before half of the project has been spent, whether the feature is delivered as specified, needs a different model, or must be reduced in scope. The decision and its reasoning are recorded in Report 3, reported to the supervisor at the weekly meeting, and become an input to the planning phase of Iteration 4.
+●  	Evaluation - Review transcription and summary quality against thresholds and feed outcomes into Iteration 4.
 
-Increment delivered: Software Package v3.0 - increment 2 plus meeting recording and audio upload, speaker-attributed transcription with Voice ID, and the AI draft approved by the Chair or the Secretary. Reports delivered: Report 2 v1.2, Report 3 - SRS v1.1, Report 4 - SDS v1.1, Report 5.2 - Integration Test.
+Increment delivered: Software Package v3.0 (recording, transcription, Voice ID and AI draft). Reports delivered: Report 2 v1.2, Report 3 v1.1, Report 4 v1.1, Report 5.2.
 
 Iteration 4: Online Meeting Room Management - FE-08 (2 weeks)
 
 Time: 02/11/2026 - 15/11/2026
 
-Iteration goal: Deliver the meeting room, the single largest work package in the plan.
+Iteration goal: Deliver the integrated online meeting room.
 
 Phases of this iteration:
 
-●  Planning - Set the iteration goal and select FE-08 alone, so that the whole iteration is available for it and carries slack. Re-confirm the reduced fallback scope agreed under risk R01 before implementation starts.
+●  	Planning - Dedicate the iteration to FE-08 with capacity buffer and confirmed fallback options.
 
-●  Requirements - Define what the room must do - audio, video, screen sharing, text chat, joining and leaving an existing meeting - the participant count it targets, raising a hand to speak and the Chair's moderation, and the rule that no recording bot joins the room: personal microphones are recorded only after everyone has acknowledged the recording notice (FE-09). Official attendance is maintained by the Secretary, with online-room presence available only as supporting evidence/pre-fill. Recorded as Report 3 - SRS v1.2.
+●  	Requirements - Define real-time audio/video, screen sharing, chat, moderation and presence rules (Report 3 v1.2).
 
-●  	Analysis & design - Select and design around the media server; design signalling and the room lifecycle; capture room-presence evidence that can pre-fill, but does not replace, the official attendance record maintained by the Secretary; and link the room back to the meeting record built in Iteration 2. Recorded as Report 4 - SDS v1.2.
+●  	Analysis & design - Design media-server integration, signalling and room-to-meeting linkage (Report 4 v1.2).
 
-●  Implementation - Build FE-08 Online Meeting Room Management and connect joining/leaving presence to the meeting created in FE-04 so that the Secretary can use it as supporting evidence when recording official attendance.
+●  	Implementation - Build the online meeting room and link participant presence to the meeting record.
 
-●  	Testing - Unit tests; integration tests against the meeting record and the access control; a full-team session to measure audio and video quality at the target participant count; and the first regression pass over the increments of Iterations 1 to 3.
+●  	Testing - Run unit, integration and multi-participant load tests plus regression over prior increments.
 
-●  	Evaluation - Hold a real team meeting inside the room and measure it against the target participant count. Decide whether the full room is delivered as specified or the reduced fallback of R01 is applied, and record the decision.
+●  	Evaluation - Conduct a live team session to verify room stability and confirm final scope.
 
-Increment delivered: Software Package v4.0 - increment 3 plus a browser-based meeting room hosted by TrustCabinet itself. Reports delivered: Report 2 v1.3, Report 3 - SRS v1.2, Report 4 - SDS v1.2, Report 5.2 updated.
+Increment delivered: Software Package v4.0 (self-hosted online meeting room). Reports delivered: Report 2 v1.3, Report 3 v1.2, Report 4 v1.2, Report 5.2.
 
 Iteration 5: Meeting Governance - FE-11, FE-12 (2 weeks)
 
 Time: 16/11/2026 - 29/11/2026
 
-Iteration goal: Turn in-meeting vote tallies and recorded Chair conclusions into approved and issued meeting minutes.
+Iteration goal: Deliver in-meeting voting and the meeting minutes approval workflow.
 
 Phases of this iteration:
 
-●  Planning - Select FE-11 Voting Management and FE-12 Meeting Minutes & Approval together because each Meeting has one minutes process incorporating its vote tallies and Chair conclusions. Preserve the allocated effort and dates.
+●  	Planning - Select FE-11 and FE-12 together as linked governance workflows.
 
-●  Requirements - Limit opening and casting to an InProgress Meeting; the current Chair or Secretary may prepare a Vote draft before or during the Meeting. A Vote belongs directly to the Meeting and does not require an Agenda Item. The current Chair opens and closes it, one Open Vote at a time; eligible voters – holders of the meeting roles the Chair selects for each Vote (Chair, Secretary, Participant, verified Guest) – confirm reading every Vote document and may cast one immutable ballot. Support public and secret ballots. After closing, the Chair records Passed, NotPassed or Deferred; ending the Meeting does not require closing Votes, and the Chair may close an Open Vote after the Meeting ends. No time-boxed voting, deadline, quorum or separate Resolution object is delivered. Define minutes built from one fixed template, meeting information, attendance, agenda outcomes, the approved AI draft, vote tallies and Chair conclusions; the Secretary submits them, the Chair approves and issues them or returns them with a reason, and issued minutes are corrected only through a new revision that is approved again. The minutes are not signed. Recorded as Report 3 SRS v1.3.
+●  	Requirements - Define in-meeting voting rules, Chair conclusions and minutes generation, approval and revision (Report 3 v1.3).
 
-●  Analysis & design - Model Vote under Meeting with tally and Chair conclusion; keep it independent of Agenda Item and omit a separate Resolution entity. Design minutes revisions with their approval state, read-only issued revisions, and the template combining approved records with vote results and conclusions. Connect voting calls and minutes approval requests to FE-13 notifications. Recorded as Report 4 SDS v1.3.
+●  	Analysis & design - Model votes, conclusions, minutes revisions and approval notifications (Report 4 v1.3).
 
-●  Implementation - Build FE-11 Voting Management and FE-12 Meeting Minutes & Approval.
+●  	Implementation - Build voting management and meeting minutes preparation and approval.
 
-●  Testing - Verify that voting is accepted only for an InProgress Meeting, only holders of the roles the Chair selected for that Vote may vote (verified Guests included when selected), one ballot cannot be changed, a conclusion requires a Closed Vote and End Meeting does not depend on Open Votes. Test the chain from vote tallies and Chair conclusions plus the approved AI draft to minutes that are submitted, returned, approved and issued, including the correction of issued minutes. Record integration and system results in Reports 5.2 and 5.3.
+●  	Testing - Verify voting eligibility, ballot rules and the end-to-end minutes approval flow (Reports 5.2, 5.3).
 
-●  Evaluation - Demonstrate the lifecycle in order: prepare and publish a Meeting; start and record it after informing the attendees; hold voting, close each Vote and record Chair conclusions; end the Meeting; correct the transcript and approve the AI draft; generate minutes with the tallies and conclusions; submit, approve and issue them.
+●  	Evaluation - Demonstrate the full meeting lifecycle from voting and conclusions to issued minutes.
 
-Increment delivered: Software Package v5.0 - increment 4 plus in-meeting voting, recorded Chair conclusions and approved, issued meeting minutes.
+Increment delivered: Software Package v5.0 (voting and approved meeting minutes).
 
 Reports delivered: Report 3 v1.3, Report 4 v1.3, Reports 5.2 and 5.3.
 
@@ -388,23 +379,23 @@ Iteration 6: Reporting & Calendar - FE-14, FE-15 (2 weeks)
 
 Time: 30/11/2026 - 13/12/2026
 
-Iteration goal: Make everything already built visible and actionable, and reach feature completeness.
+Iteration goal: Deliver reporting and calendar features to achieve feature completeness.
 
 Phases of this iteration:
 
-●  Planning - Set the iteration goal and select FE-14 and FE-15. Both depend on the earlier increments, which is why they are planned last: there is nothing to display, count or schedule around until the meeting, audio and governance features exist.
+●  	Planning - Select FE-14 and FE-15 to build on completed core and governance data.
 
-●  	Requirements - Define the figures the reports must produce, their breakdowns by period, status and sensitivity and their Excel export, and the calendar sharing (busy or free only) and meeting time search of FE-15. Recorded as the final detailed version of Report 3.
+●  	Requirements - Finalise reporting metrics, exports, calendar sharing and meeting time search rules (Report 3 final).
 
-●  	Analysis & design - Design the aggregation behind the reporting figures and the free-slot search over shared calendars.
+●  	Analysis & design - Design reporting aggregations and free-slot search logic.
 
-●  Implementation - Build FE-14 Reporting & Statistics and FE-15 Working Calendar & Meeting Time Search, completing the feature set baselined in Report 1.
+●  	Implementation - Build reporting, statistics, working calendar and time search modules.
 
-●  	Testing - Unit and integration tests for the new modules, followed by full system testing of the complete product against the functional requirements (Report 5.3) and the non-functional requirements (Report 5.4), and a regression pass over every previous increment.
+●  	Testing - Run unit, integration, full system testing (Reports 5.3, 5.4) and full regression.
 
-●  	Evaluation - Demonstrate the feature-complete system and confirm that every requirement baselined in Report 3 is covered. The remaining open defects are recorded and handed to the deployment phase.
+●  	Evaluation - Demonstrate the feature-complete system and triage remaining defects for deployment.
 
-Increment delivered: Software Package v6.0 - feature complete. Reports delivered: Report 2 v1.4, Report 5.3 and 5.4 - System Test, Report 6 - Software User Guides.
+Increment delivered: Software Package v6.0 (feature complete). Reports delivered: Report 2 v1.4, Reports 5.3 and 5.4, Report 6.
 
 Deployment: Acceptance, Stabilisation & Project Closure (2 weeks)
 
@@ -412,111 +403,67 @@ Time: 14/12/2026 - 27/12/2026
 
 Objectives:
 
-●  	Run acceptance testing against the scripts in Report 5.5: the Test Lead coordinates the session and each script is executed by a member who did not build the feature under test, working from a prepared demonstration data set that includes real Vietnamese meeting audio.
+●  	Execute acceptance testing against agreed scripts with the Product Owner (Report 5.5).
 
-●  	Record the acceptance result as the state of the product against the requirements baselined in Report 3, and hold the formal acceptance session with the Product Owner, Dinh Van Toi, on the same scripts.
+●  	Resolve remaining defects and stabilise the production-ready deployment package.
 
-●  	Fix the defects raised in system and acceptance testing and stabilise the system; no critical defect may remain open at closing.
+●  	Verify deployment against the user and installation guides.
 
-●  	Deploy the final package to the target environment and verify the installation against Report 6 - Software User Guides.
+●  	Finalise all project reports (including Report 7 and Report 2 v1.5) and presentation materials.
 
-●  	Finalise Report 7 - Final Project Document and the final version of every other report, including Report 2 v1.5, and fill in the Actual column of the metrics in Section I.5.
-
-●  	Prepare and rehearse the presentation and the live demonstration.
-
-●  	Hand over the complete source code, documents and deployment package, and close the project with a final review of what the six iterations produced and the lessons learned.
+●  	Hand over the final software package and conduct project closure review.
 
 Deliverables:
 
-●  	Report 5.5: Acceptance Test scripts executed and the acceptance result recorded.
+●  	Executed acceptance test results (Report 5.5) and stabilised system deployment.
 
-●  	All critical and major defects closed; the system stabilised and deployed.
+●  	Finalised project documentation (Report 7, Report 2 v1.5) and presentation package.
 
-●  	Report 7 - Final Project Document and Report 2 v1.5 submitted.
-
-●  	Presentation file delivered and the demonstration rehearsed.
-
-●  	Final software package - source code, documents and deployment package - handed over. Project officially closed.
+●  	Complete source code, documentation and deployment handover.
 
 ### 2. Quality Management
 
-Quality is managed on the principle that a defect is cheapest to remove in the phase that created it. Because the project is built iteratively, every iteration contains its own prevention, review and testing activity rather than deferring quality work to a single test stage at the end: a defect introduced in one increment is found while that increment is still the one being worked on. The team therefore spends effort on prevention and review before a line of test code is written, and then applies four levels of testing, each with its own report in the Report 5 series. The targets these activities are measured against are the quality metrics in Section I.5 - Project Objectives, and every defect found at any level is logged in Jira with a description, reproduction steps, evidence, a severity level and an assigned handler.
+Quality is managed iteratively by embedding defect prevention, peer review and multi-level testing within every iteration rather than deferring quality checks to the end. Defects identified at any stage are logged, prioritised by severity and tracked to resolution in Jira against the project quality targets.
 
 #### 2.1 Defect Prevention
 
-●  	Agree a coding convention, a branching convention and a definition of done during initial planning, before any production code is written, and apply them to every pull request in every iteration.
+●  	Establish shared coding, branching and definition-of-done standards from project start.
 
-●  	Review the architecture and the boundary between the web application and the audio-processing component before Iteration 1 starts, so that interface mistakes are caught on paper rather than in the increment.
+●  	Validate architecture boundaries and high-risk features early through feasibility studies.
 
-●  Carry out the feasibility study of the initial planning phase on the two features that carry the most uncertainty, so that the design of FE-08 and FE-10 rests on measured behaviour rather than assumption.
-
-●  	Maintain a shared list of the defects that recur in the team's work - validation gaps, permission checks missed on an endpoint, unhandled file-upload errors, time-zone handling in the calendar - and check new code against it during review.
-
-●  	The Test Lead reviews the defect-prevention list in the evaluation phase of every iteration and adjusts it from what that iteration actually produced.
-
-●  	Technology-specific prevention is automated in the repository: a shared .editorconfig fixes the formatting rules for every IDE, the CI build treats .NET compiler and analyzer warnings as errors (-warnaserror), and the frontend is checked by oxlint and the TypeScript compiler.
+●  	Enforce automated formatting, static analysis, compiler warnings-as-errors and recurring-defect checklists in CI.
 
 #### 2.2 Reviewing
 
-●  	Review every requirement in the requirements phase of the iteration that will build it: the Business Analyst presents it, the Product Owner confirms it, and the members who will build it and the Test Lead agree its acceptance criteria, so that developer and tester share one reading of it before any code is written.
+●  	Review iteration requirements and acceptance criteria with the Product Owner, BA and Test Lead prior to design.
 
-●  	Review each report version before submission: the Business Analyst reviews content and consistency against Report 1 and Report 3, and the whole team reads the document once before it is sent.
+●  	Review design updates for consistency against earlier increments and review all report drafts prior to submission.
 
-●  	Review all code through GitHub pull requests. No branch is merged into app without at least one approval; front-end changes are reviewed by the Frontend Lead and back-end changes by the Backend Lead.
-
-●  	Check every pull request against the definition of done: the feature works, unit tests exist and pass, the code follows the convention, and the corresponding Jira task is updated.
-
-●  	Review the design of the current iteration against the design of the previous increments, so that a decision that no longer fits is corrected in the analysis and design phase rather than worked around in code.
+●  	Require pull-request review and lead approval against the definition of done before merging any code.
 
 #### 2.3 Unit Testing
 
-●  	Unit tests are written by the developer who owns the module, in the same iteration as the code, and are run on every push through the CI pipeline.
+●  	Developers write unit tests alongside feature code covering normal, failure and boundary cases, targeting at least 70% coverage of core backend logic.
 
-●  	Each unit under test is covered for the normal case, the failure case and the boundary case - a happy case alone is not accepted at review.
-
-●  	Target coverage is 70% of the core business logic of the backend, excluding generated code and configuration, measured in the testing phase of every iteration.
-
-●  	Results are recorded in Report 5.1 - Unit Test, with the test case ID, preconditions, input and expected output, the verification step (return value, exception, log message), the result type (normal, abnormal, boundary), pass or fail, the execution date and the defect ID where one was raised.
-
-●  	Backend tests are written with xUnit, using Microsoft.AspNetCore.Mvc.Testing for tests that exercise the API end to end and Coverlet to collect coverage; repository tests run against real PostgreSQL and Redis instances in CI rather than fakes, while the use case tests in TrustCabinet.Application.Tests run against hand-written fakes without a database. The frontend is checked by the TypeScript compiler and oxlint in CI.
+●  	Automated unit tests and frontend type/lint checks run on every pull request in CI, with results recorded in Report 5.1.
 
 #### 2.4 Integration Testing
 
-●  Integration testing covers the API contract between the front end and the back end, and every point at which the new increment meets the increment delivered by the previous iteration - above all the recording-to-draft flow of FE-09 and FE-10, in which audio recorded or uploaded through the web application is transcribed by the speech component and the AI draft is written from the transcript.
+●  	Verify frontend–backend API contracts, authorisation rules and cross-module workflows, including audio-to-AI pipelines.
 
-●  	Each endpoint is checked for the correct status code (200, 400, 401, 403, 404, 500), the structure and accuracy of the returned data, and the behaviour of the permission check under a role that is not entitled to the resource.
-
-●  	From Iteration 4 onwards, the integration suite is also run as a regression pass over the earlier increments, so that a change made for the current iteration cannot silently break what was already accepted.
-
-●  	Integration tests are grouped into a shared collection that any member can run against a local or staging environment.
-
-●  	Results are recorded in Report 5.2 - Integration Test, with the test case ID, description, procedure, preconditions, expected and actual results, execution date and tester.
+●  	Run automated integration and regression suites across increments and record results in Report 5.2.
 
 #### 2.5 System Testing
 
-●  	System testing is executed on the staging environment, against the deployed software package rather than a developer machine, and is led by the Test Lead. It is performed in full in Iteration 6, once the product is feature complete, on the test cases written progressively from Iteration 5 onwards.
+●  	Execute end-to-end functional workflows and non-functional checks on the staging environment once feature complete.
 
-●  Functional requirements are tested along the complete flow: a Member schedules a Meeting with its Chair and Secretary; the Secretary prepares the agenda, roster and authorized documents; the Approver reviews it; the Member publishes the approved Meeting and invitations are sent. The Chair starts it, the Secretary records it after the attendees are informed, attendees participate, eligible participants vote, Votes are closed and the Chair records conclusions before ending it. Afterwards, the Secretary corrects the transcript, the Chair or the Secretary approves the AI draft, and the minutes containing the vote tallies and Chair conclusions are submitted, approved and issued.
-
-●  	Non-functional requirements - response time, concurrent participants in a meeting room, audio file size and processing time, and the access-control rules - are tested separately and recorded in Report 5.4.
-
-●  	Results are recorded in Report 5.3 - System Test (FRs) and Report 5.4 - System Test (NFRs), each with the test case ID, description, procedure, preconditions, expected and actual results, test date and tester.
-
-●  	The system moves into the deployment phase only when no critical defect remains open.
+●  	Record functional and non-functional results in Reports 5.3 and 5.4; resolve all critical defects before deployment.
 
 #### 2.6 Acceptance Testing
 
-●  	Acceptance criteria are derived from the requirements baselined in Report 3 and from the list of critical use cases agreed with the Product Owner in the requirements phase of each iteration. Each criterion is mapped to a script in Report 5.5.
+●  	Perform independent manual acceptance testing on staging against baselined criteria using prepared test data (Report 5.5).
 
-●  	Acceptance testing is performed in the deployment phase, manually, on the staging environment. The Test Lead coordinates the session and each script is executed by a member who did not build the feature under test, using a prepared demonstration data set that includes real Vietnamese meeting audio.
-
-●  	This internal session establishes that the product meets the requirements baselined in Report 3. Formal acceptance is then given by the Product Owner, Dinh Van Toi, in an acceptance session on the same scripts, and its result is recorded in Report 5.5.
-
-●  	Because each increment has already been demonstrated and assessed in the evaluation phase of its own iteration, acceptance testing confirms the product as a whole rather than discovering its features for the first time.
-
-●  	Defects raised during the session are logged in Jira with the same detail as any other defect and triaged immediately by severity.
-
-●  	When every acceptance criterion has been met and no major defect remains open, the team records the result and the system is prepared for the final handover.
+●  	Conduct formal acceptance with the Product Owner and ensure no critical or major defects remain open before handover.
 
 ### 3. Project Training Plan
 
@@ -623,35 +570,23 @@ RACI Chart: R~Responsible, A~Accountable, C~Consulted, I~Informed
 
 #### 6.1 Document Management
 
-All project documents are kept in a single shared Google Drive folder owned by the team and organised into subfolders per report series (Report 1 to Report 7, plus Project Tracking and Meeting Minutes). Only the five members and the supervisor have access; the supervisor has comment and view rights on the current version of every report.
+All project documents are maintained in a shared Google Drive folder organised by deliverable type, with edit access restricted to team members and view/comment access for the supervisor.
 
-The source of every report is its .docx or .xlsx file in the course template, kept in the project repository (docs/08-reports/source), so its history is the git history: every change is reviewed in a pull request, can be traced to who made it and when, and can be reverted. A Markdown snapshot generated from each .docx lets reviewers read the change in the pull request. The repository copy is then published to the Drive folder, replacing the file in place so its link stays the same, and the supervisor comments there. Drive is never edited directly, so two members cannot overwrite each other's work.
+Report sources (.docx and .xlsx) are version-controlled in the Git repository alongside Markdown snapshots for pull-request review, then published to Drive in place so links remain unchanged.
 
-Every document carries a version number and a Change Log table as its first section. Because the product is built iteratively, the documents are written the same way: Report 3 and Report 4 grow by one version in each iteration, elaborating only the features that iteration delivers, and Report 2 is revised whenever the evaluation phase of an iteration changes the plan. A version is numbered v0.9 while it is a draft under review, v1.0 when it has been reviewed and submitted, and v1.1, v1.2 and so on for each subsequent revision. Every change to a submitted version adds one row to the Change Log recording the date, whether the change is an addition, a modification or a deletion, the member in charge and a description of the change. A submitted file is named in the form Report-N_Name_vX.Y.docx so that the version is visible without opening the file.
-
-A change that affects the product scope, the schedule or the committed effort is not made directly in the document. It is raised as a change request in the evaluation phase of the current iteration, assessed for its impact on the effort and schedule committed in Section I.3, decided by the Team Leader together with the Business Analyst - and, when it alters the product scope, approved by the Product Owner - and reported to the supervisor at the weekly meeting. Only then is it applied - to this plan first, and to the affected reports afterwards, each with its own Change Log entry.
-
-The Business Analyst (KhanhPG) is accountable for document management: for the folder structure, for checking that a version is reviewed before it is submitted, and for keeping the Change Log of every report complete.
+Each document follows semantic versioning (v0.9 for draft, v1.0+ for submitted baselines) and records revisions in its Change Log. Changes impacting scope, schedule or effort require formal approval before updating baselines, under the accountability of the Business Analyst.
 
 #### 6.2 Source Code Management
 
-All source code is kept in one GitHub repository owned by the team. The repository is public so that the supervisor and the review council can read it; only the five members can push to it. The repository holds the front end, the back end, the audio-processing component, the database migration scripts, the deployment configuration and the report sources, so that one commit history covers the whole system.
+All application code, migrations, deployment configs and report sources reside in a single GitHub repository using a two-branch model with short-lived task branches:
 
-The team follows a two-branch model with short-lived task branches:
+●  	app - Main integration branch; every pull request runs CI checks and merges auto-deploy to the staging server.
 
-●  	app - the main branch. Every pull request targets it, the CI pipeline builds and tests every pull request, and every merge into app is deployed automatically to the app test server, where integration, regression, system and acceptance testing take place.
+●  	task branches - Short-lived branches created from app per task and deleted after merge.
 
-●  	main - the demonstration branch. It holds the version shown to the review council on 18/11/2026 (tag demo-2026-11-18), runs on its own server and takes no new work.
+Code enters app only via reviewed pull requests linked to Jira issues with passing CI builds and lead approval; direct pushes are disabled and secrets are excluded from version control.
 
-●  task branches - one branch per task, created from app and named after the type of change and a short description (for example fix/speech-clip-lane or docs/report1-ai-signing-scope). A member works only in their own branch and pushes to it frequently.
-
-Code enters app only through a pull request. A pull request must describe what it changes, link to its Jira issue, pass the CI build and unit tests, and be approved by at least one reviewer: the Frontend Lead (HaiTV) for front-end changes and the Backend Lead (LocHD) for back-end and audio-pipeline changes. The reviewer checks the code against the coding convention and the definition of done. A pull request is merged only after the review approves it; nobody pushes to app or main directly.
-
-Because every increment is built on the one before it, the commit on app at the end of each iteration is the code that was demonstrated in that iteration's evaluation phase. A defect found later can therefore be traced to the pull request that introduced it, and the demonstration for the review council is given from main, a known good version, rather than from whatever is currently on app.
-
-Commit messages describe the change in Vietnamese, and each pull request names its Jira issue in its title or description, so that the history can be read as a list of what was delivered in each iteration. Secrets, credentials and environment files are never committed; they are held as repository or environment secrets and the repository keeps only the example configuration file.
-
-Merge conflicts are resolved by the member who owns the feature branch, with the technical lead of the affected area when the conflict touches shared code. The Backend Lead is accountable for the integrity of the repository and for the branch protection rules.
+Merge conflicts are resolved by the branch owner with support from the relevant technical lead, while the Backend Lead oversees repository integrity and branch protection.
 
 #### 6.3 Tools & Infrastructures
 

@@ -157,6 +157,14 @@ chạy Git Bash), đặt biến `DRAWIO` nếu CLI nằm chỗ khác; script g�
 Ảnh xuất bằng `--disable-gpu --disable-software-rasterizer`, scale tự hạ để không bị draw.io thu nhỏ
 khi nội dung rộng quá ~2900 px.
 
+Sắp xếp lại toàn bộ một sơ đồ (28/11/2026, theo yêu cầu dàn lại cho dễ đọc):
+`python scripts/normalize_class_diagrams.py --relayout <file.drawio>` bỏ bố cục tay, xếp class thành từng dải
+theo stereotype từ trên xuống (boundary → control → service/policy/utility/interface → repository → entity →
+enumeration/dto/value object), thứ tự trong dải chọn để ít cắt nhau, mỗi class canh dưới class nó nối tới; thử
+nhiều bề rộng và thứ tự bắt đầu, route thật từng phương án, giữ phương án ít giao cắt nhất. Hai class đối diện có
+phần chồng nhau thì đường nối đi thẳng. Không đổi class, member hay quan hệ. Mất khoảng 5–10 phút cho cả 15 sơ đồ;
+sau đó xuất PNG và `python scripts/fill_report4_diagrams.py --write --refresh FE-01,…` để thay ảnh trong Report 4.
+
 ## 6. Đồng bộ theo Report 3 ngày 18/10/2026
 
 Cập nhật 19/10/2026 theo UC/BR/MSG mới (trao đổi PO 16/10/2026, góp ý hội đồng lần 1). Chỉ sửa cục bộ member, thêm
