@@ -1,10 +1,7 @@
-using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
-using TrustCabinet.Application.Ai;
-using TrustCabinet.Infrastructure.Ai;
 using TrustCabinet.Application.Summaries;
 
 namespace TrustCabinet.Infrastructure.Summaries;
@@ -27,13 +24,6 @@ public static class SummaryServiceCollectionExtensions
             });
         services.TryAddSingleton(TimeProvider.System);
         services.AddSingleton<ILanguageModel, LanguageModelClient>();
-        // ADR-0056: an API for ordinary meetings, set up by an administrator, its key encrypted at rest.
-        services.AddHttpClient(LanguageModelProvider.ApiHttpClientName);
-        services.AddSingleton<IAiKeyProtector>(provider => new AiKeyProtector(
-            provider.GetRequiredService<IOptions<LanguageModelOptions>>().Value.EncryptionKey,
-            Encoding.UTF8.GetBytes(configuration["Authentication:SigningKey"] ?? "")));
-        services.AddSingleton<IApiLanguageModelFactory, ApiLanguageModelFactory>();
-        services.AddScoped<IAiProviderSettingRepository, AiProviderSettingRepository>();
         services.AddScoped<IMeetingTranscriptQuery, MeetingTranscriptQuery>();
         services.AddScoped<IMeetingSummaryRepository, MeetingSummaryRepository>();
         services.AddScoped<ISummarySourceQuery, SummarySourceQuery>();

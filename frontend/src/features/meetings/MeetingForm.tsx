@@ -92,11 +92,11 @@ const MODE_HINT: Record<MeetingMode, string> = {
 /**
  * What a level changes, read from the rules: BR-009–BR-011 and MeetingDocumentService (documents),
  * PersonalLibraryService (an administrator's view of a library), RecordingContracts.Export, MinutesService
- * (exports), LanguageModelProvider (ADR-0056). Nội bộ differs from Thường only in keeping the AI draft in-house.
+ * (exports). Nội bộ now behaves as Thường: every AI draft is written by the team's own model (ADR-0088).
  */
 const SENSITIVITY_HINT: Record<Sensitivity, string> = {
   Normal: 'Người dự họp xem và tải tài liệu.',
-  Internal: 'Như Thường; dự thảo AI không gửi ra ngoài.',
+  Internal: 'Như Thường.',
   Secret: 'Không tải tài liệu, ghi âm, biên bản; mỗi lần xem được ghi nhật ký.',
 }
 /** AI-eCabinet's quick lengths under the times: one click sets the end from the start. */

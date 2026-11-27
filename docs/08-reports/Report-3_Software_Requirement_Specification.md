@@ -24,6 +24,7 @@ Table of Contents
 | 19–23/11/2026 | M | KhanhPG, BA | Aligned with the app after the 21/11 trial: three system roles with Chair and Secretary as meeting roles, Take Meeting Notes, report queries, hand corrections kept when a recording is transcribed again. |
 | 24–26/11/2026 | M | HuyNQ, LocHD, KhanhPG | Business rules renumbered BR-001–153 and use cases UC-01–UC-81; UC diagrams in strict UML; system-run steps moved to Report 4; section III screens matched to wireframe v16 and the running app. |
 | 26/11/2026 | M, D | LocHD, KhanhPG | Review by KhanhPG: the AI drafting service and the in-house services are no longer actors or external APIs; Organizer replaced by the Member who created the Meeting; actor and screen descriptions without UC/BR references; Change Log condensed. Section III screens condensed to the G158 template: one “Related UC” line per screen, no business-rule references, shorter field descriptions. |
+| 27/11/2026 | M | LocHD | AI Configuration removed: every draft is written by the team’s own AI server; screen figures re-captured from wireframe v17 without the AI Configuration menu item; MSG394 now reads “Please try again later”. Meeting reminders and data retention periods given their own business rules; the outside language-model API removed from the deployment requirement; messages no longer used removed from the message list, which is renumbered. |
 
 *A - Added M - Modified D - Deleted
 
@@ -4781,7 +4782,7 @@ Field Description
 
 #### 16.1 Process Notifications (JOB-01)
 
-Every 5 seconds, the system creates the “meeting starting soon” reminder, once per recipient, for Meetings that start within the next 15 minutes, queues the matching reminder email and delivers new in-app notifications to the people who are signed in; deactivated users receive none. A notification that could not be delivered at once still appears in the notification list.
+Every 5 seconds, the system creates the “meeting starting soon” reminder, once per recipient, for Published Meetings that start within the next 15 minutes: an in-app reminder and an email for each current internal participant, and an email for each Guest whose invitation is not revoked, whatever their invitation response. It then delivers new in-app notifications to the people who are signed in; deactivated users receive none. A notification that could not be delivered at once still appears in the notification list.
 
 #### 16.2 Deliver Queued Emails (JOB-02)
 
@@ -4941,7 +4942,7 @@ The quality attributes below are stated as measurable targets for a single-organ
 
 | Requirement | Description |
 | --- | --- |
-| Self-hosted containerised deployment | The complete system (application, PostgreSQL, Redis, the SeaweedFS file store and the media server) can be deployed on a single Linux host inside TrustSoft's network using Docker Compose; outgoing email is sent through the Resend email service, and the outside language-model API for Normal meetings is optional (Report 2, constraints 2 and 5). |
+| Self-hosted containerised deployment | The complete system (application, PostgreSQL, Redis, the SeaweedFS file store and the media server) can be deployed on a single Linux host inside TrustSoft's network using Docker Compose; outgoing email is sent through the Resend email service (Report 2, constraint 5). |
 | Single deployable application | The web front end and the API are delivered as one application served from the same origin; a new environment can be installed from the documented procedure within 1 working day by a person with basic Linux and Docker knowledge. |
 | Environment independence | All environment-specific values (URLs, credentials, Resend and Google settings, speech worker and language model addresses) are supplied by configuration, so the same build runs in development, test and production. |
 
@@ -5113,6 +5114,8 @@ The quality attributes below are stated as measurable targets for a single-organ
 | BR-152 | Header figures show numbers only; query tables show a person's name or a Meeting's code and title, only for Meetings the viewer reads; a Guest shows only a name. |
 | BR-153 | The report query counts only records the viewer can read: draft Votes and unissued minutes for the Chair and Secretary, recordings for participants. |
 | BR-154 | When transcription runs again, what cannot be matched leaves only a trace in the audit log, without the transcript text. |
+| BR-155 | When a Published Meeting starts within 15 minutes, each current internal participant with an active account gets one in-app reminder and one reminder email, and each Guest whose invitation is not revoked gets one reminder email, whatever their invitation response; a rescheduled Meeting is reminded again, and a person invited inside those 15 minutes gets no reminder email. |
+| BR-156 | Data that has outlived its purpose is removed automatically: read notifications 90 days and all notifications 180 days after they are created, a Guest verification code one day after it expires, the body of a sent or failed email 30 days after it is queued, Draft Votes of a Cancelled Meeting, and audio no recording uses 24 hours after it was last written. |
 
 ### 2. System Messages
 
@@ -5187,412 +5190,389 @@ The quality attributes below are stated as measurable targets for a single-organ
 | 67 | MSG47 | Toast | UC-19 – Publish Meeting / Exception Flows | Unable to publish the meeting. Please try again. |
 | 68 | MSG39 | List message | UC-76 – View Notifications / Exception Flows | The requested notification page is unavailable. |
 | 69 | MSG40 | List message | UC-76 – View Notifications / Exception Flows | Unable to load notifications. Please try again. |
-| 82 | MSG60 | Toast | UC-23a – Create Agenda Item / Normal Flow | Agenda item created successfully. |
-| 83 | MSG61 | Toast | UC-23b – Update Agenda Item / Normal Flow | Agenda item updated successfully. |
-| 84 | MSG62 | Toast | UC-23c – Delete Agenda Item / Normal Flow | Agenda item deleted successfully. |
-| 85 | MSG63 | Toast | UC-23d – Reorder Agenda Items / Normal Flow | Agenda order updated successfully. |
-| 86 | MSG64 | Toast | UC-24 – Set Current Agenda Item / Normal Flow | Current agenda item updated successfully. |
-| 87 | MSG65 | Toast | UC-25 – Complete Agenda Item / Normal Flow | Agenda item completed successfully. |
-| 88 | MSG66 | Field error / Form error | UC-23a – Create Agenda Item / Exception Flows; UC-23b – Update Agenda Item / Exception Flows | Invalid agenda item information.<br>Field errors:<br>- title: Agenda item title is required.<br>- documents: One or more selected documents are not available to this meeting. |
-| 89 | MSG67 | Dialog | UC-23a – UC-23d / Exception Flows | The agenda for this meeting can no longer be modified. |
-| 90 | MSG68 | Toast | UC-23a – Create Agenda Item / Exception Flows | Unable to create the agenda item. Please try again. |
-| 91 | MSG69 | Toast | UC-23b – Update Agenda Item / Exception Flows | Unable to update the agenda item. Please try again. |
-| 92 | MSG70 | Dialog / Toast | UC-23c – Delete Agenda Item / Exception Flows | Unable to delete the agenda item. Please try again. |
-| 93 | MSG71 | Toast | UC-23d – Reorder Agenda Items / Exception Flows | Unable to update the agenda order. Please try again. |
-| 94 | MSG72 | Dialog | UC-24 – Set Current Agenda Item / Exception Flows | Another agenda item is already in progress. Complete it before starting another agenda item. |
-| 95 | MSG73 | Dialog | UC-24 – Set Current Agenda Item / Exception Flows | This agenda item cannot be set as current. |
-| 96 | MSG74 | Dialog | UC-25 – Complete Agenda Item / Exception Flows | This agenda item cannot be completed. |
-| 97 | MSG75 | Toast | UC-24 – Set Current Agenda Item / Exception Flows | Unable to set the current agenda item. Please try again. |
-| 98 | MSG76 | Toast | UC-25 – Complete Agenda Item / Exception Flows | Unable to complete the agenda item. Please try again. |
-| 99 | MSG83 | Field error | UC-18 – Review Meeting Approval / Exception Flows | Rejection reason is required. |
-| 100 | MSG84 | Field error | UC-18 – Review Meeting Approval / Exception Flows | Rejection reason must not exceed 1000 characters. |
-| 101 | MSG95 | Page / Table message | UC-29 – View Meeting Participants / Exception Flows; UC-32 – View Participant Response Status / Exception Flows | Unable to load meeting participants. Please try again. |
-| 102 | MSG96 | Toast | UC-30a – Add Meeting Participant / Normal Flow | Meeting participant added successfully. |
-| 103 | MSG97 | Field error / Form error | UC-30a – Add Meeting Participant / Exception Flows | Invalid meeting participant information.Field messages:- The selected user is not available.- This user is already a meeting participant.- A valid meeting role is required.- The Member may only assign a missing Secretary during preparation.- Guest name and email are required.- Guest email is invalid.- This guest email is already invited to the meeting.- This email is already represented by an internal meeting participant. |
-| 104 | MSG98 | Dialog | UC-30a, UC-30b, UC-30c / Exception Flows | The meeting participant list cannot be modified in its current status. |
-| 105 | MSG99 | Toast | UC-30a – Add Meeting Participant / Exception Flows | Unable to add the meeting participant. Please try again. |
-| 106 | MSG100 | Toast | UC-30b – Manage Meeting Role / Normal Flow | Meeting role updated successfully. |
-| 107 | MSG101 | Field error | UC-30b – Manage Meeting Role / Exception Flows | A valid meeting role is required. |
-| 108 | MSG102 | Toast | UC-30b – Manage Meeting Role / Exception Flows; UC-34 / EX-3 | Unable to update the meeting role. Please try again. |
-| 109 | MSG103 | Toast | UC-30c – Remove Meeting Participant / Normal Flow | Meeting participant removed successfully. |
-| 110 | MSG104 | Toast | UC-30c – Remove Meeting Participant / Exception Flows | Unable to remove the meeting participant. Please try again. |
-| 111 | MSG105 | Toast | UC-31 – Respond to Meeting Invitation / Normal Flow | Meeting invitation response recorded successfully. |
-| 112 | MSG106 | Field error / Form error | UC-31 – Respond to Meeting Invitation / Exception Flows | Invalid meeting invitation response. |
-| 113 | MSG107 | Dialog | UC-31 – Respond to Meeting Invitation / Exception Flows | This meeting invitation can no longer be answered. |
-| 114 | MSG108 | Toast | UC-31 – Respond to Meeting Invitation / Exception Flows | Unable to save the meeting invitation response. Please try again. |
-| 115 | MSG109 | Dialog | UC-30b – Manage Meeting Role / Exception Flows; UC-30c – Remove Meeting Participant / Exception Flows | The meeting must retain its required Chair and Secretary. Assign a replacement first. |
-| 116 | MSG110 | Toast | UC-20 – Start Meeting / Normal Flow | Meeting started successfully. |
-| 117 | MSG111 | Toast | UC-21 – End Meeting / Normal Flow | Meeting ended successfully. |
-| 118 | MSG112 | Dialog | UC-20 – Start Meeting / Exception Flows | This meeting cannot be started. |
-| 119 | MSG113 | Dialog | Retired; formerly UC-52 (Meeting Session) / End Meeting gate | Retired with Meeting Sessions; formerly “Complete or cancel all unfinished meeting sessions before ending the meeting.” This code must not be reused. |
-| 120 | MSG114 | Dialog | UC-21 – End Meeting / Exception Flows | This meeting cannot be ended. |
-| 121 | MSG115 | Toast | UC-20 – Start Meeting / Exception Flows | Unable to start the meeting. Please try again. |
-| 122 | MSG116 | Toast | UC-21 – End Meeting / Exception Flows | Unable to end the meeting. Please try again. |
-| 132 | MSG126 | Inline / Form error | UC-04 / EX-2 | Unable to verify the guest invitation. Check the code and try again. |
-| 134 | MSG128 | Page / Panel message | UC-26 – View Meeting Agenda / Exception Flows | Unable to load the meeting agenda. Please try again. |
-| 113 | MSG138 | Information | UC-14 – Meeting rescheduled successfully | Meeting rescheduled successfully. Invitees will be notified. |
-| 114 | MSG139 | Form error | Retired; formerly UC-21 / Open Vote gate | Retired on 13/10/2026: open Votes do not block End Meeting. This code must not be reused. |
-| 135 | MSG140 | Form error | UC-17 – Submit Meeting for Approval / EX-5 | No eligible meeting approver is available. Please contact the administrator. |
-| 136 | MSG141 | Retired | Retired; formerly UC-23b / EX-4 | Retired on 18/10/2026 (PO 16/10/2026): all Agenda Item fields may be edited in any execution status. This code must not be reused. |
-| 137 | MSG142 | Dialog / Form error | UC-23c / EX-2 | Only Pending agenda items can be deleted. |
-| 138 | MSG143 | Dialog / Form error | UC-23d / EX-2 | The agenda order is invalid or out of date. Refresh the agenda and try again. |
-| 139 | MSG144 | Retired | Retired; formerly UC-24 / EX-3 | Retired on 18/10/2026 (PO 16/10/2026): any Pending Agenda Item may be started, whatever its position. This code must not be reused. |
-| 140 | MSG145 | Form error | UC-30a / Detailed selection validation; reserved | One or more selected participants are invalid. No participants were added. |
-| 141 | MSG146 | Toast | UC-30b / Reserved; refined UC uses MSG102 | Unable to replace the Chair. Meeting roles remain unchanged. |
-| 142 | MSG147 | Toast | UC-33 / Normal Flow | Meeting attendance saved successfully. |
-| 143 | MSG148 | Field error | UC-33 / EX-1 | Select Present or Absent for each submitted participant or Guest. |
-| 144 | MSG149 | Dialog | UC-33 / EX-2 | Attendance can only be recorded while the meeting is in progress. |
-| 145 | MSG150 | Toast | UC-33 / EX-5 | Unable to confirm the attendance save result. Please reload the data before trying again. |
-| 146 | MSG151 | Dialog | UC-33 / EX-4 / Changed submitted participant or attendance | The participant or attendance data has changed. Please reload and review before saving. |
-| 147 | MSG152 | Retired | Retired; formerly UC-30a / EX-1; UC-30b / EX-1 | Retired on 20/10/2026 (PO 20/10/2026): additional Meeting permissions per participant were removed. This code must not be reused. |
-| 148 | MSG153 | Retired | Retired; formerly UC-30b / Normal Flow | Retired on 20/10/2026 (PO 20/10/2026): additional Meeting permissions per participant were removed. This code must not be reused. |
-| 149 | MSG154 | Information | UC-30b / Unchanged selection UI; no separate exception flow. UC-31 / AF-1 – the same response is submitted again. UC-14 / AF-2 – nothing has changed | No changes to save. |
-| 150 | MSG155 | Form error | Retired on 13/10/2026; formerly UC-21 / EX-3 | Retired: attendance incompleteness must not block End Meeting. This code must not be reused. |
-| 151 | MSG156 | Form error | UC-35a / EX-1; UC-35b / EX-1; UC-38 / EX-2 | Meeting documents are not accessible. |
-| 152 | MSG157 | Form error | UC-35a / EX-2 | Unable to load the document list. Please try again. |
-| 153 | MSG158 | Form error | UC-35b / EX-2; UC-37a / EX-3 | Unable to display the document. Please try again. |
-| 154 | MSG159 | Form error | UC-35b / EX-3 | Secret Meeting documents can only be viewed online and cannot be downloaded. |
-| 155 | MSG160 | Form error | UC-35b / EX-4 | Unable to download the document. Please try again. |
-| 156 | MSG161 | Toast | UC-36a / Normal Flow | Documents added to the Meeting successfully. |
-| 157 | MSG162 | Form error | UC-36a / EX-1 | You no longer have permission to add documents to this Meeting. |
-| 158 | MSG163 | Retired | Access by meeting right | Retired: document addition and Agenda Item linking are separate operations. Do not reuse. |
-| 159 | MSG164 | Field error / Form error | UC-36a / EX-2, UC-36b / AF-1, UC-39 / EX-1, UC-68a / AF-1 | Select valid PDF or DOCX files, each no larger than 10 MB. |
-| 160 | MSG165 | Form error | UC-36a / EX-4 | One or more selected documents are already attached to the Meeting. |
-| 161 | MSG166 | Form error | UC-36a / EX-5 | Unable to add the documents. No documents were added. Please try again. |
-| 162 | MSG167 | Toast | UC-36c / Normal Flow | Document removed from the Meeting successfully. |
-| 163 | MSG168 | Retired | Access by meeting right | Retired: Meeting Minutes no longer lock document removal. Do not reuse. |
-| 164 | MSG169 | Form error | UC-36c / EX-2 | You no longer have permission to remove documents from this Meeting. |
-| 165 | MSG170 | Form error | UC-36b, UC-36d / EX-2; UC-36c / EX-3; UC-68a / EX-2 | This document is no longer attached to the Meeting. Refresh the document list. |
-| 166 | MSG171 | Form error | UC-36c / EX-4 | Unable to remove the document. It remains attached to the Meeting. Please try again. |
-| 167 | MSG172 | Form error | UC-36a / EX-6 | Documents cannot be added after the Meeting has ended. |
-| 168 | MSG173 | Retired | Access by meeting right | Retired: Agenda Item status no longer locks document links. Do not reuse. |
-| 169 | MSG174 | Form error | UC-36a / EX-7 (also a former Chair or Secretary who can no longer view the Meeting) and UC-27 / EX-4 · Implemented; UC-36b / EX-7, UC-36c / EX-5, UC-36d / EX-7 reserved | This Meeting is not accessible. |
-| 170 | MSG175 | Form error | UC-37 / EX-2; UC-40a / EX-1; UC-40b / EX-1; UC-40c / EX-1; UC-41b / EX-1; UC-41c / EX-1; UC-41d / EX-1; UC-37a / EX-1 | This personal-library item is not available. |
-| 171 | MSG176 | Form error | UC-37 / EX-1; UC-37a / EX-2 | Unable to load your personal document library. Please try again. |
-| 172 | MSG177 | Toast | UC-39 / Normal Flow | Documents uploaded to your personal library successfully. |
-| 173 | MSG178 | Form error | UC-39 / EX-3 | Unable to upload the files. No documents were added. Please try again. |
-| 174 | MSG179 | Form error | UC-39 / EX-3, UC-40c / EX-2, UC-41a / EX-2, UC-41c / EX-1 | The selected destination folder is not available in your personal library. |
-| 175 | MSG180 | Toast | UC-40a / Normal Flow | Document deleted from your personal library successfully. |
-| 176 | MSG181 | Form error | UC-40a / EX-2 | Unable to delete the document. Your personal library remains unchanged. |
-| 177 | MSG182 | Form error | Retired — document-name constraint removed | Retired: no document-name validation is specified under this code. Do not reuse. |
-| 178 | MSG183 | Toast | UC-40b / Normal Flow | Document renamed successfully. |
-| 179 | MSG184 | Form error | UC-40b / EX-2 | Unable to rename the document. Its name remains unchanged. |
-| 180 | MSG185 | Toast | UC-40c / Normal Flow | Document moved successfully. |
-| 181 | MSG186 | Form error | UC-40c / EX-3 | Unable to move the document. Its location remains unchanged. |
-| 182 | MSG187 | Toast | UC-41a / Normal Flow | Folder created successfully. |
-| 183 | MSG188 | Form error | UC-41a / EX-1; UC-41b / EX-2 | Enter a folder name. |
-| 184 | MSG189 | Form error | UC-41a / EX-3; UC-41c / EX-4 | Folders cannot be nested more than five levels deep. |
-| 185 | MSG190 | Form error | UC-41a / EX-4 | Unable to create the folder. No folder was created. |
-| 186 | MSG191 | Toast | UC-41b / Normal Flow | Folder renamed successfully. |
-| 187 | MSG192 | Form error | UC-41b / EX-3 | Unable to rename the folder. Its name remains unchanged. |
-| 188 | MSG193 | Form error | UC-41c / EX-3 | A folder cannot be moved into itself or one of its descendants. |
-| 189 | MSG194 | Toast | UC-41c / Normal Flow | Folder moved successfully. |
-| 190 | MSG195 | Form error | UC-41c / EX-5 | Unable to move the folder. Its location remains unchanged. |
-| 191 | MSG196 | Form error | UC-41d / EX-2 | Only an empty folder can be deleted. |
-| 192 | MSG197 | Toast | UC-41d / Normal Flow | Folder deleted successfully. |
-| 193 | MSG198 | Form error | UC-41d / EX-3 | Unable to delete the folder. The folder remains unchanged. |
-| 194 | MSG199 | Toast | UC-38 / Normal Flow | Comment added successfully. |
-| 195 | MSG200 | Form error | UC-38 / EX-1 | Enter a comment. |
-| 196 | MSG201 | Form error | Retired — no separate commenting permission | Retired: document-viewing access also permits commenting. Do not reuse. |
-| 197 | MSG202 | Form error | UC-38 / EX-3 | Unable to add the comment. No comment was saved. Please try again. |
-| 198 | MSG203 | Form error | Retired — mandatory PDF page reference removed | Retired: a PDF comment does not require a page reference. Do not reuse. |
-| 199 | MSG204 | Form error | UC-38 / EX-4 | Unable to load the document comments. Please try again. |
-| 200 | MSG205 | Form error | UC-62a, UC-62b / EX-1; UC-63, UC-64 / EX-6; UC-65 / EX-7; UC-66 / EX-3; UC-67 / EX-5; UC-68a / EX-5; UC-68b / EX-4 | Meeting votes are not accessible. |
-| 201 | MSG206 | Form error | UC-62a / EX-2 | Unable to load the meeting votes. Please try again. |
-| 202 | MSG207 | Notification | UC-62a / AF-1 | No votes to display. |
-| 203 | MSG208 | Form error | UC-62b / EX-2 | Unable to load the vote status or result. Please try again. |
-| 204 | MSG209 | Form error | UC-63, UC-64 / Invalid configuration | Invalid vote information. Check the highlighted fields. |
-| 205 | MSG210 | Notification | UC-63 / Normal Flow | Vote draft created successfully. |
-| 206 | MSG211 | Notification | UC-63 / AF-1 | Vote draft updated successfully. |
-| 207 | MSG212 | Notification | UC-63 / AF-2 | Vote draft deleted successfully. |
-| 208 | MSG213 | Form error | UC-63 / EX-2; UC-68a, UC-68b / EX-1 | Only Draft votes may be managed by the current Chair or Secretary while the meeting is Approved, Published or InProgress. |
-| 209 | MSG214 | Form error | UC-63 / EX-3 | Unable to create the vote draft. No draft was created. Please try again. |
-| 210 | MSG215 | Form error | UC-63 / EX-4 | Unable to update the vote draft. The draft remains unchanged. Please try again. |
-| 211 | MSG216 | Form error | UC-63 / EX-5 | Unable to delete the vote draft. The draft remains unchanged. Please try again. |
-| 212 | MSG217 | Notification | UC-64 / Normal Flow | Voting opened successfully. |
-| 213 | MSG218 | Form error | UC-64 / EX-2 | Only the current Chair can open a Draft vote while the meeting is InProgress. |
-| 214 | MSG219 | Form error | UC-64 / EX-3 | Another vote is already open in this meeting. Close it before opening this vote. |
-| 215 | MSG220 | Form error | UC-64 / EX-4 | No eligible voters are available for the selected roles. Voting was not opened. |
-| 216 | MSG221 | Form error | UC-64 (opening the Vote cannot be saved) | Unable to open voting. Voting was not opened. Please try again. |
-| 217 | MSG222 | Form error | UC-65 / EX-1 | Select one option before submitting your ballot. |
-| 218 | MSG223 | Form error | UC-65 / EX-2 | The selected option is not available for this vote. |
-| 219 | MSG224 | Form error | UC-65 / EX-3 | You are not eligible to cast a ballot in this vote. |
-| 220 | MSG225 | Form error | UC-65 / EX-4 | This vote is no longer accepting ballots. |
-| 221 | MSG226 | Form error | UC-65 / EX-5 | Your ballot has already been recorded. It cannot be changed or withdrawn. |
-| 222 | MSG227 | Notification | UC-65 / Normal Flow | Your ballot has been recorded. |
-| 223 | MSG228 | Form error | UC-65 / EX-6 | Unable to record your ballot. No ballot was recorded. Please try again. |
-| 224 | MSG229 | Notification | UC-66 / Normal Flow | Voting closed. The result is available. |
-| 225 | MSG230 | Form error | UC-66 / EX-1 | Only the current Chair can close an Open vote while the meeting is InProgress or Ended. |
-| 226 | MSG231 | Form error | UC-66 / EX-2 | Unable to close voting. The vote and saved ballots remain unchanged. Please try again. |
-| 227 | MSG232 | Form error | UC-67 / EX-1 | Select Passed, NotPassed or Deferred. |
-| 228 | MSG233 | Form error | UC-67 / EX-2 | The vote conclusion has already been recorded and cannot be changed. |
-| 229 | MSG234 | Form error | UC-67 / EX-3 | Only the current Chair can record a conclusion for a Closed vote while the meeting is InProgress or Ended. |
-| 230 | MSG235 | Notification | UC-67 / Normal Flow | Vote conclusion recorded successfully. |
-| 231 | MSG236 | Form error | UC-67 / EX-4 | Unable to record the vote conclusion. No conclusion was recorded. Please try again. |
-| 232 | MSG237 | Retired | FE-11 | Retired: closing or cancelling the UI does not require a system message. Do not reuse. |
-| 213 | MSG238 | Reserved, not implemented | UC-36b / Normal Flow | Documents attached to the Agenda Item successfully. |
-| 214 | MSG239 | Reserved, not implemented | UC-36d / Normal Flow | Document detached from the Agenda Item successfully. |
-| 215 | MSG240 | Reserved, not implemented | UC-36b / EX-1 | You no longer have permission to link documents in this Meeting. |
-| 216 | MSG241 | Reserved, not implemented | UC-36d / EX-1 | You no longer have permission to unlink documents in this Meeting. |
-| 217 | MSG242 | Reserved, not implemented | UC-36b, UC-36d / EX-3 | Select an available Agenda Item in this Meeting. |
-| 218 | MSG243 | Reserved, not implemented | UC-36b / EX-4 | One or more selected documents are already attached to the Agenda Item. |
-| 219 | MSG244 | Reserved, not implemented | UC-36b / EX-5 | Unable to link the document. No links were changed. Please try again. |
-| 220 | MSG245 | Reserved, not implemented | UC-36d / EX-5 | Unable to unlink the document. No links were changed. Please try again. |
-| 221 | MSG246 | Reserved, not implemented | UC-36d / EX-4 | This document is no longer linked to the selected Agenda Item. Refresh the document list. |
-| 222 | MSG247 | Reserved, not implemented | UC-36b, UC-36d / EX-6 | Document links cannot be changed after the Meeting has ended. |
-| 223 | MSG248 | Reserved, not implemented | UC-36c / EX-1 | Documents cannot be removed after the Meeting has ended. |
-| 224 | MSG249 | Reserved, not implemented | UC-36a / EX-2 | Select one or more available documents from your personal library. |
-| 225 | MSG250 | Retired | Retired; formerly UC-23b / EX-4 | Retired on 18/10/2026 (PO 16/10/2026): Agenda Items no longer have a Planned Duration and Presenter is not locked. This code must not be reused. |
-| 226 | MSG251 | Reserved, not implemented | UC-38 / EX-5 | Comments are read-only after the Meeting has ended. |
-| 233 | MSG252 | Form error | UC-65 / EX-8 | Confirm that you have read all vote documents before casting your ballot. |
-| 234 | MSG253 | Toast | UC-42 / Normal Flow | Document read confirmed. |
-| 235 | MSG254 | Form error | UC-42 / EX-1 | Scroll to the last page of the document before confirming that you have read it. |
-| 236 | MSG255 | Toast | UC-42 / EX-3 | Unable to confirm document reading. Please try again. |
-| 237 | MSG256 | Dialog | UC-30b / EX-5 | From publication onward, only the current Chair can hand over the Chair role while the Chair's account is active. |
-| 238 | MSG257 | Toast | UC-34 / Normal Flow | Chair role handed over successfully. |
-| 239 | MSG258 | Not displayed | UC-34 / AF-1 (returned by the API; the screen offers no Chair option instead of showing it) | No participant can receive the Chair role. Add an internal participant first. |
-| 240 | MSG259 | Form error | UC-34 / EX-1 | The selected participant can no longer receive the Chair role. Select another participant. |
-| 241 | MSG260 | Dialog | UC-34 / EX-2 | You can no longer hand over the Chair role for this meeting. |
-| 242 | MSG261 | Toast | UC-22 / Normal Flow | Meeting cancelled successfully. |
-| 243 | MSG262 | Form error | UC-22 / EX-1 | Enter a reason for cancelling the meeting. |
-| 244 | MSG263 | Dialog | UC-22 / EX-2 | This meeting can no longer be cancelled. |
-| 245 | MSG264 | Toast | UC-22 / EX-3 | Unable to cancel the meeting. Please try again. |
-| 246 | MSG265 | Toast | UC-68a / Normal Flow | Documents attached to the vote successfully. |
-| 247 | MSG266 | Form error | UC-68a / EX-3 | One or more selected documents are already attached to the vote. |
-| 248 | MSG267 | Toast | UC-68a / EX-4 | Unable to attach the documents. No documents were attached. Please try again. |
-| 249 | MSG268 | Toast | UC-68b / Normal Flow | Document detached from the vote successfully. |
-| 250 | MSG269 | Dialog | UC-68b / EX-2 | This document is no longer attached to the vote. Refresh the list. |
-| 251 | MSG270 | Toast | UC-68b / EX-3 | Unable to detach the document. No changes were made. Please try again. |
-| 252 | MSG271 | Toast | UC-27 / Normal Flow | Agenda item conclusion saved. |
-| 253 | MSG272 | Form error | UC-27 / EX-1 | Enter a conclusion of up to 2,000 characters. |
-| 254 | MSG273 | Dialog | UC-27 / EX-2 | The conclusion of this agenda item can no longer be changed. |
-| 255 | MSG274 | Toast | UC-27 / EX-3 | Unable to save the agenda item conclusion. Please try again. |
-| 256 | MSG288 | Form error | UC-39 / EX-2 | Upload up to 10 files at a time, no larger than 100 MB in total. |
-| 257 | MSG289 | Toast | UC-33 / EX-6 | Unable to load attendance data. |
-| 258 | MSG285 | Toast | UC-31 – Respond to Meeting Invitation / EX-4 | You have already answered this invitation. Your answer cannot be changed. |
-| 259 | MSG286 | Toast | UC-31 – Respond to Meeting Invitation / EX-5 | The Chair runs the Meeting, so no attendance confirmation is needed. |
-| 260 | MSG277 | Form error | UC-13 – Create Meeting / EX-3 | The meeting participant list is not valid. |
-| 261 | MSG78 | Toast | UC-17 – Submit Meeting for Approval / Normal Flow | Meeting submitted for approval. |
-| 262 | MSG79 | Toast | Meeting workflow – Return to Draft / Normal Flow | Meeting returned to Draft. |
-| 263 | MSG80 | Form error | Meeting workflow – Status change request / Validation (API) | The status change request is not valid. |
-| 264 | MSG81 | Form error | UC-17 – Submit Meeting for Approval / Exception Flows | The meeting does not have enough information to be submitted for approval. |
-| 265 | MSG82 | Form error | UC-17 – Submit Meeting for Approval / Exception Flows | The approver is not valid or can no longer approve meetings. |
-| 266 | MSG85 | Dialog | Meeting workflow and participant actions / Authorization (API); UC-22 / EX-5 | You do not have permission to perform this action. |
-| 267 | MSG86 | Form error | Meeting workflow – View status history / Validation (API) | The query parameters are not valid. |
-| 268 | MSG87 | Form error | Meeting workflow and Agenda Management / Validation (API) | The request content is larger than 64 KiB. |
-| 269 | MSG88 | Toast | Meeting workflow – Approve, Reject, Return to Draft, Transfer Organizer / Exception Flows | Unable to change the meeting status. Please try again. |
-| 270 | MSG89 | Toast | Meeting workflow – Transfer Organizer / Normal Flow | Meeting transferred to the new organizer. |
-| 271 | MSG117 | Banner | UC-43 – Join Meeting Room / Alternative Flows (AF-3); UC-47 – Moderate Meeting Room / Exception Flows; UC-50 – Register to Speak / Exception Flows | The meeting room opens only while the meeting is in progress. |
-| 272 | MSG118 | Toast | UC-43 – Join Meeting Room / Exception Flows | Unable to join the meeting room. Please try again. |
-| 273 | MSG123 | Dialog | UC-47 – Moderate Meeting Room / Exception Flows | Only the Chair can mute another person's microphone. |
-| 274 | MSG124 | Toast | UC-47 – Moderate Meeting Room / Exception Flows; UC-50 – Register to Speak / Exception Flows | The meeting room server did not respond. Please try again. |
-| 275 | MSG130 | Toast | Meeting workflow – Approver list / Exception Flows | Unable to load the approver list. Please try again. |
-| 276 | MSG131 | Toast | Meeting workflow / Exception Flows | Unable to verify the accounts for this meeting action. Please try again. |
-| 277 | MSG132 | Dialog | UC-18 – Review Meeting Approval / Exception Flows | The meeting status has changed or no longer allows this action. |
-| 278 | MSG133 | Dialog | Meeting workflow – Return to Draft / Exception Flows | The meeting status has changed or no longer allows this action. |
-| 279 | MSG134 | Form error | Meeting workflow – Transfer Organizer / Exception Flows | The new organizer is not valid or can no longer create meetings. |
-| 280 | MSG135 | Dialog | Meeting workflow – Transfer Organizer / Exception Flows | The meeting status has changed or no longer allows this action. |
-| 281 | MSG136 | Toast | UC-15 / EX-2; Meeting workflow – Readiness and status history / Exception Flows | Unable to load the meeting workflow data. Please try again. |
-| 282 | MSG137 | Form error | UC-19 – Publish Meeting / Exception Flows | The meeting needs exactly one active Chair and at least one active Secretary before it can be published. |
-| 283 | MSG275 | Dialog | UC-30 – Manage Meeting Participants / Exception Flows | The participant list has changed. Please reload and try again. |
-| 284 | MSG276 | Form error | UC-30 – Manage Meeting Participants / Validation (API) | The query or If-Match header is not valid. Please reload the data. |
-| 285 | MSG278 | Form error | UC-33 – Record Attendance / Validation (API) | The attendance paging parameters are not valid. |
-| 286 | MSG280 | Dialog | UC-43 – Join Meeting Room / Exception Flows | This meeting is held in person, so it has no online meeting room. |
-| 287 | MSG281 | Dialog | UC-43 – Join Meeting Room / Exception Flows | The online meeting room is not ready. Please contact the administrator. |
-| 288 | MSG282 | Toast | UC-47 – Moderate Meeting Room / Exception Flows | This person is no longer in the room or has no microphone on. |
-| 289 | MSG283 | Toast | UC-43 – Join Meeting Room / Exception Flows | Unable to load the meeting room status. Please try again. |
-| 290 | MSG284 | Toast | UC-47 – Moderate Meeting Room / Exception Flows | Unable to mute the microphone. Please try again. |
-| 291 | MSG287 | Toast | Common – Access update (front-end event: access rights changed) | Your access rights have just been updated. |
-| 292 | MSG346 | Form error | UC-39 / EX-4 | The system’s document storage is full. No documents were uploaded. Please contact an administrator. |
-| 293 | MSG347 | Form error | UC-40b / EX-3 (document name invalid: blank, extension only, control characters, exceeds 255 chars, or changes extension) | The document name is not valid. It must not be blank and must keep the .pdf or .docx extension of the file. |
-| 294 | MSG348 | Form error | UC-41a / EX-5; UC-41b / EX-4 (folder name exceeds 400 characters); UC-38 / EX-6 (comment exceeds 4,000 characters) | The text is longer than allowed. |
-| 295 | MSG349 | Form error | UC-36a / EX-10; UC-36b / EX-8; UC-36c / EX-6; UC-36d / EX-8; UC-38 / EX-7 (meeting is cancelled, BR-028) | This meeting was cancelled and can no longer be modified. |
-| 296 | MSG122 | Dialog | Retired; formerly UC-46 (View Meeting Room Participants) / Exception Flows | Retired: the Participants panel reads the people connected straight from the room, so nothing has to be loaded or retried. This code must not be reused. |
-| 297 | MSG328 | Dialog | UC-44 – Leave Meeting Room / Exception Flows (EX-5) | You have left the meeting room. |
-| 298 | MSG329 | Dialog | UC-44 – Leave Meeting Room / Exception Flows (EX-2) | You joined this room from another tab or device, so this tab left the room. |
-| 299 | MSG330 | Dialog | UC-44 – Leave Meeting Room / Exception Flows (EX-3) | You are no longer on the participant list of this meeting room. |
-| 300 | MSG331 | Dialog | UC-43 – Join Meeting Room / Exception Flows (EX-1); UC-44 – Leave Meeting Room / Exception Flows (EX-1) | The meeting has ended, the meeting room is closed. |
-| 301 | MSG332 | Dialog | UC-44 – Leave Meeting Room / Exception Flows (EX-4) | Connection to the meeting room lost. |
-| 302 | MSG333 | Banner | UC-44 – Leave Meeting Room / Exception Flows (EX-4); UC-46 – View Meeting Room Participants / Exception Flows (EX-1); UC-48 – Use In-room Chat / Exception Flows (EX-2) | Connection lost, reconnecting… |
-| 303 | MSG334 | Inline / Form error | UC-45a – Manage Microphone / Exception Flows (EX-1); UC-45b – Manage Camera / Exception Flows (EX-1) | The browser is blocking the {device} (“microphone and camera” when both are blocked; the lobby shows the message once). Click the lock icon beside the address bar, choose Allow and reload the page. You can still join the room to listen — this sentence is omitted when only the camera is blocked. |
-| 304 | MSG335 | Inline / Form error | UC-45a, UC-45b, UC-45d / Exception Flows (device not found) | No {device} was found on this computer. |
-| 305 | MSG336 | Inline / Form error | UC-45a, UC-45b, UC-45d / Exception Flows (device in use) | The {device} is being used by another application (Zoom, Teams…). Close that application and try again. |
-| 306 | MSG337 | Inline / Form error | UC-45d – Choose Audio and Video Devices / Exception Flows (EX-3) | Unable to open the {device}. Check the permission at the lock icon beside the address bar. You can still join the room to listen — this sentence is omitted when only the camera is blocked. |
-| 307 | MSG338 | Banner | UC-43 – Join Meeting Room / Alternative Flows (AF-4) | The browser is blocking audio playback. |
-| 308 | MSG339 | Toast | UC-47 – Moderate Meeting Room / Normal Flow | The Chair has muted your microphone. You can turn it back on when you need to speak. |
-| 309 | MSG340 | Toast | UC-45c – Manage Screen Sharing / Alternative Flows (AF-1) | {name} started presenting, so your screen share was stopped. |
-| 310 | MSG341 | Toast | UC-45c – Manage Screen Sharing / Exception Flows (EX-1) | Unable to share your screen. Please try again. |
-| 311 | MSG342 | Toast | UC-47 – Moderate Meeting Room / Normal Flow | Muted the microphone of {name}. |
-| 312 | MSG343 | Inline / Form error | UC-48 – Use In-room Chat / Exception Flows (EX-1) | Unable to send the message. Please try again. |
-| 313 | MSG350 | Dialog | UC-43 – Join Meeting Room / Exception Flows (EX-6) | The meeting was cancelled, so the meeting room does not open. |
-| 314 | MSG345 | Form error | UC-22 / EX-4 | Cancellation reason must not exceed 1000 characters. |
-| 315 | MSG290 | Toast / Inline success | UC-52c / Normal Flow | Meeting recording saved. |
-| 316 | MSG291 | Form error | UC-52a / EX-1, UC-52c / EX-1 | Invalid recording information. |
-| 317 | MSG292 | Form error | UC-52c / EX-2, UC-56c / EX-2, UC-57b / EX-5 | Unsupported audio format. Use MP3, M4A, WAV, WebM, or OGG. |
-| 318 | MSG293 | Form error | UC-52c (the audio file is larger than 300 MB) | Recording exceeds 300 MB. |
-| 319 | MSG294 | Dialog / Banner | UC-52c / EX-3 | Recordings may only be saved while the meeting is in progress or has ended. |
-| 320 | MSG295 | Inline error | UC-52a / EX-2, UC-52c / EX-2, UC-52d / EX-2, UC-52e / EX-2, UC-54a / EX-2, UC-55a / EX-2, UC-55b / EX-2 | Only the meeting Secretary may manage recordings. |
-| 321 | MSG296 | Toast / Inline success | UC-52e / Normal Flow | Meeting recording erased. |
-| 322 | MSG297 | Inline error | UC-51a / EX-1, UC-51b / EX-1 | Unable to load meeting recordings. |
-| 323 | MSG298 | Inline error | UC-52a, UC-52c, UC-52d, UC-52e (the recording change cannot be saved) | Unable to save recording changes. Please try again. |
-| 324 | MSG299 | Inline error | UC-51a / EX-2, UC-54a / EX-1 | Unable to load transcript. |
-| 325 | MSG300 | Toast / Inline success | UC-54a / AF-2 | Recording queued for transcription. |
-| 326 | MSG301 | Dialog | UC-54a / EX-1 | The recording is currently queued or being transcribed and cannot be rerun yet. |
-| 327 | MSG302 | Toast / Inline success | UC-55a / Normal Flow | Transcript segment saved. |
-| 328 | MSG303 | Form error | UC-55a / EX-1 | Transcript text is invalid. |
-| 329 | MSG304 | Inline error | UC-53, UC-55a, UC-55b, UC-55d (the transcript change cannot be saved) | Unable to save transcript changes. Please try again. |
-| 330 | MSG305 | Toast / Inline success | UC-56b / Normal Flow | Voice identification enabled for your account. |
-| 331 | MSG306 | Toast / Inline success | UC-56f / Normal Flow | Voice identification disabled and all voice samples deleted. |
-| 332 | MSG307 | Toast / Inline success | UC-56c / Normal Flow | Voice sample saved. |
-| 333 | MSG308 | Inline error | UC-56c / EX-1 | Voice identification consent is required before recording a voice sample. |
-| 334 | MSG309 | Inline error | UC-56c / EX-3, UC-57b / EX-6 | Voice sample did not meet quality requirements. Please read the full sample text clearly. |
-| 335 | MSG310 | Inline error | UC-56c / EX-4 | Maximum of 5 voice samples reached. Delete an existing sample before recording a new one. |
-| 336 | MSG311 | Toast / Inline success | UC-56e / Normal Flow | Voice sample deleted. |
-| 337 | MSG312 | Inline error | UC-45a / EX-4, UC-56c / EX-5, UC-57b / EX-7 | Speech recognition service is currently unavailable. Please try again later. |
-| 338 | MSG313 | Inline error | UC-56b / EX-1, UC-56c / EX-6 | Invalid submission data. |
-| 339 | MSG314 | Inline error | UC-56a / EX-1 | Unable to load voice profile information. |
-| 340 | MSG315 | Inline error | UC-56b / EX-2, UC-56c / EX-7, UC-56e / EX-1, UC-56f / EX-1, UC-57d / EX-2 | Unable to save changes. Please try again. |
-| 341 | MSG316 | Toast / Inline success | UC-55b / Normal Flow | Speaker assigned. |
-| 342 | MSG317 | Inline error | UC-55b / EX-1 (person not on the roster, Guest without a current invitation, or both userId and guestId sent) | Assigned person must be on the current meeting roster. |
-| 343 | MSG318 | Toast / Inline success | System-level, not shown in a Use Case (UC-45a / AF-2 saves the sentence) | Spoken sentence recorded. |
-| 344 | MSG319 | Inline error | System-level, not shown in a Use Case (UC-45a / AF-2) | Spoken sentence audio is invalid. |
-| 345 | MSG320 | Dialog / Banner | UC-45a / EX-5 | In-person meetings do not record per-mic speech, or the meeting is no longer running. |
-| 346 | MSG321 | Inline error | System-level, not shown in a Use Case (UC-45a / AF-2) | A spoken sentence cannot exceed 60 seconds. |
-| 347 | MSG322 | Toast / Inline success | UC-55d / Normal Flow, UC-53 / Normal Flow | Spoken sentence deleted. |
-| 348 | MSG323 | Inline error | UC-55d / EX-1, UC-53 / EX-1 | Only the speaker or the Secretary may delete this sentence. |
-| 349 | MSG324 | Retired | Retired — the recording method follows the Meeting format | Retired: nobody chooses the recording method any more; it follows the Meeting format. |
-| 350 | MSG325 | Retired | Retired — the recording method follows the Meeting format | Retired: nobody chooses the recording method any more; it follows the Meeting format. |
-| 351 | MSG326 | Retired | Retired — the recording method follows the Meeting format | Retired: nobody chooses the recording method any more; it follows the Meeting format. |
-| 352 | MSG327 | Retired | Retired — the recording method follows the Meeting format | Retired: nobody chooses the recording method any more; it follows the Meeting format. |
-| 353 | MSG344 | Retired | Retired — the online room no longer records the whole call | Retired: the online room records each person’s own microphone instead of the whole call. |
-| 354 | MSG351 | Toast / Inline success | UC-55c / Normal Flow | Sentence excluded from meeting record. |
-| 355 | MSG352 | Toast / Inline success | UC-55c / AF-1 | Sentence restored to meeting record. |
-| 356 | MSG353 | Inline error | UC-55c / EX-1 | Only the Chair or Secretary may exclude a sentence from the meeting record. |
-| 357 | MSG354 | Inline error | UC-55c / EX-2 | Invalid sentence exclusion reason. |
-| 358 | MSG355 | Inline error | UC-51c / EX-1, UC-54b / EX-1 | Only the Chair or Secretary may download meeting recordings and transcripts. |
-| 359 | MSG356 | Inline error | UC-51c / EX-2, UC-54b / EX-2 | Recordings and transcripts of Secret meetings cannot be downloaded. |
-| 360 | MSG357 | Inline error | UC-54b / EX-3 | Transcript is not ready for download. |
-| 361 | MSG358 | Dialog / Banner | UC-52a, UC-52c (the Meeting is Online, PRE-2 not met) | Online meetings record per-mic speech; room recordings are not available. |
-| 362 | MSG359 | Dialog / Banner | UC-52a / EX-3 | Room microphone can only be turned on while the meeting is in progress. |
-| 363 | MSG360 | Dialog / Banner | UC-52a / EX-4 | Room microphone is currently active on another device. |
-| 364 | MSG361 | Inline error | UC-52a (the recorded audio cannot be read) | The recorded audio is not valid. |
-| 365 | MSG362 | Inline error | UC-52a / EX-5 | This recording take has been closed and cannot accept additional audio. |
-| 366 | MSG363 | Toast / Inline success | UC-52a / Normal Flow | Room recording take saved. |
-| 367 | MSG364 | Dialog / Banner | UC-52e / EX-1 | Room microphone is currently recording. Turn off the microphone before erasing. |
-| 368 | MSG365 | Toast / Inline notice | UC-52a / AF-5 | Microphone detected no speech; take was not saved. |
-| 369 | MSG366 | Toast / Inline success | UC-52d / Normal Flow | Recording take deleted. |
-| 370 | MSG367 | Dialog / Banner | UC-52d / EX-1 | Recording contains only one take. Erase the entire recording to remove it. |
-| 371 | MSG371 | Page / Panel message | UC-04 / EX-1 | The guest invitation is no longer valid. |
-| 372 | MSG372 | Inline / Form error | UC-04 / EX-4 | Too many incorrect codes. Request a new code. |
-| 373 | MSG373 | Inline / Form error | UC-04 / EX-5 | Wait before requesting another code. |
-| 374 | MSG374 | Page / Panel message | UC-04 / EX-3 | Verification could not be completed. |
-| 375 | MSG375 | Toast | UC-04 / AF-2 | A verification code was sent to the invited email. |
-| 376 | MSG376 | Toast | UC-04 / Normal Flow | Display information saved. |
-| 377 | MSG377 | Field error / Form error | UC-04 / EX-7 | Invalid display information. |
-| 378 | MSG378 | Page / Panel message | UC-04 / EX-8 | The guest session has ended. |
-| 379 | MSG379 | Inline / Form error | UC-04 / EX-6 | Too many codes requested. Try again later or contact the Meeting Secretary. |
-| 380 | MSG380 | Inline / Form error | UC-43 / EX-9 | Confirm that you have read the recording notice before joining the meeting room. |
-| 381 | MSG381 | Field error / Form error | UC-04 / EX-9 | The display name was already declared. |
-| 382 | MSG382 | Page / Panel message | UC-35b / EX-5; UC-37a / EX-4 | The file of this document is no longer in storage and cannot be opened. Please contact the administrator. |
-| 383 | MSG383 | Page / Panel message | UC-35b / EX-6 | The browser cannot display this file. It may be damaged or in an unsupported format. |
-| 384 | MSG384 | Toast | UC-58 / Step 4 | The request was sent. The draft appears when the AI has written it. |
-| 385 | MSG385 | Form error | UC-58 / EX-1; UC-60 / EX-3; UC-61 / EX-2 | Only the Chair or Secretary may create, edit and review the draft. |
-| 386 | MSG386 | Form error | UC-58 / EX-2 | A draft can be created only after the meeting has ended. |
-| 387 | MSG387 | Form error | UC-58 / EX-3 | The AI is writing the draft, please wait. |
-| 388 | MSG388 | Toast / Inline success | UC-60 / Step 6 | Draft saved. |
-| 389 | MSG389 | Field error / Form error | UC-60 / EX-1 | The draft content is invalid. |
-| 390 | MSG390 | Form error | UC-60 / EX-2; UC-61 / EX-1 | There is no draft to correct or review. |
-| 391 | MSG391 | Toast / Inline success | UC-61 / Step 4 | Draft approved. |
-| 392 | MSG392 | Page / Panel message | UC-58 / EX-7; UC-59 / EX-1 | Unable to load the draft. |
-| 393 | MSG393 | Form error | UC-58 / EX-5; UC-60 / EX-4; UC-61 / EX-3 | Unable to save the draft. Please try again. |
-| 394 | MSG394 | Form error | UC-58 / EX-4 | The AI server is not ready. Contact the system administrator. |
-| 395 | MSG395 | Toast / Inline success | UC-70 / Step 5 | Minutes draft created. |
-| 396 | MSG396 | Toast / Inline success | UC-71 / Step 5 | Minutes saved. |
-| 397 | MSG397 | Form error | UC-70 / EX-1; UC-71 / EX-4 | Only the Chair or Secretary may write the minutes. |
-| 398 | MSG398 | Form error | UC-70 / EX-2 | The minutes can be written only after the meeting has ended. |
-| 399 | MSG399 | Form error | UC-70 / EX-3 | This meeting already has a minutes draft. |
-| 400 | MSG400 | Form error | UC-70 / EX-4; UC-71 / EX-3 | The minutes have been submitted or issued and can no longer be changed. |
-| 401 | MSG401 | Form error | UC-71 / EX-1 | The minutes were just changed by someone else. Reload to see the latest version. |
-| 402 | MSG402 | Field error / Form error | UC-71 / EX-2 | The minutes content is invalid. |
-| 403 | MSG403 | Page / Panel message | UC-69 / EX-1 | Unable to load the minutes. |
-| 404 | MSG404 | Form error | UC-70 / EX-5; UC-71 / EX-5 | Unable to save the minutes. Please try again. |
-| 405 | MSG405 | Form error | UC-71 / EX-6 | The minutes of a Secret meeting cannot be downloaded. |
-| 406 | MSG406 | Form error | UC-71 / EX-8 | Download the minutes as a Word (docx) or PDF file only. |
-| 407 | MSG407 | Toast | UC-55b / AF-2 | The speaker of this sentence has been changed. |
-| 424 | MSG424 | Toast | UC-72 / Normal Flow | Minutes submitted to the Chair for approval. |
-| 425 | MSG425 | Form error | UC-72 / EX-1 | Only the Secretary may submit the minutes for approval. |
-| 426 | MSG426 | Form error | UC-72 / EX-2 | The minutes can be submitted only after the meeting has ended. |
-| 427 | MSG427 | Toast | UC-73 / Normal Flow | Minutes approved and issued. |
-| 428 | MSG428 | Form error | UC-73 / EX-1; UC-74 / EX-1 | Only the Chair may approve or return the minutes. |
-| 429 | MSG429 | Form error | UC-73 / EX-2; UC-74 / EX-2 | These minutes are not waiting for approval. |
-| 430 | MSG430 | Toast | UC-74 / Normal Flow | Minutes returned to the Secretary. |
-| 431 | MSG431 | Field error / Form error | UC-74 / EX-3 | Enter a reason for returning the minutes, up to 2,000 characters. |
-| 432 | MSG432 | Toast | UC-75 / Normal Flow | Correction draft created. |
-| 433 | MSG433 | Form error | UC-75 / EX-2 | Only issued minutes can be corrected. |
-| 434 | MSG434 | Form error | UC-75 / EX-3 | A correction of these minutes is already in progress. |
-| 456 | MSG456 | Form error | UC-70 / EX-7 | A correction cannot be rebuilt from the template. Correct it by hand. |
-| 457 | MSG457 | Inline error | UC-50 / EX-3 | Only the current Chair may run the speaking turns. |
-| 458 | MSG458 | Inline error | UC-50 / EX-4 | You must be in the meeting room to register to speak. |
-| 459 | MSG459 | Inline error | UC-50 / EX-5 | Someone is already invited or speaking. Close that turn first. |
-| 460 | MSG460 | Inline error | UC-50 / EX-6 | This speaking request has changed. Reload the list. |
-| 461 | MSG461 | Inline error | UC-50 (the speaking queue cannot be loaded) | Unable to load the speaking queue. Please try again. |
-| 462 | MSG462 | Inline error | UC-50 (the speaking turn change cannot be saved) | Unable to save the speaking turn change. Please try again. |
-| 435 | MSG435 | Toast | UC-80a / Normal Flow | Calendar share request sent. |
-| 436 | MSG436 | Toast | UC-80c / Normal Flow | Calendar share accepted. |
-| 437 | MSG437 | Toast | UC-80c / Normal Flow | Calendar share request declined. |
-| 438 | MSG438 | Toast | UC-80e / Normal Flow | Calendar share request withdrawn. |
-| 439 | MSG439 | List message | UC-80f, UC-81c / Normal Flow | This calendar share was stopped because the viewer is no longer a Member or an account was deactivated. Ask for a new share. |
-| 440 | MSG440 | Retired | Retired; formerly UC-80 (share list), UC-81c / Normal Flow | Retired on 09/11/2026 (PO 09/11/2026 Q-B): a share past its end date is no longer listed, so no message is shown. This code must not be reused. |
-| 441 | MSG441 | Toast | UC-80b / Normal Flow | Calendar shared. Waiting for acceptance. |
-| 442 | MSG442 | Toast | UC-80c / AF-1, UC-80d / AF-1 | Calendar share updated. |
-| 443 | MSG443 | Form error | UC-80a / EX-3, UC-80b / EX-3, UC-80c / EX-3, UC-80d / EX-3 | The date range is invalid. |
-| 444 | MSG444 | Form error | UC-81a / EX-1 | The meeting-time search is invalid. Check the highlighted fields. |
-| 445 | MSG445 | Information | UC-81a / AF-1 | No time slot fits everyone. Showing the slots with the most people free. |
-| 446 | MSG446 | Toast | UC-81b / EX-1 | This time slot is no longer free. Please choose another slot. |
-| 447 | MSG447 | Toast | UC-80a / EX-5, UC-80b / EX-4, UC-80c / EX-4, UC-80d / EX-4, UC-80e / EX-3 | Unable to save the calendar sharing data. Please try again. |
-| 448 | MSG448 | Form error | UC-80a / EX-1, UC-81a / EX-2, UC-81b / EX-2 | Only a Member can do this. |
-| 449 | MSG449 | Form error | UC-80a / EX-2, UC-80b / EX-2 | There is already a pending or effective share with this person. |
-| 450 | MSG450 | Form error | UC-80c / EX-2, UC-80c / AF-1, UC-80d / EX-2, UC-80e / EX-2 | This action is not allowed in the current state of the share. |
-| 451 | MSG451 | Toast | UC-80e / AF-1 | Calendar sharing ended. |
-| 452 | MSG452 | Toast | UC-80c / AF-1 | Calendar share change declined. |
-| 453 | MSG453 | Page | UC-80f / EX-1, UC-81a / EX-3, UC-81b / EX-3, UC-81c / EX-1 | Unable to load the calendar sharing data. Please try again. |
-| 454 | MSG454 | Toast | UC-80d / Normal Flow | Calendar share change request sent. |
-| 455 | MSG455 | Form error | UC-80b / EX-1 | This person cannot receive a calendar share. |
-| 463 | MSG463 | Reserved, not implemented | UC-79a / EX-1, UC-79b / EX-1 | The report period is invalid. Choose up to 24 months, with the start month not after the end month. |
-| 464 | MSG464 | Reserved, not implemented | UC-79a / EX-2 | Unable to load the report. Please try again. |
-| 465 | MSG465 | Reserved, not implemented | UC-79b / EX-2 | Unable to export the report. Please try again. |
-| 466 | MSG466 | Table message | UC-79a / AF-2 | There are no meetings you can view in this period. |
-| 467 | MSG467 | Form error | UC-80a / EX-6, UC-80b / EX-6 | Unable to load the candidate list. |
-| 468 | MSG468 | Toast | UC-80c / EX-5 | The sender's account has been deactivated. You cannot accept this share. |
-| 469 | MSG469 | Reserved, not implemented | UC-12 / EX-1 | The audit log filter is invalid. Check the period and the selected values. |
-| 470 | MSG470 | Reserved, not implemented | UC-12 / EX-2 | Unable to load the audit log. Please try again. |
-| 471 | MSG473 | Toast / Inline success | UC-57b / Normal Flow | Voice sample recorded for the attendee. |
-| 472 | MSG474 | Toast / Inline success | UC-57d / Normal Flow | Voice sample deleted. |
-| 473 | MSG475 | Inline error | UC-57b / EX-2 | This person has not agreed to Voice ID under the current terms. They can enable it on the My voice page. |
-| 474 | MSG476 | Inline error | UC-57b / EX-3 | This person already has 50 collected voice samples. Delete a collected sample before recording a new one. |
-| 475 | MSG477 | Inline error | UC-57b / EX-4 | Retired: the meeting-path collection was removed. Do not reuse this code. |
-| 491 | MSG483 | Inline error | UC-57b / EX-4 | Confirm the person agreed to this recording. |
-| 477 | MSG478 | Dialog / Banner | UC-52c / EX-8 | Hybrid Meetings are recorded live with the room microphone to match the timing of remote speech; audio files cannot be uploaded. |
-| 478 | MSG479 | Dialog | UC-54a / EX-3 | The combined recording is for listening only. Its speech has already been transcribed from the room and per-microphone recordings. |
-| 479 | MSG414 | API error (429 + Retry-After) | UC-01 – Sign in with Email and Password / UC-02 – Sign in with Google – rate limiting | Too many attempts. Please try again in a few minutes. |
-| 480 | MSG480 | Inline error (lobby) | UC-43 – Join Meeting Room / Exception Flows (EX-11) | Could not connect to the meeting room. Please try again. |
-| 481 | MSG415 | Success (200) | UC-28 Normal Flow | Note saved. |
-| 482 | MSG416 | Error (403) | UC-28 EX-1 | Only the Secretary may write meeting notes. |
-| 483 | MSG417 | Error (409) | UC-28 EX-2 | Notes can be written only while the meeting is in progress, or after it has ended until the minutes draft is created. |
-| 484 | MSG418 | Error (409) | UC-28 EX-3 | This note was changed in another window. Reload to see the latest version. |
-| 485 | MSG419 | Error (400) | UC-28 EX-4 | The note is too long. A note can hold up to 20,000 characters. |
-| 486 | MSG420 | Error (409) | UC-28 EX-5 | The selected agenda item is no longer part of this meeting. |
-| 487 | MSG421 | Error (500) | UC-28 EX-6 | Unable to load the meeting notes. |
-| 488 | MSG422 | Error (503) | UC-28 EX-7 | Unable to save the note. It is kept on this device and will be sent again. |
-| 489 | MSG423 | FE (client) | UC-28 AF-3 | You are offline. The note is kept on this device and will be saved when the connection returns. |
-| 490 | MSG481 | Form error | UC-58 / EX-9 | The meeting has no spoken sentences for the AI to summarise. |
-| 491 | MSG482 | Form error | UC-51c / EX-3 | The recording could not be converted to MP3. Please try again later. |
-| 492 | MSG484 | Form error | UC-79a / EX-3, UC-79b / EX-3 | The report parameters are invalid. Choose the data, grouping or filter again. |
+| 70 | MSG60 | Toast | UC-23a – Create Agenda Item / Normal Flow | Agenda item created successfully. |
+| 71 | MSG61 | Toast | UC-23b – Update Agenda Item / Normal Flow | Agenda item updated successfully. |
+| 72 | MSG62 | Toast | UC-23c – Delete Agenda Item / Normal Flow | Agenda item deleted successfully. |
+| 73 | MSG63 | Toast | UC-23d – Reorder Agenda Items / Normal Flow | Agenda order updated successfully. |
+| 74 | MSG64 | Toast | UC-24 – Set Current Agenda Item / Normal Flow | Current agenda item updated successfully. |
+| 75 | MSG65 | Toast | UC-25 – Complete Agenda Item / Normal Flow | Agenda item completed successfully. |
+| 76 | MSG66 | Field error / Form error | UC-23a – Create Agenda Item / Exception Flows; UC-23b – Update Agenda Item / Exception Flows | Invalid agenda item information.<br>Field errors:<br>- title: Agenda item title is required.<br>- documents: One or more selected documents are not available to this meeting. |
+| 77 | MSG67 | Dialog | UC-23a – UC-23d / Exception Flows | The agenda for this meeting can no longer be modified. |
+| 78 | MSG68 | Toast | UC-23a – Create Agenda Item / Exception Flows | Unable to create the agenda item. Please try again. |
+| 79 | MSG69 | Toast | UC-23b – Update Agenda Item / Exception Flows | Unable to update the agenda item. Please try again. |
+| 80 | MSG70 | Dialog / Toast | UC-23c – Delete Agenda Item / Exception Flows | Unable to delete the agenda item. Please try again. |
+| 81 | MSG71 | Toast | UC-23d – Reorder Agenda Items / Exception Flows | Unable to update the agenda order. Please try again. |
+| 82 | MSG72 | Dialog | UC-24 – Set Current Agenda Item / Exception Flows | Another agenda item is already in progress. Complete it before starting another agenda item. |
+| 83 | MSG73 | Dialog | UC-24 – Set Current Agenda Item / Exception Flows | This agenda item cannot be set as current. |
+| 84 | MSG74 | Dialog | UC-25 – Complete Agenda Item / Exception Flows | This agenda item cannot be completed. |
+| 85 | MSG75 | Toast | UC-24 – Set Current Agenda Item / Exception Flows | Unable to set the current agenda item. Please try again. |
+| 86 | MSG76 | Toast | UC-25 – Complete Agenda Item / Exception Flows | Unable to complete the agenda item. Please try again. |
+| 87 | MSG83 | Field error | UC-18 – Review Meeting Approval / Exception Flows | Rejection reason is required. |
+| 88 | MSG84 | Field error | UC-18 – Review Meeting Approval / Exception Flows | Rejection reason must not exceed 1000 characters. |
+| 89 | MSG95 | Page / Table message | UC-29 – View Meeting Participants / Exception Flows; UC-32 – View Participant Response Status / Exception Flows | Unable to load meeting participants. Please try again. |
+| 90 | MSG96 | Toast | UC-30a – Add Meeting Participant / Normal Flow | Meeting participant added successfully. |
+| 91 | MSG97 | Field error / Form error | UC-30a – Add Meeting Participant / Exception Flows | Invalid meeting participant information.Field messages:- The selected user is not available.- This user is already a meeting participant.- A valid meeting role is required.- The Member may only assign a missing Secretary during preparation.- Guest name and email are required.- Guest email is invalid.- This guest email is already invited to the meeting.- This email is already represented by an internal meeting participant. |
+| 92 | MSG98 | Dialog | UC-30a, UC-30b, UC-30c / Exception Flows | The meeting participant list cannot be modified in its current status. |
+| 93 | MSG99 | Toast | UC-30a – Add Meeting Participant / Exception Flows | Unable to add the meeting participant. Please try again. |
+| 94 | MSG100 | Toast | UC-30b – Manage Meeting Role / Normal Flow | Meeting role updated successfully. |
+| 95 | MSG101 | Field error | UC-30b – Manage Meeting Role / Exception Flows | A valid meeting role is required. |
+| 96 | MSG102 | Toast | UC-30b – Manage Meeting Role / Exception Flows; UC-34 / EX-3 | Unable to update the meeting role. Please try again. |
+| 97 | MSG103 | Toast | UC-30c – Remove Meeting Participant / Normal Flow | Meeting participant removed successfully. |
+| 98 | MSG104 | Toast | UC-30c – Remove Meeting Participant / Exception Flows | Unable to remove the meeting participant. Please try again. |
+| 99 | MSG105 | Toast | UC-31 – Respond to Meeting Invitation / Normal Flow | Meeting invitation response recorded successfully. |
+| 100 | MSG106 | Field error / Form error | UC-31 – Respond to Meeting Invitation / Exception Flows | Invalid meeting invitation response. |
+| 101 | MSG107 | Dialog | UC-31 – Respond to Meeting Invitation / Exception Flows | This meeting invitation can no longer be answered. |
+| 102 | MSG108 | Toast | UC-31 – Respond to Meeting Invitation / Exception Flows | Unable to save the meeting invitation response. Please try again. |
+| 103 | MSG109 | Dialog | UC-30b – Manage Meeting Role / Exception Flows; UC-30c – Remove Meeting Participant / Exception Flows | The meeting must retain its required Chair and Secretary. Assign a replacement first. |
+| 104 | MSG110 | Toast | UC-20 – Start Meeting / Normal Flow | Meeting started successfully. |
+| 105 | MSG111 | Toast | UC-21 – End Meeting / Normal Flow | Meeting ended successfully. |
+| 106 | MSG112 | Dialog | UC-20 – Start Meeting / Exception Flows | This meeting cannot be started. |
+| 107 | MSG114 | Dialog | UC-21 – End Meeting / Exception Flows | This meeting cannot be ended. |
+| 108 | MSG115 | Toast | UC-20 – Start Meeting / Exception Flows | Unable to start the meeting. Please try again. |
+| 109 | MSG116 | Toast | UC-21 – End Meeting / Exception Flows | Unable to end the meeting. Please try again. |
+| 110 | MSG126 | Inline / Form error | UC-04 / EX-2 | Unable to verify the guest invitation. Check the code and try again. |
+| 111 | MSG128 | Page / Panel message | UC-26 – View Meeting Agenda / Exception Flows | Unable to load the meeting agenda. Please try again. |
+| 112 | MSG138 | Information | UC-14 – Meeting rescheduled successfully | Meeting rescheduled successfully. Invitees will be notified. |
+| 113 | MSG140 | Form error | UC-17 – Submit Meeting for Approval / EX-5 | No eligible meeting approver is available. Please contact the administrator. |
+| 114 | MSG142 | Dialog / Form error | UC-23c / EX-2 | Only Pending agenda items can be deleted. |
+| 115 | MSG143 | Dialog / Form error | UC-23d / EX-2 | The agenda order is invalid or out of date. Refresh the agenda and try again. |
+| 116 | MSG145 | Form error | UC-30a / Detailed selection validation; reserved | One or more selected participants are invalid. No participants were added. |
+| 117 | MSG146 | Toast | UC-30b / Reserved; refined UC uses MSG102 | Unable to replace the Chair. Meeting roles remain unchanged. |
+| 118 | MSG147 | Toast | UC-33 / Normal Flow | Meeting attendance saved successfully. |
+| 119 | MSG148 | Field error | UC-33 / EX-1 | Select Present or Absent for each submitted participant or Guest. |
+| 120 | MSG149 | Dialog | UC-33 / EX-2 | Attendance can only be recorded while the meeting is in progress. |
+| 121 | MSG150 | Toast | UC-33 / EX-5 | Unable to confirm the attendance save result. Please reload the data before trying again. |
+| 122 | MSG151 | Dialog | UC-33 / EX-4 / Changed submitted participant or attendance | The participant or attendance data has changed. Please reload and review before saving. |
+| 123 | MSG154 | Information | UC-30b / Unchanged selection UI; no separate exception flow. UC-31 / AF-1 – the same response is submitted again. UC-14 / AF-2 – nothing has changed | No changes to save. |
+| 124 | MSG156 | Form error | UC-35a / EX-1; UC-35b / EX-1; UC-38 / EX-2 | Meeting documents are not accessible. |
+| 125 | MSG157 | Form error | UC-35a / EX-2 | Unable to load the document list. Please try again. |
+| 126 | MSG158 | Form error | UC-35b / EX-2; UC-37a / EX-3 | Unable to display the document. Please try again. |
+| 127 | MSG159 | Form error | UC-35b / EX-3 | Secret Meeting documents can only be viewed online and cannot be downloaded. |
+| 128 | MSG160 | Form error | UC-35b / EX-4 | Unable to download the document. Please try again. |
+| 129 | MSG161 | Toast | UC-36a / Normal Flow | Documents added to the Meeting successfully. |
+| 130 | MSG162 | Form error | UC-36a / EX-1 | You no longer have permission to add documents to this Meeting. |
+| 131 | MSG164 | Field error / Form error | UC-36a / EX-2, UC-36b / AF-1, UC-39 / EX-1, UC-68a / AF-1 | Select valid PDF or DOCX files, each no larger than 10 MB. |
+| 132 | MSG165 | Form error | UC-36a / EX-4 | One or more selected documents are already attached to the Meeting. |
+| 133 | MSG166 | Form error | UC-36a / EX-5 | Unable to add the documents. No documents were added. Please try again. |
+| 134 | MSG167 | Toast | UC-36c / Normal Flow | Document removed from the Meeting successfully. |
+| 135 | MSG169 | Form error | UC-36c / EX-2 | You no longer have permission to remove documents from this Meeting. |
+| 136 | MSG170 | Form error | UC-36b, UC-36d / EX-2; UC-36c / EX-3; UC-68a / EX-2 | This document is no longer attached to the Meeting. Refresh the document list. |
+| 137 | MSG171 | Form error | UC-36c / EX-4 | Unable to remove the document. It remains attached to the Meeting. Please try again. |
+| 138 | MSG172 | Form error | UC-36a / EX-6 | Documents cannot be added after the Meeting has ended. |
+| 139 | MSG174 | Form error | UC-36a / EX-7 (also a former Chair or Secretary who can no longer view the Meeting) and UC-27 / EX-4 · Implemented; UC-36b / EX-7, UC-36c / EX-5, UC-36d / EX-7 reserved | This Meeting is not accessible. |
+| 140 | MSG175 | Form error | UC-37 / EX-2; UC-40a / EX-1; UC-40b / EX-1; UC-40c / EX-1; UC-41b / EX-1; UC-41c / EX-1; UC-41d / EX-1; UC-37a / EX-1 | This personal-library item is not available. |
+| 141 | MSG176 | Form error | UC-37 / EX-1; UC-37a / EX-2 | Unable to load your personal document library. Please try again. |
+| 142 | MSG177 | Toast | UC-39 / Normal Flow | Documents uploaded to your personal library successfully. |
+| 143 | MSG178 | Form error | UC-39 / EX-3 | Unable to upload the files. No documents were added. Please try again. |
+| 144 | MSG179 | Form error | UC-39 / EX-3, UC-40c / EX-2, UC-41a / EX-2, UC-41c / EX-1 | The selected destination folder is not available in your personal library. |
+| 145 | MSG180 | Toast | UC-40a / Normal Flow | Document deleted from your personal library successfully. |
+| 146 | MSG181 | Form error | UC-40a / EX-2 | Unable to delete the document. Your personal library remains unchanged. |
+| 147 | MSG183 | Toast | UC-40b / Normal Flow | Document renamed successfully. |
+| 148 | MSG184 | Form error | UC-40b / EX-2 | Unable to rename the document. Its name remains unchanged. |
+| 149 | MSG185 | Toast | UC-40c / Normal Flow | Document moved successfully. |
+| 150 | MSG186 | Form error | UC-40c / EX-3 | Unable to move the document. Its location remains unchanged. |
+| 151 | MSG187 | Toast | UC-41a / Normal Flow | Folder created successfully. |
+| 152 | MSG188 | Form error | UC-41a / EX-1; UC-41b / EX-2 | Enter a folder name. |
+| 153 | MSG189 | Form error | UC-41a / EX-3; UC-41c / EX-4 | Folders cannot be nested more than five levels deep. |
+| 154 | MSG190 | Form error | UC-41a / EX-4 | Unable to create the folder. No folder was created. |
+| 155 | MSG191 | Toast | UC-41b / Normal Flow | Folder renamed successfully. |
+| 156 | MSG192 | Form error | UC-41b / EX-3 | Unable to rename the folder. Its name remains unchanged. |
+| 157 | MSG193 | Form error | UC-41c / EX-3 | A folder cannot be moved into itself or one of its descendants. |
+| 158 | MSG194 | Toast | UC-41c / Normal Flow | Folder moved successfully. |
+| 159 | MSG195 | Form error | UC-41c / EX-5 | Unable to move the folder. Its location remains unchanged. |
+| 160 | MSG196 | Form error | UC-41d / EX-2 | Only an empty folder can be deleted. |
+| 161 | MSG197 | Toast | UC-41d / Normal Flow | Folder deleted successfully. |
+| 162 | MSG198 | Form error | UC-41d / EX-3 | Unable to delete the folder. The folder remains unchanged. |
+| 163 | MSG199 | Toast | UC-38 / Normal Flow | Comment added successfully. |
+| 164 | MSG200 | Form error | UC-38 / EX-1 | Enter a comment. |
+| 165 | MSG202 | Form error | UC-38 / EX-3 | Unable to add the comment. No comment was saved. Please try again. |
+| 166 | MSG204 | Form error | UC-38 / EX-4 | Unable to load the document comments. Please try again. |
+| 167 | MSG205 | Form error | UC-62a, UC-62b / EX-1; UC-63, UC-64 / EX-6; UC-65 / EX-7; UC-66 / EX-3; UC-67 / EX-5; UC-68a / EX-5; UC-68b / EX-4 | Meeting votes are not accessible. |
+| 168 | MSG206 | Form error | UC-62a / EX-2 | Unable to load the meeting votes. Please try again. |
+| 169 | MSG207 | Notification | UC-62a / AF-1 | No votes to display. |
+| 170 | MSG208 | Form error | UC-62b / EX-2 | Unable to load the vote status or result. Please try again. |
+| 171 | MSG209 | Form error | UC-63, UC-64 / Invalid configuration | Invalid vote information. Check the highlighted fields. |
+| 172 | MSG210 | Notification | UC-63 / Normal Flow | Vote draft created successfully. |
+| 173 | MSG211 | Notification | UC-63 / AF-1 | Vote draft updated successfully. |
+| 174 | MSG212 | Notification | UC-63 / AF-2 | Vote draft deleted successfully. |
+| 175 | MSG213 | Form error | UC-63 / EX-2; UC-68a, UC-68b / EX-1 | Only Draft votes may be managed by the current Chair or Secretary while the meeting is Approved, Published or InProgress. |
+| 176 | MSG214 | Form error | UC-63 / EX-3 | Unable to create the vote draft. No draft was created. Please try again. |
+| 177 | MSG215 | Form error | UC-63 / EX-4 | Unable to update the vote draft. The draft remains unchanged. Please try again. |
+| 178 | MSG216 | Form error | UC-63 / EX-5 | Unable to delete the vote draft. The draft remains unchanged. Please try again. |
+| 179 | MSG217 | Notification | UC-64 / Normal Flow | Voting opened successfully. |
+| 180 | MSG218 | Form error | UC-64 / EX-2 | Only the current Chair can open a Draft vote while the meeting is InProgress. |
+| 181 | MSG219 | Form error | UC-64 / EX-3 | Another vote is already open in this meeting. Close it before opening this vote. |
+| 182 | MSG220 | Form error | UC-64 / EX-4 | No eligible voters are available for the selected roles. Voting was not opened. |
+| 183 | MSG221 | Form error | UC-64 (opening the Vote cannot be saved) | Unable to open voting. Voting was not opened. Please try again. |
+| 184 | MSG222 | Form error | UC-65 / EX-1 | Select one option before submitting your ballot. |
+| 185 | MSG223 | Form error | UC-65 / EX-2 | The selected option is not available for this vote. |
+| 186 | MSG224 | Form error | UC-65 / EX-3 | You are not eligible to cast a ballot in this vote. |
+| 187 | MSG225 | Form error | UC-65 / EX-4 | This vote is no longer accepting ballots. |
+| 188 | MSG226 | Form error | UC-65 / EX-5 | Your ballot has already been recorded. It cannot be changed or withdrawn. |
+| 189 | MSG227 | Notification | UC-65 / Normal Flow | Your ballot has been recorded. |
+| 190 | MSG228 | Form error | UC-65 / EX-6 | Unable to record your ballot. No ballot was recorded. Please try again. |
+| 191 | MSG229 | Notification | UC-66 / Normal Flow | Voting closed. The result is available. |
+| 192 | MSG230 | Form error | UC-66 / EX-1 | Only the current Chair can close an Open vote while the meeting is InProgress or Ended. |
+| 193 | MSG231 | Form error | UC-66 / EX-2 | Unable to close voting. The vote and saved ballots remain unchanged. Please try again. |
+| 194 | MSG232 | Form error | UC-67 / EX-1 | Select Passed, NotPassed or Deferred. |
+| 195 | MSG233 | Form error | UC-67 / EX-2 | The vote conclusion has already been recorded and cannot be changed. |
+| 196 | MSG234 | Form error | UC-67 / EX-3 | Only the current Chair can record a conclusion for a Closed vote while the meeting is InProgress or Ended. |
+| 197 | MSG235 | Notification | UC-67 / Normal Flow | Vote conclusion recorded successfully. |
+| 198 | MSG236 | Form error | UC-67 / EX-4 | Unable to record the vote conclusion. No conclusion was recorded. Please try again. |
+| 199 | MSG238 | Reserved, not implemented | UC-36b / Normal Flow | Documents attached to the Agenda Item successfully. |
+| 200 | MSG239 | Reserved, not implemented | UC-36d / Normal Flow | Document detached from the Agenda Item successfully. |
+| 201 | MSG240 | Reserved, not implemented | UC-36b / EX-1 | You no longer have permission to link documents in this Meeting. |
+| 202 | MSG241 | Reserved, not implemented | UC-36d / EX-1 | You no longer have permission to unlink documents in this Meeting. |
+| 203 | MSG242 | Reserved, not implemented | UC-36b, UC-36d / EX-3 | Select an available Agenda Item in this Meeting. |
+| 204 | MSG243 | Reserved, not implemented | UC-36b / EX-4 | One or more selected documents are already attached to the Agenda Item. |
+| 205 | MSG244 | Reserved, not implemented | UC-36b / EX-5 | Unable to link the document. No links were changed. Please try again. |
+| 206 | MSG245 | Reserved, not implemented | UC-36d / EX-5 | Unable to unlink the document. No links were changed. Please try again. |
+| 207 | MSG246 | Reserved, not implemented | UC-36d / EX-4 | This document is no longer linked to the selected Agenda Item. Refresh the document list. |
+| 208 | MSG247 | Reserved, not implemented | UC-36b, UC-36d / EX-6 | Document links cannot be changed after the Meeting has ended. |
+| 209 | MSG248 | Reserved, not implemented | UC-36c / EX-1 | Documents cannot be removed after the Meeting has ended. |
+| 210 | MSG249 | Reserved, not implemented | UC-36a / EX-2 | Select one or more available documents from your personal library. |
+| 211 | MSG251 | Reserved, not implemented | UC-38 / EX-5 | Comments are read-only after the Meeting has ended. |
+| 212 | MSG252 | Form error | UC-65 / EX-8 | Confirm that you have read all vote documents before casting your ballot. |
+| 213 | MSG253 | Toast | UC-42 / Normal Flow | Document read confirmed. |
+| 214 | MSG254 | Form error | UC-42 / EX-1 | Scroll to the last page of the document before confirming that you have read it. |
+| 215 | MSG255 | Toast | UC-42 / EX-3 | Unable to confirm document reading. Please try again. |
+| 216 | MSG256 | Dialog | UC-30b / EX-5 | From publication onward, only the current Chair can hand over the Chair role while the Chair's account is active. |
+| 217 | MSG257 | Toast | UC-34 / Normal Flow | Chair role handed over successfully. |
+| 218 | MSG258 | Not displayed | UC-34 / AF-1 (returned by the API; the screen offers no Chair option instead of showing it) | No participant can receive the Chair role. Add an internal participant first. |
+| 219 | MSG259 | Form error | UC-34 / EX-1 | The selected participant can no longer receive the Chair role. Select another participant. |
+| 220 | MSG260 | Dialog | UC-34 / EX-2 | You can no longer hand over the Chair role for this meeting. |
+| 221 | MSG261 | Toast | UC-22 / Normal Flow | Meeting cancelled successfully. |
+| 222 | MSG262 | Form error | UC-22 / EX-1 | Enter a reason for cancelling the meeting. |
+| 223 | MSG263 | Dialog | UC-22 / EX-2 | This meeting can no longer be cancelled. |
+| 224 | MSG264 | Toast | UC-22 / EX-3 | Unable to cancel the meeting. Please try again. |
+| 225 | MSG265 | Toast | UC-68a / Normal Flow | Documents attached to the vote successfully. |
+| 226 | MSG266 | Form error | UC-68a / EX-3 | One or more selected documents are already attached to the vote. |
+| 227 | MSG267 | Toast | UC-68a / EX-4 | Unable to attach the documents. No documents were attached. Please try again. |
+| 228 | MSG268 | Toast | UC-68b / Normal Flow | Document detached from the vote successfully. |
+| 229 | MSG269 | Dialog | UC-68b / EX-2 | This document is no longer attached to the vote. Refresh the list. |
+| 230 | MSG270 | Toast | UC-68b / EX-3 | Unable to detach the document. No changes were made. Please try again. |
+| 231 | MSG271 | Toast | UC-27 / Normal Flow | Agenda item conclusion saved. |
+| 232 | MSG272 | Form error | UC-27 / EX-1 | Enter a conclusion of up to 2,000 characters. |
+| 233 | MSG273 | Dialog | UC-27 / EX-2 | The conclusion of this agenda item can no longer be changed. |
+| 234 | MSG274 | Toast | UC-27 / EX-3 | Unable to save the agenda item conclusion. Please try again. |
+| 235 | MSG288 | Form error | UC-39 / EX-2 | Upload up to 10 files at a time, no larger than 100 MB in total. |
+| 236 | MSG289 | Toast | UC-33 / EX-6 | Unable to load attendance data. |
+| 237 | MSG285 | Toast | UC-31 – Respond to Meeting Invitation / EX-4 | You have already answered this invitation. Your answer cannot be changed. |
+| 238 | MSG286 | Toast | UC-31 – Respond to Meeting Invitation / EX-5 | The Chair runs the Meeting, so no attendance confirmation is needed. |
+| 239 | MSG277 | Form error | UC-13 – Create Meeting / EX-3 | The meeting participant list is not valid. |
+| 240 | MSG78 | Toast | UC-17 – Submit Meeting for Approval / Normal Flow | Meeting submitted for approval. |
+| 241 | MSG79 | Toast | Meeting workflow – Return to Draft / Normal Flow | Meeting returned to Draft. |
+| 242 | MSG80 | Form error | Meeting workflow – Status change request / Validation (API) | The status change request is not valid. |
+| 243 | MSG81 | Form error | UC-17 – Submit Meeting for Approval / Exception Flows | The meeting does not have enough information to be submitted for approval. |
+| 244 | MSG82 | Form error | UC-17 – Submit Meeting for Approval / Exception Flows | The approver is not valid or can no longer approve meetings. |
+| 245 | MSG85 | Dialog | Meeting workflow and participant actions / Authorization (API); UC-22 / EX-5 | You do not have permission to perform this action. |
+| 246 | MSG86 | Form error | Meeting workflow – View status history / Validation (API) | The query parameters are not valid. |
+| 247 | MSG87 | Form error | Meeting workflow and Agenda Management / Validation (API) | The request content is larger than 64 KiB. |
+| 248 | MSG88 | Toast | Meeting workflow – Approve, Reject, Return to Draft, Transfer Organizer / Exception Flows | Unable to change the meeting status. Please try again. |
+| 249 | MSG89 | Toast | Meeting workflow – Transfer Organizer / Normal Flow | Meeting transferred to the new organizer. |
+| 250 | MSG117 | Banner | UC-43 – Join Meeting Room / Alternative Flows (AF-3); UC-47 – Moderate Meeting Room / Exception Flows; UC-50 – Register to Speak / Exception Flows | The meeting room opens only while the meeting is in progress. |
+| 251 | MSG118 | Toast | UC-43 – Join Meeting Room / Exception Flows | Unable to join the meeting room. Please try again. |
+| 252 | MSG123 | Dialog | UC-47 – Moderate Meeting Room / Exception Flows | Only the Chair can mute another person's microphone. |
+| 253 | MSG124 | Toast | UC-47 – Moderate Meeting Room / Exception Flows; UC-50 – Register to Speak / Exception Flows | The meeting room server did not respond. Please try again. |
+| 254 | MSG130 | Toast | Meeting workflow – Approver list / Exception Flows | Unable to load the approver list. Please try again. |
+| 255 | MSG131 | Toast | Meeting workflow / Exception Flows | Unable to verify the accounts for this meeting action. Please try again. |
+| 256 | MSG132 | Dialog | UC-18 – Review Meeting Approval / Exception Flows | The meeting status has changed or no longer allows this action. |
+| 257 | MSG133 | Dialog | Meeting workflow – Return to Draft / Exception Flows | The meeting status has changed or no longer allows this action. |
+| 258 | MSG134 | Form error | Meeting workflow – Transfer Organizer / Exception Flows | The new organizer is not valid or can no longer create meetings. |
+| 259 | MSG135 | Dialog | Meeting workflow – Transfer Organizer / Exception Flows | The meeting status has changed or no longer allows this action. |
+| 260 | MSG136 | Toast | UC-15 / EX-2; Meeting workflow – Readiness and status history / Exception Flows | Unable to load the meeting workflow data. Please try again. |
+| 261 | MSG137 | Form error | UC-19 – Publish Meeting / Exception Flows | The meeting needs exactly one active Chair and at least one active Secretary before it can be published. |
+| 262 | MSG275 | Dialog | UC-30 – Manage Meeting Participants / Exception Flows | The participant list has changed. Please reload and try again. |
+| 263 | MSG276 | Form error | UC-30 – Manage Meeting Participants / Validation (API) | The query or If-Match header is not valid. Please reload the data. |
+| 264 | MSG278 | Form error | UC-33 – Record Attendance / Validation (API) | The attendance paging parameters are not valid. |
+| 265 | MSG280 | Dialog | UC-43 – Join Meeting Room / Exception Flows | This meeting is held in person, so it has no online meeting room. |
+| 266 | MSG281 | Dialog | UC-43 – Join Meeting Room / Exception Flows | The online meeting room is not ready. Please contact the administrator. |
+| 267 | MSG282 | Toast | UC-47 – Moderate Meeting Room / Exception Flows | This person is no longer in the room or has no microphone on. |
+| 268 | MSG283 | Toast | UC-43 – Join Meeting Room / Exception Flows | Unable to load the meeting room status. Please try again. |
+| 269 | MSG284 | Toast | UC-47 – Moderate Meeting Room / Exception Flows | Unable to mute the microphone. Please try again. |
+| 270 | MSG287 | Toast | Common – Access update (front-end event: access rights changed) | Your access rights have just been updated. |
+| 271 | MSG346 | Form error | UC-39 / EX-4 | The system’s document storage is full. No documents were uploaded. Please contact an administrator. |
+| 272 | MSG347 | Form error | UC-40b / EX-3 (document name invalid: blank, extension only, control characters, exceeds 255 chars, or changes extension) | The document name is not valid. It must not be blank and must keep the .pdf or .docx extension of the file. |
+| 273 | MSG348 | Form error | UC-41a / EX-5; UC-41b / EX-4 (folder name exceeds 400 characters); UC-38 / EX-6 (comment exceeds 4,000 characters) | The text is longer than allowed. |
+| 274 | MSG349 | Form error | UC-36a / EX-10; UC-36b / EX-8; UC-36c / EX-6; UC-36d / EX-8; UC-38 / EX-7 (meeting is cancelled, BR-028) | This meeting was cancelled and can no longer be modified. |
+| 275 | MSG328 | Dialog | UC-44 – Leave Meeting Room / Exception Flows (EX-5) | You have left the meeting room. |
+| 276 | MSG329 | Dialog | UC-44 – Leave Meeting Room / Exception Flows (EX-2) | You joined this room from another tab or device, so this tab left the room. |
+| 277 | MSG330 | Dialog | UC-44 – Leave Meeting Room / Exception Flows (EX-3) | You are no longer on the participant list of this meeting room. |
+| 278 | MSG331 | Dialog | UC-43 – Join Meeting Room / Exception Flows (EX-1); UC-44 – Leave Meeting Room / Exception Flows (EX-1) | The meeting has ended, the meeting room is closed. |
+| 279 | MSG332 | Dialog | UC-44 – Leave Meeting Room / Exception Flows (EX-4) | Connection to the meeting room lost. |
+| 280 | MSG333 | Banner | UC-44 – Leave Meeting Room / Exception Flows (EX-4); UC-46 – View Meeting Room Participants / Exception Flows (EX-1); UC-48 – Use In-room Chat / Exception Flows (EX-2) | Connection lost, reconnecting… |
+| 281 | MSG334 | Inline / Form error | UC-45a – Manage Microphone / Exception Flows (EX-1); UC-45b – Manage Camera / Exception Flows (EX-1) | The browser is blocking the {device} (“microphone and camera” when both are blocked; the lobby shows the message once). Click the lock icon beside the address bar, choose Allow and reload the page. You can still join the room to listen — this sentence is omitted when only the camera is blocked. |
+| 282 | MSG335 | Inline / Form error | UC-45a, UC-45b, UC-45d / Exception Flows (device not found) | No {device} was found on this computer. |
+| 283 | MSG336 | Inline / Form error | UC-45a, UC-45b, UC-45d / Exception Flows (device in use) | The {device} is being used by another application (Zoom, Teams…). Close that application and try again. |
+| 284 | MSG337 | Inline / Form error | UC-45d – Choose Audio and Video Devices / Exception Flows (EX-3) | Unable to open the {device}. Check the permission at the lock icon beside the address bar. You can still join the room to listen — this sentence is omitted when only the camera is blocked. |
+| 285 | MSG338 | Banner | UC-43 – Join Meeting Room / Alternative Flows (AF-4) | The browser is blocking audio playback. |
+| 286 | MSG339 | Toast | UC-47 – Moderate Meeting Room / Normal Flow | The Chair has muted your microphone. You can turn it back on when you need to speak. |
+| 287 | MSG340 | Toast | UC-45c – Manage Screen Sharing / Alternative Flows (AF-1) | {name} started presenting, so your screen share was stopped. |
+| 288 | MSG341 | Toast | UC-45c – Manage Screen Sharing / Exception Flows (EX-1) | Unable to share your screen. Please try again. |
+| 289 | MSG342 | Toast | UC-47 – Moderate Meeting Room / Normal Flow | Muted the microphone of {name}. |
+| 290 | MSG343 | Inline / Form error | UC-48 – Use In-room Chat / Exception Flows (EX-1) | Unable to send the message. Please try again. |
+| 291 | MSG350 | Dialog | UC-43 – Join Meeting Room / Exception Flows (EX-6) | The meeting was cancelled, so the meeting room does not open. |
+| 292 | MSG345 | Form error | UC-22 / EX-4 | Cancellation reason must not exceed 1000 characters. |
+| 293 | MSG290 | Toast / Inline success | UC-52c / Normal Flow | Meeting recording saved. |
+| 294 | MSG291 | Form error | UC-52a / EX-1, UC-52c / EX-1 | Invalid recording information. |
+| 295 | MSG292 | Form error | UC-52c / EX-2, UC-56c / EX-2, UC-57b / EX-5 | Unsupported audio format. Use MP3, M4A, WAV, WebM, or OGG. |
+| 296 | MSG293 | Form error | UC-52c (the audio file is larger than 300 MB) | Recording exceeds 300 MB. |
+| 297 | MSG294 | Dialog / Banner | UC-52c / EX-3 | Recordings may only be saved while the meeting is in progress or has ended. |
+| 298 | MSG295 | Inline error | UC-52a / EX-2, UC-52c / EX-2, UC-52d / EX-2, UC-52e / EX-2, UC-54a / EX-2, UC-55a / EX-2, UC-55b / EX-2 | Only the meeting Secretary may manage recordings. |
+| 299 | MSG296 | Toast / Inline success | UC-52e / Normal Flow | Meeting recording erased. |
+| 300 | MSG297 | Inline error | UC-51a / EX-1, UC-51b / EX-1 | Unable to load meeting recordings. |
+| 301 | MSG298 | Inline error | UC-52a, UC-52c, UC-52d, UC-52e (the recording change cannot be saved) | Unable to save recording changes. Please try again. |
+| 302 | MSG299 | Inline error | UC-51a / EX-2, UC-54a / EX-1 | Unable to load transcript. |
+| 303 | MSG300 | Toast / Inline success | UC-54a / AF-2 | Recording queued for transcription. |
+| 304 | MSG301 | Dialog | UC-54a / EX-1 | The recording is currently queued or being transcribed and cannot be rerun yet. |
+| 305 | MSG302 | Toast / Inline success | UC-55a / Normal Flow | Transcript segment saved. |
+| 306 | MSG303 | Form error | UC-55a / EX-1 | Transcript text is invalid. |
+| 307 | MSG304 | Inline error | UC-53, UC-55a, UC-55b, UC-55d (the transcript change cannot be saved) | Unable to save transcript changes. Please try again. |
+| 308 | MSG305 | Toast / Inline success | UC-56b / Normal Flow | Voice identification enabled for your account. |
+| 309 | MSG306 | Toast / Inline success | UC-56f / Normal Flow | Voice identification disabled and all voice samples deleted. |
+| 310 | MSG307 | Toast / Inline success | UC-56c / Normal Flow | Voice sample saved. |
+| 311 | MSG308 | Inline error | UC-56c / EX-1 | Voice identification consent is required before recording a voice sample. |
+| 312 | MSG309 | Inline error | UC-56c / EX-3, UC-57b / EX-6 | Voice sample did not meet quality requirements. Please read the full sample text clearly. |
+| 313 | MSG310 | Inline error | UC-56c / EX-4 | Maximum of 5 voice samples reached. Delete an existing sample before recording a new one. |
+| 314 | MSG311 | Toast / Inline success | UC-56e / Normal Flow | Voice sample deleted. |
+| 315 | MSG312 | Inline error | UC-45a / EX-4, UC-56c / EX-5, UC-57b / EX-7 | Speech recognition service is currently unavailable. Please try again later. |
+| 316 | MSG313 | Inline error | UC-56b / EX-1, UC-56c / EX-6 | Invalid submission data. |
+| 317 | MSG314 | Inline error | UC-56a / EX-1 | Unable to load voice profile information. |
+| 318 | MSG315 | Inline error | UC-56b / EX-2, UC-56c / EX-7, UC-56e / EX-1, UC-56f / EX-1, UC-57d / EX-2 | Unable to save changes. Please try again. |
+| 319 | MSG316 | Toast / Inline success | UC-55b / Normal Flow | Speaker assigned. |
+| 320 | MSG317 | Inline error | UC-55b / EX-1 (person not on the roster, Guest without a current invitation, or both userId and guestId sent) | Assigned person must be on the current meeting roster. |
+| 321 | MSG318 | Toast / Inline success | System-level, not shown in a Use Case (UC-45a / AF-2 saves the sentence) | Spoken sentence recorded. |
+| 322 | MSG319 | Inline error | System-level, not shown in a Use Case (UC-45a / AF-2) | Spoken sentence audio is invalid. |
+| 323 | MSG320 | Dialog / Banner | UC-45a / EX-5 | In-person meetings do not record per-mic speech, or the meeting is no longer running. |
+| 324 | MSG321 | Inline error | System-level, not shown in a Use Case (UC-45a / AF-2) | A spoken sentence cannot exceed 60 seconds. |
+| 325 | MSG322 | Toast / Inline success | UC-55d / Normal Flow, UC-53 / Normal Flow | Spoken sentence deleted. |
+| 326 | MSG323 | Inline error | UC-55d / EX-1, UC-53 / EX-1 | Only the speaker or the Secretary may delete this sentence. |
+| 327 | MSG351 | Toast / Inline success | UC-55c / Normal Flow | Sentence excluded from meeting record. |
+| 328 | MSG352 | Toast / Inline success | UC-55c / AF-1 | Sentence restored to meeting record. |
+| 329 | MSG353 | Inline error | UC-55c / EX-1 | Only the Chair or Secretary may exclude a sentence from the meeting record. |
+| 330 | MSG354 | Inline error | UC-55c / EX-2 | Invalid sentence exclusion reason. |
+| 331 | MSG355 | Inline error | UC-51c / EX-1, UC-54b / EX-1 | Only the Chair or Secretary may download meeting recordings and transcripts. |
+| 332 | MSG356 | Inline error | UC-51c / EX-2, UC-54b / EX-2 | Recordings and transcripts of Secret meetings cannot be downloaded. |
+| 333 | MSG357 | Inline error | UC-54b / EX-3 | Transcript is not ready for download. |
+| 334 | MSG358 | Dialog / Banner | UC-52a, UC-52c (the Meeting is Online, PRE-2 not met) | Online meetings record per-mic speech; room recordings are not available. |
+| 335 | MSG359 | Dialog / Banner | UC-52a / EX-3 | Room microphone can only be turned on while the meeting is in progress. |
+| 336 | MSG360 | Dialog / Banner | UC-52a / EX-4 | Room microphone is currently active on another device. |
+| 337 | MSG361 | Inline error | UC-52a (the recorded audio cannot be read) | The recorded audio is not valid. |
+| 338 | MSG362 | Inline error | UC-52a / EX-5 | This recording take has been closed and cannot accept additional audio. |
+| 339 | MSG363 | Toast / Inline success | UC-52a / Normal Flow | Room recording take saved. |
+| 340 | MSG364 | Dialog / Banner | UC-52e / EX-1 | Room microphone is currently recording. Turn off the microphone before erasing. |
+| 341 | MSG365 | Toast / Inline notice | UC-52a / AF-5 | Microphone detected no speech; take was not saved. |
+| 342 | MSG366 | Toast / Inline success | UC-52d / Normal Flow | Recording take deleted. |
+| 343 | MSG367 | Dialog / Banner | UC-52d / EX-1 | Recording contains only one take. Erase the entire recording to remove it. |
+| 344 | MSG371 | Page / Panel message | UC-04 / EX-1 | The guest invitation is no longer valid. |
+| 345 | MSG372 | Inline / Form error | UC-04 / EX-4 | Too many incorrect codes. Request a new code. |
+| 346 | MSG373 | Inline / Form error | UC-04 / EX-5 | Wait before requesting another code. |
+| 347 | MSG374 | Page / Panel message | UC-04 / EX-3 | Verification could not be completed. |
+| 348 | MSG375 | Toast | UC-04 / AF-2 | A verification code was sent to the invited email. |
+| 349 | MSG376 | Toast | UC-04 / Normal Flow | Display information saved. |
+| 350 | MSG377 | Field error / Form error | UC-04 / EX-7 | Invalid display information. |
+| 351 | MSG378 | Page / Panel message | UC-04 / EX-8 | The guest session has ended. |
+| 352 | MSG379 | Inline / Form error | UC-04 / EX-6 | Too many codes requested. Try again later or contact the Meeting Secretary. |
+| 353 | MSG380 | Inline / Form error | UC-43 / EX-9 | Confirm that you have read the recording notice before joining the meeting room. |
+| 354 | MSG381 | Field error / Form error | UC-04 / EX-9 | The display name was already declared. |
+| 355 | MSG382 | Page / Panel message | UC-35b / EX-5; UC-37a / EX-4 | The file of this document is no longer in storage and cannot be opened. Please contact the administrator. |
+| 356 | MSG383 | Page / Panel message | UC-35b / EX-6 | The browser cannot display this file. It may be damaged or in an unsupported format. |
+| 357 | MSG384 | Toast | UC-58 / Step 4 | The request was sent. The draft appears when the AI has written it. |
+| 358 | MSG385 | Form error | UC-58 / EX-1; UC-60 / EX-3; UC-61 / EX-2 | Only the Chair or Secretary may create, edit and review the draft. |
+| 359 | MSG386 | Form error | UC-58 / EX-2 | A draft can be created only after the meeting has ended. |
+| 360 | MSG387 | Form error | UC-58 / EX-3 | The AI is writing the draft, please wait. |
+| 361 | MSG388 | Toast / Inline success | UC-60 / Step 6 | Draft saved. |
+| 362 | MSG389 | Field error / Form error | UC-60 / EX-1 | The draft content is invalid. |
+| 363 | MSG390 | Form error | UC-60 / EX-2; UC-61 / EX-1 | There is no draft to correct or review. |
+| 364 | MSG391 | Toast / Inline success | UC-61 / Step 4 | Draft approved. |
+| 365 | MSG392 | Page / Panel message | UC-58 / EX-7; UC-59 / EX-1 | Unable to load the draft. |
+| 366 | MSG393 | Form error | UC-58 / EX-5; UC-60 / EX-4; UC-61 / EX-3 | Unable to save the draft. Please try again. |
+| 367 | MSG394 | Form error | UC-58 / EX-4 | The AI server is not ready. Please try again later. |
+| 368 | MSG395 | Toast / Inline success | UC-70 / Step 5 | Minutes draft created. |
+| 369 | MSG396 | Toast / Inline success | UC-71 / Step 5 | Minutes saved. |
+| 370 | MSG397 | Form error | UC-70 / EX-1; UC-71 / EX-4 | Only the Chair or Secretary may write the minutes. |
+| 371 | MSG398 | Form error | UC-70 / EX-2 | The minutes can be written only after the meeting has ended. |
+| 372 | MSG399 | Form error | UC-70 / EX-3 | This meeting already has a minutes draft. |
+| 373 | MSG400 | Form error | UC-70 / EX-4; UC-71 / EX-3 | The minutes have been submitted or issued and can no longer be changed. |
+| 374 | MSG401 | Form error | UC-71 / EX-1 | The minutes were just changed by someone else. Reload to see the latest version. |
+| 375 | MSG402 | Field error / Form error | UC-71 / EX-2 | The minutes content is invalid. |
+| 376 | MSG403 | Page / Panel message | UC-69 / EX-1 | Unable to load the minutes. |
+| 377 | MSG404 | Form error | UC-70 / EX-5; UC-71 / EX-5 | Unable to save the minutes. Please try again. |
+| 378 | MSG405 | Form error | UC-71 / EX-6 | The minutes of a Secret meeting cannot be downloaded. |
+| 379 | MSG406 | Form error | UC-71 / EX-8 | Download the minutes as a Word (docx) or PDF file only. |
+| 380 | MSG407 | Toast | UC-55b / AF-2 | The speaker of this sentence has been changed. |
+| 381 | MSG424 | Toast | UC-72 / Normal Flow | Minutes submitted to the Chair for approval. |
+| 382 | MSG425 | Form error | UC-72 / EX-1 | Only the Secretary may submit the minutes for approval. |
+| 383 | MSG426 | Form error | UC-72 / EX-2 | The minutes can be submitted only after the meeting has ended. |
+| 384 | MSG427 | Toast | UC-73 / Normal Flow | Minutes approved and issued. |
+| 385 | MSG428 | Form error | UC-73 / EX-1; UC-74 / EX-1 | Only the Chair may approve or return the minutes. |
+| 386 | MSG429 | Form error | UC-73 / EX-2; UC-74 / EX-2 | These minutes are not waiting for approval. |
+| 387 | MSG430 | Toast | UC-74 / Normal Flow | Minutes returned to the Secretary. |
+| 388 | MSG431 | Field error / Form error | UC-74 / EX-3 | Enter a reason for returning the minutes, up to 2,000 characters. |
+| 389 | MSG432 | Toast | UC-75 / Normal Flow | Correction draft created. |
+| 390 | MSG433 | Form error | UC-75 / EX-2 | Only issued minutes can be corrected. |
+| 391 | MSG434 | Form error | UC-75 / EX-3 | A correction of these minutes is already in progress. |
+| 392 | MSG456 | Form error | UC-70 / EX-7 | A correction cannot be rebuilt from the template. Correct it by hand. |
+| 393 | MSG457 | Inline error | UC-50 / EX-3 | Only the current Chair may run the speaking turns. |
+| 394 | MSG458 | Inline error | UC-50 / EX-4 | You must be in the meeting room to register to speak. |
+| 395 | MSG459 | Inline error | UC-50 / EX-5 | Someone is already invited or speaking. Close that turn first. |
+| 396 | MSG460 | Inline error | UC-50 / EX-6 | This speaking request has changed. Reload the list. |
+| 397 | MSG461 | Inline error | UC-50 (the speaking queue cannot be loaded) | Unable to load the speaking queue. Please try again. |
+| 398 | MSG462 | Inline error | UC-50 (the speaking turn change cannot be saved) | Unable to save the speaking turn change. Please try again. |
+| 399 | MSG435 | Toast | UC-80a / Normal Flow | Calendar share request sent. |
+| 400 | MSG436 | Toast | UC-80c / Normal Flow | Calendar share accepted. |
+| 401 | MSG437 | Toast | UC-80c / Normal Flow | Calendar share request declined. |
+| 402 | MSG438 | Toast | UC-80e / Normal Flow | Calendar share request withdrawn. |
+| 403 | MSG439 | List message | UC-80f, UC-81c / Normal Flow | This calendar share was stopped because the viewer is no longer a Member or an account was deactivated. Ask for a new share. |
+| 404 | MSG441 | Toast | UC-80b / Normal Flow | Calendar shared. Waiting for acceptance. |
+| 405 | MSG442 | Toast | UC-80c / AF-1, UC-80d / AF-1 | Calendar share updated. |
+| 406 | MSG443 | Form error | UC-80a / EX-3, UC-80b / EX-3, UC-80c / EX-3, UC-80d / EX-3 | The date range is invalid. |
+| 407 | MSG444 | Form error | UC-81a / EX-1 | The meeting-time search is invalid. Check the highlighted fields. |
+| 408 | MSG445 | Information | UC-81a / AF-1 | No time slot fits everyone. Showing the slots with the most people free. |
+| 409 | MSG446 | Toast | UC-81b / EX-1 | This time slot is no longer free. Please choose another slot. |
+| 410 | MSG447 | Toast | UC-80a / EX-5, UC-80b / EX-4, UC-80c / EX-4, UC-80d / EX-4, UC-80e / EX-3 | Unable to save the calendar sharing data. Please try again. |
+| 411 | MSG448 | Form error | UC-80a / EX-1, UC-81a / EX-2, UC-81b / EX-2 | Only a Member can do this. |
+| 412 | MSG449 | Form error | UC-80a / EX-2, UC-80b / EX-2 | There is already a pending or effective share with this person. |
+| 413 | MSG450 | Form error | UC-80c / EX-2, UC-80c / AF-1, UC-80d / EX-2, UC-80e / EX-2 | This action is not allowed in the current state of the share. |
+| 414 | MSG451 | Toast | UC-80e / AF-1 | Calendar sharing ended. |
+| 415 | MSG452 | Toast | UC-80c / AF-1 | Calendar share change declined. |
+| 416 | MSG453 | Page | UC-80f / EX-1, UC-81a / EX-3, UC-81b / EX-3, UC-81c / EX-1 | Unable to load the calendar sharing data. Please try again. |
+| 417 | MSG454 | Toast | UC-80d / Normal Flow | Calendar share change request sent. |
+| 418 | MSG455 | Form error | UC-80b / EX-1 | This person cannot receive a calendar share. |
+| 419 | MSG463 | Reserved, not implemented | UC-79a / EX-1, UC-79b / EX-1 | The report period is invalid. Choose up to 24 months, with the start month not after the end month. |
+| 420 | MSG464 | Reserved, not implemented | UC-79a / EX-2 | Unable to load the report. Please try again. |
+| 421 | MSG465 | Reserved, not implemented | UC-79b / EX-2 | Unable to export the report. Please try again. |
+| 422 | MSG466 | Table message | UC-79a / AF-2 | There are no meetings you can view in this period. |
+| 423 | MSG467 | Form error | UC-80a / EX-6, UC-80b / EX-6 | Unable to load the candidate list. |
+| 424 | MSG468 | Toast | UC-80c / EX-5 | The sender's account has been deactivated. You cannot accept this share. |
+| 425 | MSG469 | Reserved, not implemented | UC-12 / EX-1 | The audit log filter is invalid. Check the period and the selected values. |
+| 426 | MSG470 | Reserved, not implemented | UC-12 / EX-2 | Unable to load the audit log. Please try again. |
+| 427 | MSG473 | Toast / Inline success | UC-57b / Normal Flow | Voice sample recorded for the attendee. |
+| 428 | MSG474 | Toast / Inline success | UC-57d / Normal Flow | Voice sample deleted. |
+| 429 | MSG475 | Inline error | UC-57b / EX-2 | This person has not agreed to Voice ID under the current terms. They can enable it on the My voice page. |
+| 430 | MSG476 | Inline error | UC-57b / EX-3 | This person already has 50 collected voice samples. Delete a collected sample before recording a new one. |
+| 431 | MSG483 | Inline error | UC-57b / EX-4 | Confirm the person agreed to this recording. |
+| 432 | MSG478 | Dialog / Banner | UC-52c / EX-8 | Hybrid Meetings are recorded live with the room microphone to match the timing of remote speech; audio files cannot be uploaded. |
+| 433 | MSG479 | Dialog | UC-54a / EX-3 | The combined recording is for listening only. Its speech has already been transcribed from the room and per-microphone recordings. |
+| 434 | MSG414 | API error (429 + Retry-After) | UC-01 – Sign in with Email and Password / UC-02 – Sign in with Google – rate limiting | Too many attempts. Please try again in a few minutes. |
+| 435 | MSG480 | Inline error (lobby) | UC-43 – Join Meeting Room / Exception Flows (EX-11) | Could not connect to the meeting room. Please try again. |
+| 436 | MSG415 | Success (200) | UC-28 Normal Flow | Note saved. |
+| 437 | MSG416 | Error (403) | UC-28 EX-1 | Only the Secretary may write meeting notes. |
+| 438 | MSG417 | Error (409) | UC-28 EX-2 | Notes can be written only while the meeting is in progress, or after it has ended until the minutes draft is created. |
+| 439 | MSG418 | Error (409) | UC-28 EX-3 | This note was changed in another window. Reload to see the latest version. |
+| 440 | MSG419 | Error (400) | UC-28 EX-4 | The note is too long. A note can hold up to 20,000 characters. |
+| 441 | MSG420 | Error (409) | UC-28 EX-5 | The selected agenda item is no longer part of this meeting. |
+| 442 | MSG421 | Error (500) | UC-28 EX-6 | Unable to load the meeting notes. |
+| 443 | MSG422 | Error (503) | UC-28 EX-7 | Unable to save the note. It is kept on this device and will be sent again. |
+| 444 | MSG423 | FE (client) | UC-28 AF-3 | You are offline. The note is kept on this device and will be saved when the connection returns. |
+| 445 | MSG481 | Form error | UC-58 / EX-9 | The meeting has no spoken sentences for the AI to summarise. |
+| 446 | MSG482 | Form error | UC-51c / EX-3 | The recording could not be converted to MP3. Please try again later. |
+| 447 | MSG484 | Form error | UC-79a / EX-3, UC-79b / EX-3 | The report parameters are invalid. Choose the data, grouping or filter again. |
 
 ### 3. Other Requirements
 
 One organisation: the system serves a single organisation. It has no departments or organisational units, and no data is shared with another organisation.
 
-Data retention: recordings and recorded speech are erased 180 days after they are made; notifications, guest verification codes and the bodies of sent emails are removed once they are no longer needed recordings and recorded speech are erased 180 days after they are made. Read notifications are removed after 90 days and all notifications after 180 days, guest verification codes after one day and the bodies of sent emails after 30 days. Audio no recording uses, Draft votes of Cancelled Meetings and uploaded files no document uses any more are also removed automatically. Issued minutes, vote conclusions and status histories are kept as immutable records.
+Data retention: recordings and recorded speech are erased 180 days after they are made; notifications, guest verification codes and the bodies of sent emails are removed once they are no longer needed. Read notifications are removed after 90 days and all notifications after 180 days, guest verification codes after one day and the bodies of sent emails after 30 days. Audio no recording uses, Draft votes of Cancelled Meetings and uploaded files no document uses any more are also removed automatically. Issued minutes, vote conclusions and status histories are kept as immutable records.
 
 Out of scope in this version: tracking tasks or action items after the meeting, signing the minutes electronically, connecting to eOffice or another document system, and native mobile apps.

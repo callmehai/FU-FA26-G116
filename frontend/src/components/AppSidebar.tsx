@@ -32,7 +32,6 @@ const WORK: NavEntry[] = [
 const ADMIN: NavEntry[] = [
   { to: routes.adminUsers, label: 'Người dùng', icon: 'users', cap: 'AdminUsers' },
   { to: routes.adminRoles, label: 'Vai trò', icon: 'shield', cap: 'AdminUsers' },
-  { to: routes.adminAi, label: 'Cấu hình AI', icon: 'sparkles', cap: 'AdminUsers' },
   { to: routes.adminAuditLog, label: 'Nhật ký hệ thống', icon: 'history', cap: 'AdminUsers' },
 ]
 

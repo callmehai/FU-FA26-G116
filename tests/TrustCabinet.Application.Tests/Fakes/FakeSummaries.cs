@@ -1,4 +1,3 @@
-using TrustCabinet.Application.Ai;
 using TrustCabinet.Application.Summaries;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
@@ -6,7 +5,7 @@ using TrustCabinet.Domain.Enums;
 namespace TrustCabinet.Application.Tests.Fakes;
 
 /// <summary>A language model that answers every prompt with <see cref="Answer"/> and keeps what it was asked.</summary>
-public sealed class FakeLanguageModel(string model = "fake-llm", bool remote = false) : ILanguageModel
+public sealed class FakeLanguageModel(string model = "fake-llm") : ILanguageModel
 {
     public bool Configured { get; set; } = true;
     public string Answer { get; set; } = "MỤC TIÊU:\nRà soát tiến độ.\nKẾT LUẬN:\nThống nhất.\nNHIỆM VỤ:\nKhông có.";
@@ -15,63 +14,12 @@ public sealed class FakeLanguageModel(string model = "fake-llm", bool remote = f
 
     public bool IsConfigured => Configured;
     public string Model => model;
-    public bool Remote => remote;
 
     public Task<string> CompleteAsync(string system, string user, CancellationToken ct)
     {
         Systems.Add(system);
         return Fail is { } failure ? Task.FromException<string>(failure) : Task.FromResult(Answer);
     }
-}
-
-public sealed class FakeLanguageModelProvider(ILanguageModel model) : ILanguageModelProvider
-{
-    public ILanguageModel Model { get; set; } = model;
-    public Task<ILanguageModel> ForAsync(Sensitivity sensitivity, CancellationToken ct) => Task.FromResult(Model);
-}
-
-/// <summary>Reversible and visibly not the plain text: the key reversed, behind a marker byte.</summary>
-public sealed class FakeAiKeyProtector : IAiKeyProtector
-{
-    public bool Broken { get; set; }
-
-    public byte[] Protect(string apiKey, Guid settingId) => [0xAE, .. System.Text.Encoding.UTF8.GetBytes(new string([.. apiKey.Reverse()]))];
-
-    public string Unprotect(byte[] ciphertext, Guid settingId)
-        => Broken ? throw new System.Security.Cryptography.CryptographicException("changed key")
-            : new string([.. System.Text.Encoding.UTF8.GetString(ciphertext[1..]).Reverse()]);
-}
-
-public sealed class FakeApiLanguageModelFactory : IApiLanguageModelFactory
-{
-    public List<(string BaseUrl, string Model, string ApiKey, int TimeoutMinutes, int MaxTokens, string? ReasoningEffort)> Created { get; } = [];
-    public FakeLanguageModel? Last { get; private set; }
-
-    public ILanguageModel Create(string baseUrl, string model, string apiKey, int timeoutMinutes, int maxTokens,
-        string? reasoningEffort)
-    {
-        Created.Add((baseUrl, model, apiKey, timeoutMinutes, maxTokens, reasoningEffort));
-        return Last = new FakeLanguageModel(model, remote: true);
-    }
-}
-
-public sealed class FakeAiProviderSettingRepository : IAiProviderSettingRepository
-{
-    public AiProviderSetting? Row { get; set; }
-    public Exception? Fail { get; set; }
-
-    public Task<AiProviderSetting?> FindAsync(Guid id, bool tracked, CancellationToken ct)
-        => Fail is { } failure ? Task.FromException<AiProviderSetting?>(failure) : Task.FromResult(Row?.Id == id ? Row : null);
-
-    public Task<AiProviderSetting?> FindCurrentAsync(CancellationToken ct) => Task.FromResult(Row);
-
-    public Task<AiSettingsRow?> FindViewAsync(Guid id, CancellationToken ct)
-        => Fail is { } failure ? Task.FromException<AiSettingsRow?>(failure)
-            : Task.FromResult(Row is { } r && r.Id == id
-                ? new AiSettingsRow(r.Mode, r.ApiBaseUrl, r.ApiModel, r.ApiKeyCiphertext != null, r.ApiKeyHint, r.UpdatedAt, null)
-                : null);
-
-    public void Add(AiProviderSetting setting) => Row = setting;
 }
 
 /// <summary>The summary rows in memory; the conditional writes check the status as the SQL does.</summary>
@@ -144,13 +92,11 @@ public sealed class FakeMeetingSummaryRepository : IMeetingSummaryRepository
 public sealed class FakeSummarySourceQuery : ISummarySourceQuery
 {
     public string Title { get; set; } = "Họp giao ban";
-    public Sensitivity Sensitivity { get; set; } = Sensitivity.Normal;
     public List<AgendaFacts> Agenda { get; } = [];
     public List<ClosedVote> Votes { get; } = [];
     public SummaryReadiness Readiness { get; set; } = new(0, 0, 0, 0, 0, 0, 0, null);
 
     public Task<string> FindTitleAsync(Guid meetingId, CancellationToken ct) => Task.FromResult(Title);
-    public Task<Sensitivity> FindSensitivityAsync(Guid meetingId, CancellationToken ct) => Task.FromResult(Sensitivity);
     public Task<IReadOnlyList<AgendaFacts>> ListAgendaAsync(Guid meetingId, CancellationToken ct) => Task.FromResult<IReadOnlyList<AgendaFacts>>(Agenda);
     public Task<IReadOnlyList<string>> ListDocumentNamesAsync(Guid meetingId, CancellationToken ct) => Task.FromResult<IReadOnlyList<string>>([]);
     public Task<IReadOnlyList<ClosedVote>> ListClosedVotesAsync(Guid meetingId, CancellationToken ct) => Task.FromResult<IReadOnlyList<ClosedVote>>(Votes);

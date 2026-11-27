@@ -2,7 +2,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using TrustCabinet.Application.Access;
 using TrustCabinet.Application.Agenda;
-using TrustCabinet.Application.Ai;
 using TrustCabinet.Application.Attendance;
 using TrustCabinet.Application.Audit;
 using TrustCabinet.Application.Authentication;
@@ -58,7 +57,6 @@ public static class DependencyInjection
         services.AddScoped<IDataRetentionService, DataRetentionService>();
         AddTranscription(services);
         AddVoiceId(services);
-        AddAi(services);
         AddSummaries(services);
         AddEmail(services);
         return services;
@@ -216,13 +214,6 @@ public static class DependencyInjection
         services.AddScoped<IVoiceIdErasure, VoiceIdErasure>();
         services.AddScoped<IVoiceIdService, VoiceIdService>();
         services.AddScoped<IVoiceCollectionService, VoiceCollectionService>();
-    }
-
-    /// <summary>The key protector, the API client factory and the repository are the infrastructure project's to supply.</summary>
-    private static void AddAi(IServiceCollection services)
-    {
-        services.AddScoped<ILanguageModelProvider, LanguageModelProvider>();
-        services.AddScoped<IAiSettingsService, AiSettingsService>();
     }
 
     /// <summary>

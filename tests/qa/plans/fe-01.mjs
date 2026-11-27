@@ -415,7 +415,7 @@ export default {
       title: 'UC-01 POST-3: mở một trang khi chưa đăng nhập thì sau khi đăng nhập vào đúng trang đó; trang tài khoản không mở được thì về Lịch làm việc; link chi tiết hiện lời mời đăng nhập',
       steps: [
         'Chưa đăng nhập, mở /mgmt/meetings → bị đưa về /login → đăng nhập [QA]',
-        'Phiên mới: chưa đăng nhập, mở /mgmt/admin/ai (thành viên không có quyền) → đăng nhập [QA]',
+        'Phiên mới: chưa đăng nhập, mở /mgmt/admin/audit-log (thành viên không có quyền) → đăng nhập [QA]',
         'Phiên mới: chưa đăng nhập, mở /mgmt/meetings/{id} của cuộc họp mình được xem → đăng nhập [QA]',
       ],
       expected: 'Lần 1 vào "Danh sách cuộc họp" (/mgmt/meetings). Lần 2 vào /calendar, không thấy "Không tìm thấy trang". Lần 3: /login hiện "Đăng nhập để mở cuộc họp." (AUTH_FT07 E1), sau đăng nhập vào đúng trang chi tiết cuộc họp (AUTH_FT07 E2)',
@@ -431,7 +431,7 @@ export default {
         await qa.shot('vao-dung-trang-da-mo')
         await qa.context.clearCookies()
         await qa.page.evaluate(() => localStorage.clear())
-        await qa.goto('/mgmt/admin/ai')
+        await qa.goto('/mgmt/admin/audit-log')
         await qa.expect(qa.page).toHaveURL(/\/login/)
         await signInOnScreen(qa, active.email, active.password)
         await qa.expect(qa.page).toHaveURL(/\/calendar(\?|$)/)

@@ -191,8 +191,8 @@ bị huỷ trước khi diễn ra.
 3. **Rà bản gỡ băng (UC-54, UC-55):** Thư ký sửa chữ, gán người nói; Chủ toạ hoặc Thư ký loại câu khỏi hồ sơ khi cần
    (BR-114, BR-115).
 4. **Tóm tắt (UC-58 → UC-61):** Chủ toạ hoặc Thư ký yêu cầu sinh dự thảo; AI Drafting Service viết ba mục I–III, kết quả
-   biểu quyết chép từ dữ liệu (BR-126, BR-128). AI chạy trên máy của nhóm, cuộc họp Thường có thể dùng API ngoài
-   (BR-129). Chủ toạ hoặc Thư ký rà, sửa và **duyệt tóm tắt**; người khác chỉ đọc sau khi duyệt (BR-127).
+   biểu quyết chép từ dữ liệu (BR-126, BR-128). AI chạy trên máy của nhóm, lời thoại không ra ngoài
+   (BR-129, ADR-0088). Chủ toạ hoặc Thư ký rà, sửa và **duyệt tóm tắt**; người khác chỉ đọc sau khi duyệt (BR-127).
 5. **Biên bản (UC-70, UC-71):** Chủ toạ hoặc Thư ký dựng nháp; hệ thống **điền mẫu cố định** từ hồ sơ cuộc họp và dự thảo
    hiện có, không có dự thảo thì để "……" cho Thư ký viết (BR-130). Thư ký rà và sửa; chỉ Chủ toạ và Thư ký đọc nháp
    (BR-131).

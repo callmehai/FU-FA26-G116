@@ -11,9 +11,6 @@ public sealed class SummarySourceQuery(TrustCabinetDbContext db) : ISummarySourc
     public Task<string> FindTitleAsync(Guid meetingId, CancellationToken ct)
         => db.Meetings.Where(m => m.Id == meetingId).Select(m => m.Title).SingleAsync(ct);
 
-    public Task<Sensitivity> FindSensitivityAsync(Guid meetingId, CancellationToken ct)
-        => db.Meetings.Where(m => m.Id == meetingId).Select(m => m.Sensitivity).SingleAsync(ct);
-
     public async Task<IReadOnlyList<AgendaFacts>> ListAgendaAsync(Guid meetingId, CancellationToken ct)
         => await db.AgendaItems.AsNoTracking()
             .Where(a => a.MeetingId == meetingId)

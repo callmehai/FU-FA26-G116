@@ -23,24 +23,23 @@ export default {
     {
       id: 'AC2',
       role: 'admin',
-      title: 'Quản trị mở được Cấu hình AI',
-      steps: ['Đăng nhập quantri@', 'Mở /mgmt/admin/ai'],
-      expected: 'Tiêu đề "Cấu hình AI" và form cấu hình',
+      title: 'Quản trị mở được Nhật ký hệ thống',
+      steps: ['Đăng nhập quantri@', 'Mở /mgmt/admin/audit-log'],
+      expected: 'Tiêu đề "Nhật ký hệ thống"',
       async run(qa) {
-        await qa.goto('/mgmt/admin/ai')
-        await qa.expect(qa.page.getByRole('heading', { name: 'Cấu hình AI' })).toBeVisible()
-        await qa.expect(qa.page.locator('form.ai-settings')).toBeVisible()
-        await qa.shot('cau-hinh-ai')
+        await qa.goto('/mgmt/admin/audit-log')
+        await qa.expect(qa.page.getByRole('heading', { name: 'Nhật ký hệ thống' })).toBeVisible()
+        await qa.shot('nhat-ky-he-thong')
       },
     },
     {
       id: 'AC3',
       role: 'member',
-      title: 'Thành viên mở Cấu hình AI thấy trang 404, không lộ màn hình có tồn tại',
-      steps: ['Đăng nhập thanhvien@', 'Mở /mgmt/admin/ai'],
+      title: 'Thành viên mở Nhật ký hệ thống thấy trang 404, không lộ màn hình có tồn tại',
+      steps: ['Đăng nhập thanhvien@', 'Mở /mgmt/admin/audit-log'],
       expected: '"Không tìm thấy trang", như một đường dẫn không có',
       async run(qa) {
-        await qa.goto('/mgmt/admin/ai')
+        await qa.goto('/mgmt/admin/audit-log')
         await qa.expect(qa.page.getByRole('heading', { name: 'Không tìm thấy trang' })).toBeVisible()
         await qa.shot('404')
       },

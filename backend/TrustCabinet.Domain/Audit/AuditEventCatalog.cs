@@ -23,7 +23,6 @@ public static class AuditEventCatalog
     private const string Minutes = "Biên bản";
     private const string Recordings = "Bản ghi và gỡ băng";
     private const string Voice = "Voice ID";
-    private const string Settings = "Cấu hình";
     private const string CalendarSharing = "Chia sẻ lịch";
     private const string Reports = "Báo cáo";
     private const string Cleanup = "Hệ thống dọn dữ liệu";
@@ -104,8 +103,6 @@ public static class AuditEventCatalog
         new(AuditActions.VoiceSampleAdded, "Thêm mẫu giọng", Voice),
         new(AuditActions.VoiceSampleDeleted, "Xoá mẫu giọng", Voice),
         new(AuditActions.VoiceSamplePlayed, "Thư ký nghe lại mẫu giọng thu hộ", Voice),
-
-        new(AuditActions.AiSettingsUpdated, "Đổi cấu hình AI", Settings),
 
         new(AuditActions.CalendarShareRequested, "Xin xem lịch", CalendarSharing),
         new(AuditActions.CalendarShareShared, "Tự chia sẻ lịch", CalendarSharing),

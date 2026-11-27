@@ -5,7 +5,7 @@
 > `python scripts/sync_reports.py --source docs/08-reports/source/Report_3_Software_Requirement_Specification.docx --report 3`
 > (hoặc `python scripts/sync_requirement_extracts.py`). Chi tiết: [08-reports/README.md](../08-reports/README.md).
 
-Có **154 BR**, đánh số `BR-001` → `BR-154` theo [ADR-0079](../05-decisions/0079-cho-danh-so-lai-br-uc-co-bang-anh-xa.md)
+Có **156 BR**, đánh số `BR-001` → `BR-156` theo [ADR-0079](../05-decisions/0079-cho-danh-so-lai-br-uc-co-bang-anh-xa.md)
 và [kế hoạch gộp BR](08-ke-hoach-gop-business-rules.md). Mỗi BR một câu, một quyết định nghiệp vụ; giao diện, kiểm tra
 dữ liệu nhập và giới hạn kỹ thuật nằm trong UC Specification hoặc mục IV (NFR) của Report 3. Mã `BR` độc lập với mã
 thông báo `MSG`.
@@ -175,3 +175,5 @@ thông báo `MSG`.
 | `BR-152` | Header figures show numbers only; query tables show a person's name or a Meeting's code and title, only for Meetings the viewer reads; a Guest shows only a name. |
 | `BR-153` | The report query counts only records the viewer can read: draft Votes and unissued minutes for the Chair and Secretary, recordings for participants. |
 | `BR-154` | When transcription runs again, what cannot be matched leaves only a trace in the audit log, without the transcript text. |
+| `BR-155` | When a Published Meeting starts within 15 minutes, each current internal participant with an active account gets one in-app reminder and one reminder email, and each Guest whose invitation is not revoked gets one reminder email, whatever their invitation response; a rescheduled Meeting is reminded again, and a person invited inside those 15 minutes gets no reminder email. |
+| `BR-156` | Data that has outlived its purpose is removed automatically: read notifications 90 days and all notifications 180 days after they are created, a Guest verification code one day after it expires, the body of a sent or failed email 30 days after it is queued, Draft Votes of a Cancelled Meeting, and audio no recording uses 24 hours after it was last written. |

@@ -56,7 +56,7 @@ public static class SummaryEndpoints
                 SummaryFailure.Busy => (409, Msg387Busy, "AI đang viết dự thảo, vui lòng chờ."),
                 SummaryFailure.NotDrafted => (409, Msg390NotDrafted, "Chưa có dự thảo để sửa hoặc duyệt."),
                 SummaryFailure.Invalid => (400, Msg389Invalid, "Nội dung dự thảo không hợp lệ."),
-                SummaryFailure.AiUnavailable => (503, Msg394AiUnavailable, "Máy AI chưa sẵn sàng. Liên hệ quản trị hệ thống."),
+                SummaryFailure.AiUnavailable => (503, Msg394AiUnavailable, "Máy AI chưa sẵn sàng. Vui lòng thử lại sau."),
                 SummaryFailure.ReadFailed => (500, Msg392ReadFailed, "Không tải được dự thảo."),
                 _ => (503, Msg393SaveFailed, "Không lưu được dự thảo. Vui lòng thử lại."),
             };

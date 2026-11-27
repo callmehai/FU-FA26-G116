@@ -140,8 +140,6 @@ public interface ISummarySourceQuery
 {
     Task<string> FindTitleAsync(Guid meetingId, CancellationToken ct);
 
-    Task<Sensitivity> FindSensitivityAsync(Guid meetingId, CancellationToken ct);
-
     /// <summary>The agenda in order, with each item's presenter, conclusion and actual times.</summary>
     Task<IReadOnlyList<AgendaFacts>> ListAgendaAsync(Guid meetingId, CancellationToken ct);
 

@@ -20,7 +20,7 @@ Mỗi góc nhìn là một cặp file cùng tên: `.drawio` là source editable,
 | Backend | Package con của `TrustCabinet.Web`, `.Application`, `.Infrastructure`, `.Domain`; class ở namespace gốc của Web, Application và Infrastructure; phụ thuộc trong Web, trong Infrastructure, `«import»` giữa bốn project | [drawio](package-backend.drawio) · [PNG](package-backend.png) |
 | Application | Phụ thuộc giữa các module trong `TrustCabinet.Application` | [drawio](package-application.drawio) · [PNG](package-application.png) |
 | Domain | Phụ thuộc giữa các package nghiệp vụ trong `TrustCabinet.Domain` | [drawio](package-domain.drawio) · [PNG](package-domain.png) |
-| Frontend | `frontend/src` với 24 feature trong `features/` | [drawio](package-frontend.drawio) · [PNG](package-frontend.png) |
+| Frontend | `frontend/src` với 23 feature trong `features/` | [drawio](package-frontend.drawio) · [PNG](package-frontend.png) |
 
 ## Quy ước
 
@@ -34,7 +34,7 @@ Mỗi góc nhìn là một cặp file cùng tên: `.drawio` là source editable,
   trên trang Frontend).
 - Mũi tên kết thúc ở thân package, không cắm vào tab.
 - Hai mũi tên phải cắt nhau thì chỗ cắt vẽ nét nhảy (cung), để không đọc nhầm thành rẽ nhánh: trang Application
-  (3 chỗ) và trang Tổng quan (2 chỗ, ở các mũi tên từ project test).
+  (5 chỗ) và trang Tổng quan (2 chỗ, ở các mũi tên từ project test).
 
 ## Phụ thuộc không vẽ thành mũi tên
 
@@ -50,7 +50,7 @@ liệt kê đủ ở đây.
 | `Enums` | Access, Agenda, Attendance, Audit, CalendarSharing, Documents, Entities, GuestAccess, Meetings, Participants, Recordings, Votes |
 
 `Calls`, `Summaries`, `VoiceId` và `Enums` không phụ thuộc package nào. `Entities` chứa `Common` (lớp gốc `Entity`).
-Ai, Authentication, Notes, Notifications và Users không còn package Domain: chúng chỉ có interface và DTO, nay ở
+Authentication, Notes, Notifications và Users không còn package Domain: chúng chỉ có interface và DTO, nay ở
 Application (CA-02).
 
 **Trang Application — phụ thuộc tới năm module dùng chung:**
@@ -58,8 +58,8 @@ Application (CA-02).
 | Tới | Module dùng |
 |---|---|
 | `Abstractions` | cả 23 module |
-| `Audit` | Access, Ai, Attendance, Authentication, CalendarSharing, Calls, Documents, GuestAccess, Participants, Recordings, Reports, Summaries, Transcription, Users, VoiceId, Votes |
-| `Meetings` | Agenda, CalendarSharing, Documents, Notes, Notifications, Participants, Recordings, Summaries, Transcription |
+| `Audit` | Access, Attendance, Authentication, CalendarSharing, Calls, Documents, GuestAccess, Participants, Recordings, Reports, Retention, Summaries, Transcription, Users, VoiceId, Votes |
+| `Meetings` | Agenda, CalendarSharing, Documents, Notes, Notifications, Participants, Recordings, Retention, Summaries, Transcription |
 | `Participants` | Agenda, Attendance, Calls, Documents, Email, Meetings, Speaking, Votes |
 | `Notifications` | Agenda, CalendarSharing, Email, Meetings, Summaries, VoiceId |
 
@@ -72,7 +72,7 @@ Vì vậy `Abstractions`, `Attendance`, `Audit`, `Notifications`, `Reports` đ�
 |---|---|
 | Access | Access, Audit |
 | Agenda | Agenda, GuestAccess, Meetings |
-| Ai, Authentication, Users | Audit |
+| Authentication, Users | Audit |
 | Attendance | Agenda, Attendance, Audit, GuestAccess, Meetings, Participants |
 | Audit | Audit |
 | CalendarSharing | Audit, CalendarSharing, Meetings, Participants |
@@ -85,6 +85,7 @@ Vì vậy `Abstractions`, `Attendance`, `Audit`, `Notifications`, `Reports` đ�
 | Participants | Agenda, Audit, GuestAccess, Meetings, Participants |
 | Recordings | Audit, Meetings, Participants, Recordings, Transcription |
 | Reports | Audit, Meetings |
+| Retention | Audit, Recordings |
 | Speaking | Agenda, GuestAccess, Meetings, Participants |
 | Summaries | Audit, Meetings, Participants, Summaries |
 | Transcription | Audit, Participants, Transcription, VoiceId |
@@ -98,7 +99,6 @@ Vì vậy `Abstractions`, `Attendance`, `Audit`, `Notifications`, `Reports` đ�
 | Package Infrastructure | Module Application |
 |---|---|
 | Agenda | Agenda, Notes |
-| Ai, Summaries | Ai, Summaries |
 | Documents | Abstractions, Documents, Meetings |
 | Email | Email, Notifications, Users |
 | GuestAccess | Agenda, Email, GuestAccess, Participants |
@@ -134,11 +134,12 @@ Vì vậy `Abstractions`, `Attendance`, `Audit`, `Notifications`, `Reports` đ�
 
 | Web | Module Application | Package Domain |
 |---|---|---|
-| `Endpoints` | cả 23 module trừ `Abstractions` | Access, Agenda, Attendance, Audit, CalendarSharing, Documents, Entities, Enums, Meetings, Participants, Recordings, Transcription, VoiceId, Votes |
+| `Endpoints` | `Abstractions` và mọi module trừ `Retention` | Access, Agenda, Attendance, Audit, CalendarSharing, Documents, Entities, Enums, Meetings, Participants, Recordings, Transcription, VoiceId, Votes |
 | `AttendanceChangePublisher` | Attendance, Meetings | — |
 | `CallRoomJanitor` | Calls | — |
 | `CapabilitiesChangePublisher` | Access | — |
 | `CombinedRecordingWorker`, `RecordingRetentionWorker` | Recordings | — |
+| `DataRetentionWorker` | Retention | — |
 | `HttpCallerContext` | Audit | — |
 | `MeetingGuestIdentity` | Agenda, GuestAccess | Meetings |
 | `MeetingHub` | Agenda, Meetings | Meetings |
@@ -159,7 +160,7 @@ Vì vậy `Abstractions`, `Attendance`, `Audit`, `Notifications`, `Reports` đ�
 `DependencyInjection` (`AddTrustCabinetDatabase()`) và hai package Authentication, Documents; `DatabaseMigrationCommand`
 dùng `DependencyInjection` (`MigrateForDeploymentAsync`, mũi tên duy nhất vẽ từ Web sang Infrastructure).
 
-**Trang Backend — trong Infrastructure:** `DependencyInjection` dùng mọi package trừ Ai, Configurations, Migrations
+**Trang Backend — trong Infrastructure:** `DependencyInjection` dùng mọi package trừ Configurations, Migrations
 (chỉ vẽ mũi tên tới `Seed`). Mọi package nghiệp vụ dùng `TrustCabinetDbContext` ở namespace cha; `TrustCabinetDbContext`
 áp mọi lớp trong `Configurations`; `Migrations` sinh từ nó.
 

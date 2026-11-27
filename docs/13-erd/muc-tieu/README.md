@@ -6,13 +6,13 @@
 
 Hình **theo code** đến migration `RemoveDelegationLeftovers` (24/11/2026), trên bố cục sắp xếp tay của PR #272
 (06/11/2026; khôi phục 22/11/2026 sau khi lần sinh lại ngày 15/11 ghi đè nó). Kiểu vẽ: bảng trắng viền đen, crow's foot,
-chỗ giao nhau vẽ cầu vượt. Hình có 41 trong 42 bảng của `TrustCabinetDbContextModelSnapshot.cs`: cố ý không vẽ `AiProviderSetting` (actor cấu hình AI đã bỏ,
-27/11/2026; bảng vẫn còn trong code). Các thay đổi trước đó: thêm `CalendarShare` 10/11/2026 và hai cột thu hộ `CollectedById`, `MeetingId` của `voice_samples` 12/11/2026;
+chỗ giao nhau vẽ cầu vượt. Hình có đủ 41 bảng của `TrustCabinetDbContextModelSnapshot.cs` (`AiProviderSetting` không vẽ, và từ 27/11/2026 migration
+`RemoveAiProviderSetting` đã xoá bảng, ADR-0088). Các thay đổi trước đó: thêm `CalendarShare` 10/11/2026 và hai cột thu hộ `CollectedById`, `MeetingId` của `voice_samples` 12/11/2026;
 bỏ `MinutesSignature` 15/11/2026 khi migration `DropMinutesSignature` xoá bảng):
-35 thực thể (không kể `AiProviderSetting`) và 4 bảng nối của [02-erd.md](../../02-design/02-erd.md) (kể
+35 thực thể và 4 bảng nối của [02-erd.md](../../02-design/02-erd.md) (kể
 cả `DocumentReadConfirmation`, bản trước chưa vẽ), cộng 2 bảng kỹ thuật `MeetingInvitationDispatch` và
 `GuestVerificationChallenge`. Hình chưa đưa vào Report 3: §I.3.2 của Report 3 liệt kê 34 thực thể
-(thiếu `AiProviderSetting` và `CalendarShare`, chờ note BA Final Review của SCRUM-36/SCRUM-142; hai cột thu hộ
+(thiếu `CalendarShare`, chờ note BA Final Review của SCRUM-36/SCRUM-142; hai cột thu hộ
 của `voice_samples` đã vào Entity 34). Góc nhìn Chen (không thuộc tính) ở
 [../chen/](../chen/README.md) là cùng mô hình, 36 thực thể.
 

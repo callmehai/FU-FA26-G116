@@ -29,7 +29,7 @@ Agent đọc [AGENTS.md](AGENTS.md) trước — cấu trúc sheet, cách viết
 
 **Cả 5.2 và 5.2.2 sinh từ `cases/`** (nhóm thống nhất ngày 20/11/2026; bản 1.2 làm tay — 13 sheet, 411 case `XXX_IT01` — đã bỏ, ID cũ không còn). Kết quả chạy test ghi vào JSON (`round1`, `date1`, `tester1`…) chứ không gõ vào Excel, vì mỗi lần `build` workbook được dựng lại từ file mẫu.
 
-Số case trong `cases/` sau khi thu gọn (commit `03594e25` ngày 23/11/2026; nguồn của 5.2.2 và của bản 5.2 chia theo Feature; FE-14 không có sheet vì UC-69 đã bỏ). API: 825 case, 825 Passed (TRX 24/11 trên build local). UI: 563 case, 563 Passed, 0 Pending (REC_FT24–27 test tay 25/11, không ảnh evidence). Round 1 Báo cáo chạy lại 24/11 trên màn mới: 13/13 desktop + 13/13 phone. Mọi vòng đều `Pending` cho tới khi chạy thật:
+Số case trong `cases/` sau khi thu gọn (commit `03594e25` ngày 23/11/2026; nguồn của 5.2.2 và của bản 5.2 chia theo Feature; FE-14 không có sheet vì UC-69 đã bỏ). API: 814 case, 814 Passed (TRX 24/11 trên build local). UI: 556 case, 556 Passed, 0 Pending (REC_FT24–27 test tay 25/11, không ảnh evidence). Round 1 Báo cáo chạy lại 24/11 trên màn mới: 13/13 desktop + 13/13 phone. Mọi vòng đều `Pending` cho tới khi chạy thật:
 
 | Feature | Sheet | 5.2 UI | 5.2.2 API |
 |---|---|---:|---:|
@@ -42,13 +42,15 @@ Số case trong `cases/` sau khi thu gọn (commit `03594e25` ngày 23/11/2026; 
 | FE-07 | Documents | 51 | 91 |
 | FE-08 | Online Room | 54 | 73 |
 | FE-09 | Recording | 48 | 60 |
-| FE-10 | Transcription & Summary | 64 | 101 |
+| FE-10 | Transcription & Summary | 57 | 90 |
 | FE-11 | Voting | 21 | 44 |
 | FE-12 | Minutes | 32 | 51 |
 | FE-13 | Notifications | 24 | 31 |
 | FE-15 | Reporting | 18 | 24 |
 | FE-16 | Calendar | 41 | 51 |
-| | **Tổng** | **563** | **825** |
+| | **Tổng** | **556** | **814** |
+
+Ngày 27/11/2026 bỏ 7 case UI và 11 case API của màn Cấu hình AI ([ADR-0088](../../05-decisions/0088-bo-cau-hinh-ai-chi-dung-may-ai-cua-nhom.md)).
 
 `generate-test-reports.cmd` bên dưới không còn đụng tới 5.1 / 5.2 / 5.2.2 / 5.3 / 5.4 NFRs; nó chỉ sinh 5.0 và `Report5.5_Acceptance_Test.xlsx`. Report 5.0 lấy số case 5.3 từ `cases/system/` và ảnh minh hoạ 5.3 từ workbook đã build, nên chạy `system_cases.py build --overwrite` trước khi sinh 5.0.
 

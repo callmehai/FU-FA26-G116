@@ -233,7 +233,6 @@ app.MapSpeechClipEndpoints();
 // SCRUM-31: transcript of a recording — read, re-run, correct a segment.
 app.MapTranscriptEndpoints();
 app.MapSummaryEndpoints();
-app.MapAiSettingsEndpoints();
 app.MapAuditLogEndpoints();
 app.MapMinutesEndpoints();
 app.MapMeetingNoteEndpoints();

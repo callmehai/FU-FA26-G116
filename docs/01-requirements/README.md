@@ -33,8 +33,9 @@ Các file ở đây trích và sắp xếp lại nội dung đó để dev và t
   UC-37 → UC-42, UC-39d và UC-78 (phòng họp trực tuyến) đã đặc tả ngày 25/10/2026; UC-79 (đăng ký phát biểu, yêu cầu chưa cài) thêm ngày 29/10/2026;
   **UC-47–UC-50 (dự thảo AI) và UC-58–UC-60 (bản nháp biên bản) đặc tả ngày 05/11/2026 theo PR #260**; UC-51 và
   UC-61, UC-64, UC-65 (gửi duyệt, duyệt, trả lại biên bản) đã đặc tả theo SCRUM-33; UC-62/63 (ký biên bản) đã bỏ theo PO 14/11/2026.
-- [06-business-rules.md](06-business-rules.md) — Danh mục Business Rules đồng bộ từ Report 3 §V.1: **154 BR**,
-  `BR-001` → `BR-154`, bảng 2 cột `ID | Rule` (từ 24/11/2026, ADR-0079).
+- [06-business-rules.md](06-business-rules.md) — Danh mục Business Rules đồng bộ từ Report 3 §V.1: **156 BR**,
+  `BR-001` → `BR-156`, bảng 2 cột `ID | Rule` (từ 24/11/2026, ADR-0079; BR-155 nhắc lịch họp và BR-156 mốc xoá dữ liệu
+  thêm ngày 27/11/2026).
 - [08-ke-hoach-gop-business-rules.md](08-ke-hoach-gop-business-rules.md) — Kế hoạch gộp BR từ 406 về 153 (đánh số lại BR-001…BR-153 theo ADR-0079, mỗi BR một ý) theo cách viết của nhóm mẫu G158, kèm bảng ánh xạ mã cũ → mới và tiêu chí review. Đã áp vào DOCX Report 3 ngày 24/11/2026; câu Rule trong DOCX là bản tiếng Anh của cột "Nội dung".
 - [09-bang-anh-xa-br-dot-1.md](09-bang-anh-xa-br-dot-1.md) — Bảng cố định mã BR cũ → mã mới của đợt đánh số lại đầu tiên (ADR-0079); chỉ thêm dòng, không sửa dòng đã có. Code, test, kế hoạch QA và sequence diagram còn mã cũ cho tới khi đổi theo bảng này.
 - [10-bang-anh-xa-uc-dot-1.md](10-bang-anh-xa-uc-dot-1.md) — Bảng cố định mã UC cũ → mã mới của đợt đánh số lại UC đầu tiên (ADR-0079, 24/11/2026): UC-01 → UC-81 theo thứ tự mục II của Report 3, UC con đánh lại chữ liền nhau, UC-51 đã bỏ. Mã cũ và mới cùng dạng 2 chữ số: inventory, sequence diagram, API docs, code, test và kế hoạch QA còn mã cũ cho tới khi đổi theo bảng này. Chỉ thêm dòng, không sửa dòng đã có.

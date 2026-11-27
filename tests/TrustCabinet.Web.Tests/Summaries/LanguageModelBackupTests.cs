@@ -2,9 +2,7 @@ using System.Net;
 using System.Text;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
-using TrustCabinet.Application.Ai;
 using TrustCabinet.Application.Summaries;
-using TrustCabinet.Infrastructure.Ai;
 using TrustCabinet.Infrastructure.Summaries;
 
 namespace TrustCabinet.Web.Tests.Summaries;
@@ -64,29 +62,6 @@ public sealed class LanguageModelBackupTests
         var only = await Assert.ThrowsAsync<LanguageModelException>(() => single.CompleteAsync("s", "u", default));
         Assert.Equal("Không kết nối được máy AI. Máy chạy AI có thể đang tắt.", only.Message);
         Assert.Equal(["main"], alone.Calls);
-    }
-
-    [Fact]
-    public async Task Testing_the_connection_asks_each_machine_and_names_the_one_that_answered()
-    {
-        var checks = await NewClient(new Network { MainDown = true }, new Clock()).CheckAsync(TimeSpan.FromSeconds(5), default);
-        Assert.False(checks.Single(c => !c.Backup).Ok);
-        Assert.True(checks.Single(c => c.Backup).Ok);
-
-        var standIn = AiSettingsService.BothMachines("qwen2.5:7b-instruct", checks);
-        Assert.Equal("Máy chính: Không kết nối được máy AI. Máy chạy AI có thể đang tắt. Máy dự phòng sẽ viết thay, kết nối được qwen2.5:7b-instruct.",
-            standIn.Test!.Message);
-
-        var both = AiSettingsService.BothMachines("m", [new(false, 1200, null), new(true, 6000, null)]);
-        Assert.Equal("Kết nối được m trên máy chính và máy dự phòng.", both.Test!.Message);
-        Assert.Equal(1200, both.Test.ElapsedMs);
-
-        var mainOnly = AiSettingsService.BothMachines("m", [new(false, 1200, null), new(true, 0, "Tắt.")]);
-        Assert.Equal("Máy dự phòng: Tắt. Máy chính kết nối được m.", mainOnly.Test!.Message);
-
-        var none = AiSettingsService.BothMachines("m", [new(false, 0, "A."), new(true, 0, "B.")]);
-        Assert.Equal(AiSettingsFailure.TestFailed, none.Failure);
-        Assert.Equal("Máy chính: A. Máy dự phòng: B.", none.Message);
     }
 
     private static LanguageModelClient NewClient(Network net, Clock clock, string backup = Backup)
