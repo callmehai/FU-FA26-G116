@@ -9,7 +9,7 @@
           "id": "UTC001",
           "inputs": "Name: \"Thư ký phó\"; Description: \"Hỗ trợ thư ký\"; Capabilities: [\"MeetingCreator\", \"VoiceCollector\"].",
           "log": "Role and its capabilities saved in one transaction; audit row RoleCreated (details { name, description, capabilities }); log \"Role {RoleId} created by {ActorId}.\"",
-          "note": "UC-12a · BR-16 · MSG19",
+          "note": "UC-11a · BR-009 · MSG19",
           "preconditions": [
             "Actor is an administrator holding AdminUsers.",
             "No role is named \"Thư ký phó\"."
@@ -17,7 +17,7 @@
           "return": "RoleResult Success (MSG19): custom role (not built-in) with 0 holders and capabilities MeetingCreator and VoiceCollector.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-02",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -25,14 +25,14 @@
           "id": "UTC002",
           "inputs": "Name: \"\"; Description: null; Capabilities: [].",
           "log": "N/A",
-          "note": "UC-12a · MSG20",
+          "note": "UC-11a · MSG20",
           "preconditions": [
             "Actor is an administrator holding AdminUsers."
           ],
           "return": "RoleResult InvalidInformation (MSG20) with errors[name] = \"Tên vai trò không được để trống.\"; nothing saved.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-02",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -40,7 +40,7 @@
           "id": "UTC003",
           "inputs": "Name: \"THƯ KÝ PHÓ\".",
           "log": "N/A",
-          "note": "UC-12a · MSG21",
+          "note": "UC-11a · MSG21",
           "preconditions": [
             "Actor is an administrator holding AdminUsers.",
             "A custom role \"Thư ký phó\" exists."
@@ -48,7 +48,7 @@
           "return": "RoleResult Failure(DuplicateName) (MSG21): names are unique regardless of case; nothing saved.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-02",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -56,14 +56,14 @@
           "id": "UTC004",
           "inputs": "Name: 64 characters.",
           "log": "Role saved; audit row RoleCreated.",
-          "note": "UC-12a · MSG19",
+          "note": "UC-11a · MSG19",
           "preconditions": [
             "Actor is an administrator holding AdminUsers."
           ],
           "return": "RoleResult Success (MSG19): 64 characters is the maximum.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-02",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -71,14 +71,14 @@
           "id": "UTC005",
           "inputs": "Name: 65 characters.",
           "log": "N/A",
-          "note": "UC-12a · MSG20",
+          "note": "UC-11a · MSG20",
           "preconditions": [
             "Actor is an administrator holding AdminUsers."
           ],
           "return": "RoleResult InvalidInformation (MSG20) with errors[name] = \"Tên vai trò không được vượt quá 64 ký tự.\".",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-02",
           "tester1": "Phạm Gia Khánh"
         }
       ],

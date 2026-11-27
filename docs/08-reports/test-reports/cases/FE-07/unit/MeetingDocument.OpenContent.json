@@ -21,9 +21,9 @@
           "exception": "N/A",
           "log": "None.",
           "type": "Normal",
-          "note": "UC-32b · BR-183 · BR-216",
+          "note": "UC-35b · BR-068",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -36,9 +36,9 @@
           "exception": "N/A",
           "log": "No audit row.",
           "type": "Abnormal",
-          "note": "UC-32b · BR-188 · MSG159",
+          "note": "UC-35b · BR-081 · MSG159",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -51,24 +51,24 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-32b · MSG156",
+          "note": "UC-35b · MSG156",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC004",
           "preconditions": [
-            "One candidate of exactly 10 MB with a valid PDF body."
+            "Meeting InProgress; reader is the Secretary; M1 is attached only to a draft vote; the file exists in storage."
           ],
-          "inputs": "candidates: [{FileName \"lon.pdf\", Length 10,485,760}].",
-          "return": "No failure; the file size limit is inclusive.",
+          "inputs": "meetingDocumentId: M1; download: false.",
+          "return": "Content stream, file name, content type and size of M1; Chair and Secretary see draft-vote documents.",
           "exception": "N/A",
           "log": "N/A",
-          "type": "Boundary",
-          "note": "UC-32b · BR-253",
+          "type": "Normal",
+          "note": "UC-35b · BR-095",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -81,9 +81,9 @@
           "exception": "N/A",
           "log": "Error log \"Failed to open stored object\".",
           "type": "Abnormal",
-          "note": "UC-32b · MSG382",
+          "note": "UC-35b · MSG382",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -97,7 +97,9 @@
           "log": "No audit row.",
           "type": "Abnormal",
           "note": "UC-35b · BR-055 · BR-081 · MSG485",
-          "round1": "Pending"
+          "round1": "Passed",
+          "date1": "2026-11-27",
+          "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC007",
@@ -110,7 +112,9 @@
           "log": "Audit row document.downloaded recorded.",
           "type": "Normal",
           "note": "UC-35b · BR-010 · BR-081",
-          "round1": "Pending"
+          "round1": "Passed",
+          "date1": "2026-11-27",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

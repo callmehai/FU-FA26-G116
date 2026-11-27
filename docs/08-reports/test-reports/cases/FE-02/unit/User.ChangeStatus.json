@@ -9,7 +9,7 @@
           "id": "UTC001",
           "inputs": "id: target; isActive: false.",
           "log": "Audit row UserDeactivated (details { email, isActive: false }); Voice ID ended (reason AccountDeactivated); calendar shares stopped; log \"Account {UserId} deactivated by {ActorId}.\"",
-          "note": "UC-06c · BR-18 · BR-19 · BR-372 · BR-424 · MSG11",
+          "note": "UC-06c · BR-001 · BR-117 · BR-142, BR-143 · MSG11",
           "preconditions": [
             "Actor is an administrator holding AdminUsers.",
             "Two active administrators exist; target is an active non-administrator with an enrolled Voice ID and Effective calendar shares."
@@ -17,7 +17,7 @@
           "return": "UserResult Success (MSG11) with IsActive false; the row is kept; every refresh token and reset link of the account are revoked after the commit.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-02",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -32,7 +32,7 @@
           "return": "UserResult Failure(StatusChangeNotAllowed) (MSG12); the administrator stays active.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-02",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -48,7 +48,7 @@
           "return": "UserResult Failure(StatusChangeNotAllowed) (MSG12): the last-administrator rule blocks mutual deactivation.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-02",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -64,7 +64,7 @@
           "return": "UserResult Success (MSG11): reactivation is never blocked by the last-administrator rule.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-02",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -72,7 +72,7 @@
           "id": "UTC005",
           "inputs": "id: active target; isActive: false.",
           "log": "Error log \"Account {UserId} was changed, but ending its sessions failed.\"; audit row UserDeactivated.",
-          "note": "UC-06c · BR-18 · MSG11",
+          "note": "UC-06c · BR-001 · MSG11",
           "preconditions": [
             "Actor is an administrator holding AdminUsers.",
             "Ending the sessions fails (Redis unavailable) after the commit."
@@ -80,7 +80,7 @@
           "return": "UserResult Success (MSG11): the failure is logged, not raised.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-02",
           "tester1": "Phạm Gia Khánh"
         }
       ],

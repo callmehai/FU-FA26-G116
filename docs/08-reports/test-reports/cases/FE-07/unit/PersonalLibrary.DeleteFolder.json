@@ -21,9 +21,9 @@
           "exception": "N/A",
           "log": "Folder row deleted.",
           "type": "Normal",
-          "note": "UC-72d · BR-223 · MSG197",
+          "note": "UC-41d · BR-084 · MSG197",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -36,9 +36,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-72d · BR-242 · MSG175",
+          "note": "UC-41d · BR-083 · MSG175",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -51,9 +51,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-72d · BR-223 · MSG196",
+          "note": "UC-41d · BR-084 · MSG196",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -66,9 +66,9 @@
           "exception": "N/A",
           "log": "Folder row deleted.",
           "type": "Boundary",
-          "note": "UC-72d · BR-228 · MSG197",
+          "note": "UC-41d · UC-36a · MSG197",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         }
       ]

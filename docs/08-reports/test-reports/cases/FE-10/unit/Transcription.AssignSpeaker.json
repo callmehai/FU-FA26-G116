@@ -22,9 +22,9 @@
           "exception": "N/A",
           "log": "Saved: assigned user, assigner and time; audit row records the naming and whether it accepts the machine suggestion.",
           "type": "Normal",
-          "note": "UC-46b · BR-368 · MSG316",
+          "note": "UC-55b · BR-120 · MSG316",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -38,9 +38,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-46b · BR-368 · MSG317",
+          "note": "UC-55b · BR-120 · MSG317",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -53,9 +53,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-46b · MSG295",
+          "note": "UC-55b · MSG295",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         }
       ]

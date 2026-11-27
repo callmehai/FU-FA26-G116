@@ -22,9 +22,9 @@
           "exception": "N/A",
           "log": "Saved: segment text, editor and edit time; audit row records the corrected segment.",
           "type": "Normal",
-          "note": "UC-46a · BR-359 · MSG302",
+          "note": "UC-55a · BR-114, BR-115 · MSG302",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -37,9 +37,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-46a · BR-359 · MSG303",
+          "note": "UC-55a · BR-114, BR-115 · MSG303",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -52,9 +52,9 @@
           "exception": "N/A",
           "log": "Saved: segment text, editor and edit time; audit row records the corrected segment.",
           "type": "Boundary",
-          "note": "UC-46a · BR-359 · MSG302",
+          "note": "UC-55a · BR-114, BR-115 · MSG302",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -67,9 +67,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-46a · BR-359 · MSG295",
+          "note": "UC-55a · BR-114, BR-115 · MSG295",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         }
       ]

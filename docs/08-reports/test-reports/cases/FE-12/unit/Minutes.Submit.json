@@ -22,9 +22,9 @@
           "exception": "N/A",
           "log": "Saved: status, submitter and times on the revision; notification \"Biên bản chờ duyệt\" to the current Chair (\"Thư ký đã gửi biên bản cuộc họp \"…\" để Chủ toạ duyệt.\"); realtime minutes-changed push to the meeting's readers.",
           "type": "Normal",
-          "note": "UC-61 · BR-404 · MSG424 · Deviation: success also emits a realtime minutes-changed push (working-tree change).",
+          "note": "UC-72 · BR-135, BR-136 · MSG424",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-24",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -38,9 +38,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-61 · BR-404 · MSG425",
+          "note": "UC-72 · BR-135, BR-136 · MSG425",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-24",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -54,9 +54,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-61 · BR-405 · MSG426",
+          "note": "UC-72 · BR-135, BR-136 · MSG426",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-24",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -70,9 +70,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-61 · BR-389 · MSG401",
+          "note": "UC-72 · UC-71 · MSG401",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-24",
           "tester1": "Phạm Gia Khánh"
         }
       ]

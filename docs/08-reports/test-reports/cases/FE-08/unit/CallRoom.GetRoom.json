@@ -22,9 +22,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-37",
+          "note": "UC-43",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-13",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -37,9 +37,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-37",
+          "note": "UC-43",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-13",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -53,9 +53,9 @@
           "exception": "N/A",
           "log": "Could not count participants of meeting {MeetingId}.",
           "type": "Normal",
-          "note": "UC-37",
+          "note": "UC-43",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-13",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -69,9 +69,9 @@
           "exception": "N/A",
           "log": "Could not read call room access for meeting {MeetingId}.",
           "type": "Abnormal",
-          "note": "UC-37 · MSG283",
+          "note": "UC-43 · MSG283",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-13",
           "tester1": "Phạm Gia Khánh"
         }
       ]

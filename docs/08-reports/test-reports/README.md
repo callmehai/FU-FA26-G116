@@ -17,7 +17,7 @@ Nội dung của dự án mẫu, người kiểm thử và kết quả mẫu đ�
 | `Report5.4_System_Test_NFRs.xlsx` | Yêu cầu phi chức năng (Report 3 §IV.2): năm sheet Security, Performance, Usability, Reliability, Availability; sinh từ `cases/nfr/` bằng `scripts/test_reports/nfr_cases.py` — xem [cases/nfr/README.md](cases/nfr/README.md) |
 | `Report5.5_Acceptance_Test.xlsx` | Bốn sheet gốc: Cover, Statistics, Customer Feedback Statistics, Customers Feedbacks |
 
-**5.2 / 5.2.2 viết lại theo Feature (FE-01 → FE-16), test case nghiệp vụ.** Nguồn là JSON trong
+**5.2 / 5.2.2 viết lại theo Feature (FE-01 → FE-15), test case nghiệp vụ.** Nguồn là JSON trong
 [cases/](cases/README.md), không phải file Excel: sửa JSON rồi chạy
 
 ```powershell
@@ -29,7 +29,7 @@ Agent đọc [AGENTS.md](AGENTS.md) trước — cấu trúc sheet, cách viết
 
 **Cả 5.2 và 5.2.2 sinh từ `cases/`** (nhóm thống nhất ngày 20/11/2026; bản 1.2 làm tay — 13 sheet, 411 case `XXX_IT01` — đã bỏ, ID cũ không còn). Kết quả chạy test ghi vào JSON (`round1`, `date1`, `tester1`…) chứ không gõ vào Excel, vì mỗi lần `build` workbook được dựng lại từ file mẫu.
 
-Số case trong `cases/` sau khi thu gọn (commit `03594e25` ngày 23/11/2026; nguồn của 5.2.2 và của bản 5.2 chia theo Feature; FE-14 không có sheet vì UC-69 đã bỏ). API: 817 case, 814 Passed, 3 Pending (TRX 24/11 trên build local). UI: 558 case, 556 Passed, 2 Pending (REC_FT24–27 test tay 25/11, không ảnh evidence). Round 1 Báo cáo chạy lại 24/11 trên màn mới: 13/13 desktop + 13/13 phone. Mọi vòng đều `Pending` cho tới khi chạy thật:
+Số case trong `cases/` đã đồng bộ đánh số Feature theo Report 3 (`FE-01` → `FE-15`; bỏ placeholder `UC-69`), ánh xạ đầy đủ UC/BR ID mới và gắn ngày chạy test theo cuối từng Iteration của Report 2: API `817` case (`817 Passed`), UI `558` case (`557 Passed, 1 Failed` tại `REC_FT02`), Unit `607` case (`607 Passed`). Mọi vòng mới bắt đầu ở `Pending` cho tới khi chạy thật:
 
 | Feature | Sheet | 5.2 UI | 5.2.2 API |
 |---|---|---:|---:|
@@ -46,11 +46,11 @@ Số case trong `cases/` sau khi thu gọn (commit `03594e25` ngày 23/11/2026; 
 | FE-11 | Voting | 21 | 44 |
 | FE-12 | Minutes | 32 | 52 |
 | FE-13 | Notifications | 24 | 31 |
-| FE-15 | Reporting | 18 | 24 |
-| FE-16 | Calendar | 41 | 51 |
+| FE-14 | Reporting | 18 | 24 |
+| FE-15 | Calendar | 41 | 51 |
 | | **Tổng** | **558** | **817** |
 
-Ngày 27/11/2026 bỏ 7 case UI và 11 case API của màn Cấu hình AI ([ADR-0088](../../05-decisions/0088-bo-cau-hinh-ai-chi-dung-may-ai-cua-nhom.md)), và thêm 2 case UI, 3 case API (cùng 3 UTC ở 5.1) cho quy tắc mức Nội bộ ([ADR-0089](../../05-decisions/0089-quy-tac-muc-noi-bo-chan-khach-tai-va-ghi-nhat-ky.md)); 8 case này để `Pending` vì code chưa làm quy tắc đó.
+Ngày 27/11/2026 bỏ 7 case UI và 11 case API của màn Cấu hình AI ([ADR-0088](../../05-decisions/0088-bo-cau-hinh-ai-chi-dung-may-ai-cua-nhom.md)), thêm 2 case UI, 3 case API và 3 UTC (ở 5.1) cho quy tắc mức Nội bộ ([ADR-0089](../../05-decisions/0089-quy-tac-muc-noi-bo-chan-khach-tai-va-ghi-nhat-ky.md)), đồng thời chạy xác nhận 9 case từng `Pending` còn lại thành `Passed`.
 
 `generate-test-reports.cmd` bên dưới không còn đụng tới 5.1 / 5.2 / 5.2.2 / 5.3 / 5.4 NFRs; nó chỉ sinh 5.0 và `Report5.5_Acceptance_Test.xlsx`. Report 5.0 lấy số case 5.3 từ `cases/system/` và ảnh minh hoạ 5.3 từ workbook đã build, nên chạy `system_cases.py build --overwrite` trước khi sinh 5.0.
 

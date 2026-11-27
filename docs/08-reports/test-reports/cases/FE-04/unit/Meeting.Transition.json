@@ -9,7 +9,7 @@
           "id": "UTC001",
           "inputs": "Meeting status: Draft; actor: organizer; command: SubmitForApproval with AssignedApproverId of an eligible approver.",
           "log": "Saved: status WaitingApproval; history row SubmitForApproval with the approver; notification \"Cuộc họp cần được duyệt\" to the approver.",
-          "note": "UC-18 · BR-33 · BR-34 · BR-35 · MSG78",
+          "note": "UC-17 · BR-018 · BR-019 · MSG78",
           "preconditions": [
             "Meeting is Draft; organizer holds MeetingCreator.",
             "Persisted meeting information passes the submission readiness check.",
@@ -18,7 +18,7 @@
           "return": "Success(WaitingApproval); AssignedApproverId set; MSG78.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -26,14 +26,14 @@
           "id": "UTC002",
           "inputs": "actor: organizer; command: SubmitForApproval with a valid approver.",
           "log": "N/A",
-          "note": "UC-18 · BR-33 · MSG81",
+          "note": "UC-17 · MSG81",
           "preconditions": [
             "Draft meeting with an empty stored title."
           ],
           "return": "Failure SubmissionNotReady with errors { title }; MSG81; status stays Draft.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -41,7 +41,7 @@
           "id": "UTC003",
           "inputs": "Meeting status: WaitingApproval; actor: assigned approver; command: Approve.",
           "log": "Saved: status Approved; history row Approve; organizer notified \"Cuộc họp đã được duyệt\".",
-          "note": "UC-19 · BR-36 · BR-38 · MSG43",
+          "note": "UC-18 · BR-020 · BR-022, BR-023 · MSG43",
           "preconditions": [
             "Meeting is WaitingApproval with the actor as assigned approver.",
             "Actor holds MeetingApprover and is not the organizer."
@@ -49,7 +49,7 @@
           "return": "Success(Approved); MSG43.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -57,7 +57,7 @@
           "id": "UTC004",
           "inputs": "command: Publish; actor: organizer.",
           "log": "Saved: status Published; history row Publish; \"Cuộc họp đã được công bố\" notification for the Chair, Secretary and Members but not the organizer; invitation emails staged for every active participant.",
-          "note": "UC-20 · BR-37 · BR-39 · BR-124 · BR-125 · BR-322 · MSG45",
+          "note": "UC-19 · BR-021 · BR-031, BR-032 · BR-035 · MSG45",
           "preconditions": [
             "Meeting is Approved; organizer holds MeetingCreator.",
             "Roster has exactly one active Chair, one active Secretary and two Members."
@@ -65,7 +65,7 @@
           "return": "Success(Published); MSG45.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -73,14 +73,14 @@
           "id": "UTC005",
           "inputs": "command: Cancel with reason \"  Hoãn do bão  \".",
           "log": "Saved: status Cancelled with CancelledAt, CancelledById, reason and CancelledFromStatus Published; history row Cancel with the reason; vote drafts deleted in the same transaction (ADR-0067); invitees (and guests) are notified with the reason by the staged cancellation messages.",
-          "note": "UC-75 · BR-297 · BR-298 · BR-299 · BR-300 · MSG261",
+          "note": "UC-22 · BR-028 · MSG261",
           "preconditions": [
             "Meeting is Published; organizer holds MeetingCreator."
           ],
           "return": "Success(Cancelled); MSG261; reason trimmed to \"Hoãn do bão\".",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         }
       ],

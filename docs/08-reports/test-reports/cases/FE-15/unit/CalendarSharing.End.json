@@ -1,5 +1,5 @@
 {
-  "feature": "FE-16",
+  "feature": "FE-15",
   "module": "CAL",
   "sheet": "CalendarSharing.End",
   "description": "Changing, withdrawing and ending a share.",
@@ -22,9 +22,9 @@
           "exception": "N/A",
           "log": "Notification CalendarShareEnded queued for Binh; audit calendar_share.ended.",
           "type": "Normal",
-          "note": "UC-84e · MSG451",
+          "note": "UC-80e · MSG451",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -38,9 +38,9 @@
           "exception": "N/A",
           "log": "Share closed with no pending change; notification queued for An; audit calendar_share.ended.",
           "type": "Boundary",
-          "note": "UC-84e · MSG451",
+          "note": "UC-80e · MSG451",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -54,9 +54,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-84e · MSG450",
+          "note": "UC-80e · MSG450",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -70,9 +70,9 @@
           "exception": "N/A",
           "log": "Notification queued for Binh; audit calendar_share.ended.",
           "type": "Boundary",
-          "note": "UC-84e · BR-425 · MSG451",
+          "note": "UC-80e · BR-142, BR-143 · MSG451",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         }
       ]

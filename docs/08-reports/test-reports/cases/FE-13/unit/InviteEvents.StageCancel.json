@@ -21,9 +21,9 @@
           "exception": "N/A",
           "log": "An in-app notification \"Cuộc họp đã bị huỷ\" (body: Cuộc họp “<title>” đã bị huỷ. Lý do: Hoãn do lịch bận) is staged for Bình only; none for An (the actor) and none for the Guest. The dispatch payload carries the reason.",
           "type": "Normal",
-          "note": "UC-75 · BR-300 · BR-322",
+          "note": "UC-22 · BR-035",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -36,9 +36,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-75 · BR-322",
+          "note": "UC-22 · BR-035",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -51,9 +51,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-75 · BR-300",
+          "note": "UC-22",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         }
       ]

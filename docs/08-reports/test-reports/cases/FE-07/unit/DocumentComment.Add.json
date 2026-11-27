@@ -21,9 +21,9 @@
           "exception": "N/A",
           "log": "DocumentComment row saved with AuthorId An, PageNumber 4, CreatedAt = now; a share lock taken on the meeting row.",
           "type": "Normal",
-          "note": "UC-35 · BR-248 · BR-249 · MSG199",
+          "note": "UC-38 · BR-082 · MSG199",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -36,9 +36,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-35 · MSG200",
+          "note": "UC-38 · MSG200",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -51,9 +51,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-35 · MSG199",
+          "note": "UC-38 · MSG199",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -66,24 +66,24 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-35 · MSG348",
+          "note": "UC-38 · MSG348",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC005",
           "preconditions": [
-            "One candidate of 10 MB plus 1 byte."
+            "Meeting Ended; actor is the Secretary; M1 is a PDF in the meeting."
           ],
-          "inputs": "candidates: [{FileName \"lon.pdf\", Length 10,485,761}].",
-          "return": "Failure Invalid (MSG164); errors[\"files[0]\"] = [\"lon.pdf: tệp lớn hơn 10 MB.\"]; the bytes are not read.",
+          "inputs": "body: \"Thêm ý kiến\"; pageNumber: null; parentCommentId: null.",
+          "return": "Failure Ended (HTTP 409, MSG251); no comment is saved.",
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-35 · BR-282 · MSG251",
+          "note": "UC-38 · BR-079, BR-080 · MSG251",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         }
       ]

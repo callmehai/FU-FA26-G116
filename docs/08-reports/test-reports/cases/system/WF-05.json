@@ -71,7 +71,7 @@
           "preconditions": [
             "TC01 passed; no open speaking request."
           ],
-          "aiNote": "BF-03 · UC-50 · BR-104–BR-106 · 5.2: ROOM_FT73, ROOM_FT75, ROOM_FT76 · Evidence: QA run SYS-WF05 20261123-065244-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
+          "aiNote": "BF-03 · UC-50 · BR-104–BR-106 · 5.2: ROOM_FT38, ROOM_FT40, ROOM_FT41 · Evidence: QA run SYS-WF05 20261123-065244-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
           "round1": "Passed",
           "date1": "2026-11-23",
           "tester1": "Nguyễn Trường Huy"

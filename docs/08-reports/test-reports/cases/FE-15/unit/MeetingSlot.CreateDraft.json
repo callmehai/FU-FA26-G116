@@ -1,5 +1,5 @@
 {
-  "feature": "FE-16",
+  "feature": "FE-15",
   "module": "CAL",
   "sheet": "MeetingSlot.CreateDraft",
   "description": "Finding a meeting time and creating a draft meeting from a slot.",
@@ -23,9 +23,9 @@
           "exception": "N/A",
           "log": "Draft meeting, its status history row and staged invitations saved; no duplicate-time check is made.",
           "type": "Normal",
-          "note": "UC-85b · UC-14 · BR-429 · MSG29",
+          "note": "UC-81b · UC-13 · MSG29",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -39,9 +39,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-85b · BR-430 · MSG448",
+          "note": "UC-81b · BR-140, BR-141 · MSG448",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -55,9 +55,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-85b · MSG277",
+          "note": "UC-81b · MSG277",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -71,9 +71,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-85b · MSG31",
+          "note": "UC-81b · MSG31",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -88,9 +88,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-85b · BR-428 · MSG446",
+          "note": "UC-81b · BR-148 · MSG446",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -104,9 +104,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-85b · BR-421",
+          "note": "UC-81b · UC-81a",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         }
       ]

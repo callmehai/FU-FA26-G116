@@ -16,7 +16,7 @@
           "id": "UTC001",
           "inputs": "actor: S; itemId: I.",
           "log": "Item removed; agenda change \"Deleted\" published with the item id and title.",
-          "note": "UC-23c · BR-65 · MSG62",
+          "note": "UC-23c · BR-058, BR-059 · MSG62",
           "preconditions": [
             "Meeting in status Draft; active Chair C, active Secretary S, active Member M on the roster.",
             "Item I is Pending."
@@ -24,7 +24,7 @@
           "return": "Success; 200 / MSG62.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -40,22 +40,23 @@
           "return": "Failure DeleteLocked; 409 / MSG142.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
           "id": "UTC003",
-          "inputs": "candidates: 10 files of 11 MB each (115,343,360 bytes; each also exceeds the 10 MB per-file limit, but the submission-total gate fires first).",
-          "log": "N/A",
-          "note": "UC-23c · BR-74 · MSG67",
+          "inputs": "actor: Member M; itemId: I.",
+          "log": "Item unchanged.",
+          "note": "UC-23c · BR-058 · MSG67",
           "preconditions": [
-            "Ten files whose lengths add to more than 100 MB."
+            "Meeting in status Published; active Chair C, active Secretary S, active Member M on the roster.",
+            "Item I is Pending."
           ],
-          "return": "Failure TooMany (HTTP 400, MSG288).",
+          "return": "Failure Forbidden; 403 / MSG67.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -71,7 +72,7 @@
           "return": "Failure SaveFailed; 503 / MSG70.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         }
       ]

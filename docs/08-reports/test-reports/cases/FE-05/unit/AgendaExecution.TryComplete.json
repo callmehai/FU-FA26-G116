@@ -16,14 +16,14 @@
           "id": "UTC001",
           "inputs": "item {Status: InProgress; ActualStartedAt: 2026-12-01T09:00:00Z}; endedAt: 2026-12-01T10:00:00Z.",
           "log": "Item fields Status, ActualEndedAt, UpdatedAt set.",
-          "note": "UC-25 · BR-72",
+          "note": "UC-25 · BR-060–BR-062",
           "preconditions": [
             "Item is InProgress, started at 09:00."
           ],
           "return": "true; item Status Done, ActualEndedAt and UpdatedAt 10:00:00Z.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -31,14 +31,14 @@
           "id": "UTC002",
           "inputs": "item InProgress, started 09:00:00.000001Z; endedAt: 09:00:00.000000Z.",
           "log": "N/A",
-          "note": "UC-25 · BR-72 · MSG76",
+          "note": "UC-25 · BR-060–BR-062 · MSG76",
           "preconditions": [
             "End is one microsecond before the start."
           ],
           "return": "false; item unchanged.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -46,14 +46,14 @@
           "id": "UTC003",
           "inputs": "item {Status: Pending; ActualStartedAt: null}; endedAt: now.",
           "log": "N/A",
-          "note": "UC-25 · BR-70 · MSG74",
+          "note": "UC-25 · BR-060–BR-062 · MSG74",
           "preconditions": [
             "Item is still Pending."
           ],
           "return": "false.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         }
       ]

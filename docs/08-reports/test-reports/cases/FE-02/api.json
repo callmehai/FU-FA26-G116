@@ -30,7 +30,7 @@
           ],
           "note": "UC-05 · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (List_returns_the_accounts_sorted_and_without_secrets) · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (List_includes_deactivated_accounts; List_never_exposes_the_password_hash)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-03",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -50,7 +50,7 @@
           ],
           "note": "UC-05 · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (A_signed_in_user_without_admin_users_is_refused)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-03",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -70,7 +70,7 @@
           ],
           "note": "UC-05 · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (An_administrator_whose_role_lost_the_capability_is_refused)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-03",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -99,7 +99,7 @@
           ],
           "note": "UC-06b · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (Get_returns_one_account_and_404_for_an_unknown_id) · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (Get_returns_the_current_information_for_the_edit_form)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-03",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -118,7 +118,7 @@
           ],
           "note": "UC-06b · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (Get_returns_one_account_and_404_for_an_unknown_id) · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (Get_reports_not_found_for_an_unknown_account)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-03",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -138,7 +138,7 @@
           ],
           "note": "UC-06b · Automated: tests/TrustCabinet.Web.Tests/Users/UserRound1Tests.cs (Get_answers_403_without_admin_users_and_shows_nothing)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-03",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -170,7 +170,7 @@
           ],
           "note": "UC-06a · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (Create_answers_MSG07_with_201_and_a_location; Create_records_the_signed_in_administrator_as_the_actor; Create_answers_with_the_role_id_and_name) · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (Create_stores_an_active_account_and_records_the_audit_entry; Create_hashes_the_password_instead_of_storing_it; Create_never_puts_the_password_in_the_audit_details)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-03",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -191,7 +191,7 @@
           ],
           "note": "UC-06a · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (Create_rejects_a_password_shorter_than_the_minimum) · Automated: tests/TrustCabinet.Web.Tests/Users/UserRound1Tests.cs (Create_reports_every_invalid_field_with_its_message) · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (Create_answers_MSG07_with_201_and_a_location)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-03",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -212,7 +212,7 @@
           ],
           "note": "UC-06a · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (Create_answers_MSG09_on_roleId_for_a_role_that_does_not_exist) · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (Create_rejects_a_role_that_does_not_exist)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-03",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -230,9 +230,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "Administrator account holding AdminUsers, supplied by QA lead."
           ],
-          "note": "UC-06a · UC-12a · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (Create_accepts_a_role_an_administrator_created) · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (Create_answers_MSG07_with_201_and_a_location) · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (Create_answers_with_the_role_id_and_name)",
+          "note": "UC-06a · UC-11a · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (Create_accepts_a_role_an_administrator_created) · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (Create_answers_MSG07_with_201_and_a_location) · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (Create_answers_with_the_role_id_and_name)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-03",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -254,7 +254,7 @@
           ],
           "note": "UC-06a · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (Create_answers_MSG08_with_409_for_a_duplicate_email) · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (Create_rejects_an_email_that_already_exists; Create_rejects_an_email_that_differs_only_in_case)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-03",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -276,7 +276,7 @@
           ],
           "note": "UC-06a · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (Create_answers_MSG09_on_the_role_when_the_role_is_deleted_before_the_save) · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (Create_answers_MSG09_on_roleId_for_a_role_that_does_not_exist)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-03",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -296,7 +296,7 @@
           ],
           "note": "UC-06a · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (A_signed_in_user_without_admin_users_is_refused)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-03",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -327,7 +327,7 @@
           ],
           "note": "UC-06b · UC-08 · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (Update_answers_MSG10_with_the_updated_account) · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (Update_changes_the_account_and_records_what_it_was_before; Update_answers_with_the_new_role_name_and_records_it)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-03",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -348,7 +348,7 @@
           ],
           "note": "UC-06b · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (Update_rejects_invalid_information_without_touching_the_account) · Automated: tests/TrustCabinet.Web.Tests/Users/UserRound1Tests.cs (Update_rejects_invalid_information_with_messages)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-03",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -367,7 +367,7 @@
           ],
           "note": "UC-06b · UC-08 · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (Update_answers_MSG09_for_a_role_that_has_been_deleted) · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (Create_answers_MSG09_on_roleId_for_a_role_that_does_not_exist)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-03",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -389,7 +389,7 @@
           ],
           "note": "UC-06b · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (Update_rejects_an_email_another_account_already_uses; Update_discards_the_rejected_values_when_the_save_is_refused) · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (Create_answers_MSG08_with_409_for_a_duplicate_email)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-03",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -408,7 +408,7 @@
           ],
           "note": "UC-06b · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (Update_answers_404_for_an_unknown_account) · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (Update_reports_not_found_for_an_unknown_account)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-03",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -430,7 +430,7 @@
           ],
           "note": "UC-06b · UC-06c · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (Update_cannot_change_the_status) · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (Update_answers_MSG10_with_the_updated_account)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-03",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -452,7 +452,7 @@
           ],
           "note": "UC-08 · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (Changing_the_role_does_not_sign_the_account_out) · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (Update_keeps_the_sessions_and_tells_the_account_when_the_role_changes) · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (Update_answers_MSG10_with_the_updated_account) · Automated: tests/TrustCabinet.Web.Tests/Users/UserRound1Tests.cs (Changed_role_reaches_refresh_and_me)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-03",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -473,7 +473,7 @@
           ],
           "note": "UC-08 · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (Update_refuses_to_let_an_administrator_drop_their_own_admin_role; Update_refuses_to_demote_the_last_administrator; Moving_the_last_administrator_into_a_custom_role_without_admin_users_is_refused) · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (Status_change_answers_409_when_it_is_not_allowed)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-03",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -493,7 +493,7 @@
           ],
           "note": "UC-08 · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (A_custom_role_holding_admin_users_counts_toward_the_last_administrator_rule) · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (Update_answers_MSG10_with_the_updated_account)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-03",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -524,7 +524,7 @@
           ],
           "note": "UC-06c · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (Deactivate_answers_MSG11_and_ends_the_sessions) · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (Deactivate_sets_the_status_ends_the_sessions_and_audits; Deactivate_never_deletes_the_row) · Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthEndpointsTests.cs (Refresh_answers_MSG02_once_the_account_is_deactivated) · Automated: tests/TrustCabinet.Web.Tests/Authentication/AuthEndpointsTests.cs (Login_answers_MSG02_for_a_deactivated_account)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-03",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -546,7 +546,7 @@
           ],
           "note": "UC-06c · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (Reactivate_answers_MSG11) · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (Reactivate_sets_the_status_and_audits_without_touching_sessions)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-03",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -570,7 +570,7 @@
           ],
           "note": "UC-06c · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (Deactivate_ends_the_voice_id_inside_the_same_write_and_reactivate_restores_nothing; A_refused_deactivation_leaves_the_voice_id_alone) · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (Deactivate_answers_MSG11_and_ends_the_sessions) · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (Reactivate_answers_MSG11)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-03",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -592,7 +592,7 @@
           ],
           "note": "UC-06c · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (Status_change_refuses_a_body_that_does_not_state_the_status) · Automated: tests/TrustCabinet.Web.Tests/Users/UserRound1Tests.cs (Status_change_refuses_a_body_without_isActive_with_MSG09)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-03",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -612,7 +612,7 @@
           ],
           "note": "UC-06c · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (An_administrator_cannot_deactivate_themselves_over_http; Status_change_answers_409_when_it_is_not_allowed) · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (Status_change_is_refused_when_an_administrator_aims_at_their_own_account)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-03",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -632,7 +632,7 @@
           ],
           "note": "UC-06c · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (Status_change_answers_409_when_it_is_not_allowed)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-03",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -654,7 +654,7 @@
           ],
           "note": "UC-06c · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (Two_administrators_cannot_deactivate_each_other_into_a_locked_out_system; Deactivating_the_last_administrator_is_refused) · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (Deactivate_answers_MSG11_and_ends_the_sessions) · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (A_deactivated_administrator_is_refused_even_with_a_valid_token)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-03",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -673,7 +673,7 @@
           ],
           "note": "UC-06c · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (Status_change_answers_404_for_an_unknown_account) · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (Status_change_reports_not_found_for_an_unknown_account)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-03",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -705,7 +705,7 @@
           ],
           "note": "UC-07 · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (Reset_request_answers_MSG13_and_emails_the_account) · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (Reset_request_emails_a_link_to_the_registered_address_and_records_it; Reset_request_leaves_the_current_password_and_sessions_alone)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-03",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -726,7 +726,7 @@
           ],
           "note": "UC-07 · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (Reset_request_answers_MSG14_for_an_account_without_a_password) · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (Reset_request_answers_not_available_for_an_account_without_a_password)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-03",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -757,7 +757,7 @@
           ],
           "note": "UC-07 · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (Reset_with_the_emailed_link_answers_MSG92_without_signing_in) · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (Reset_sets_the_new_password_ends_every_session_and_records_it) · Automated: tests/TrustCabinet.Web.Tests/Users/UserRound1Tests.cs (After_reset_the_new_password_signs_in_and_the_old_one_does_not)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-03",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -775,7 +775,7 @@
           ],
           "note": "UC-07 · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (Reset_with_a_dead_link_answers_MSG93) · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (Reset_refuses_an_unknown_link)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-03",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -794,7 +794,7 @@
           ],
           "note": "UC-07 · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (Reset_link_works_only_once) · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (Reset_with_a_dead_link_answers_MSG93)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-03",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -814,7 +814,7 @@
           ],
           "note": "UC-07 · Automated: tests/TrustCabinet.Web.Tests/Users/UserServiceTests.cs (Reset_refuses_an_expired_link) · Automated: tests/TrustCabinet.Web.Tests/Users/UserEndpointsTests.cs (Reset_with_a_dead_link_answers_MSG93)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-03",
           "tester1": "Phạm Gia Khánh"
         }
       ]

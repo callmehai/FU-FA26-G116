@@ -48,7 +48,8 @@
       "target": "100 concurrent users, error rate < 1%, 95% of API requests ≤ 1 s",
       "condition": "Single-server Docker deployment as on the test server",
       "actual": "100 virtual users, 60 s, 9,134 requests: error rate 0.00%, p95 173 ms, p50 148 ms, max 581 ms (partial: one workstation, reads only; condition not met: not the Docker deployment, writes not covered)",
-      "status": "Pass",
+      "status": "Blocked",
+      "reason": "Condition not met: measured on single workstation (reads only), not the single-server Docker deployment.",
       "date": "2026-11-23",
       "tester": "Nguyễn Trường Huy",
       "aiNote": "Partial pass: one workstation, not the Docker server; reads only. Condition not met: one Windows workstation ran the app, PostgreSQL, Redis and the load generator, not the single-server Docker deployment; reads only (meeting list, notifications, meeting details, /auth/me), each user every 0.5 s. · Evidence: QA run SYS-NFR 20261122-184514 · Re-run on a clean local database: same result, QA run SYS-NFR 20261123-070126-0c98bde8 · Run by the QA runner on a local build of app 6baba24f."
@@ -74,7 +75,8 @@
       "target": "First page ≤ 2 s for 95% of requests",
       "condition": "Data volume up to 10,000 meetings, 50,000 documents, 1,000,000 audit entries",
       "actual": "p95: meetings 6 ms, users 11 ms, notifications 10 ms, audit log 67 ms, documents 24 ms (partial: 218 of 10,000 meetings; condition not met: far below the stated data volume)",
-      "status": "Pass",
+      "status": "Blocked",
+      "reason": "Condition not met: local DB held 218 of 10,000 meetings; needs seeded load test.",
       "date": "2026-11-23",
       "tester": "Nguyễn Trường Huy",
       "aiNote": "Partial pass: 218 of 10,000 meetings in the database. Condition not met: the local database held 218 meetings, 21 documents and about 2,650 audit entries, far below the stated volume. Re-measure on seeded data before acceptance. · Evidence: QA run SYS-NFR 20261122-184514 · Re-run on a clean local database: same result, QA run SYS-NFR 20261123-070126-0c98bde8 · Run by the QA runner on a local build of app 6baba24f."

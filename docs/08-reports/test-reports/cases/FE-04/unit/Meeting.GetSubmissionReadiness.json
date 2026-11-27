@@ -16,7 +16,7 @@
           "id": "UTC001",
           "inputs": "id: meeting; actorId: organizer.",
           "log": "N/A",
-          "note": "UC-18 · BR-33",
+          "note": "UC-17",
           "preconditions": [
             "Meeting is Draft created by the actor.",
             "Actor holds MeetingCreator; stored information is complete."
@@ -24,7 +24,7 @@
           "return": "Outcome Success; status Draft; errors empty; Ready true.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -32,14 +32,14 @@
           "id": "UTC002",
           "inputs": "id: meeting; actorId: organizer.",
           "log": "N/A",
-          "note": "UC-18 · BR-33",
+          "note": "UC-17",
           "preconditions": [
             "Draft meeting with an empty stored title."
           ],
           "return": "Outcome Success; errors { title }; Ready false.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -47,14 +47,14 @@
           "id": "UTC003",
           "inputs": "actorId: Chair.",
           "log": "N/A",
-          "note": "UC-18 · BR-29 · MSG85",
+          "note": "UC-17 · BR-016, BR-017 · MSG85",
           "preconditions": [
             "Actor is the Chair or approver, not the creator."
           ],
           "return": "Outcome Forbidden with the meeting status; MSG85.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -62,14 +62,14 @@
           "id": "UTC004",
           "inputs": "actorId: organizer.",
           "log": "N/A",
-          "note": "UC-18 · BR-33 · MSG41",
+          "note": "UC-17 · MSG41",
           "preconditions": [
             "Meeting is WaitingApproval."
           ],
           "return": "Outcome StatusConflict with status WaitingApproval; MSG41.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         }
       ]

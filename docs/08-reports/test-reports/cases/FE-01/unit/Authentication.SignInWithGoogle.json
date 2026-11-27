@@ -9,7 +9,7 @@
           "id": "UTC001",
           "inputs": "idToken: \"<valid token>\".",
           "log": "Google sign-in succeeded for account {UserId}.; audit row SignedIn (details { method: \"google\" }).",
-          "note": "UC-02 · BR-05 · BR-444",
+          "note": "UC-02 · BR-003 · BR-009",
           "preconditions": [
             "Verifier returns identity { subject: g-100, email: organizer@example.com }.",
             "Active account already linked to subject g-100."
@@ -17,7 +17,7 @@
           "return": "GoogleSignInResult Success with the user, capabilities of the role, access token, refresh token (stored) and expiry.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-02",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -25,7 +25,7 @@
           "id": "UTC002",
           "inputs": "idToken: \"<valid token>\".",
           "log": "Google sign-in rejected: account {UserId} is deactivated and was never linked.; audit row SignInFailed (details { method: \"google\", reason: \"account_deactivated\" }).",
-          "note": "UC-02 · BR-03 · BR-444 · MSG02",
+          "note": "UC-02 · BR-001 · BR-009 · MSG02",
           "preconditions": [
             "Verifier returns identity { subject: g-300, email: former@example.com }.",
             "Account former@example.com is deactivated and was never linked to a Google subject."
@@ -33,7 +33,7 @@
           "return": "GoogleSignInResult Failure(AccountDeactivated) (MSG02); the subject is not linked and no token is issued.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-02",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -41,7 +41,7 @@
           "id": "UTC003",
           "inputs": "idToken: \"<valid token>\".",
           "log": "Google sign-in rejected: no internal account is linked to that Google identity.; no audit row.",
-          "note": "UC-02 · BR-06 · BR-07 · MSG05",
+          "note": "UC-02 · BR-003 · MSG05",
           "preconditions": [
             "Verifier returns identity { subject: g-400, email: stranger@gmail.com }.",
             "No internal account has that subject or email."
@@ -49,7 +49,7 @@
           "return": "GoogleSignInResult Failure(NotLinked) (MSG05); no account is created.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-02",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -57,15 +57,15 @@
           "id": "UTC004",
           "inputs": "idToken: \"<valid token>\".",
           "log": "Google sign-in succeeded for account {UserId}.; audit row SignedIn (method \"google\").",
-          "note": "UC-02 · BR-04 · BR-444",
+          "note": "UC-02 · BR-002 · BR-009",
           "preconditions": [
             "Verifier returns identity of a linked active account.",
-            "The account role holds no capabilities (BR-04)."
+            "The account role holds no capabilities (BR-002)."
           ],
           "return": "GoogleSignInResult Success with an empty capability list and a token pair.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-02",
           "tester1": "Phạm Gia Khánh"
         }
       ],

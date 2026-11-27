@@ -16,7 +16,7 @@
           "id": "UTC001",
           "inputs": "command: Start; actor: the Chair.",
           "log": "Saved: status InProgress, history row Start (Published to InProgress) with the Chair as actor; after commit \"meeting started\" notification queued for the two Members and the Secretary but not for the starter.",
-          "note": "UC-21 · BR-127 · BR-130 · BR-131 · BR-164 · MSG110",
+          "note": "UC-20 · BR-024 · MSG110",
           "preconditions": [
             "Meeting is Published with exactly one active Chair (the actor) and one active Secretary.",
             "Two other Members are invited."
@@ -24,7 +24,7 @@
           "return": "Success(InProgress); ActualStartedAt = now; MSG110.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -32,7 +32,7 @@
           "id": "UTC002",
           "inputs": "command: End; actor: the Chair.",
           "log": "Saved: status Ended, history row End (InProgress to Ended); draft votes deleted; open speaking requests closed; after commit: agenda event \"MeetingEnded\" published, draft-deletion events sent to Chair and Secretary only, LiveKit room closed.",
-          "note": "UC-22 · BR-130 · BR-132 · BR-143 · MSG111",
+          "note": "UC-21 · BR-024 · BR-025 · MSG111",
           "preconditions": [
             "Meeting is InProgress; actor is the active Chair.",
             "Meeting mode is Online."
@@ -40,7 +40,7 @@
           "return": "Success(Ended); ActualEndedAt = now; MSG111.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -48,14 +48,14 @@
           "id": "UTC003",
           "inputs": "command: End; actor: the Chair.",
           "log": "Same saved changes; no room closure because an in-person meeting has no online room.",
-          "note": "UC-22 · BR-130 · BR-132 · MSG111",
+          "note": "UC-21 · BR-024 · BR-025 · MSG111",
           "preconditions": [
             "Meeting is InProgress, mode InPerson."
           ],
           "return": "Success(Ended); MSG111.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -63,14 +63,14 @@
           "id": "UTC004",
           "inputs": "meetingId: unknown.",
           "log": "N/A",
-          "note": "UC-21 · BR-127 · BR-130 · BR-131",
+          "note": "UC-20 · BR-024",
           "preconditions": [
             "Meeting does not exist."
           ],
           "return": "Failure NotFound (404).",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -78,7 +78,7 @@
           "id": "UTC005",
           "inputs": "command: Start; actor: Secretary.",
           "log": "Saved: status InProgress, history row Start (Published to InProgress) with the Secretary as actor; after commit \"meeting started\" notification queued for the Chair and the Members but not for the Secretary who started it.",
-          "note": "UC-21 · BR-127 · BR-130 · BR-131 · BR-164 · MSG110 · Deviation: the Secretary may start since PO 20/11/2026; source.ref 7286680a allowed only the Chair.",
+          "note": "UC-20 · BR-024 · MSG110",
           "preconditions": [
             "Meeting is Published with exactly one active Chair and one active Secretary (the actor).",
             "Chair is not the actor."
@@ -86,7 +86,7 @@
           "return": "Success(InProgress); ActualStartedAt = now; MSG110.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -94,14 +94,14 @@
           "id": "UTC006",
           "inputs": "command: End; actor: deactivated Chair.",
           "log": "N/A",
-          "note": "UC-22 · BR-130 · MSG114",
+          "note": "UC-21 · BR-024 · MSG114",
           "preconditions": [
             "Actor is the Chair on the roster but the Chair account is deactivated."
           ],
           "return": "Failure Forbidden (403); MSG114.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         }
       ]

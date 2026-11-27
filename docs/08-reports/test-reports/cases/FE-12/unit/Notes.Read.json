@@ -21,9 +21,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-59 · UC-82 · Run through MinutesTemplate.Build (the reader is private): the section it feeds is what is read.",
+          "note": "UC-70 · UC-28 · Run through MinutesTemplate.Build (the reader is private): the section it feeds is what is read.",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-24",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -36,9 +36,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-59 · UC-82 · Run through MinutesTemplate.Build (the reader is private): the section it feeds is what is read.",
+          "note": "UC-70 · UC-28 · Run through MinutesTemplate.Build (the reader is private): the section it feeds is what is read.",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-24",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -51,9 +51,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-59 · UC-82 · Run through MinutesTemplate.Build (the reader is private): the section it feeds is what is read.",
+          "note": "UC-70 · UC-28 · Run through MinutesTemplate.Build (the reader is private): the section it feeds is what is read.",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-24",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -66,9 +66,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-59 · UC-82 · Run through MinutesTemplate.Build (the reader is private): the section it feeds is what is read.",
+          "note": "UC-70 · UC-28 · Run through MinutesTemplate.Build (the reader is private): the section it feeds is what is read.",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-24",
           "tester1": "Phạm Gia Khánh"
         }
       ]

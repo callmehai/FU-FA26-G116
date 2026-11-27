@@ -21,9 +21,9 @@
           "exception": "N/A",
           "log": "Two links (M1-A1, M2-A1) added; links to other items untouched.",
           "type": "Normal",
-          "note": "UC-33b · BR-277 · MSG238",
+          "note": "UC-36b · MSG238",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -36,39 +36,39 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-33b · BR-277 · MSG243",
+          "note": "UC-36b · MSG243",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC003",
           "preconditions": [
-            "Ten files whose lengths add to more than 100 MB."
+            "Meeting Published; Secretary; M1 is in the meeting; agendaItemId does not belong to this meeting."
           ],
-          "inputs": "candidates: 10 files of 11 MB each (115,343,360 bytes; each also exceeds the 10 MB per-file limit, but the submission-total gate fires first).",
-          "return": "Failure TooMany (HTTP 400, MSG288).",
+          "inputs": "agendaItemId: unknown id; source: existing meeting documents; documentIds: [M1].",
+          "return": "Failure AgendaItemNotFound (HTTP 404, MSG242); no link added.",
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-33b · BR-278 · MSG242",
+          "note": "UC-36b · BR-078 · MSG242",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC004",
           "preconditions": [
-            "One candidate of 10 MB plus 1 byte."
+            "Meeting Published; actor is a Member (not Chair or Secretary); M1 is in the meeting; agendaItemId A1 exists."
           ],
-          "inputs": "candidates: [{FileName \"lon.pdf\", Length 10,485,761}].",
-          "return": "Failure Invalid (MSG164); errors[\"files[0]\"] = [\"lon.pdf: tệp lớn hơn 10 MB.\"]; the bytes are not read.",
+          "inputs": "agendaItemId: A1; source: existing meeting documents; documentIds: [M1].",
+          "return": "Failure Forbidden (HTTP 403, MSG240); no link added.",
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-33b · BR-184 · MSG240",
+          "note": "UC-36b · BR-070, BR-071 · MSG240",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         }
       ]

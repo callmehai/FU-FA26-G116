@@ -16,7 +16,7 @@
           "id": "UTC001",
           "inputs": "guest: session of this meeting; meetingId: the Published meeting.",
           "log": "N/A",
-          "note": "UC-37 · BR-29 · BR-154",
+          "note": "UC-43 · BR-016, BR-017 · BR-052",
           "preconditions": [
             "Guest session is valid and belongs to the meeting; guest invitation is readable.",
             "Meeting is Published."
@@ -24,7 +24,7 @@
           "return": "true.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -32,14 +32,14 @@
           "id": "UTC002",
           "inputs": "guest: session with SessionId = empty Guid; meetingId: any meeting.",
           "log": "N/A",
-          "note": "UC-37 · BR-29 · BR-154",
+          "note": "UC-43 · BR-016, BR-017 · BR-052",
           "preconditions": [
             "Guest session has an empty SessionId (invalid)."
           ],
           "return": "false; the meeting is not loaded.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -47,7 +47,7 @@
           "id": "UTC003",
           "inputs": "guest: valid session; meetingId: Ended meeting.",
           "log": "N/A",
-          "note": "UC-37 · BR-155",
+          "note": "UC-43 · BR-053, BR-054",
           "preconditions": [
             "Guest session valid and readable.",
             "Meeting is Ended."
@@ -55,7 +55,7 @@
           "return": "false; only Published and InProgress meetings are open to guests.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         }
       ]

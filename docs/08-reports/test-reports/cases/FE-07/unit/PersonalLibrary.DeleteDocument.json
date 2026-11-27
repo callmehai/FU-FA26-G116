@@ -21,9 +21,9 @@
           "exception": "N/A",
           "log": "Library row of D1 deleted; the meeting copies keep their stored file (DocumentId becomes null).",
           "type": "Normal",
-          "note": "UC-71a · BR-186 · BR-213 · MSG180",
+          "note": "UC-40a · BR-074–BR-076 · BR-077 · MSG180",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -36,9 +36,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-71a · BR-242 · MSG175",
+          "note": "UC-40a · BR-083 · MSG175",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -51,9 +51,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-71a · MSG175",
+          "note": "UC-40a · MSG175",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         }
       ]

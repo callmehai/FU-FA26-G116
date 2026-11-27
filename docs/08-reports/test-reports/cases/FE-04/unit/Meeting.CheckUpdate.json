@@ -16,14 +16,14 @@
           "id": "UTC001",
           "inputs": "id: meeting; actorId: organizer.",
           "log": "N/A",
-          "note": "UC-15 · BR-27 · BR-28",
+          "note": "UC-14 · BR-014",
           "preconditions": [
             "Meeting is Draft and owned by the actor."
           ],
           "return": "Success with the meeting details.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -31,14 +31,14 @@
           "id": "UTC002",
           "inputs": "status: WaitingApproval.",
           "log": "N/A",
-          "note": "UC-15 · BR-34 · MSG33",
+          "note": "UC-14 · BR-018 · MSG33",
           "preconditions": [
             "Meeting is WaitingApproval."
           ],
           "return": "Failure NotEditable; MSG33.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -46,14 +46,14 @@
           "id": "UTC003",
           "inputs": "actorId: not the creator.",
           "log": "N/A",
-          "note": "UC-15 · BR-29",
+          "note": "UC-14 · BR-016, BR-017",
           "preconditions": [
             "Meeting is owned by someone else or does not exist."
           ],
           "return": "Failure NotFound (404).",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         }
       ]

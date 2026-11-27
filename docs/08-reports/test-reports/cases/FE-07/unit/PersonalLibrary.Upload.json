@@ -21,9 +21,9 @@
           "exception": "N/A",
           "log": "Two StoredFile rows, two objects written, two Document rows with OwnerId U1 and FolderId F1, in one transaction; library locked for the owner.",
           "type": "Normal",
-          "note": "UC-36 · BR-229 · MSG177",
+          "note": "UC-39 · BR-068 · MSG177",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -36,9 +36,9 @@
           "exception": "N/A",
           "log": "Objects released; StoredFile rows stamped purged.",
           "type": "Abnormal",
-          "note": "UC-36 · MSG179",
+          "note": "UC-39 · MSG179",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -51,9 +51,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-36 · MSG346",
+          "note": "UC-39 · MSG346",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -66,9 +66,9 @@
           "exception": "N/A",
           "log": "Objects released.",
           "type": "Abnormal",
-          "note": "UC-36 · BR-286 · MSG178",
+          "note": "UC-39 · UC-36a, UC-36b, UC-39 · MSG178",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         }
       ]

@@ -70,7 +70,7 @@
           "preconditions": [
             "WF-03 and WF-08 were run."
           ],
-          "aiNote": "BF-01 · UC-69, UC-35b · BR-016, BR-017, BR-079, BR-080 · 5.2: DOC_FT79 · Evidence: QA run SYS-WF10 20261123-065540-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
+          "aiNote": "BF-01 · UC-69, UC-35b · BR-016, BR-017, BR-079, BR-080 · 5.2: DOC_FT44 · Evidence: QA run SYS-WF10 20261123-065540-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
           "round1": "Passed",
           "date1": "2026-11-23",
           "tester1": "Nguyễn Trường Huy"

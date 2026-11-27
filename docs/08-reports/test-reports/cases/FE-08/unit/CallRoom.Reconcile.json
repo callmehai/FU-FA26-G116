@@ -22,9 +22,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-37 · Deviation: at 7286680a closing the room here notified nobody and dropped the closed-hands count with no speaking-queue update; the current code closes the hands instead — SCRUM-213",
+          "note": "UC-43",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-13",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -38,9 +38,9 @@
           "exception": "N/A",
           "log": "Removing {Identity} from {Room}: no longer allowed in.",
           "type": "Normal",
-          "note": "UC-37",
+          "note": "UC-43",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-13",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -53,9 +53,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-37",
+          "note": "UC-43",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-13",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -69,9 +69,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-37",
+          "note": "UC-43",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-13",
           "tester1": "Phạm Gia Khánh"
         }
       ]

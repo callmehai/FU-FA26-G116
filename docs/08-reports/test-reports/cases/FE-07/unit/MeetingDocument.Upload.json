@@ -22,9 +22,9 @@
           "exception": "N/A",
           "log": "StoredFile row saved and object written under stored-files/<id>; library folder \"Họp HĐQT – 15/12/2026\" created for the Chair; Document and MeetingDocument rows committed in one transaction.",
           "type": "Normal",
-          "note": "UC-33a · BR-192 · BR-226 · MSG161",
+          "note": "UC-36a · MSG161",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -37,9 +37,9 @@
           "exception": "N/A",
           "log": "Written objects deleted and StoredFile rows stamped purged (released).",
           "type": "Abnormal",
-          "note": "UC-33a · BR-195 · MSG172",
+          "note": "UC-36a · BR-070, BR-071 · MSG172",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -52,9 +52,9 @@
           "exception": "N/A",
           "log": "Objects released.",
           "type": "Abnormal",
-          "note": "UC-33a · BR-184 · MSG162",
+          "note": "UC-36a · BR-070, BR-071 · MSG162",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -67,9 +67,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-33a · BR-319",
+          "note": "UC-36a · UC-36a, UC-36b, UC-39",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -82,9 +82,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-33a · MSG346",
+          "note": "UC-36a · MSG346",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         }
       ]

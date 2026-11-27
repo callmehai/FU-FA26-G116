@@ -21,9 +21,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-59 · UC-60 · BR-264",
+          "note": "UC-70 · UC-71",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-24",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -36,9 +36,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-59",
+          "note": "UC-70",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-24",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -51,9 +51,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-59 · BR-264 · BR-392",
+          "note": "UC-70 · BR-133",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-24",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -66,9 +66,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-59 · UC-82 · BR-392",
+          "note": "UC-70 · UC-28 · BR-133",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-24",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -81,9 +81,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-59 · BR-385",
+          "note": "UC-70 · UC-71, NFR",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-24",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -96,9 +96,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-59",
+          "note": "UC-70",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-24",
           "tester1": "Phạm Gia Khánh"
         }
       ],

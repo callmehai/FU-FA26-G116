@@ -23,9 +23,9 @@
           "exception": "N/A",
           "log": "Saved: minutes row (Draft, revision 1) with template content, BuiltFromDraftAt and creation time; realtime minutes-changed push to the meeting's readers.",
           "type": "Normal",
-          "note": "UC-59 · MSG395 · Deviation: success also emits a realtime minutes-changed push (working-tree change).",
+          "note": "UC-70 · MSG395",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-24",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -39,9 +39,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-59 · MSG397",
+          "note": "UC-70 · MSG397",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-24",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -55,9 +55,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-59 · MSG398",
+          "note": "UC-70 · MSG398",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-24",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -71,9 +71,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-59 · MSG399",
+          "note": "UC-70 · MSG399",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-24",
           "tester1": "Phạm Gia Khánh"
         }
       ]

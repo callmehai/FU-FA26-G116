@@ -16,14 +16,14 @@
           "id": "UTC001",
           "inputs": "AutoCancelAfterHours: 24.",
           "log": "Saved: history row AutoCancel with no actor; vote drafts deleted in the same transaction (ADR-0067); one notification \"Cuộc họp đã tự huỷ\" for the organizer only.",
-          "note": "UC-75 · BR-301",
+          "note": "UC-22 · BR-029",
           "preconditions": [
             "A Draft meeting whose planned start was 30 hours ago."
           ],
           "return": "Returns 1; status Cancelled, CancelledById null, CancelledAt = now, CancelledFromStatus Draft; reason \"Không diễn ra theo lịch: quá 24 giờ sau giờ bắt đầu dự kiến mà chưa bắt đầu.\"",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -31,14 +31,14 @@
           "id": "UTC002",
           "inputs": "PlannedStartTime = now-24h.",
           "log": "N/A",
-          "note": "UC-75 · BR-301",
+          "note": "UC-22 · BR-029",
           "preconditions": [
             "Planned start exactly 24 hours ago."
           ],
           "return": "Returns 1 (start is not later than now minus the delay).",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -46,14 +46,14 @@
           "id": "UTC003",
           "inputs": "PlannedStartTime = now-23h59m.",
           "log": "N/A",
-          "note": "UC-75 · BR-301",
+          "note": "UC-22 · BR-029",
           "preconditions": [
             "Planned start 23 hours 59 minutes ago."
           ],
           "return": "Returns 0; the meeting is not touched.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -61,14 +61,14 @@
           "id": "UTC004",
           "inputs": "status InProgress on the re-check.",
           "log": "N/A",
-          "note": "UC-75 · BR-297",
+          "note": "UC-22 · BR-028",
           "preconditions": [
             "Meeting has moved to InProgress between the listing and the locked re-check."
           ],
           "return": "Not cancelled; not counted.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -76,14 +76,14 @@
           "id": "UTC005",
           "inputs": "60 overdue meetings.",
           "log": "N/A",
-          "note": "UC-75 · BR-301",
+          "note": "UC-22 · BR-029",
           "preconditions": [
             "More than 50 overdue meetings."
           ],
           "return": "At most 50 per sweep.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         }
       ]

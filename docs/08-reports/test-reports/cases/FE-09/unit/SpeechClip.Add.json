@@ -22,9 +22,9 @@
           "exception": "N/A",
           "log": "A ClipAdded change is published to the meeting.",
           "type": "Normal",
-          "note": "UC-39a · BR-352 · MSG318",
+          "note": "UC-45a · BR-113 · MSG318",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -37,9 +37,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-39a · MSG319",
+          "note": "UC-45a · MSG319",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -53,9 +53,9 @@
           "exception": "N/A",
           "log": "A ClipAdded change is published to the meeting.",
           "type": "Boundary",
-          "note": "UC-39a · MSG318",
+          "note": "UC-45a · MSG318",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -68,9 +68,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-39a · BR-354 · MSG320 · Deviation: check() refuses before any audio is written, so no file is deleted",
+          "note": "UC-45a · UC-53 · MSG320",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         }
       ]

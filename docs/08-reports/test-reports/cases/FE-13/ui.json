@@ -7,7 +7,7 @@
     {
       "title": "Notification Panel",
       "uc": [
-        "UC-66"
+        "UC-76"
       ],
       "cases": [
         {
@@ -25,9 +25,9 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as a participant with 25 notifications, 3 of them unread, created by publishing meetings that invite that account."
           ],
-          "note": "UC-66 | Manual only · Round1 Passed (2026-11-22): AC1: tests/qa/out/SCRUM-200/20261122-132553-39c00e3b/01-qa-fe13-a-trustcabinet-local-AC1-desktop-chuong-co-so-chua-doc.png; tests/qa/out/SCRUM-200/20261122-132553-39c00e3b/02-qa-fe13-a-trustcabinet-local-AC1-desktop-panel-dong-dau-chua-doc.png; tests/qa/out/SCRUM-200/20261122-132553-39c00e3b/03-qa-fe13-a-trustcabinet-local-AC1-phone-chuong-co-so-chua-doc.png; tests/qa/out/SCRUM-200/20261122-132553-39c00e3b/04-qa-fe13-a-trustcabinet-local-AC1-phone-panel-dong-dau-chua-doc.png",
+          "note": "UC-76 | Manual only · Round1 Passed (2026-11-22): AC1: tests/qa/out/SCRUM-200/20261122-132553-39c00e3b/01-qa-fe13-a-trustcabinet-local-AC1-desktop-chuong-co-so-chua-doc.png; tests/qa/out/SCRUM-200/20261122-132553-39c00e3b/02-qa-fe13-a-trustcabinet-local-AC1-desktop-panel-dong-dau-chua-doc.png; tests/qa/out/SCRUM-200/20261122-132553-39c00e3b/03-qa-fe13-a-trustcabinet-local-AC1-phone-chuong-co-so-chua-doc.png; tests/qa/out/SCRUM-200/20261122-132553-39c00e3b/04-qa-fe13-a-trustcabinet-local-AC1-phone-panel-dong-dau-chua-doc.png",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Nguyễn Trường Huy"
         },
         {
@@ -45,9 +45,9 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as a participant with 25 notifications, 3 of them unread, created by publishing meetings that invite that account."
           ],
-          "note": "UC-66 | Manual only · Round1 Passed (2026-11-22): AC20: tests/qa/out/SCRUM-200/20261122-133645-39c00e3b/02-secretary-AC20-desktop-panel-99-cong-gio-tuong-doi.png; tests/qa/out/SCRUM-200/20261122-133159-39c00e3b/06-secretary-AC20-phone-panel-99-cong-gio-tuong-doi.png",
+          "note": "UC-76 | Manual only · Round1 Passed (2026-11-22): AC20: tests/qa/out/SCRUM-200/20261122-133645-39c00e3b/02-secretary-AC20-desktop-panel-99-cong-gio-tuong-doi.png; tests/qa/out/SCRUM-200/20261122-133159-39c00e3b/06-secretary-AC20-phone-panel-99-cong-gio-tuong-doi.png",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Nguyễn Trường Huy"
         },
         {
@@ -65,9 +65,9 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as a participant with 25 notifications, 3 of them unread, created by publishing meetings that invite that account."
           ],
-          "note": "UC-66 | Manual only · Round1 Passed (2026-11-22): AC21: tests/qa/out/SCRUM-200/20261122-133159-39c00e3b/07-qa-fe13-b-trustcabinet-local-AC21-desktop-dang-tai-trang-2.png; tests/qa/out/SCRUM-200/20261122-133159-39c00e3b/08-qa-fe13-b-trustcabinet-local-AC21-desktop-da-noi-them-dong.png; tests/qa/out/SCRUM-200/20261122-133159-39c00e3b/09-qa-fe13-b-trustcabinet-local-AC21-desktop-trang-cuoi-het-nut.png · Đã sửa case theo sản phẩm (2026-11-22): trang thông báo là 20 dòng/lần nên dòng nối thêm tính theo dữ liệu thật, không cố định 5 dòng.",
+          "note": "UC-76 | Manual only · Round1 Passed (2026-11-22): AC21: tests/qa/out/SCRUM-200/20261122-133159-39c00e3b/07-qa-fe13-b-trustcabinet-local-AC21-desktop-dang-tai-trang-2.png; tests/qa/out/SCRUM-200/20261122-133159-39c00e3b/08-qa-fe13-b-trustcabinet-local-AC21-desktop-da-noi-them-dong.png; tests/qa/out/SCRUM-200/20261122-133159-39c00e3b/09-qa-fe13-b-trustcabinet-local-AC21-desktop-trang-cuoi-het-nut.png · Đã sửa case theo sản phẩm (2026-11-22): trang thông báo là 20 dòng/lần nên dòng nối thêm tính theo dữ liệu thật, không cố định 5 dòng.",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Nguyễn Trường Huy"
         },
         {
@@ -85,9 +85,9 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Active account with no notification, supplied by QA lead."
           ],
-          "note": "UC-66 | Manual only · Round1 Passed (2026-11-22): AC4: tests/qa/out/SCRUM-200/20261122-132553-39c00e3b/13-qa-fe13-empty-trustcabinet-local-AC4-desktop-panel-trong.png; tests/qa/out/SCRUM-200/20261122-132553-39c00e3b/14-qa-fe13-empty-trustcabinet-local-AC4-phone-panel-trong.png",
+          "note": "UC-76 | Manual only · Round1 Passed (2026-11-22): AC4: tests/qa/out/SCRUM-200/20261122-132553-39c00e3b/13-qa-fe13-empty-trustcabinet-local-AC4-desktop-panel-trong.png; tests/qa/out/SCRUM-200/20261122-132553-39c00e3b/14-qa-fe13-empty-trustcabinet-local-AC4-phone-panel-trong.png",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Nguyễn Trường Huy"
         },
         {
@@ -105,9 +105,9 @@
             "Signed in as a participant with 25 notifications, 3 of them unread, created by publishing meetings that invite that account.",
             "The QA lead can interrupt the database on request."
           ],
-          "note": "UC-66 | Manual only · Round1 Passed (2026-11-22): AC22: tests/qa/out/SCRUM-200/20261122-133159-39c00e3b/15-qa-fe13-a-trustcabinet-local-AC22-desktop-lam-moi-loi-giu-danh-sach-cu.png; tests/qa/out/SCRUM-200/20261122-133159-39c00e3b/18-qa-fe13-a-trustcabinet-local-AC22-phone-lam-moi-loi-giu-danh-sach-cu.png",
+          "note": "UC-76 | Manual only · Round1 Passed (2026-11-22): AC22: tests/qa/out/SCRUM-200/20261122-133159-39c00e3b/15-qa-fe13-a-trustcabinet-local-AC22-desktop-lam-moi-loi-giu-danh-sach-cu.png; tests/qa/out/SCRUM-200/20261122-133159-39c00e3b/18-qa-fe13-a-trustcabinet-local-AC22-phone-lam-moi-loi-giu-danh-sach-cu.png",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Nguyễn Trường Huy"
         },
         {
@@ -127,9 +127,9 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as a participant with 25 notifications, 3 of them unread, created by publishing meetings that invite that account."
           ],
-          "note": "UC-66 | Manual only · Round1 Passed (2026-11-22): AC23: tests/qa/out/SCRUM-200/20261122-133159-39c00e3b/19-qa-fe13-a-trustcabinet-local-AC23-desktop-bam-ngoai-dong-va-trang-sau-nhan-thao-tac.png; tests/qa/out/SCRUM-200/20261122-133159-39c00e3b/20-qa-fe13-a-trustcabinet-local-AC23-desktop-panel-dang-mo.png; tests/qa/out/SCRUM-200/20261122-133159-39c00e3b/21-qa-fe13-a-trustcabinet-local-AC23-desktop-escape-dong-focus-ve-chuong.png; tests/qa/out/SCRUM-200/20261122-133159-39c00e3b/22-qa-fe13-a-trustcabinet-local-AC23-phone-cham-ngoai-dong-panel.png; tests/qa/out/SCRUM-200/20261122-133159-39c00e3b/23-qa-fe13-a-trustcabinet-local-AC23-phone-panel-dang-mo.png; tests/qa/out/SCRUM-200/20261122-133159-39c00e3b/24-qa-fe13-a-trustcabinet-local-AC23-phone-escape-dong-focus-ve-chuong.png",
+          "note": "UC-76 | Manual only · Round1 Passed (2026-11-22): AC23: tests/qa/out/SCRUM-200/20261122-133159-39c00e3b/19-qa-fe13-a-trustcabinet-local-AC23-desktop-bam-ngoai-dong-va-trang-sau-nhan-thao-tac.png; tests/qa/out/SCRUM-200/20261122-133159-39c00e3b/20-qa-fe13-a-trustcabinet-local-AC23-desktop-panel-dang-mo.png; tests/qa/out/SCRUM-200/20261122-133159-39c00e3b/21-qa-fe13-a-trustcabinet-local-AC23-desktop-escape-dong-focus-ve-chuong.png; tests/qa/out/SCRUM-200/20261122-133159-39c00e3b/22-qa-fe13-a-trustcabinet-local-AC23-phone-cham-ngoai-dong-panel.png; tests/qa/out/SCRUM-200/20261122-133159-39c00e3b/23-qa-fe13-a-trustcabinet-local-AC23-phone-panel-dang-mo.png; tests/qa/out/SCRUM-200/20261122-133159-39c00e3b/24-qa-fe13-a-trustcabinet-local-AC23-phone-escape-dong-focus-ve-chuong.png",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Nguyễn Trường Huy"
         },
         {
@@ -146,9 +146,9 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Not signed in."
           ],
-          "note": "UC-66 | Manual only · Round1 Passed (2026-11-22): AC25: tests/qa/out/SCRUM-200/20261122-133359-39c00e3b/01-anon-AC25-desktop-ve-login-khong-chuong.png; tests/qa/out/SCRUM-200/20261122-133359-39c00e3b/02-anon-AC25-phone-ve-login-khong-chuong.png",
+          "note": "UC-76 | Manual only · Round1 Passed (2026-11-22): AC25: tests/qa/out/SCRUM-200/20261122-133359-39c00e3b/01-anon-AC25-desktop-ve-login-khong-chuong.png; tests/qa/out/SCRUM-200/20261122-133359-39c00e3b/02-anon-AC25-phone-ve-login-khong-chuong.png",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Nguyễn Trường Huy"
         }
       ]
@@ -156,8 +156,8 @@
     {
       "title": "Mark as Read",
       "uc": [
-        "UC-67a",
-        "UC-67b"
+        "UC-77a",
+        "UC-77b"
       ],
       "cases": [
         {
@@ -176,9 +176,9 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as a participant with 25 notifications, 3 of them unread, created by publishing meetings that invite that account."
           ],
-          "note": "UC-67a | Manual only · Round1 Passed (2026-11-22): AC2: tests/qa/out/SCRUM-200/20261122-132553-39c00e3b/05-qa-fe13-a-trustcabinet-local-AC2-desktop-truoc-danh-dau.png; tests/qa/out/SCRUM-200/20261122-132553-39c00e3b/06-qa-fe13-a-trustcabinet-local-AC2-desktop-sau-danh-dau.png; tests/qa/out/SCRUM-200/20261122-132553-39c00e3b/07-qa-fe13-a-trustcabinet-local-AC2-phone-truoc-danh-dau.png; tests/qa/out/SCRUM-200/20261122-132553-39c00e3b/08-qa-fe13-a-trustcabinet-local-AC2-phone-sau-danh-dau.png",
+          "note": "UC-77a | Manual only · Round1 Passed (2026-11-22): AC2: tests/qa/out/SCRUM-200/20261122-132553-39c00e3b/05-qa-fe13-a-trustcabinet-local-AC2-desktop-truoc-danh-dau.png; tests/qa/out/SCRUM-200/20261122-132553-39c00e3b/06-qa-fe13-a-trustcabinet-local-AC2-desktop-sau-danh-dau.png; tests/qa/out/SCRUM-200/20261122-132553-39c00e3b/07-qa-fe13-a-trustcabinet-local-AC2-phone-truoc-danh-dau.png; tests/qa/out/SCRUM-200/20261122-132553-39c00e3b/08-qa-fe13-a-trustcabinet-local-AC2-phone-sau-danh-dau.png",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Nguyễn Trường Huy"
         },
         {
@@ -197,9 +197,9 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as a participant with 25 notifications, 3 of them unread, created by publishing meetings that invite that account."
           ],
-          "note": "UC-67b · BR-51 | Manual only · Round1 Passed (2026-11-22): AC3: tests/qa/out/SCRUM-200/20261122-132553-39c00e3b/09-qa-fe13-b-trustcabinet-local-AC3-desktop-truoc-danh-dau-tat-ca.png; tests/qa/out/SCRUM-200/20261122-132553-39c00e3b/10-qa-fe13-b-trustcabinet-local-AC3-desktop-sau-danh-dau-tat-ca.png; tests/qa/out/SCRUM-200/20261122-132553-39c00e3b/11-qa-fe13-b-trustcabinet-local-AC3-phone-truoc-danh-dau-tat-ca.png; tests/qa/out/SCRUM-200/20261122-132553-39c00e3b/12-qa-fe13-b-trustcabinet-local-AC3-phone-sau-danh-dau-tat-ca.png",
+          "note": "UC-77b | Manual only · Round1 Passed (2026-11-22): AC3: tests/qa/out/SCRUM-200/20261122-132553-39c00e3b/09-qa-fe13-b-trustcabinet-local-AC3-desktop-truoc-danh-dau-tat-ca.png; tests/qa/out/SCRUM-200/20261122-132553-39c00e3b/10-qa-fe13-b-trustcabinet-local-AC3-desktop-sau-danh-dau-tat-ca.png; tests/qa/out/SCRUM-200/20261122-132553-39c00e3b/11-qa-fe13-b-trustcabinet-local-AC3-phone-truoc-danh-dau-tat-ca.png; tests/qa/out/SCRUM-200/20261122-132553-39c00e3b/12-qa-fe13-b-trustcabinet-local-AC3-phone-sau-danh-dau-tat-ca.png",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Nguyễn Trường Huy"
         },
         {
@@ -216,9 +216,9 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Account with notifications that are all read."
           ],
-          "note": "UC-67b | Manual only · Round1 Passed (2026-11-22): AC3: tests/qa/out/SCRUM-200/20261122-132553-39c00e3b/10-qa-fe13-b-trustcabinet-local-AC3-desktop-sau-danh-dau-tat-ca.png; tests/qa/out/SCRUM-200/20261122-132553-39c00e3b/12-qa-fe13-b-trustcabinet-local-AC3-phone-sau-danh-dau-tat-ca.png",
+          "note": "UC-77b | Manual only · Round1 Passed (2026-11-22): AC3: tests/qa/out/SCRUM-200/20261122-132553-39c00e3b/10-qa-fe13-b-trustcabinet-local-AC3-desktop-sau-danh-dau-tat-ca.png; tests/qa/out/SCRUM-200/20261122-132553-39c00e3b/12-qa-fe13-b-trustcabinet-local-AC3-phone-sau-danh-dau-tat-ca.png",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Nguyễn Trường Huy"
         },
         {
@@ -237,9 +237,9 @@
             "Signed in as a participant with 25 notifications, 3 of them unread, created by publishing meetings that invite that account.",
             "The QA lead can interrupt the API on request."
           ],
-          "note": "UC-67a | Manual only · Round1 Passed (2026-11-22): AC26: tests/qa/out/SCRUM-200/20261122-133159-39c00e3b/29-qa-fe13-a-trustcabinet-local-AC26-desktop-truoc-khi-loi-dong-da-doc-tam.png; tests/qa/out/SCRUM-200/20261122-133159-39c00e3b/30-qa-fe13-a-trustcabinet-local-AC26-desktop-sau-loi-dong-to-lai-toast-do.png; tests/qa/out/SCRUM-200/20261122-133159-39c00e3b/31-qa-fe13-a-trustcabinet-local-AC26-phone-truoc-khi-loi-dong-da-doc-tam.png; tests/qa/out/SCRUM-200/20261122-133159-39c00e3b/32-qa-fe13-a-trustcabinet-local-AC26-phone-sau-loi-dong-to-lai-toast-do.png",
+          "note": "UC-77a | Manual only · Round1 Passed (2026-11-22): AC26: tests/qa/out/SCRUM-200/20261122-133159-39c00e3b/29-qa-fe13-a-trustcabinet-local-AC26-desktop-truoc-khi-loi-dong-da-doc-tam.png; tests/qa/out/SCRUM-200/20261122-133159-39c00e3b/30-qa-fe13-a-trustcabinet-local-AC26-desktop-sau-loi-dong-to-lai-toast-do.png; tests/qa/out/SCRUM-200/20261122-133159-39c00e3b/31-qa-fe13-a-trustcabinet-local-AC26-phone-truoc-khi-loi-dong-da-doc-tam.png; tests/qa/out/SCRUM-200/20261122-133159-39c00e3b/32-qa-fe13-a-trustcabinet-local-AC26-phone-sau-loi-dong-to-lai-toast-do.png",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Nguyễn Trường Huy"
         },
         {
@@ -256,9 +256,9 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Two participants with unread notifications, supplied by QA lead; two browser profiles."
           ],
-          "note": "UC-67b | Manual only · Round1 Passed (2026-11-22): AC27: tests/qa/out/SCRUM-200/20261122-133306-39c00e3b/05-qa-fe13-b-trustcabinet-local-AC27-desktop-b-da-doc-het.png; tests/qa/out/SCRUM-200/20261122-133306-39c00e3b/06-qa-fe13-a-trustcabinet-local-AC27-desktop-a-van-con-chua-doc.png; tests/qa/out/SCRUM-200/20261122-133306-39c00e3b/07-qa-fe13-b-trustcabinet-local-AC27-phone-b-da-doc-het.png; tests/qa/out/SCRUM-200/20261122-133306-39c00e3b/08-qa-fe13-a-trustcabinet-local-AC27-phone-a-van-con-chua-doc.png",
+          "note": "UC-77b | Manual only · Round1 Passed (2026-11-22): AC27: tests/qa/out/SCRUM-200/20261122-133306-39c00e3b/05-qa-fe13-b-trustcabinet-local-AC27-desktop-b-da-doc-het.png; tests/qa/out/SCRUM-200/20261122-133306-39c00e3b/06-qa-fe13-a-trustcabinet-local-AC27-desktop-a-van-con-chua-doc.png; tests/qa/out/SCRUM-200/20261122-133306-39c00e3b/07-qa-fe13-b-trustcabinet-local-AC27-phone-b-da-doc-het.png; tests/qa/out/SCRUM-200/20261122-133306-39c00e3b/08-qa-fe13-a-trustcabinet-local-AC27-phone-a-van-con-chua-doc.png",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Nguyễn Trường Huy"
         }
       ]
@@ -266,7 +266,7 @@
     {
       "title": "Open Notification Target",
       "uc": [
-        "UC-68"
+        "UC-78"
       ],
       "cases": [
         {
@@ -284,9 +284,9 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as a participant of a Published meeting with an unread invitation notification."
           ],
-          "note": "UC-68 · BR-53 | Manual only · Round1 Passed (2026-11-22): AC5: tests/qa/out/SCRUM-200/20261122-132553-39c00e3b/15-qa-fe13-a-trustcabinet-local-AC5-desktop-truoc-bam-thong-bao.png; tests/qa/out/SCRUM-200/20261122-132553-39c00e3b/16-qa-fe13-a-trustcabinet-local-AC5-desktop-da-mo-trang-cuoc-hop.png; tests/qa/out/SCRUM-200/20261122-132553-39c00e3b/17-qa-fe13-a-trustcabinet-local-AC5-phone-truoc-bam-thong-bao.png; tests/qa/out/SCRUM-200/20261122-132553-39c00e3b/18-qa-fe13-a-trustcabinet-local-AC5-phone-da-mo-trang-cuoc-hop.png",
+          "note": "UC-78 | Manual only · Round1 Passed (2026-11-22): AC5: tests/qa/out/SCRUM-200/20261122-132553-39c00e3b/15-qa-fe13-a-trustcabinet-local-AC5-desktop-truoc-bam-thong-bao.png; tests/qa/out/SCRUM-200/20261122-132553-39c00e3b/16-qa-fe13-a-trustcabinet-local-AC5-desktop-da-mo-trang-cuoc-hop.png; tests/qa/out/SCRUM-200/20261122-132553-39c00e3b/17-qa-fe13-a-trustcabinet-local-AC5-phone-truoc-bam-thong-bao.png; tests/qa/out/SCRUM-200/20261122-132553-39c00e3b/18-qa-fe13-a-trustcabinet-local-AC5-phone-da-mo-trang-cuoc-hop.png",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Nguyễn Trường Huy"
         },
         {
@@ -305,9 +305,9 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Participant with an invitation notification; an Organizer in a second browser."
           ],
-          "note": "UC-68 · EX-1 | Manual only · Round1 Passed (2026-11-22): AC6: tests/qa/out/SCRUM-200/20261122-132553-39c00e3b/19-qa-fe13-a-trustcabinet-local-AC6-desktop-thu-hoi-va-loi-moi.png; tests/qa/out/SCRUM-200/20261122-132553-39c00e3b/20-qa-fe13-a-trustcabinet-local-AC6-desktop-loi-moi-khong-con-kha-dung.png; tests/qa/out/SCRUM-200/20261122-132553-39c00e3b/21-qa-fe13-a-trustcabinet-local-AC6-desktop-thu-hoi-chi-danh-dau-doc.png; tests/qa/out/SCRUM-200/20261122-132553-39c00e3b/22-qa-fe13-a-trustcabinet-local-AC6-desktop-mo-thang-url-bi-an.png; tests/qa/out/SCRUM-200/20261122-132553-39c00e3b/23-qa-fe13-a-trustcabinet-local-AC6-phone-thu-hoi-va-loi-moi.png; tests/qa/out/SCRUM-200/20261122-132553-39c00e3b/24-qa-fe13-a-trustcabinet-local-AC6-phone-loi-moi-khong-con-kha-dung.png; tests/qa/out/SCRUM-200/20261122-132553-39c00e3b/25-qa-fe13-a-trustcabinet-local-AC6-phone-thu-hoi-chi-danh-dau-doc.png; tests/qa/out/SCRUM-200/20261122-132553-39c00e3b/26-qa-fe13-a-trustcabinet-local-AC6-phone-mo-thang-url-bi-an.png",
+          "note": "UC-78 · EX-1 | Manual only · Round1 Passed (2026-11-22): AC6: tests/qa/out/SCRUM-200/20261122-132553-39c00e3b/19-qa-fe13-a-trustcabinet-local-AC6-desktop-thu-hoi-va-loi-moi.png; tests/qa/out/SCRUM-200/20261122-132553-39c00e3b/20-qa-fe13-a-trustcabinet-local-AC6-desktop-loi-moi-khong-con-kha-dung.png; tests/qa/out/SCRUM-200/20261122-132553-39c00e3b/21-qa-fe13-a-trustcabinet-local-AC6-desktop-thu-hoi-chi-danh-dau-doc.png; tests/qa/out/SCRUM-200/20261122-132553-39c00e3b/22-qa-fe13-a-trustcabinet-local-AC6-desktop-mo-thang-url-bi-an.png; tests/qa/out/SCRUM-200/20261122-132553-39c00e3b/23-qa-fe13-a-trustcabinet-local-AC6-phone-thu-hoi-va-loi-moi.png; tests/qa/out/SCRUM-200/20261122-132553-39c00e3b/24-qa-fe13-a-trustcabinet-local-AC6-phone-loi-moi-khong-con-kha-dung.png; tests/qa/out/SCRUM-200/20261122-132553-39c00e3b/25-qa-fe13-a-trustcabinet-local-AC6-phone-thu-hoi-chi-danh-dau-doc.png; tests/qa/out/SCRUM-200/20261122-132553-39c00e3b/26-qa-fe13-a-trustcabinet-local-AC6-phone-mo-thang-url-bi-an.png",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Nguyễn Trường Huy"
         },
         {
@@ -324,9 +324,9 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "A pending calendar share request for the signed-in account (SCRUM-142)."
           ],
-          "note": "UC-68 · UC-84 | Manual only · Round1 Passed (2026-11-22): AC17: tests/qa/out/SCRUM-200/20261122-133159-39c00e3b/01-qa-fe13-a-trustcabinet-local-AC17-desktop-yeu-cau-xem-lich.png; tests/qa/out/SCRUM-200/20261122-133159-39c00e3b/02-qa-fe13-a-trustcabinet-local-AC17-desktop-mo-trang-chia-se.png",
+          "note": "UC-78 · UC-80 | Manual only · Round1 Passed (2026-11-22): AC17: tests/qa/out/SCRUM-200/20261122-133159-39c00e3b/01-qa-fe13-a-trustcabinet-local-AC17-desktop-yeu-cau-xem-lich.png; tests/qa/out/SCRUM-200/20261122-133159-39c00e3b/02-qa-fe13-a-trustcabinet-local-AC17-desktop-mo-trang-chia-se.png",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Nguyễn Trường Huy"
         },
         {
@@ -342,9 +342,9 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as a participant with 25 notifications, 3 of them unread, created by publishing meetings that invite that account."
           ],
-          "note": "UC-68 | Manual only · Round1 Passed (2026-11-22): AC5: tests/qa/out/SCRUM-200/20261122-132553-39c00e3b/16-qa-fe13-a-trustcabinet-local-AC5-desktop-da-mo-trang-cuoc-hop.png; tests/qa/out/SCRUM-200/20261122-132553-39c00e3b/18-qa-fe13-a-trustcabinet-local-AC5-phone-da-mo-trang-cuoc-hop.png",
+          "note": "UC-78 | Manual only · Round1 Passed (2026-11-22): AC5: tests/qa/out/SCRUM-200/20261122-132553-39c00e3b/16-qa-fe13-a-trustcabinet-local-AC5-desktop-da-mo-trang-cuoc-hop.png; tests/qa/out/SCRUM-200/20261122-132553-39c00e3b/18-qa-fe13-a-trustcabinet-local-AC5-phone-da-mo-trang-cuoc-hop.png",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Nguyễn Trường Huy"
         }
       ]
@@ -352,7 +352,7 @@
     {
       "title": "Real-time Delivery",
       "uc": [
-        "UC-66"
+        "UC-76"
       ],
       "cases": [
         {
@@ -369,9 +369,9 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Participant account and Organizer account supplied by QA lead; an Approved meeting; two browser profiles."
           ],
-          "note": "UC-66 | Manual only · Round1 Passed (2026-11-22): AC8: tests/qa/out/SCRUM-200/20261122-132553-39c00e3b/27-qa-fe13-a-trustcabinet-local-AC8-desktop-toast-va-chuong-tang.png; tests/qa/out/SCRUM-200/20261122-132553-39c00e3b/29-qa-fe13-a-trustcabinet-local-AC8-phone-toast-va-chuong-tang.png",
+          "note": "UC-76 | Manual only · Round1 Passed (2026-11-22): AC8: tests/qa/out/SCRUM-200/20261122-132553-39c00e3b/27-qa-fe13-a-trustcabinet-local-AC8-desktop-toast-va-chuong-tang.png; tests/qa/out/SCRUM-200/20261122-132553-39c00e3b/29-qa-fe13-a-trustcabinet-local-AC8-phone-toast-va-chuong-tang.png",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Nguyễn Trường Huy"
         },
         {
@@ -388,9 +388,9 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Same setup as the previous case."
           ],
-          "note": "UC-66 | Manual only · Round1 Passed (2026-11-22): AC8: tests/qa/out/SCRUM-200/20261122-132553-39c00e3b/28-qa-fe13-a-trustcabinet-local-AC8-desktop-panel-mo-dong-moi-o-dau.png; tests/qa/out/SCRUM-200/20261122-132553-39c00e3b/30-qa-fe13-a-trustcabinet-local-AC8-phone-panel-mo-dong-moi-o-dau.png",
+          "note": "UC-76 | Manual only · Round1 Passed (2026-11-22): AC8: tests/qa/out/SCRUM-200/20261122-132553-39c00e3b/28-qa-fe13-a-trustcabinet-local-AC8-desktop-panel-mo-dong-moi-o-dau.png; tests/qa/out/SCRUM-200/20261122-132553-39c00e3b/30-qa-fe13-a-trustcabinet-local-AC8-phone-panel-mo-dong-moi-o-dau.png",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Nguyễn Trường Huy"
         },
         {
@@ -408,9 +408,9 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Participant and Organizer accounts; two browser profiles."
           ],
-          "note": "UC-66 | Manual only · Round1 Passed (2026-11-22): AC31: tests/qa/out/SCRUM-200/20261122-133546-39c00e3b/03-qa-fe13-a-trustcabinet-local-AC31-desktop-mat-ket-noi-chua-thay-hai-thong-bao-moi.png; tests/qa/out/SCRUM-200/20261122-133546-39c00e3b/04-qa-fe13-a-trustcabinet-local-AC31-desktop-noi-lai-co-du-thong-bao.png",
+          "note": "UC-76 | Manual only · Round1 Passed (2026-11-22): AC31: tests/qa/out/SCRUM-200/20261122-133546-39c00e3b/03-qa-fe13-a-trustcabinet-local-AC31-desktop-mat-ket-noi-chua-thay-hai-thong-bao-moi.png; tests/qa/out/SCRUM-200/20261122-133546-39c00e3b/04-qa-fe13-a-trustcabinet-local-AC31-desktop-noi-lai-co-du-thong-bao.png",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Nguyễn Trường Huy"
         },
         {
@@ -427,9 +427,9 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Organizer who is also on the roster of an Approved meeting; another participant."
           ],
-          "note": "UC-66 | Manual only · Round1 Passed (2026-11-22): AC10: tests/qa/out/SCRUM-200/20261122-133748-39c00e3b/01-secretary-AC10-desktop-panel-nguoi-cong-bo-khong-co-loi-moi.png",
+          "note": "UC-76 | Manual only · Round1 Passed (2026-11-22): AC10: tests/qa/out/SCRUM-200/20261122-133748-39c00e3b/01-secretary-AC10-desktop-panel-nguoi-cong-bo-khong-co-loi-moi.png",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Nguyễn Trường Huy"
         },
         {
@@ -446,9 +446,9 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Account and administrator supplied by QA lead; two browser profiles."
           ],
-          "note": "UC-66 | Manual only · Round1 Passed (2026-11-22): AC32: tests/qa/out/SCRUM-200/20261122-133359-39c00e3b/06-qa-fe13-b-trustcabinet-local-AC32-desktop-toast-quyen-va-vai-tro-moi.png",
+          "note": "UC-76 | Manual only · Round1 Passed (2026-11-22): AC32: tests/qa/out/SCRUM-200/20261122-133359-39c00e3b/06-qa-fe13-b-trustcabinet-local-AC32-desktop-toast-quyen-va-vai-tro-moi.png",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Nguyễn Trường Huy"
         }
       ]
@@ -456,7 +456,7 @@
     {
       "title": "Invitation & Workflow Emails",
       "uc": [
-        "UC-20"
+        "UC-19"
       ],
       "cases": [
         {
@@ -474,10 +474,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Approved meeting; Organizer; a participant mailbox supplied by QA lead; email transport enabled on the test build."
           ],
-          "note": "UC-20 · SCRUM-15 | Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Mailpit nhận \"Lời mời tham dự cuộc họp: <tên>\" có link /mgmt/meetings/<id> và thu-moi-hop.ics (METHOD:REQUEST); công bố trả về trong ~0,2 giây. Evidence: tests/qa/out/MANUAL-R1/20261123-072818-03594e25/01-secretary-NOTI_FT22-desktop-da-cong-bo.png",
+          "note": "UC-19 · SCRUM-15 | Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Mailpit nhận \"Lời mời tham dự cuộc họp: <tên>\" có link /mgmt/meetings/<id> và thu-moi-hop.ics (METHOD:REQUEST); công bố trả về trong ~0,2 giây. Evidence: tests/qa/out/MANUAL-R1/20261123-072818-03594e25/01-secretary-NOTI_FT22-desktop-da-cong-bo.png",
           "round1": "Passed",
-          "date1": "2026-11-23",
-          "tester1": "HuyNT"
+          "date1": "2026-10-18",
+          "tester1": "Nguyễn Trường Huy"
         },
         {
           "id": "NOTI_FT23",
@@ -494,10 +494,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Published meeting with two participants with mailboxes; Organizer."
           ],
-          "note": "UC-15 · UC-20 | Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Chủ toạ và Thành viên nhận \"Cuộc họp đã dời lịch\" có giờ cũ gạch ngang; chuông có ở Chủ toạ, Thành viên, không ở người dời. Người tổ chức thuky@ cũng là Thư ký nên cũng nhận thư. Evidence: tests/qa/out/MANUAL-R1/20261123-073358-03594e25/01-secretary-NOTI_FT23-desktop-form-doi-lich.png; tests/qa/out/MANUAL-R1/20261123-073358-03594e25/02-secretary-NOTI_FT23-desktop-da-doi-lich.png",
+          "note": "UC-14 · UC-19 | Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Chủ toạ và Thành viên nhận \"Cuộc họp đã dời lịch\" có giờ cũ gạch ngang; chuông có ở Chủ toạ, Thành viên, không ở người dời. Người tổ chức thuky@ cũng là Thư ký nên cũng nhận thư. Evidence: tests/qa/out/MANUAL-R1/20261123-073358-03594e25/01-secretary-NOTI_FT23-desktop-form-doi-lich.png; tests/qa/out/MANUAL-R1/20261123-073358-03594e25/02-secretary-NOTI_FT23-desktop-da-doi-lich.png",
           "round1": "Passed",
-          "date1": "2026-11-23",
-          "tester1": "HuyNT"
+          "date1": "2026-10-18",
+          "tester1": "Nguyễn Trường Huy"
         },
         {
           "id": "NOTI_FT24",
@@ -513,10 +513,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Published meeting with a participant mailbox; Organizer."
           ],
-          "note": "UC-75 · UC-20 | Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Mailpit nhận \"Cuộc họp đã bị huỷ\" có huy-hop.ics (METHOD:CANCEL), không có link vào họp. Thư huỷ chỉ gửi người đã nhận thư mời. Evidence: tests/qa/out/MANUAL-R1/20261123-073358-03594e25/03-secretary-NOTI_FT24-desktop-da-huy.png",
+          "note": "UC-22 · UC-19 | Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Mailpit nhận \"Cuộc họp đã bị huỷ\" có huy-hop.ics (METHOD:CANCEL), không có link vào họp. Thư huỷ chỉ gửi người đã nhận thư mời. Evidence: tests/qa/out/MANUAL-R1/20261123-073358-03594e25/03-secretary-NOTI_FT24-desktop-da-huy.png",
           "round1": "Passed",
-          "date1": "2026-11-23",
-          "tester1": "HuyNT"
+          "date1": "2026-10-18",
+          "tester1": "Nguyễn Trường Huy"
         }
       ]
     }

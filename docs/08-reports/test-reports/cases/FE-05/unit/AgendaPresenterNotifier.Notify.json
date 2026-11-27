@@ -16,7 +16,7 @@
           "id": "UTC001",
           "inputs": "assignment {EventId: E1; MeetingId: M; AgendaItemId: item; PresenterId: P; Guest: null; OccurredAt: T}.",
           "log": "Notification for P: type AgendaPresenterAssigned; title \"Phân công trình bày mục nghị sự\"; body names item \"Q3 review\", meeting \"Budget\" and \"09:00 01/12/2026\" (Ho Chi Minh time); target Meeting M; deduplication key \"agenda-presenter:E1:P\"; created at T.",
-          "note": "UC-23a · BR-66",
+          "note": "UC-23a · UC-23a, UC-23b",
           "preconditions": [
             "Meeting M (title \"Budget\", planned 2026-12-01T02:00:00Z) is Published.",
             "Agenda item \"Q3 review\" has presenter P; P is an active current participant; no notification with the key exists."
@@ -24,7 +24,7 @@
           "return": "Completes; one in-app notification is saved.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -39,7 +39,7 @@
           "return": "Completes; nothing is added (idempotent).",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -47,14 +47,14 @@
           "id": "UTC003",
           "inputs": "assignment for P.",
           "log": "No notification.",
-          "note": "UC-28c",
+          "note": "UC-30c",
           "preconditions": [
             "Presenter P was removed from the roster after the change."
           ],
           "return": "Completes; nothing is added.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         }
       ]

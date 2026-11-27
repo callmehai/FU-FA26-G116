@@ -20,9 +20,9 @@
           "exception": "N/A",
           "log": "Two notifications: type MeetingStartingSoon, title \"Cuộc họp sắp bắt đầu\", body \"Cuộc họp \"Họp giao ban\" sẽ bắt đầu trong vòng 15 phút.\", target Meeting M1, key \"meeting-starting-soon:M1:<start as unix seconds>:<user id>\"; one commit.",
           "type": "Normal",
-          "note": "BR-303",
+          "note": "UC-76",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -35,9 +35,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "BR-303",
+          "note": "UC-76",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -50,9 +50,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "BR-303",
+          "note": "UC-76",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -65,9 +65,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "BR-303",
+          "note": "UC-76",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         }
       ],

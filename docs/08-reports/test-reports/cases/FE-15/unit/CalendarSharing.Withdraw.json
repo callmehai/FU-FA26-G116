@@ -1,5 +1,5 @@
 {
-  "feature": "FE-16",
+  "feature": "FE-15",
   "module": "CAL",
   "sheet": "CalendarSharing.Withdraw",
   "description": "Changing, withdrawing and ending a share.",
@@ -22,9 +22,9 @@
           "exception": "N/A",
           "log": "Notification CalendarShareWithdrawn queued for An; audit calendar_share.withdrawn.",
           "type": "Normal",
-          "note": "UC-84e · MSG438",
+          "note": "UC-80e · MSG438",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -38,9 +38,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-84e · MSG450",
+          "note": "UC-80e · MSG450",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -55,9 +55,9 @@
           "exception": "N/A",
           "log": "Unit of work changes discarded; error logged.",
           "type": "Abnormal",
-          "note": "UC-84e · MSG447",
+          "note": "UC-80e · MSG447",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         }
       ]

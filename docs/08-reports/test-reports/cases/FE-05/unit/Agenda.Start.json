@@ -16,7 +16,7 @@
           "id": "UTC001",
           "inputs": "actor: Chair C; itemId: I.",
           "log": "I.Status InProgress; ActualStartedAt and UpdatedAt set to the current time; change \"Started\" published.",
-          "note": "UC-24 · BR-69 · BR-70 · BR-72 · MSG64",
+          "note": "UC-24 · BR-060–BR-062 · MSG64",
           "preconditions": [
             "Meeting in status InProgress; active Chair C, active Secretary S, active Member M on the roster.",
             "Item I is Pending; no item is InProgress."
@@ -24,7 +24,7 @@
           "return": "Success; 200 / MSG64.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -32,7 +32,7 @@
           "id": "UTC002",
           "inputs": "actor: Chair C; itemId: I.",
           "log": "Nothing changed.",
-          "note": "UC-24 · BR-71 · MSG72",
+          "note": "UC-24 · BR-060–BR-062 · MSG72",
           "preconditions": [
             "Meeting in status InProgress; active Chair C, active Secretary S, active Member M on the roster.",
             "Item J is already InProgress; item I is Pending."
@@ -40,7 +40,7 @@
           "return": "Failure AlreadyCurrent; 409 / MSG72.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -48,7 +48,7 @@
           "id": "UTC003",
           "inputs": "actor: Chair C; itemId: I.",
           "log": "N/A",
-          "note": "UC-24 · BR-70 · MSG73",
+          "note": "UC-24 · BR-060–BR-062 · MSG73",
           "preconditions": [
             "Meeting in status InProgress; active Chair C, active Secretary S, active Member M on the roster.",
             "Item I is InProgress."
@@ -56,22 +56,23 @@
           "return": "Failure CannotStart; 409 / MSG73.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "exception": "N/A",
           "id": "UTC004",
-          "inputs": "candidates: [{FileName \"lon.pdf\", Length 10,485,760}].",
-          "log": "N/A",
+          "inputs": "actor: Chair C; itemId: I; the database fails while saving.",
+          "log": "Error log \"Failed agenda Start for meeting {MeetingId}\".",
           "note": "UC-24 · MSG75",
           "preconditions": [
-            "One candidate of exactly 10 MB with a valid PDF body."
+            "Meeting in status InProgress; active Chair C, active Secretary S, active Member M on the roster.",
+            "Item I is Pending; no item is InProgress."
           ],
-          "return": "No failure; the file size limit is inclusive.",
+          "return": "Failure SaveFailed; 503 / MSG75.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         }
       ]

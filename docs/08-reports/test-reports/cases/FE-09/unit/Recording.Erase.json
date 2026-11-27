@@ -21,9 +21,9 @@
           "exception": "N/A",
           "log": "Audit RecordingErased (meeting, file name, reason 'request', actor = the Secretary); the audio file is deleted after the commit; RecordingsChanged published.",
           "type": "Normal",
-          "note": "UC-44e · BR-348 · BR-341 · MSG296",
+          "note": "UC-52e · BR-110 · BR-108 · MSG296",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -36,9 +36,9 @@
           "exception": "N/A",
           "log": "No new audit row, no file deletion, no event.",
           "type": "Boundary",
-          "note": "UC-44e · BR-348 · MSG296",
+          "note": "UC-52e · BR-110 · MSG296",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -51,9 +51,9 @@
           "exception": "N/A",
           "log": "Audit RecordingErased.",
           "type": "Normal",
-          "note": "UC-44e · BR-348 · BR-457 · MSG296",
+          "note": "UC-52e · BR-110 · UC-51a · MSG296",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -66,9 +66,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-44e · BR-348 · BR-341 · MSG295",
+          "note": "UC-52e · BR-110 · BR-108 · MSG295",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -81,9 +81,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-44e · BR-348 · MSG364",
+          "note": "UC-52e · BR-110 · MSG364",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         }
       ]

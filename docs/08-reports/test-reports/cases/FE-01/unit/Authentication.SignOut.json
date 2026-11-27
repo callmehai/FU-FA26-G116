@@ -9,14 +9,14 @@
           "id": "UTC001",
           "inputs": "refreshToken: \"T1\".",
           "log": "Sign-out: session of account {UserId} ended.",
-          "note": "UC-03 · BR-09",
+          "note": "UC-03 · UC-03, NFR",
           "preconditions": [
             "Refresh token T1 is stored for account organizer@example.com."
           ],
           "return": "Completes without error; T1 is revoked, so no new access token can be issued with it (an access token already issued stays valid until expiry).",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-02",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -24,14 +24,14 @@
           "id": "UTC002",
           "inputs": "refreshToken: \"dead-token\".",
           "log": "Sign-out with no live refresh token; nothing to revoke.",
-          "note": "UC-03 · BR-09",
+          "note": "UC-03 · UC-03, NFR",
           "preconditions": [
             "Token store has no live record of the token (already revoked, expired or never issued)."
           ],
           "return": "Completes without error and without a failure result; sign-out is treated as successful.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-02",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -46,7 +46,7 @@
           "return": "Completes without error; the token store is not called.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-02",
           "tester1": "Phạm Gia Khánh"
         }
       ],

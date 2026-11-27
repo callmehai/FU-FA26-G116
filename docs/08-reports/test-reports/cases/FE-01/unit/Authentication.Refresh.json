@@ -9,7 +9,7 @@
           "id": "UTC001",
           "inputs": "refreshToken: \"T1\".",
           "log": "N/A",
-          "note": "UC-01 · BR-09 · Deviation: precondition names capability UserManager, which is not a Capability in code; executed with real capabilities [MeetingCreator, AdminUsers] and the re-read behaviour held.",
+          "note": "UC-01 · UC-03, NFR",
           "preconditions": [
             "Refresh token T1 is stored for active account organizer@example.com and is not expired or spent.",
             "The account role currently holds capabilities [MeetingCreator, UserManager]."
@@ -17,7 +17,7 @@
           "return": "SignInResult Success with a new access token carrying the current capabilities [MeetingCreator, UserManager] and a new refresh token T2; T1 is spent (consumed) and T2 is stored for the account.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-02",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -32,7 +32,7 @@
           "return": "SignInResult Failure(InvalidCredentials) (MSG01).",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-02",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -40,7 +40,7 @@
           "id": "UTC003",
           "inputs": "refreshToken: \"T1\".",
           "log": "Refresh rejected: account {UserId} is deactivated.",
-          "note": "UC-01 · BR-03 · BR-18 · MSG02",
+          "note": "UC-01 · BR-001 · MSG02",
           "preconditions": [
             "Token T1 belongs to an account that was deactivated after sign-in.",
             "The account holds a second live refresh token T9."
@@ -48,7 +48,7 @@
           "return": "SignInResult Failure(AccountDeactivated) (MSG02); every refresh token of the account (T1, T9) is revoked and no token is issued.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-02",
           "tester1": "Phạm Gia Khánh"
         }
       ],

@@ -24,9 +24,9 @@
           "exception": "N/A",
           "log": "Saved recording row; Information log 'Built the combined recording' with 1 room take, 3 online sentences; a RecordingsChanged event is published to the meeting.",
           "type": "Normal",
-          "note": "UC-43a · BR-456",
+          "note": "UC-51a",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -39,9 +39,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-43a · BR-456",
+          "note": "UC-51a",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -54,9 +54,9 @@
           "exception": "N/A",
           "log": "Combined recording row saved; RecordingsChanged published.",
           "type": "Boundary",
-          "note": "UC-43a · BR-456",
+          "note": "UC-51a",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -69,9 +69,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-43a · UC-44e · BR-456 · BR-457",
+          "note": "UC-51a · UC-52e",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -84,9 +84,9 @@
           "exception": "InvalidOperationException 'The combined recording would last ... ms, past the limit.' raised inside the build and caught; logged as an error.",
           "log": "Error log 'Could not build the combined recording of meeting'; the meeting is remembered as failed at its current change time.",
           "type": "Boundary",
-          "note": "UC-43a · BR-456",
+          "note": "UC-51a",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         }
       ]

@@ -9,14 +9,14 @@
           "id": "UTC001",
           "inputs": "action: \"user.created\"; objectType: \"User\"; objectId: U1; actorId: A1; details: { email: \"lan@x.vn\", fullName: \"Lê Văn Lan\" }.",
           "log": "Audit row written.",
-          "note": "BR-16 · BR-444",
+          "note": "BR-009",
           "preconditions": [
             "Caller context reports IP address 203.0.113.7."
           ],
           "return": "Completes; one audit row is added with the actor A1, the action, object type and id, IP 203.0.113.7 and details JSON {\"email\":\"lan@x.vn\",\"fullName\":\"Lê Văn Lan\"}, and saved at once in its own unit of work.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-02",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -24,14 +24,14 @@
           "id": "UTC002",
           "inputs": "details: null.",
           "log": "Audit row written with empty details.",
-          "note": "BR-16",
+          "note": "BR-009",
           "preconditions": [
             "Caller context available."
           ],
           "return": "Completes; the row is saved with details \"{}\" (the column is NOT NULL, so nothing to add is an empty object).",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-02",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -39,14 +39,14 @@
           "id": "UTC003",
           "inputs": "details: { name: \"Thư ký phó\" } containing Vietnamese letters.",
           "log": "Audit row written.",
-          "note": "BR-16",
+          "note": "BR-009",
           "preconditions": [
             "Caller context available."
           ],
           "return": "Details JSON is stored with the letters as themselves (\"Thư ký phó\"), not as \\u escapes.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-02",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -54,14 +54,14 @@
           "id": "UTC004",
           "inputs": "actorId: null; objectType: \"GuestSession\"; objectId: S1; details: { meetingId, guestInvitationId }.",
           "log": "Audit row written without actor.",
-          "note": "BR-444",
+          "note": "BR-009",
           "preconditions": [
             "A Guest verifies an invitation (no account acts)."
           ],
           "return": "Completes; the row is saved with a null actor and the invitation in the details.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-02",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -69,14 +69,14 @@
           "id": "UTC005",
           "inputs": "Valid arguments.",
           "log": "N/A",
-          "note": "BR-16",
+          "note": "BR-009",
           "preconditions": [
             "The database refuses the save."
           ],
           "return": "The persistence error reaches the caller; no row is stored.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-02",
           "tester1": "Phạm Gia Khánh"
         }
       ],

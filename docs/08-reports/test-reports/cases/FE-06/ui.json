@@ -7,7 +7,7 @@
     {
       "title": "View Participants",
       "uc": [
-        "UC-27"
+        "UC-29"
       ],
       "cases": [
         {
@@ -25,10 +25,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "A meeting in Published with its Chair, a Secretary and several Members on the roster."
           ],
-          "note": "UC-27 · BR-176 · Manual only Evidence(AC13): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/47-member-AC13-desktop-thanh-vien-xem.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/50-member-AC13-phone-thanh-vien-xem.png",
+          "note": "UC-29 · BR-016, BR-017 · Manual only Evidence(AC13): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/47-member-AC13-desktop-thanh-vien-xem.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/50-member-AC13-phone-thanh-vien-xem.png",
           "id": "PART_FT01",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -46,10 +46,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "A meeting in Draft with its Chair, a Secretary and several Members on the roster."
           ],
-          "note": "UC-27 · BR-79 · Manual only · Toolbar Thư ký (AC1) + toolbar Chủ toạ và tooltip hai nút (AC24). Evidence(AC1+AC24): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/01-secretary-AC1-desktop-thanh-phan-nhap.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/04-secretary-AC1-phone-thanh-phan-nhap.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/90-chair-AC24-desktop-thanh-cong-cu.png",
+          "note": "UC-29 · BR-036, BR-037 · Manual only · Toolbar Thư ký (AC1) + toolbar Chủ toạ và tooltip hai nút (AC24). Evidence(AC1+AC24): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/01-secretary-AC1-desktop-thanh-phan-nhap.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/04-secretary-AC1-phone-thanh-phan-nhap.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/90-chair-AC24-desktop-thanh-cong-cu.png",
           "id": "PART_FT02",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -67,10 +67,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "A meeting in Published with its Chair, a Secretary and several Members on the roster."
           ],
-          "note": "UC-27 · Manual only Evidence(AC13): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/48-member-AC13-desktop-tim-email.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/51-member-AC13-phone-tim-email.png",
+          "note": "UC-29 · Manual only Evidence(AC13): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/48-member-AC13-desktop-tim-email.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/51-member-AC13-phone-tim-email.png",
           "id": "PART_FT03",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -88,10 +88,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "A meeting in Published with its Chair, a Secretary and several Members on the roster."
           ],
-          "note": "UC-27 · Manual only Evidence(AC13): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/49-member-AC13-desktop-khong-khop.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/52-member-AC13-phone-khong-khop.png",
+          "note": "UC-29 · Manual only Evidence(AC13): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/49-member-AC13-desktop-khong-khop.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/52-member-AC13-phone-khong-khop.png",
           "id": "PART_FT04",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -107,10 +107,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "A Draft meeting on which the Member is a participant."
           ],
-          "note": "UC-27 · BR-121 · Manual only Evidence(AC28): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/101-member-AC28-desktop-nhap-404.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/103-member-AC28-phone-nhap-404.png",
+          "note": "UC-29 · BR-016, BR-017 · Manual only Evidence(AC28): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/101-member-AC28-desktop-nhap-404.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/103-member-AC28-phone-nhap-404.png",
           "id": "PART_FT05",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -127,10 +127,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "A meeting in Published with its Chair, a Secretary and several Members on the roster, one account not yet on the roster."
           ],
-          "note": "UC-27 · Manual only Evidence(AC34): tests/qa/out/SCRUM-193/20261122-023904-eb5a3255/09-member-AC34-desktop-live-them-nguoi.png",
+          "note": "UC-29 · Manual only Evidence(AC34): tests/qa/out/SCRUM-193/20261122-023904-eb5a3255/09-member-AC34-desktop-live-them-nguoi.png",
           "id": "PART_FT06",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -138,7 +138,7 @@
     {
       "title": "Add Internal Participants",
       "uc": [
-        "UC-28a"
+        "UC-30a"
       ],
       "cases": [
         {
@@ -158,10 +158,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "A meeting in Draft with its Chair, a Secretary and several Members on the roster, two accounts not yet on the roster."
           ],
-          "note": "UC-28a · BR-88 · MSG96 · Manual only Evidence(AC22): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/75-secretary-AC22-desktop-chon-hai-nguoi.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/79-secretary-AC22-phone-chon-hai-nguoi.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/76-secretary-AC22-desktop-da-them-hai.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/80-secretary-AC22-phone-da-them-hai.png",
+          "note": "UC-30a · MSG96 · Manual only Evidence(AC22): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/75-secretary-AC22-desktop-chon-hai-nguoi.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/79-secretary-AC22-phone-chon-hai-nguoi.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/76-secretary-AC22-desktop-da-them-hai.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/80-secretary-AC22-phone-da-them-hai.png",
           "id": "PART_FT07",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -179,10 +179,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "A meeting in Draft with its Chair, a Secretary and several Members on the roster, one account not yet on the roster."
           ],
-          "note": "UC-28a · Manual only Evidence(AC24): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/91-chair-AC24-desktop-chon-thu-ky.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/92-chair-AC24-desktop-da-them-thu-ky.png",
+          "note": "UC-30a · Manual only Evidence(AC24): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/91-chair-AC24-desktop-chon-thu-ky.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/92-chair-AC24-desktop-da-them-thu-ky.png",
           "id": "PART_FT08",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -200,10 +200,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "A meeting in Draft with its Chair, a Secretary and several Members on the roster."
           ],
-          "note": "UC-28a · BR-82 · Manual only Evidence(AC22+AC23): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/77-secretary-AC22-desktop-tim-loai-nguoi-da-co.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/81-secretary-AC22-phone-tim-loai-nguoi-da-co.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/85-secretary-AC23-desktop-het-nguoi-de-them.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/89-secretary-AC23-phone-het-nguoi-de-them.png",
+          "note": "UC-30a · BR-038 · Manual only Evidence(AC22+AC23): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/77-secretary-AC22-desktop-tim-loai-nguoi-da-co.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/81-secretary-AC22-phone-tim-loai-nguoi-da-co.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/85-secretary-AC23-desktop-het-nguoi-de-them.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/89-secretary-AC23-phone-het-nguoi-de-them.png",
           "id": "PART_FT09",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -218,10 +218,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "A meeting in Draft with its Chair, a Secretary and several Members on the roster."
           ],
-          "note": "UC-28a · Manual only · Huỷ không gửi assert bằng revision API trong AC. Evidence(AC22): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/76-secretary-AC22-desktop-da-them-hai.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/80-secretary-AC22-phone-da-them-hai.png",
+          "note": "UC-30a · Manual only · Huỷ không gửi assert bằng revision API trong AC. Evidence(AC22): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/76-secretary-AC22-desktop-da-them-hai.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/80-secretary-AC22-phone-da-them-hai.png",
           "id": "PART_FT10",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -239,10 +239,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "A meeting in Draft with its Chair, a Secretary and several Members on the roster."
           ],
-          "note": "UC-28a · BR-79 · MSG85 · Manual only · Case cũ đòi ở lại + toast quyền rồi reload hết nút; sản phẩm điều hướng về danh sách với toast \"Quyền truy cập của bạn đã thay đổi, không thể tiếp tục thao tác này.\" (useAccessLost, nhất quán mọi màn hình). Evidence(AC32): tests/qa/out/SCRUM-193/20261122-023904-eb5a3255/03-secretary-AC32-desktop-mat-vai-tro-ve-danh-sach.png · Đã sửa case theo sản phẩm (2026-11-22).",
+          "note": "UC-30a · BR-036, BR-037 · MSG85 · Manual only · Case cũ đòi ở lại + toast quyền rồi reload hết nút; sản phẩm điều hướng về danh sách với toast \"Quyền truy cập của bạn đã thay đổi, không thể tiếp tục thao tác này.\" (useAccessLost, nhất quán mọi màn hình). Evidence(AC32): tests/qa/out/SCRUM-193/20261122-023904-eb5a3255/03-secretary-AC32-desktop-mat-vai-tro-ve-danh-sach.png · Đã sửa case theo sản phẩm (2026-11-22).",
           "id": "PART_FT11",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -259,10 +259,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "A meeting in Published with its Chair, a Secretary and several Members on the roster, one account not on the roster."
           ],
-          "note": "UC-28a · Manual only · Đăng nhập tuần tự cùng trình duyệt thay trình duyệt B. Evidence(AC30): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/109-secretary-AC30-desktop-chuong-nguoi-duoc-them.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/110-secretary-AC30-desktop-nguoi-duoc-them-mo-duoc.png",
+          "note": "UC-30a · Manual only · Đăng nhập tuần tự cùng trình duyệt thay trình duyệt B. Evidence(AC30): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/109-secretary-AC30-desktop-chuong-nguoi-duoc-them.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/110-secretary-AC30-desktop-nguoi-duoc-them-mo-duoc.png",
           "id": "PART_FT12",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -270,7 +270,7 @@
     {
       "title": "Invite Guest",
       "uc": [
-        "UC-28a"
+        "UC-30a"
       ],
       "cases": [
         {
@@ -291,11 +291,11 @@
             "A meeting in Published with its Chair, a Secretary and several Members on the roster.",
             "A controlled inbox for guest@example.test."
           ],
-          "note": "UC-28a · BR-88 · MSG96 · Manual only · Round1: để trống — nhóm H (E3 cần hộp thư thật (email lời mời trên họp Published); E1/E2 phủ bởi AC2 (da-moi-khach).) · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. 201 MSG96; mailpit nhận thư mời Khách có link /guest/<id>#token=. Evidence: tests/qa/out/MANUAL-R1/20261123-073535-03594e25/01-secretary-PART_FT13-desktop-da-moi-khach.png",
+          "note": "UC-30a · MSG96 · Manual only · Round1: để trống — nhóm H (E3 cần hộp thư thật (email lời mời trên họp Published); E1/E2 phủ bởi AC2 (da-moi-khach).) · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. 201 MSG96; mailpit nhận thư mời Khách có link /guest/<id>#token=. Evidence: tests/qa/out/MANUAL-R1/20261123-073535-03594e25/01-secretary-PART_FT13-desktop-da-moi-khach.png",
           "id": "PART_FT13",
           "round1": "Passed",
-          "date1": "2026-11-23",
-          "tester1": "HuyNT"
+          "date1": "2026-10-18",
+          "tester1": "Nguyễn Trường Huy"
         },
         {
           "description": "Empty name or a malformed email is refused before anything is sent.",
@@ -312,10 +312,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "A meeting in Draft with its Chair, a Secretary and several Members on the roster."
           ],
-          "note": "UC-28a · Manual only Evidence(AC2): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/07-secretary-AC2-desktop-loi-nhap.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/11-secretary-AC2-phone-loi-nhap.png",
+          "note": "UC-30a · Manual only Evidence(AC2): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/07-secretary-AC2-desktop-loi-nhap.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/11-secretary-AC2-phone-loi-nhap.png",
           "id": "PART_FT14",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -332,10 +332,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "A meeting in Draft with its Chair, a Secretary and several Members on the roster."
           ],
-          "note": "UC-28a · BR-82 · MSG97 · Manual only Evidence(AC2): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/09-secretary-AC2-desktop-email-trung.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/13-secretary-AC2-phone-email-trung.png",
+          "note": "UC-30a · BR-038 · MSG97 · Manual only Evidence(AC2): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/09-secretary-AC2-desktop-email-trung.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/13-secretary-AC2-phone-email-trung.png",
           "id": "PART_FT15",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -345,16 +345,16 @@
             "Click the \"Mời khách ngoài hệ thống\" icon button."
           ],
           "expected": [
-            "The dialog shows the note \"Cuộc họp Mật: khách dự họp như Thành viên và đọc được tài liệu cuộc họp.\" above the fields, and \"Mời\" sends at once, without an extra confirmation (BR-182)."
+            "The dialog shows the note \"Cuộc họp Mật: khách dự họp như Thành viên và đọc được tài liệu cuộc họp.\" above the fields, and \"Mời\" sends at once, without an extra confirmation (UC-30a)."
           ],
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "A Draft meeting of sensitivity \"Mật\" with the Secretary on its roster."
           ],
-          "note": "UC-28a · BR-182 · Manual only · Cảnh báo Mật assert trong AC (role=note). Evidence(AC2): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/08-secretary-AC2-desktop-da-moi-khach.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/12-secretary-AC2-phone-da-moi-khach.png",
+          "note": "UC-30a · Manual only · Cảnh báo Mật assert trong AC (role=note). Evidence(AC2): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/08-secretary-AC2-desktop-da-moi-khach.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/12-secretary-AC2-phone-da-moi-khach.png",
           "id": "PART_FT16",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -369,10 +369,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "A meeting in Draft with its Chair, a Secretary and several Members on the roster."
           ],
-          "note": "UC-28a · Manual only · Đóng hộp trống không hỏi assert trong AC (không shot riêng). Evidence(AC22): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/77-secretary-AC22-desktop-tim-loai-nguoi-da-co.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/81-secretary-AC22-phone-tim-loai-nguoi-da-co.png",
+          "note": "UC-30a · Manual only · Đóng hộp trống không hỏi assert trong AC (không shot riêng). Evidence(AC22): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/77-secretary-AC22-desktop-tim-loai-nguoi-da-co.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/81-secretary-AC22-phone-tim-loai-nguoi-da-co.png",
           "id": "PART_FT17",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -387,10 +387,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "A meeting in Published with its Chair, a Secretary and several Members on the roster."
           ],
-          "note": "UC-28a · BR-79 · MSG85 · Manual only Evidence(AC13): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/47-member-AC13-desktop-thanh-vien-xem.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/50-member-AC13-phone-thanh-vien-xem.png",
+          "note": "UC-30a · BR-036, BR-037 · MSG85 · Manual only Evidence(AC13): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/47-member-AC13-desktop-thanh-vien-xem.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/50-member-AC13-phone-thanh-vien-xem.png",
           "id": "PART_FT18",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -398,7 +398,7 @@
     {
       "title": "Change Role & Rights",
       "uc": [
-        "UC-28b"
+        "UC-30b"
       ],
       "cases": [
         {
@@ -417,10 +417,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "A meeting in Draft with its Chair, a Secretary and several Members on the roster."
           ],
-          "note": "UC-28b · BR-79 · MSG100 · Manual only Evidence(AC4): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/15-secretary-AC4-desktop-chon-thu-ky.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/18-secretary-AC4-phone-chon-thu-ky.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/16-secretary-AC4-desktop-da-doi.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/19-secretary-AC4-phone-da-doi.png",
+          "note": "UC-30b · BR-036, BR-037 · MSG100 · Manual only Evidence(AC4): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/15-secretary-AC4-desktop-chon-thu-ky.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/18-secretary-AC4-phone-chon-thu-ky.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/16-secretary-AC4-desktop-da-doi.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/19-secretary-AC4-phone-da-doi.png",
           "id": "PART_FT19",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -436,10 +436,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "A meeting in Published with its Chair, a Secretary and several Members on the roster and a second Secretary."
           ],
-          "note": "UC-28b · BR-122 · MSG100 · Manual only Evidence(AC4): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/17-secretary-AC4-desktop-ha-thu-ky-thu-hai.png",
+          "note": "UC-30b · BR-040 · MSG100 · Manual only Evidence(AC4): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/17-secretary-AC4-desktop-ha-thu-ky-thu-hai.png",
           "id": "PART_FT20",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -459,10 +459,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "A meeting in Draft with its Chair, a Secretary and several Members on the roster."
           ],
-          "note": "UC-28b · BR-294 · MSG100 · Manual only Evidence(AC5): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/20-secretary-AC5-desktop-chon-chu-toa.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/23-secretary-AC5-phone-chon-chu-toa.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/21-secretary-AC5-desktop-xac-nhan.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/24-secretary-AC5-phone-xac-nhan.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/22-secretary-AC5-desktop-da-thay.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/25-secretary-AC5-phone-da-thay.png",
+          "note": "UC-30b · BR-041, BR-042 · MSG100 · Manual only Evidence(AC5): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/20-secretary-AC5-desktop-chon-chu-toa.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/23-secretary-AC5-phone-chon-chu-toa.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/21-secretary-AC5-desktop-xac-nhan.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/24-secretary-AC5-phone-xac-nhan.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/22-secretary-AC5-desktop-da-thay.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/25-secretary-AC5-phone-da-thay.png",
           "id": "PART_FT21",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -477,10 +477,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "A meeting in Draft with its Chair, a Secretary and several Members on the roster."
           ],
-          "note": "UC-28b · BR-126 · Manual only Evidence(AC5+AC6): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/22-secretary-AC5-desktop-da-thay.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/25-secretary-AC5-phone-da-thay.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/26-secretary-AC6-desktop-khong-co-chu-toa.png",
+          "note": "UC-30b · BR-041, BR-042 · Manual only Evidence(AC5+AC6): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/22-secretary-AC5-desktop-da-thay.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/25-secretary-AC5-phone-da-thay.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/26-secretary-AC6-desktop-khong-co-chu-toa.png",
           "id": "PART_FT22",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -489,16 +489,16 @@
             "Sign in as the Secretary and click the pencil on a Member's row."
           ],
           "expected": [
-            "The dialog offers only \"Thư ký\" and \"Thành viên\"; there is no \"Chủ toạ\" choice (BR-126)."
+            "The dialog offers only \"Thư ký\" and \"Thành viên\"; there is no \"Chủ toạ\" choice (BR-041, BR-042)."
           ],
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "A meeting in Published with its Chair, a Secretary and several Members on the roster (Chair account active)."
           ],
-          "note": "UC-28b · BR-126 · Manual only Evidence(AC6): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/26-secretary-AC6-desktop-khong-co-chu-toa.png",
+          "note": "UC-30b · BR-041, BR-042 · Manual only Evidence(AC6): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/26-secretary-AC6-desktop-khong-co-chu-toa.png",
           "id": "PART_FT23",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -513,10 +513,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "A meeting in Draft with its Chair, a Secretary and several Members on the roster, one Guest invited."
           ],
-          "note": "UC-28b · Manual only · Dòng Khách không bút chì assert trong AC trước khi thu hồi. Evidence(AC10): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/36-secretary-AC10-desktop-xac-nhan-thu-hoi.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/39-secretary-AC10-phone-xac-nhan-thu-hoi.png",
+          "note": "UC-30b · Manual only · Dòng Khách không bút chì assert trong AC trước khi thu hồi. Evidence(AC10): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/36-secretary-AC10-desktop-xac-nhan-thu-hoi.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/39-secretary-AC10-phone-xac-nhan-thu-hoi.png",
           "id": "PART_FT24",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -533,10 +533,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "A meeting in Published with its Chair, a Secretary and several Members on the roster (a single Secretary)."
           ],
-          "note": "UC-28b · BR-122 · MSG109 · Manual only Evidence(AC26): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/96-chair-AC26-desktop-ha-thu-ky-cuoi-bi-chan.png",
+          "note": "UC-30b · BR-040 · MSG109 · Manual only Evidence(AC26): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/96-chair-AC26-desktop-ha-thu-ky-cuoi-bi-chan.png",
           "id": "PART_FT25",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -551,10 +551,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "A meeting in Draft with its Chair, a Secretary and several Members on the roster."
           ],
-          "note": "UC-28b · Manual only · Huỷ hộp vai trò sau khi chọn assert revision không đổi trong AC. Evidence(AC27): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/98-secretary-AC27-desktop-huy-giu-nguyen.png",
+          "note": "UC-30b · Manual only · Huỷ hộp vai trò sau khi chọn assert revision không đổi trong AC. Evidence(AC27): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/98-secretary-AC27-desktop-huy-giu-nguyen.png",
           "id": "PART_FT26",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -569,10 +569,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "A meeting in Published with its Chair, a Secretary and several Members on the roster."
           ],
-          "note": "UC-28b · BR-79 · MSG85 · Manual only Evidence(AC13): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/47-member-AC13-desktop-thanh-vien-xem.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/50-member-AC13-phone-thanh-vien-xem.png",
+          "note": "UC-30b · BR-036, BR-037 · MSG85 · Manual only Evidence(AC13): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/47-member-AC13-desktop-thanh-vien-xem.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/50-member-AC13-phone-thanh-vien-xem.png",
           "id": "PART_FT27",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -589,10 +589,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "A meeting in Published with its Chair, a Secretary and several Members on the roster."
           ],
-          "note": "UC-28b · Manual only · Đăng nhập tuần tự; chuông + bảng cùng phiên. Evidence(AC34): tests/qa/out/SCRUM-193/20261122-023904-eb5a3255/12-member-AC34-desktop-live-thang-thu-ky.png",
+          "note": "UC-30b · Manual only · Đăng nhập tuần tự; chuông + bảng cùng phiên. Evidence(AC34): tests/qa/out/SCRUM-193/20261122-023904-eb5a3255/12-member-AC34-desktop-live-thang-thu-ky.png",
           "id": "PART_FT28",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -600,7 +600,7 @@
     {
       "title": "Remove Participant & Revoke Guest",
       "uc": [
-        "UC-28c"
+        "UC-30c"
       ],
       "cases": [
         {
@@ -619,10 +619,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "A meeting in Published with its Chair, a Secretary and several Members on the roster."
           ],
-          "note": "UC-28c · MSG103 · Manual only Evidence(AC10): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/35-secretary-AC10-desktop-xac-nhan-go.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/38-secretary-AC10-phone-xac-nhan-go.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/37-secretary-AC10-desktop-da-go.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/40-secretary-AC10-phone-da-go.png",
+          "note": "UC-30c · MSG103 · Manual only Evidence(AC10): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/35-secretary-AC10-desktop-xac-nhan-go.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/38-secretary-AC10-phone-xac-nhan-go.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/37-secretary-AC10-desktop-da-go.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/40-secretary-AC10-phone-da-go.png",
           "id": "PART_FT29",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -637,10 +637,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "A meeting in Draft with its Chair, a Secretary and several Members on the roster."
           ],
-          "note": "UC-28c · Manual only Evidence(AC27): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/98-secretary-AC27-desktop-huy-giu-nguyen.png",
+          "note": "UC-30c · Manual only Evidence(AC27): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/98-secretary-AC27-desktop-huy-giu-nguyen.png",
           "id": "PART_FT30",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -659,10 +659,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "A meeting in Published with its Chair, a Secretary and several Members on the roster, one Guest with a verified session."
           ],
-          "note": "UC-28c · BR-181 · MSG103 · Manual only Evidence(AC10): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/36-secretary-AC10-desktop-xac-nhan-thu-hoi.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/39-secretary-AC10-phone-xac-nhan-thu-hoi.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/37-secretary-AC10-desktop-da-go.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/40-secretary-AC10-phone-da-go.png",
+          "note": "UC-30c · BR-055 · MSG103 · Manual only Evidence(AC10): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/36-secretary-AC10-desktop-xac-nhan-thu-hoi.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/39-secretary-AC10-phone-xac-nhan-thu-hoi.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/37-secretary-AC10-desktop-da-go.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/40-secretary-AC10-phone-da-go.png",
           "id": "PART_FT31",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -677,10 +677,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "A meeting in Draft with its Chair, a Secretary and several Members on the roster."
           ],
-          "note": "UC-28c · BR-126 · Manual only · Dòng Chủ toạ không nút assert trong AC. Evidence(AC10): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/37-secretary-AC10-desktop-da-go.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/40-secretary-AC10-phone-da-go.png",
+          "note": "UC-30c · BR-041, BR-042 · Manual only · Dòng Chủ toạ không nút assert trong AC. Evidence(AC10): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/37-secretary-AC10-desktop-da-go.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/40-secretary-AC10-phone-da-go.png",
           "id": "PART_FT32",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -697,10 +697,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "A meeting in Published with its Chair, a Secretary and several Members on the roster (a single Secretary)."
           ],
-          "note": "UC-28c · BR-122 · MSG109 · Manual only Evidence(AC26): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/97-chair-AC26-desktop-go-thu-ky-cuoi-bi-chan.png",
+          "note": "UC-30c · BR-040 · MSG109 · Manual only Evidence(AC26): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/97-chair-AC26-desktop-go-thu-ky-cuoi-bi-chan.png",
           "id": "PART_FT33",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -715,10 +715,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "A meeting in Published with its Chair, a Secretary and several Members on the roster."
           ],
-          "note": "UC-28c · BR-79 · MSG85 · Manual only Evidence(AC13): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/47-member-AC13-desktop-thanh-vien-xem.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/50-member-AC13-phone-thanh-vien-xem.png",
+          "note": "UC-30c · BR-036, BR-037 · MSG85 · Manual only Evidence(AC13): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/47-member-AC13-desktop-thanh-vien-xem.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/50-member-AC13-phone-thanh-vien-xem.png",
           "id": "PART_FT34",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -726,7 +726,7 @@
     {
       "title": "Respond to Invitation",
       "uc": [
-        "UC-29"
+        "UC-31"
       ],
       "cases": [
         {
@@ -745,10 +745,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "A meeting in Published with its Chair, a Secretary and several Members on the roster, the Member has not answered."
           ],
-          "note": "UC-29 · BR-105 · MSG105 · Manual only Evidence(AC15): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/55-member-AC15-desktop-cau-hoi.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/58-member-AC15-phone-cau-hoi.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/56-member-AC15-desktop-da-tra-loi.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/59-member-AC15-phone-da-tra-loi.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/57-member-AC15-desktop-nhan-canh-ten.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/60-member-AC15-phone-nhan-canh-ten.png",
+          "note": "UC-31 · BR-046 · MSG105 · Manual only Evidence(AC15): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/55-member-AC15-desktop-cau-hoi.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/58-member-AC15-phone-cau-hoi.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/56-member-AC15-desktop-da-tra-loi.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/59-member-AC15-phone-da-tra-loi.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/57-member-AC15-desktop-nhan-canh-ten.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/60-member-AC15-phone-nhan-canh-ten.png",
           "id": "PART_FT35",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -762,16 +762,16 @@
           "expected": [
             "The confirmation says \"Bạn chỉ trả lời được một lần, sau đó không đổi được. Cuộc họp sẽ không còn hiện trên lịch của bạn.\".",
             "Backend answers 200/MSG105; the toast reads \"Đã ghi nhận phản hồi lời mời. Cuộc họp không còn hiện trên lịch của bạn.\" and the roster shows the chip \"Không tham dự\".",
-            "The meeting is gone from /calendar, but the meeting list still opens it with its documents and the online room (BR-321)."
+            "The meeting is gone from /calendar, but the meeting list still opens it with its documents and the online room (BR-047, BR-048)."
           ],
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "A meeting in Published with its Chair, a Secretary and several Members on the roster, the Member has not answered."
           ],
-          "note": "UC-29 · BR-105 · BR-321 · MSG105 · Manual only Evidence(AC16): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/61-member-AC16-desktop-hoi-lai.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/63-member-AC16-phone-hoi-lai.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/62-member-AC16-desktop-da-tu-choi.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/64-member-AC16-phone-da-tu-choi.png",
+          "note": "UC-31 · BR-046 · BR-047, BR-048 · MSG105 · Manual only Evidence(AC16): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/61-member-AC16-desktop-hoi-lai.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/63-member-AC16-phone-hoi-lai.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/62-member-AC16-desktop-da-tu-choi.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/64-member-AC16-phone-da-tu-choi.png",
           "id": "PART_FT36",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -786,10 +786,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "A meeting in Published with its Chair, a Secretary and several Members on the roster, the Member has not answered."
           ],
-          "note": "UC-29 · Manual only · Quay lại không gửi assert qua API trong AC. Evidence(AC16): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/61-member-AC16-desktop-hoi-lai.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/63-member-AC16-phone-hoi-lai.png",
+          "note": "UC-31 · Manual only · Quay lại không gửi assert qua API trong AC. Evidence(AC16): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/61-member-AC16-desktop-hoi-lai.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/63-member-AC16-phone-hoi-lai.png",
           "id": "PART_FT37",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -797,7 +797,7 @@
     {
       "title": "Response Status",
       "uc": [
-        "UC-30"
+        "UC-32"
       ],
       "cases": [
         {
@@ -813,10 +813,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "A meeting in Published with its Chair, a Secretary and several Members on the roster: one Member accepted, one declined, one has not answered."
           ],
-          "note": "UC-30 · BR-115 · BR-321 · Manual only Evidence(AC30): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/107-secretary-AC30-desktop-chip-ba-trang-thai.png",
+          "note": "UC-32 · UC-31 · BR-047, BR-048 · Manual only Evidence(AC30): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/107-secretary-AC30-desktop-chip-ba-trang-thai.png",
           "id": "PART_FT38",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -825,16 +825,16 @@
             "Sign in as the Secretary and look at the Chair's row."
           ],
           "expected": [
-            "The Chair's row shows only the role chip \"Chủ toạ\" and no response chip, even if that person answered earlier as a Member (BR-115)."
+            "The Chair's row shows only the role chip \"Chủ toạ\" and no response chip, even if that person answered earlier as a Member (UC-31)."
           ],
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "A meeting in Published with its Chair, a Secretary and several Members on the roster, the Chair declined while still a Member before becoming Chair."
           ],
-          "note": "UC-30 · BR-115 · Manual only · Dòng Chủ toạ không bao giờ có chip (code chỉ render chip khi role != Chair); chip của người khác đủ ba trạng thái trong ảnh. Evidence(AC30): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/107-secretary-AC30-desktop-chip-ba-trang-thai.png",
+          "note": "UC-32 · UC-31 · Manual only · Dòng Chủ toạ không bao giờ có chip (code chỉ render chip khi role != Chair); chip của người khác đủ ba trạng thái trong ảnh. Evidence(AC30): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/107-secretary-AC30-desktop-chip-ba-trang-thai.png",
           "id": "PART_FT39",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -850,10 +850,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "A meeting in Published with its Chair, a Secretary and several Members on the roster, one Member who accepted."
           ],
-          "note": "UC-30 · BR-88 · Manual only Evidence(AC30): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/108-secretary-AC30-desktop-moi-lai-khong-chip.png",
+          "note": "UC-32 · UC-30a · Manual only Evidence(AC30): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/108-secretary-AC30-desktop-moi-lai-khong-chip.png",
           "id": "PART_FT40",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -861,7 +861,7 @@
     {
       "title": "Record Attendance",
       "uc": [
-        "UC-31"
+        "UC-33"
       ],
       "cases": [
         {
@@ -876,10 +876,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "A meeting in Published with its Chair, a Secretary and several Members on the roster."
           ],
-          "note": "UC-31 · Manual only · Published không cột Điểm danh thấy ở bảng member (AC13 assert count 0, AC18 assert API Published). Evidence(AC13): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/47-member-AC13-desktop-thanh-vien-xem.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/50-member-AC13-phone-thanh-vien-xem.png",
+          "note": "UC-33 · Manual only · Published không cột Điểm danh thấy ở bảng member (AC13 assert count 0, AC18 assert API Published). Evidence(AC13): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/47-member-AC13-desktop-thanh-vien-xem.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/50-member-AC13-phone-thanh-vien-xem.png",
           "id": "PART_FT41",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -899,10 +899,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "A meeting in InProgress with its Chair, a Secretary and several Members on the roster."
           ],
-          "note": "UC-31 · BR-170 · MSG147 · Manual only · Tooltip người/giờ assert trong AC; ảnh vang hiện tooltip. Evidence(AC18): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/67-secretary-AC18-desktop-co-mat.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/70-secretary-AC18-phone-co-mat.png",
+          "note": "UC-33 · BR-056, BR-057 · MSG147 · Manual only · Tooltip người/giờ assert trong AC; ảnh vang hiện tooltip. Evidence(AC18): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/67-secretary-AC18-desktop-co-mat.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/70-secretary-AC18-phone-co-mat.png",
           "id": "PART_FT42",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -918,10 +918,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "A meeting in InProgress with its Chair, a Secretary and several Members on the roster."
           ],
-          "note": "UC-31 · BR-170 · MSG147 · Manual only Evidence(AC18): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/67-secretary-AC18-desktop-co-mat.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/70-secretary-AC18-phone-co-mat.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/68-secretary-AC18-desktop-vang.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/71-secretary-AC18-phone-vang.png",
+          "note": "UC-33 · BR-056, BR-057 · MSG147 · Manual only Evidence(AC18): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/67-secretary-AC18-desktop-co-mat.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/70-secretary-AC18-phone-co-mat.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/68-secretary-AC18-desktop-vang.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/71-secretary-AC18-phone-vang.png",
           "id": "PART_FT43",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -937,10 +937,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "A meeting in InProgress with its Chair, a Secretary and several Members on the roster: one person marked present, one absent, one unmarked."
           ],
-          "note": "UC-31 · BR-170 · Manual only Evidence(AC19): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/72-member-AC19-desktop-thanh-vien-xem-diem-danh.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/73-member-AC19-phone-thanh-vien-xem-diem-danh.png",
+          "note": "UC-33 · BR-056, BR-057 · Manual only Evidence(AC19): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/72-member-AC19-desktop-thanh-vien-xem-diem-danh.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/73-member-AC19-phone-thanh-vien-xem-diem-danh.png",
           "id": "PART_FT44",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -948,7 +948,7 @@
     {
       "title": "Hand Over Chair",
       "uc": [
-        "UC-73"
+        "UC-34"
       ],
       "cases": [
         {
@@ -969,10 +969,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "A meeting in Published with its Chair, a Secretary and several Members on the roster."
           ],
-          "note": "UC-73 · BR-126 · BR-295 · MSG257 · Manual only Evidence(AC7): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/27-chair-AC7-desktop-chon-chu-toa.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/30-chair-AC7-phone-chon-chu-toa.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/28-chair-AC7-desktop-xac-nhan.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/31-chair-AC7-phone-xac-nhan.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/29-chair-AC7-desktop-da-giao.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/32-chair-AC7-phone-da-giao.png",
+          "note": "UC-34 · BR-041, BR-042 · MSG257 · Manual only Evidence(AC7): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/27-chair-AC7-desktop-chon-chu-toa.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/30-chair-AC7-phone-chon-chu-toa.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/28-chair-AC7-desktop-xac-nhan.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/31-chair-AC7-phone-xac-nhan.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/29-chair-AC7-desktop-da-giao.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/32-chair-AC7-phone-da-giao.png",
           "id": "PART_FT45",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -987,10 +987,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "A meeting in InProgress with its Chair, a Secretary and several Members on the roster."
           ],
-          "note": "UC-73 · BR-126 · MSG257 · Manual only Evidence(AC33): tests/qa/out/SCRUM-193/20261122-023904-eb5a3255/06-chair-AC33-desktop-giao-khi-dang-hop.png",
+          "note": "UC-34 · BR-041, BR-042 · MSG257 · Manual only Evidence(AC33): tests/qa/out/SCRUM-193/20261122-023904-eb5a3255/06-chair-AC33-desktop-giao-khi-dang-hop.png",
           "id": "PART_FT46",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -999,16 +999,16 @@
             "Sign in as the Chair of a Published meeting and click the pencil on the Secretary's row."
           ],
           "expected": [
-            "The dialog offers only \"Thư ký\" and \"Thành viên\"; \"Chủ toạ\" is not offered (BR-295)."
+            "The dialog offers only \"Thư ký\" and \"Thành viên\"; \"Chủ toạ\" is not offered (BR-041, BR-042)."
           ],
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "A meeting in Published with its Chair, a Secretary and several Members on the roster."
           ],
-          "note": "UC-73 · BR-295 · Manual only · Không lựa chọn Chủ toạ ở dòng Thư ký assert trong AC (BR-295). Evidence(AC7): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/27-chair-AC7-desktop-chon-chu-toa.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/30-chair-AC7-phone-chon-chu-toa.png",
+          "note": "UC-34 · BR-041, BR-042 · Manual only · Không lựa chọn Chủ toạ ở dòng Thư ký assert trong AC (BR-041, BR-042). Evidence(AC7): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/27-chair-AC7-desktop-chon-chu-toa.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/30-chair-AC7-phone-chon-chu-toa.png",
           "id": "PART_FT47",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1024,10 +1024,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "A meeting in Published with its Chair, a Secretary and several Members on the roster."
           ],
-          "note": "UC-73 · Manual only Evidence(AC33): tests/qa/out/SCRUM-193/20261122-023904-eb5a3255/07-thanhvien-trustcabinet-local-AC33-desktop-chuong-chu-toa-moi.png; tests/qa/out/SCRUM-193/20261122-023904-eb5a3255/08-thanhvien-trustcabinet-local-AC33-desktop-chu-toa-moi-quan-ly-duoc.png",
+          "note": "UC-34 · Manual only Evidence(AC33): tests/qa/out/SCRUM-193/20261122-023904-eb5a3255/07-thanhvien-trustcabinet-local-AC33-desktop-chuong-chu-toa-moi.png; tests/qa/out/SCRUM-193/20261122-023904-eb5a3255/08-thanhvien-trustcabinet-local-AC33-desktop-chu-toa-moi-quan-ly-duoc.png",
           "id": "PART_FT48",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1044,10 +1044,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "A meeting in Published with its Chair, a Secretary and several Members on the roster (the same Chair signed in twice)."
           ],
-          "note": "UC-73 · MSG260 · Manual only · Cùng tài khoản bàn giao trước qua API thay trình duyệt B. Evidence(AC33): tests/qa/out/SCRUM-193/20261122-023904-eb5a3255/04-chair-AC33-desktop-giao-dua-nhau.png",
+          "note": "UC-34 · MSG260 · Manual only · Cùng tài khoản bàn giao trước qua API thay trình duyệt B. Evidence(AC33): tests/qa/out/SCRUM-193/20261122-023904-eb5a3255/04-chair-AC33-desktop-giao-dua-nhau.png",
           "id": "PART_FT49",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1062,10 +1062,10 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "A meeting in Published with its Chair, a Secretary and several Members on the roster (Chair account active)."
           ],
-          "note": "UC-73 · BR-126 · Manual only Evidence(AC13+AC14+AC6): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/26-secretary-AC6-desktop-khong-co-chu-toa.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/47-member-AC13-desktop-thanh-vien-xem.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/50-member-AC13-phone-thanh-vien-xem.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/53-secretary-AC14-desktop-nguoi-to-chuc-xem.png",
+          "note": "UC-34 · BR-041, BR-042 · Manual only Evidence(AC13+AC14+AC6): tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/26-secretary-AC6-desktop-khong-co-chu-toa.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/47-member-AC13-desktop-thanh-vien-xem.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/50-member-AC13-phone-thanh-vien-xem.png; tests/qa/out/SCRUM-193/20261122-022526-eb5a3255/53-secretary-AC14-desktop-nguoi-to-chuc-xem.png",
           "id": "PART_FT50",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         }
       ]

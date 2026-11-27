@@ -16,14 +16,14 @@
           "id": "UTC001",
           "inputs": "meeting InProgress; actor: Chair; item Pending; items: [item Pending, another Pending]; hasMinutes: false.",
           "log": "N/A",
-          "note": "UC-23a · UC-24 · BR-65 · BR-69 · BR-70",
+          "note": "UC-23a · UC-24 · BR-058, BR-059 · BR-060–BR-062",
           "preconditions": [
             "Running meeting; Chair; item Pending; no item in progress."
           ],
           "return": "CanEdit true; CanEditPlanningFields true; CanDelete true; CanSetCurrent true; CanComplete false; CanRecordConclusion false; CanLinkDocuments true.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -31,14 +31,14 @@
           "id": "UTC002",
           "inputs": "meeting InProgress; actor: Secretary; item Pending.",
           "log": "N/A",
-          "note": "UC-24 · BR-65 · BR-69",
+          "note": "UC-24 · BR-058, BR-059 · BR-060–BR-062",
           "preconditions": [
             "Running meeting; Secretary; item Pending."
           ],
           "return": "CanEdit true; CanDelete true; CanSetCurrent false; CanComplete false; CanLinkDocuments true (execution actions are for the Chair only).",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -46,14 +46,14 @@
           "id": "UTC003",
           "inputs": "meeting InProgress; actor: Member; item Pending.",
           "log": "N/A",
-          "note": "UC-26 · BR-65",
+          "note": "UC-26 · BR-058, BR-059",
           "preconditions": [
             "Plain Member views the agenda."
           ],
           "return": "All seven actions false.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         }
       ]

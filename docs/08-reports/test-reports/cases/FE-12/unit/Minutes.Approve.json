@@ -23,9 +23,9 @@
           "exception": "N/A",
           "log": "Saved: status, approver and issue times; audit row for the issue (actor = the Chair, details carry meeting, revision and replaced-revision ids); notification \"Biên bản đã ban hành\" to every reader except the Chair (\"Biên bản cuộc họp \"…\" đã được ban hành.\"); issue emails queued for the same readers; realtime minutes-changed push to the meeting's readers.",
           "type": "Normal",
-          "note": "UC-64 · BR-408 · BR-411 · BR-446 · MSG427 · Deviation: success also emits a realtime minutes-changed push (working-tree change).",
+          "note": "UC-73 · BR-137, BR-138 · UC-72, UC-73, UC-74 · BR-010 · MSG427",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-24",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -39,9 +39,9 @@
           "exception": "N/A",
           "log": "Saved: the correction Issued, the earlier revision Superseded; audit row; notifications and emails carry \"Bản đính chính biên bản cuộc họp \"…\" đã được ban hành.\"; realtime minutes-changed push to the meeting's readers.",
           "type": "Normal",
-          "note": "UC-64 · UC-83 · BR-409 · MSG427 · Deviation: success also emits a realtime minutes-changed push (working-tree change).",
+          "note": "UC-73 · UC-75 · BR-137, BR-138 · MSG427",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-24",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -55,9 +55,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-64 · BR-406 · MSG428",
+          "note": "UC-73 · BR-135, BR-136 · MSG428",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-24",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -71,9 +71,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-64 · BR-389 · MSG401",
+          "note": "UC-73 · UC-71 · MSG401",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-24",
           "tester1": "Phạm Gia Khánh"
         }
       ]

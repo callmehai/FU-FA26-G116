@@ -23,9 +23,9 @@
           "exception": "N/A",
           "log": "An empty WAV file is created in storage; audit RecordingTakeStarted with firstTake true; RecordingsChanged published.",
           "type": "Normal",
-          "note": "UC-44a · BR-341 · BR-343 · BR-344 · BR-345 · BR-347",
+          "note": "UC-52a · BR-108 · BR-109 · BR-110",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -40,9 +40,9 @@
           "exception": "N/A",
           "log": "No file is created, no row saved.",
           "type": "Abnormal",
-          "note": "UC-44a · BR-341 · BR-343 · BR-344 · MSG291",
+          "note": "UC-52a · BR-108 · BR-109 · MSG291",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -55,9 +55,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-44a · BR-341 · BR-343 · BR-344 · BR-340 · MSG358",
+          "note": "UC-52a · BR-108 · BR-109 · BR-107 · MSG358",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -70,9 +70,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-44a · BR-341 · BR-343 · BR-344 · BR-342 · MSG359",
+          "note": "UC-52a · BR-108 · BR-109 · BR-107 · MSG359",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         }
       ]

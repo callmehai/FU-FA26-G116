@@ -21,9 +21,9 @@
           "exception": "N/A",
           "log": "Saved: reviewer and review time on the draft.",
           "type": "Normal",
-          "note": "UC-50 · BR-374 · MSG391",
+          "note": "UC-61 · BR-126, BR-127 · MSG391",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -36,9 +36,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-50 · MSG390",
+          "note": "UC-61 · MSG390",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -51,9 +51,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-50 · BR-374 · MSG385",
+          "note": "UC-61 · BR-126, BR-127 · MSG385",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         }
       ]

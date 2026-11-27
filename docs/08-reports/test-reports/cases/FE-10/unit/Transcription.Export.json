@@ -22,9 +22,9 @@
           "exception": "N/A",
           "log": "Saved: audit row records the export with the segment count.",
           "type": "Normal",
-          "note": "UC-45b · BR-351",
+          "note": "UC-54b · BR-111, BR-112",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -37,9 +37,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-45b · BR-351 · MSG355",
+          "note": "UC-54b · BR-111, BR-112 · MSG355",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -52,9 +52,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-45b · BR-351 · MSG356",
+          "note": "UC-54b · BR-111, BR-112 · MSG356",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -67,9 +67,9 @@
           "exception": "N/A",
           "log": "Saved: audit row records the export with segment count 0.",
           "type": "Boundary",
-          "note": "UC-45b · BR-351",
+          "note": "UC-54b · BR-111, BR-112",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         }
       ]

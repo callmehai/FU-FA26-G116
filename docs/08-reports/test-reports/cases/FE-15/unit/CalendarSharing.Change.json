@@ -1,5 +1,5 @@
 {
-  "feature": "FE-16",
+  "feature": "FE-15",
   "module": "CAL",
   "sheet": "CalendarSharing.Change",
   "description": "Changing, withdrawing and ending a share.",
@@ -22,9 +22,9 @@
           "exception": "N/A",
           "log": "Notification CalendarShareChangeRequested queued for An; audit calendar_share.change_requested with Current and Asked.",
           "type": "Normal",
-          "note": "UC-84d · BR-414 · MSG454",
+          "note": "UC-80d · BR-140, BR-141 · MSG454",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -38,9 +38,9 @@
           "exception": "N/A",
           "log": "Notification queued for An; audit calendar_share.change_requested.",
           "type": "Boundary",
-          "note": "UC-84d · MSG454",
+          "note": "UC-80d · MSG454",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -54,9 +54,9 @@
           "exception": "N/A",
           "log": "Notification queued for An; audit calendar_share.change_requested.",
           "type": "Boundary",
-          "note": "UC-84d · BR-431 · MSG454",
+          "note": "UC-80d · UC-80a · MSG454",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -70,9 +70,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-84d · MSG443",
+          "note": "UC-80d · MSG443",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -86,9 +86,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-84d · MSG450",
+          "note": "UC-80d · MSG450",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -102,9 +102,9 @@
           "exception": "N/A",
           "log": "Notification CalendarShareUpdated queued for Binh; audit calendar_share.updated with Before and After.",
           "type": "Normal",
-          "note": "UC-84d · BR-414 · MSG442",
+          "note": "UC-80d · BR-140, BR-141 · MSG442",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         }
       ]

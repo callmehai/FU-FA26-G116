@@ -22,9 +22,9 @@
           "exception": "N/A",
           "log": "Saved: content and UpdatedAt on the Draft revision; realtime minutes-changed push to the meeting's readers.",
           "type": "Normal",
-          "note": "UC-60 · MSG396 · Deviation: success also emits a realtime minutes-changed push (working-tree change).",
+          "note": "UC-71 · MSG396",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-24",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -38,9 +38,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-60 · MSG400",
+          "note": "UC-71 · MSG400",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-24",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -53,9 +53,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-60 · MSG402 · Deviation: the limit message formats the 300000 limit with N0 in the process culture, so the separator follows the server locale.",
+          "note": "UC-71 · MSG402",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-24",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -69,9 +69,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-60 · BR-389 · MSG401",
+          "note": "UC-71 · MSG401",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-24",
           "tester1": "Phạm Gia Khánh"
         }
       ]

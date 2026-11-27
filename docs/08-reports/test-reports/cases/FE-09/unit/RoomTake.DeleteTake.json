@@ -23,9 +23,9 @@
           "exception": "N/A",
           "log": "Audit RecordingTakeDeleted with take 2, its start time, 5,000 ms, 1 line removed, total 18,000 ms; the previous file is deleted after commit; RecordingsChanged published.",
           "type": "Normal",
-          "note": "UC-44d · BR-341 · BR-349 · MSG366",
+          "note": "UC-52d · BR-108 · MSG366",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -38,9 +38,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-44d · BR-341 · BR-349 · MSG366",
+          "note": "UC-52d · BR-108 · MSG366",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -53,9 +53,9 @@
           "exception": "N/A",
           "log": "Audit RecordingTakeDeleted with the number of lines cut.",
           "type": "Boundary",
-          "note": "UC-44d · BR-341 · BR-349 · BR-360 · MSG366",
+          "note": "UC-52d · BR-108 · UC-54a · MSG366",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -68,9 +68,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-44d · BR-341 · BR-349 · MSG367",
+          "note": "UC-52d · BR-108 · MSG367",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         }
       ]

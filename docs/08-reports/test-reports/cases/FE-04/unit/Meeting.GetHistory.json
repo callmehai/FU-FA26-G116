@@ -16,14 +16,14 @@
           "id": "UTC001",
           "inputs": "id: meeting; actorId: creator; page: 1; pageSize: 20.",
           "log": "N/A",
-          "note": "UC-16 · BR-38 · BR-445",
+          "note": "UC-15 · BR-022, BR-023",
           "preconditions": [
             "Meeting created by the actor with 3 history rows."
           ],
           "return": "Success with 3 items, page 1, page size 20, total 3; every field of each row visible including rejection reason and organizer hand-over ids.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -31,14 +31,14 @@
           "id": "UTC002",
           "inputs": "page: 1; pageSize: 101.",
           "log": "N/A",
-          "note": "UC-16 · MSG86",
+          "note": "UC-15 · MSG86",
           "preconditions": [
             "Page size is 101."
           ],
           "return": "Failure InvalidRequest; MSG86.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -46,14 +46,14 @@
           "id": "UTC003",
           "inputs": "id: unknown.",
           "log": "N/A",
-          "note": "UC-16 · BR-38 · BR-445",
+          "note": "UC-15 · BR-022, BR-023",
           "preconditions": [
             "Meeting does not exist."
           ],
           "return": "Failure NotFound (404).",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -61,14 +61,14 @@
           "id": "UTC004",
           "inputs": "page: 50; pageSize: 20.",
           "log": "N/A",
-          "note": "UC-16 · BR-38 · BR-445",
+          "note": "UC-15 · BR-022, BR-023",
           "preconditions": [
             "Requested page lies beyond the available rows (3 rows exist)."
           ],
           "return": "Success with an empty item list, page 50, page size 20, total 3.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -76,14 +76,14 @@
           "id": "UTC005",
           "inputs": "actorId: Member.",
           "log": "N/A",
-          "note": "UC-16 · BR-38 · BR-445",
+          "note": "UC-15 · BR-022, BR-023",
           "preconditions": [
             "Actor is a Member of a Published meeting; rows include a Reject with reason."
           ],
           "return": "Success; rejection reason is null on every row; organizer ids are null.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         }
       ]

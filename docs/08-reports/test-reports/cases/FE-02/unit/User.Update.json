@@ -9,7 +9,7 @@
           "id": "UTC001",
           "inputs": "id: that account; FullName: \"Lê Văn Anh\"; Email: \"a@x.vn\" (unchanged); RoleId: \"Thành viên\" (unchanged).",
           "log": "Audit row UserUpdated (details { before, after }); log \"Account {UserId} updated by {ActorId}.\"",
-          "note": "UC-06b · BR-16 · BR-17 · MSG10",
+          "note": "UC-06b · BR-009 · MSG10",
           "preconditions": [
             "Actor is an administrator holding AdminUsers.",
             "Active account \"Lê Văn A\" <a@x.vn> with role \"Thành viên\"."
@@ -17,7 +17,7 @@
           "return": "UserResult Success (MSG10) with FullName \"Lê Văn Anh\"; no session is ended and nobody is notified.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-02",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -25,7 +25,7 @@
           "id": "UTC002",
           "inputs": "FullName: \"\"; Email: \"a@x.vn\"; RoleId valid.",
           "log": "N/A",
-          "note": "UC-06b · BR-14 · MSG09",
+          "note": "UC-06b · UC-06a, UC-06b · MSG09",
           "preconditions": [
             "Actor is an administrator holding AdminUsers.",
             "Account exists."
@@ -33,7 +33,7 @@
           "return": "UserResult InvalidInformation (MSG09) with errors[fullName] = \"Họ tên không được để trống.\"; the account is unchanged.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-02",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -41,7 +41,7 @@
           "id": "UTC003",
           "inputs": "FullName: 201 characters; other fields valid.",
           "log": "N/A",
-          "note": "UC-06b · BR-14 · MSG09",
+          "note": "UC-06b · UC-06a, UC-06b · MSG09",
           "preconditions": [
             "Actor is an administrator holding AdminUsers.",
             "Account exists."
@@ -49,7 +49,7 @@
           "return": "UserResult InvalidInformation (MSG09) with errors[fullName] = \"Họ tên không được vượt quá 200 ký tự.\".",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-02",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -57,7 +57,7 @@
           "id": "UTC004",
           "inputs": "id: account a@x.vn; Email: \"b@x.vn\".",
           "log": "N/A",
-          "note": "UC-06b · BR-13 · MSG08",
+          "note": "UC-06b · BR-005 · MSG08",
           "preconditions": [
             "Actor is an administrator holding AdminUsers.",
             "Another account already uses b@x.vn."
@@ -65,7 +65,7 @@
           "return": "UserResult Failure(DuplicateEmail) (MSG08); the account is unchanged.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-02",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -82,7 +82,7 @@
           "return": "UserResult Failure(StatusChangeNotAllowed) (MSG12); the account keeps its role.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-02",
           "tester1": "Phạm Gia Khánh"
         }
       ],
