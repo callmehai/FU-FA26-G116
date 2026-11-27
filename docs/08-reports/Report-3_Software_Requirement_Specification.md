@@ -51,8 +51,6 @@ TrustCabinet is an Internal Meeting and Document Management System that interact
 
 - OAuth Provider supports Google-based sign-in and provides verified identity information for users accessing TrustCabinet.
 
-- The AI draft of the Meeting content is written inside the system by the team's own language model, from the transcript, the agenda and the vote results. Transcription and speaker identification also run inside the system, so no transcript, audio or voice sample leaves it (BR-121). The Secretary may correct the transcript and the speaker attribution before the draft is generated, and a person reviews the draft before it is used. Formal meeting minutes are prepared separately from the approved meeting records.
-
 - Resend Email handles outbound email delivery, including password-reset messages, meeting invitations, and other meeting-related communications.
 
 Through these interactions, TrustCabinet acts as the central point connecting meeting participants, meeting records, documents, voting results, and post-meeting minutes, while external services are used only for specific supporting functions outside the main system boundary.
@@ -107,15 +105,11 @@ View the full-size image on Google Drive
 
 #### 3.1 Entity Relationship Diagram
 
-Figure 6 shows the data model of TrustCabinet as 41 tables: the 34 entities described in 3.2; one entity that 3.2 does not detail, CalendarShare (calendar sharing between users, FE-15); the four junction tables MeetingDocumentAgendaItem, VoteEligibleVoter, VoteDocument and DocumentReadConfirmation; and two supporting tables, MeetingInvitationDispatch and GuestVerificationChallenge, for invitation email delivery and Guest email verification. Vote and Agenda Item each belong directly to Meeting.
-
 Figure 6: Entity Relationship Diagram
 
 View the full-size image on Google Drive
 
 #### 3.2 Entity Descriptions
-
-This section describes each table of the data model shown in the Entity Relationship Diagram above. Key: PK = primary key, FK = foreign key, UK = unique key. Enumerated fields list their allowed values in the Description column.
 
 Entity 1: User
 
@@ -815,8 +809,6 @@ Feature priority. Every use case above belongs to one of the 15 features agreed 
 
 #### 4.3 Use Case Diagrams
 
-The diagrams in 4.3.1 to 4.3.7 show the use cases of each actor. Chair and Secretary are meeting roles held by internal users in a given Meeting; Approver and System Admin also hold the create-meeting permission of a Member.
-
 ##### 4.3.1 UCs for System Admin
 
 The System Admin manages user accounts (create, update, deactivate or reactivate, reset passwords, assign system roles), configures roles and permissions, and reviews the audit log. The System Admin can also create and run meetings as a Member does, and view meetings, reports, notifications and the personal document library.
@@ -980,8 +972,6 @@ Notes:
 ¹⁹ Join requires a valid current participant assignment for an Online or Hybrid Meeting whose lifecycle permits room entry (UC-43). Having created or approved the Meeting does not by itself grant room entry. Leave, controls, room participants and chat require a connected authorized user.
 
 ²⁰ Only the personal library of a deactivated account, read-only without modifying anything, subject to audit logging and excluding documents and folders of Secret Meetings (UC-37a, BR-085, BR-009, BR-010, BR-011).
-
-f
 
 ### 5. System Functionalities
 
