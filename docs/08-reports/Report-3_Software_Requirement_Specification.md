@@ -17,12 +17,12 @@ Table of Contents
 | 27/09/2026 | A | KhanhPG | Initial SRS: context diagram, actors and sign-in use cases. |
 | 05/10/2026 | A, M | KhanhPG | Added meeting, agenda, participant and notification use cases. |
 | 09/10/2026 | M, D | KhanhPG | Removed Meeting Session; agenda and votes belong to the meeting. |
-| 24/10/2026 | M | KhanhPG, HaiTV, LocHD | Participants, documents and voting matched to the built system. |
-| 04/11/2026 | A, M | KhanhPG, HuyNQ, LocHD, HuyNT | Added online room, recording, transcription, Voice ID and Guest access. |
-| 11/11/2026 | A, M | HuyNQ, HuyNT, LocHD, KhanhPG | Added calendar, reports and audit log; three sensitivity levels. |
+| 24/10/2026 | M | KhanhPG | Participants, documents and voting matched to the built system. |
+| 04/11/2026 | A, M | KhanhPG, | Added online room, recording, transcription, Voice ID and Guest access. |
+| 11/11/2026 | A, M | HuyNQ, | Added calendar, reports and audit log; three sensitivity levels. |
 | 15/11/2026 | M, D | KhanhPG, HaiTV | The Chair approves and issues the minutes; no signing. |
-| 23/11/2026 | M | KhanhPG, BA | Aligned with the app after the 21/11 trial. |
-| 26/11/2026 | M, D | HuyNQ, LocHD, KhanhPG | Renumbered BR and UC; screens matched to wireframe v16. |
+| 23/11/2026 | M | KhanhPG | Aligned with the app after the 21/11 trial. |
+| 26/11/2026 | M, D | HuyNQ | Renumbered BR and UC; screens matched to wireframe v16. |
 | 27/11/2026 | M, D | LocHD | Removed AI Configuration; renumbered the message list. |
 | 28/11/2026 | A, M | LocHD, KhanhPG | Added BF-05; shortened the Change Log. |
 
