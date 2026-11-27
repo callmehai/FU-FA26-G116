@@ -1,6 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
 <mxfile host="Electron">
   <diagram name="FE-15 Calendar Sharing" id="0">
-    <mxGraphModel dx="1704" dy="1013" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1760" pageHeight="780" math="0" shadow="0">
+    <mxGraphModel dx="1390" dy="725" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1390" pageHeight="725" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -8,81 +9,56 @@
           <mxGeometry height="38" width="326" x="30" y="20" as="geometry" />
         </mxCell>
         <mxCell id="sharingPage" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=0;overflow=fill;fillColor=#ffffff;strokeColor=#000000;fontSize=12;fontFamily=Helvetica;fontColor=#000000;" value="&lt;div style=&quot;text-align:center;font-weight:bold;padding:5px 4px 4px 4px;height:31px;&quot;&gt;«boundary»&lt;br&gt;SharingPage&lt;/div&gt;&lt;hr style=&quot;margin:0;border:none;border-top:1px solid #000000;height:0;&quot;&gt;&lt;div style=&quot;text-align:left;padding:5px 8px 5px 8px;white-space:nowrap;&quot;&gt;&lt;/div&gt;&lt;hr style=&quot;margin:0;border:none;border-top:1px solid #000000;height:0;&quot;&gt;&lt;div style=&quot;text-align:left;padding:5px 8px 5px 8px;white-space:nowrap;&quot;&gt;+ listCandidates(purpose, q, page)&lt;br&gt;+ requestShare(targetUserId)&lt;br&gt;+ respondToShare(shareId, decision)&lt;br&gt;+ viewShares()&lt;/div&gt;" vertex="1">
-          <mxGeometry height="122" width="230" x="40" y="120" as="geometry" />
+          <mxGeometry height="122" width="230" x="30" y="75" as="geometry" />
         </mxCell>
         <mxCell id="sharingCtl" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=0;overflow=fill;fillColor=#ffffff;strokeColor=#000000;fontSize=12;fontFamily=Helvetica;fontColor=#000000;" value="&lt;div style=&quot;text-align:center;font-weight:bold;padding:5px 4px 4px 4px;height:31px;&quot;&gt;«control»&lt;br&gt;SharingController&lt;/div&gt;&lt;hr style=&quot;margin:0;border:none;border-top:1px solid #000000;height:0;&quot;&gt;&lt;div style=&quot;text-align:left;padding:5px 8px 5px 8px;white-space:nowrap;&quot;&gt;&lt;/div&gt;&lt;hr style=&quot;margin:0;border:none;border-top:1px solid #000000;height:0;&quot;&gt;&lt;div style=&quot;text-align:left;padding:5px 8px 5px 8px;white-space:nowrap;&quot;&gt;+ listCandidates(requesterId, purpose, q, page)&lt;br&gt;+ requestShare(requesterId, targetUserId)&lt;br&gt;+ respondToShare(actorId, shareId, decision)&lt;br&gt;+ listShares(actorId)&lt;/div&gt;" vertex="1">
-          <mxGeometry height="122" width="280" x="460" y="120" as="geometry" />
+          <mxGeometry height="122" width="280" x="340" y="75" as="geometry" />
         </mxCell>
         <mxCell id="sharingSvc" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=0;overflow=fill;fillColor=#ffffff;strokeColor=#000000;fontSize=12;fontFamily=Helvetica;fontColor=#000000;" value="&lt;div style=&quot;text-align:center;font-weight:bold;padding:5px 4px 4px 4px;height:31px;&quot;&gt;«service»&lt;br&gt;SharingService&lt;/div&gt;&lt;hr style=&quot;margin:0;border:none;border-top:1px solid #000000;height:0;&quot;&gt;&lt;div style=&quot;text-align:left;padding:5px 8px 5px 8px;white-space:nowrap;&quot;&gt;&lt;/div&gt;&lt;hr style=&quot;margin:0;border:none;border-top:1px solid #000000;height:0;&quot;&gt;&lt;div style=&quot;text-align:left;padding:5px 8px 5px 8px;white-space:nowrap;&quot;&gt;+ listCandidates(requesterId, purpose, q, page)&lt;br&gt;+ requestShare(requesterId, targetUserId)&lt;br&gt;+ respondToShare(actorId, shareId, decision)&lt;br&gt;+ listShares(actorId)&lt;/div&gt;" vertex="1">
-          <mxGeometry height="122" width="280" x="980" y="120" as="geometry" />
+          <mxGeometry height="122" width="280" x="710" y="75" as="geometry" />
         </mxCell>
         <mxCell id="userRepo" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=0;overflow=fill;fillColor=#ffffff;strokeColor=#000000;fontSize=12;fontFamily=Helvetica;fontColor=#000000;" value="&lt;div style=&quot;text-align:center;font-weight:bold;padding:5px 4px 4px 4px;height:31px;&quot;&gt;«repository»&lt;br&gt;UserRepository&lt;/div&gt;&lt;hr style=&quot;margin:0;border:none;border-top:1px solid #000000;height:0;&quot;&gt;&lt;div style=&quot;text-align:left;padding:5px 8px 5px 8px;white-space:nowrap;&quot;&gt;&lt;/div&gt;&lt;hr style=&quot;margin:0;border:none;border-top:1px solid #000000;height:0;&quot;&gt;&lt;div style=&quot;text-align:left;padding:5px 8px 5px 8px;white-space:nowrap;&quot;&gt;+ findActiveWithCapabilities(userId)&lt;br&gt;+ listCandidates(excludeUserId): User[]&lt;/div&gt;" vertex="1">
-          <mxGeometry height="92" width="240" x="460" y="320" as="geometry" />
+          <mxGeometry height="92" width="240" x="360" y="270" as="geometry" />
         </mxCell>
         <mxCell id="shareRepo" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=0;overflow=fill;fillColor=#ffffff;strokeColor=#000000;fontSize=12;fontFamily=Helvetica;fontColor=#000000;" value="&lt;div style=&quot;text-align:center;font-weight:bold;padding:5px 4px 4px 4px;height:31px;&quot;&gt;«repository»&lt;br&gt;CalendarShareRepository&lt;/div&gt;&lt;hr style=&quot;margin:0;border:none;border-top:1px solid #000000;height:0;&quot;&gt;&lt;div style=&quot;text-align:left;padding:5px 8px 5px 8px;white-space:nowrap;&quot;&gt;&lt;/div&gt;&lt;hr style=&quot;margin:0;border:none;border-top:1px solid #000000;height:0;&quot;&gt;&lt;div style=&quot;text-align:left;padding:5px 8px 5px 8px;white-space:nowrap;&quot;&gt;+ findPending(shareId)&lt;br&gt;+ save(share)&lt;br&gt;+ listByActor(actorId): CalendarShare[]&lt;/div&gt;" vertex="1">
-          <mxGeometry height="107" width="230" x="980" y="320" as="geometry" />
+          <mxGeometry height="107" width="230" x="735" y="270" as="geometry" />
         </mxCell>
         <mxCell id="notifSvc" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=0;overflow=fill;fillColor=#ffffff;strokeColor=#000000;fontSize=12;fontFamily=Helvetica;fontColor=#000000;" value="&lt;div style=&quot;text-align:center;font-weight:bold;padding:5px 4px 4px 4px;height:31px;&quot;&gt;«service»&lt;br&gt;NotificationService&lt;/div&gt;&lt;hr style=&quot;margin:0;border:none;border-top:1px solid #000000;height:0;&quot;&gt;&lt;div style=&quot;text-align:left;padding:5px 8px 5px 8px;white-space:nowrap;&quot;&gt;&lt;/div&gt;&lt;hr style=&quot;margin:0;border:none;border-top:1px solid #000000;height:0;&quot;&gt;&lt;div style=&quot;text-align:left;padding:5px 8px 5px 8px;white-space:nowrap;&quot;&gt;+ notifyShareRequested(ownerId, requesterId)&lt;br&gt;+ notifyShareDecided(requesterId, decision)&lt;/div&gt;" vertex="1">
-          <mxGeometry height="92" width="280" x="1440" y="120" as="geometry" />
+          <mxGeometry height="92" width="280" x="1080" y="75" as="geometry" />
         </mxCell>
         <mxCell id="calendarShare" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=0;overflow=fill;fillColor=#ffffff;strokeColor=#000000;fontSize=12;fontFamily=Helvetica;fontColor=#000000;" value="&lt;div style=&quot;text-align:center;font-weight:bold;padding:5px 4px 4px 4px;height:31px;&quot;&gt;«entity»&lt;br&gt;CalendarShare&lt;/div&gt;&lt;hr style=&quot;margin:0;border:none;border-top:1px solid #000000;height:0;&quot;&gt;&lt;div style=&quot;text-align:left;padding:5px 8px 5px 8px;white-space:nowrap;&quot;&gt;- id: UUID&lt;br&gt;- ownerId: UUID&lt;br&gt;- viewerId: UUID&lt;br&gt;- initiatedBy: CalendarShareInitiator&lt;br&gt;- level: CalendarShareLevel&lt;br&gt;- startDate: DateOnly&lt;br&gt;- endDate: DateOnly&lt;br&gt;- status: CalendarShareStatus&lt;br&gt;- pendingLevel?: CalendarShareLevel&lt;br&gt;- pendingEndDate?: DateOnly&lt;br&gt;- pendingRequestedAt?: DateTimeOffset&lt;br&gt;- decidedAt?: DateTimeOffset&lt;br&gt;- closedAt?: DateTimeOffset&lt;br&gt;- closedById?: UUID&lt;/div&gt;&lt;hr style=&quot;margin:0;border:none;border-top:1px solid #000000;height:0;&quot;&gt;&lt;div style=&quot;text-align:left;padding:5px 8px 5px 8px;white-space:nowrap;&quot;&gt;&lt;/div&gt;" vertex="1">
-          <mxGeometry height="250" width="290" x="940" y="510" as="geometry" />
+          <mxGeometry height="250" width="290" x="705" y="445" as="geometry" />
         </mxCell>
         <mxCell id="user" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=0;overflow=fill;fillColor=#ffffff;strokeColor=#000000;fontSize=12;fontFamily=Helvetica;fontColor=#000000;" value="&lt;div style=&quot;text-align:center;font-weight:bold;padding:5px 4px 4px 4px;height:31px;&quot;&gt;«entity»&lt;br&gt;User&lt;/div&gt;&lt;hr style=&quot;margin:0;border:none;border-top:1px solid #000000;height:0;&quot;&gt;&lt;div style=&quot;text-align:left;padding:5px 8px 5px 8px;white-space:nowrap;&quot;&gt;- id: UUID&lt;br&gt;- fullName: string&lt;/div&gt;&lt;hr style=&quot;margin:0;border:none;border-top:1px solid #000000;height:0;&quot;&gt;&lt;div style=&quot;text-align:left;padding:5px 8px 5px 8px;white-space:nowrap;&quot;&gt;&lt;/div&gt;" vertex="1">
-          <mxGeometry height="92" width="120" x="460" y="500" as="geometry" />
+          <mxGeometry height="92" width="120" x="420" y="430" as="geometry" />
         </mxCell>
-        <mxCell id="e1" edge="1" parent="1" source="sharingPage" style="edgeStyle=orthogonalEdgeStyle;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;endArrow=open;labelBackgroundColor=#ffffff;rounded=0;endSize=10;fontSize=11;fontFamily=Helvetica;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="sharingCtl" value="uses">
+        <mxCell id="e1" edge="1" parent="1" source="sharingPage" style="edgeStyle=orthogonalEdgeStyle;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;endArrow=open;labelBackgroundColor=#ffffff;rounded=0;endSize=10;fontSize=11;fontFamily=Helvetica;exitDx=0;exitDy=0;entryDx=0;entryDy=0;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" target="sharingCtl" value="uses">
           <mxGeometry relative="1" as="geometry">
-            <Array as="points" />
-          </mxGeometry>
+            </mxGeometry>
         </mxCell>
-        <mxCell id="e2" edge="1" parent="1" source="sharingCtl" style="edgeStyle=orthogonalEdgeStyle;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;endArrow=open;labelBackgroundColor=#ffffff;rounded=0;endSize=10;fontSize=11;fontFamily=Helvetica;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.15;entryDx=0;entryDy=0;" target="sharingSvc" value="calls">
+        <mxCell id="e2" edge="1" parent="1" source="sharingCtl" style="edgeStyle=orthogonalEdgeStyle;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;endArrow=open;labelBackgroundColor=#ffffff;rounded=0;endSize=10;fontSize=11;fontFamily=Helvetica;exitDx=0;exitDy=0;entryDx=0;entryDy=0;exitX=1;exitY=0.5;entryX=0;entryY=0.2;" target="sharingSvc" value="calls">
           <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="940" y="181" />
-              <mxPoint x="940" y="138.3" />
-            </Array>
-          </mxGeometry>
+            <Array as="points"><mxPoint x="665" y="136" /><mxPoint x="665" y="99.4" /></Array></mxGeometry>
         </mxCell>
-        <mxCell id="e3" edge="1" parent="1" source="sharingSvc" style="edgeStyle=orthogonalEdgeStyle;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;endArrow=open;labelBackgroundColor=#ffffff;rounded=0;endSize=10;fontSize=11;fontFamily=Helvetica;exitX=0;exitY=0.85;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="userRepo" value="verifies users">
+        <mxCell id="e3" edge="1" parent="1" source="sharingSvc" style="edgeStyle=orthogonalEdgeStyle;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;endArrow=open;labelBackgroundColor=#ffffff;rounded=0;endSize=10;fontSize=11;fontFamily=Helvetica;exitDx=0;exitDy=0;entryDx=0;entryDy=0;exitX=0;exitY=0.85;entryX=1;entryY=0.5;" target="userRepo" value="verifies users">
           <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="750" y="223.7" />
-              <mxPoint x="750" y="366" />
-            </Array>
-          </mxGeometry>
+            <Array as="points"><mxPoint x="665" y="178.7" /><mxPoint x="665" y="316" /></Array></mxGeometry>
         </mxCell>
-        <mxCell id="e4" edge="1" parent="1" source="sharingSvc" style="edgeStyle=orthogonalEdgeStyle;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;endArrow=open;labelBackgroundColor=#ffffff;rounded=0;endSize=10;fontSize=11;fontFamily=Helvetica;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="shareRepo" value="manages shares">
+        <mxCell id="e4" edge="1" parent="1" source="sharingSvc" style="edgeStyle=orthogonalEdgeStyle;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;endArrow=open;labelBackgroundColor=#ffffff;rounded=0;endSize=10;fontSize=11;fontFamily=Helvetica;exitDx=0;exitDy=0;entryDx=0;entryDy=0;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" target="shareRepo" value="manages shares">
           <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="1120" y="290" />
-              <mxPoint x="1095" y="290" />
-            </Array>
-          </mxGeometry>
+            </mxGeometry>
         </mxCell>
-        <mxCell id="e5" edge="1" parent="1" source="sharingSvc" style="edgeStyle=orthogonalEdgeStyle;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;endArrow=open;labelBackgroundColor=#ffffff;rounded=0;endSize=10;fontSize=11;fontFamily=Helvetica;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="notifSvc" value="notifies">
+        <mxCell id="e5" edge="1" parent="1" source="sharingSvc" style="edgeStyle=orthogonalEdgeStyle;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;endArrow=open;labelBackgroundColor=#ffffff;rounded=0;endSize=10;fontSize=11;fontFamily=Helvetica;exitDx=0;exitDy=0;entryDx=0;entryDy=0;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" target="notifSvc" value="notifies">
           <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="1410" y="181" />
-              <mxPoint x="1410" y="166" />
-            </Array>
-          </mxGeometry>
+            <Array as="points"><mxPoint x="1040" y="136" /><mxPoint x="1040" y="121" /></Array></mxGeometry>
         </mxCell>
-        <mxCell id="e6" edge="1" parent="1" source="shareRepo" style="edgeStyle=orthogonalEdgeStyle;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;endArrow=open;labelBackgroundColor=#ffffff;rounded=0;endSize=10;fontSize=11;fontFamily=Helvetica;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="calendarShare" value="manages">
+        <mxCell id="e6" edge="1" parent="1" source="shareRepo" style="edgeStyle=orthogonalEdgeStyle;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;endArrow=open;labelBackgroundColor=#ffffff;rounded=0;endSize=10;fontSize=11;fontFamily=Helvetica;exitDx=0;exitDy=0;entryDx=0;entryDy=0;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" target="calendarShare" value="manages">
           <mxGeometry relative="1" x="0.0108" as="geometry">
-            <Array as="points">
-              <mxPoint x="1095" y="470" />
-              <mxPoint x="1085" y="470" />
-            </Array>
-          </mxGeometry>
+            </mxGeometry>
         </mxCell>
-        <mxCell id="e7" edge="1" parent="1" source="userRepo" style="edgeStyle=orthogonalEdgeStyle;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;endArrow=open;labelBackgroundColor=#ffffff;rounded=0;endSize=10;fontSize=11;fontFamily=Helvetica;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="user" value="references">
+        <mxCell id="e7" edge="1" parent="1" source="userRepo" style="edgeStyle=orthogonalEdgeStyle;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;endArrow=open;labelBackgroundColor=#ffffff;rounded=0;endSize=10;fontSize=11;fontFamily=Helvetica;exitDx=0;exitDy=0;entryDx=0;entryDy=0;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" target="user" value="references">
           <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="580" y="470" />
-              <mxPoint x="520" y="470" />
-            </Array>
-          </mxGeometry>
+            </mxGeometry>
         </mxCell>
       </root>
     </mxGraphModel>

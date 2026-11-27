@@ -935,43 +935,43 @@ Full = unrestricted  ·  Restricted = conditions apply (see footnotes)  ·  No =
 | Online meeting room | View room participants / In-room chat | No | Restricted ¹⁹ | Restricted ¹⁹ | Restricted ¹⁹ | Restricted ¹⁹ | Restricted ¹⁹ | Restricted ¹¹ |
 | Online meeting room | Moderate | No | No | No | Restricted ¹⁹ | No | No | No |
 
-Meeting roles: inside a Meeting, a person can do only what their role in that Meeting allows (Chair, Secretary or Participant). A role in one Meeting gives nothing in another, and no one gets an extra permission of their own. A Guest has the same rights as a Participant, except moderating the room, keeping a personal library and sharing documents (BR-055).
+Meeting roles: Meeting permissions (Chair, Secretary, Participant) apply only within the assigned Meeting and do not carry across meetings. A Guest holds Participant rights except room moderation, personal library, and document sharing (BR-055).
 
 Notes:
 
-¹ Only custom roles; built-in system roles cannot be modified or deleted, and a role can be deleted only when no user is assigned to it.
+¹ Custom roles only; built-in system roles cannot be edited/deleted, and a role can be deleted only when no user is assigned.
 
-² Only meetings the user created. Submit for approval and general information edits are permitted only in Draft or Rejected. A Published Meeting may be rescheduled before it starts under UC-14 and BR-015; only planned times, location and optional Online Link may change, and the new planned start must be later than the current time.
+² Own meetings only: edits and submit-for-approval apply in Draft or Rejected. Published meetings may only reschedule time, location, and Online Link before start (new start > now; UC-14, BR-015).
 
-³ Only Meetings within the user’s authorized relationship and lifecycle scope: the Member who created the Meeting at any status; assigned Approver from WaitingApproval onward; active assigned Secretary before and after publication (BR-016, BR-017, BR-030); Chair at any status, or Participant from Published onward. Each action still requires its own permission and status checks. Guests do not use the internal Meeting list.
+³ Within authorized Meeting scope: Organizer (any status), assigned Approver (WaitingApproval+), active Secretary (before/after publication; BR-016, BR-017, BR-030), Chair (any status), Participant (Published+). Guests cannot use the internal list.
 
-⁴ Only approval requests assigned to the user while the meeting is Pending Approval.
+⁴ Assigned approval requests while the meeting is Pending Approval only.
 
-⁵ Only meetings the user created that have been Approved.
+⁵ Own Approved meetings only.
 
-⁶ Only in the meeting the user chairs and only when the lifecycle state allows it (start a Published meeting and end an InProgress meeting).
+⁶ Assigned Chair only: start Published meetings and end InProgress meetings.
 
-⁸ Only the assigned Secretary may create, update, delete or reorder Agenda Items while the Meeting is Draft, WaitingApproval, Rejected, Approved, Published or InProgress. Agenda management is prohibited in Ended and all subsequent lifecycle states. This permission does not grant Chair-only agenda execution actions.
+⁸ Assigned Secretary only: manage agenda from Draft through InProgress (prohibited in Ended+); grants no Chair execution rights.
 
-⁹ Only the active assigned Chair may set or complete the current Agenda Item while the Meeting is InProgress; at most one Item may be InProgress.
+⁹ Active Chair only: set/complete current Agenda Item while InProgress (at most one active item).
 
-¹⁰ Only the user's own invitation, while the Meeting is Published or In Progress; each invitation is answered once and the answer cannot be changed afterwards. The Chair does not respond. (BR-046)
+¹⁰ Own invitation while Published or InProgress; one-time response (cannot be changed). Chair does not respond (BR-046).
 
-¹¹ Only within a valid meeting-scoped Guest session, established by email-code verification (UC-04), for the meeting the Guest was invited to.
+¹¹ Valid email-verified Guest session (UC-04) for the invited Meeting only.
 
-¹² Only the user's own items (own notifications, own personal documents).
+¹² Own items only (own notifications, own personal documents).
 
-¹³ Anyone who can view a Meeting can read all its current documents; there is no separate document-reading permission or publication gate. Guests still require a valid verified invitation for that Meeting. Secret Meeting documents cannot be downloaded.
+¹³ Any authorized Meeting viewer can read all current documents (Guests require a verified invitation); Secret Meeting documents cannot be downloaded.
 
-¹⁴ Only people on the eligible list fixed when the Vote opens and retaining current Meeting access may cast a ballot, and only while the Meeting is InProgress and the Vote is Open. A role change does not change that list. Guest email verification and invitation validity are required. (BR-092, BR-093, BR-091)
+¹⁴ Eligible voters fixed when Vote opens who still hold Meeting access, while InProgress and Vote is Open (role changes do not alter the list; Guests must be verified; BR-091–093).
 
-¹⁵ Only in the assigned meeting while the minutes are in Draft or Revision Requested status.
+¹⁵ Assigned Meeting while minutes are in Draft or Revision Requested status only.
 
-¹⁸ Statistics and exports are limited to meetings within the user's own scope, for the System Admin as for anyone else. (BR-149, BR-150)
+¹⁸ Statistics and exports cover only Meetings within the user’s own scope, including System Admin (BR-149, BR-150).
 
-¹⁹ Join requires a valid current participant assignment for an Online or Hybrid Meeting whose lifecycle permits room entry (UC-43). Having created or approved the Meeting does not by itself grant room entry. Leave, controls, room participants and chat require a connected authorized user.
+¹⁹ Joining requires a valid participant assignment in an Online/Hybrid Meeting open for entry (UC-43); creator/approver status alone does not grant entry. In-room actions require an active connection.
 
-²⁰ Only the personal library of a deactivated account, read-only without modifying anything, subject to audit logging and excluding documents and folders of Secret Meetings (UC-37a, BR-085, BR-009, BR-010, BR-011).
+²⁰ Read-only access to a deactivated user’s personal library, audited and excluding Secret Meeting items (UC-37a, BR-009–011, BR-085).
 
 ### 5. System Functionalities
 
@@ -990,7 +990,7 @@ View the full-size image on Google Drive
 | 1.1 | Sign In | FE-01 Authentication & Account Security | Allows every internal user (System Admin, Member, Approver, Chair, Secretary, Participant) to sign in with email and password or Google, see the redirect reason and sign-in errors, and sign out. |
 | 1.2 | Reset Password | FE-01 Authentication & Account Security | Allows the account owner who opened the one-time, 60-minute reset link emailed by the System Admin to set a new password, which signs out all devices; invalid links show an error page. |
 | 1.3 | Guest Verification | FE-01 Authentication & Account Security | Allows a Guest to verify the invited email with a one-time code, then enter a self-declared display name and optional job title before using Member participation functions in this Meeting. |
-| 2.1 | User List | FE-02 User & Profile Management | Allows the System Admin to search and filter user accounts by role and status, create accounts, and edit, deactivate/reactivate or send a password reset link to each account. |
+| 2.1 | User List | FE-02 User & Profile Management | Allows the System Admin to search and filter user accounts by role and status, create accounts, edit, deactivate/reactivate, send password reset links, open a deactivated user’s library (7.6), or collect Voice ID samples (10.3). |
 | 2.2 | Create / Edit User Account Dialog | FE-02 User & Profile Management | Allows the System Admin to create a new account with full name, email, a generated initial password and system role, or edit an existing account’s full name, email and system role. |
 | 2.3 | Send Password Reset Link Dialog | FE-02 User & Profile Management | Allows the System Admin to confirm sending a one-time, 60-minute password reset link to a user’s registered email; the same dialog style confirms deactivating an account. |
 | 3.1 | Role List | FE-03 Role-Based Access Control | Allows the System Admin to view roles with their account counts and to create, edit and delete custom roles (name, description, initial permissions), with Default roles protected from change. |
@@ -1015,19 +1015,21 @@ View the full-size image on Google Drive
 | 6.1b | Change Role Dialog | FE-06 Meeting Participant Management | Allows the Secretary (or the Chair, to hand over the Chair role) to change the Meeting Role of one internal participant by choosing one role from a list that describes what each role allows; choosing Chair shows Hand over Chair. |
 | 6.2 | Add Participant Dialog | FE-06 Meeting Participant Management | Allows the Secretary to add internal participants with a shared meeting role, or invite one Guest; the Member who created the Meeting may assign a missing Secretary. |
 | 6.3 | Attendance Check | FE-06 Meeting Participant Management | Allows the Secretary to record Present or Absent for any current internal participant or Guest in the Attendance column of the Participants tab during an InProgress Meeting; choosing a value saves it. Other participants read the attendance. No totals are shown. |
-| 6.4 | Invitation Response | FE-06 Meeting Participant Management | Allows an invited Secretary, Participant or verified Guest to view the invitation on a phone and accept or decline it once; the answer cannot be changed afterwards and the Chair does not answer. |
+| 6.4 | Guest Meeting & Invitation Response | FE-06 Meeting Participant Management | Allows an invited Secretary, Participant, or verified Guest to accept or decline the invitation once, and allows a verified Guest to view the invited meeting’s agenda, documents, votes, and roster, open Document Preview Modal (7.5), and join Meeting Lobby (8.1). |
 | 7.1 | Document Library – Empty State | FE-07 Personal Document Library & Meeting Document Management | Shows the Document Library of a user who has no folders or files yet: an empty-state panel explaining how the library is used and the accepted file types, with New folder and Upload buttons at the top of the page and inside the panel. |
 | 7.2 | Personal Document Library | FE-07 Personal Document Library & Meeting Document Management | Allows an internal user to browse folders, search and filter his/her private documents by file type, upload files, organise files and folders, delete files and see where each document is used in meetings. |
 | 7.3 | Meeting Detail – Documents Tab | FE-07 Personal Document Library & Meeting Document Management | Allows users who can view a meeting to see its documents grouped by Agenda Item, Vote or general, with page and comment counts, and the Chair or Secretary to add, link, unlink and remove documents until the meeting ends. |
 | 7.4 | Add Document to Meeting Dialog | FE-07 Personal Document Library & Meeting Document Management | Allows the Chair or Secretary to add documents to a meeting from the computer (up to 10 files and 100 MB at a time) or from the personal library, generally or for one Agenda Item. |
-| 7.5 | Document Viewer – Preview & Comments | FE-07 Personal Document Library & Meeting Document Management | Allows users who can view a meeting to preview a meeting document page by page, download it unless the Meeting is Secret, and read, write and reply to comments. |
+| 7.5 | Document Preview Modal (Document Viewer) | FE-07 Personal Document Library & Meeting Document Management | Modal overlay (with full-screen route fallback) opened from Meeting Detail – Documents Tab (7.3), Personal Document Library (7.2), Deactivated User Library (7.6), or In-Room Documents Panel (8.6) to preview PDF/DOCX documents page by page, zoom, download (unless Secret), and read, write, or reply to comments. |
+| 7.6 | Deactivated User Library | FE-07 Personal Document Library & Meeting Document Management | Read-only view of a deactivated user’s personal document library opened by the System Admin from User List (2.1), subject to audit logging and excluding Secret Meeting items. |
 | 8.1 | Meeting Lobby | FE-08 Online Meeting Room Management | Allows the Chair, Secretary, Participant or a verified Guest to preview camera and microphone, choose audio and video devices and enter the online room of an In Progress Online or Hybrid meeting. |
 | 8.2 | Online Meeting Room – Video Grid | FE-08 Online Meeting Room Management | Allows users connected to the online room to see participants in a video grid, see who is speaking, turn their own microphone and camera on or off, share the screen, use a floating window, open the side panels and leave the room. |
-| 8.3 | In-Room Participants Panel | FE-08 Online Meeting Room Management | Allows users in the online room to view who is connected with their meeting role, who is speaking and who is muted, allows the Chair to mute a participant, and, in a separate Attendance panel, lets the Secretary record Present or Absent without leaving the room. |
+| 8.3 | In-Room Participants & Attendance Panel | FE-08 Online Meeting Room Management | Allows users in the online room to view connected participants with their meeting role, who is speaking and muted, lets the Chair mute a participant, and in a separate Attendance panel lets the Secretary record Present or Absent without leaving the room. |
 | 8.4 | Screen Sharing & Chat | FE-08 Online Meeting Room Management | Allows users connected to the online room to present their screen on the main stage, follow a shared screen and exchange text chat messages that are not kept after the meeting. |
-| 8.5 | In-Room Voting Panel | FE-08 Online Meeting Room Management | Planned: allows eligible voters in the online room to follow the open Vote and cast a ballot without leaving the room. |
-| 8.6 | In-Room Documents Panel | FE-08 Online Meeting Room Management | Built: allows users in the online room to read the meeting documents, current Agenda Item first, opening each document in a new tab so the call continues. |
+| 8.5 | In-Room Voting Panel | FE-08 Online Meeting Room Management | Allows eligible voters in the online room to follow open Votes and cast a ballot without leaving the room. |
+| 8.6 | In-Room Documents Panel | FE-08 Online Meeting Room Management | Allows users in the online room to read meeting documents (current Agenda Item first), opening them in Document Preview Modal (7.5) or a new tab while the call continues. |
 | 8.7 | My Recorded Speech | FE-08 Online Meeting Room Management | Allows each person in the online room to review, play and delete the sentences recorded from his or her own microphone. |
+| 8.8 | In-Room Speaking Queue Panel | FE-08 Online Meeting Room Management | Allows participants in the online room to raise or lower hands to request speaking turns and lets the Chair invite or manage speakers in the queue. |
 | 9.1 | Meeting Detail – Recordings Tab | FE-09 Meeting Recording | Allows the Secretary to upload the meeting audio after the meeting has ended, see processing status and uploaded files, review the speaker-attributed transcript and start generating the AI summary. |
 | 9.2 | Upload Audio Dialog | FE-09 Meeting Recording | Allows the Secretary to select or drag an MP3, M4A or WAV audio file of up to 300 MB, confirm recording consent and upload it to an Ended meeting for transcription. |
 | 9.3 | Room Microphone Recorder | FE-09 Meeting Recording | Allows the Secretary of an In-person Meeting to record the room sound in takes from a floating card that stays on every page of the Meeting. |
@@ -4858,15 +4860,15 @@ The quality attributes below are stated as measurable targets for a single-organ
 
 | Requirement | Description |
 | --- | --- |
-| Learnability and training time | An internal Member with basic computer skills must be able to find an upcoming meeting, respond to an invitation, open a meeting document, cast a vote after a guided introduction of no more than 30 minutes. A Member, Secretary, Chair or System Admin must be able to complete their full role workflow (e.g. create, submit and publish a meeting; manage the agenda and participants; upload audio and approve the summary; issue minutes) after no more than 2 hours of training. An external Guest must be able to verify their email and respond to an invitation without any training. |
-| Vietnamese user interface | All user-facing text - menus, labels, buttons, field hints, validation and system messages, notifications, emails and exported reports - is in Vietnamese with correct diacritics (UTF-8). Searches must handle Vietnamese text with diacritics correctly. Terminology must be consistent with the glossary of this SRS (one term for each of Meeting, Agenda Item, Secretary and the other glossary entries throughout). |
-| Consistency | All screens share the same shell (a vertical sidebar on a desktop; a top bar and a bottom tab bar on a phone), the same placement of primary and secondary actions, the same date and time format, and the same badge for each status (meeting, agenda item, vote, minutes). Lists use the same search, filter, sort and paging controls, and an empty result shows a no-results message rather than an error. |
-| Responsive, desktop-first layout | All features are fully usable on desktop and laptop screens of 1280 px width or more and remain usable at 1024 px. Every screen also works in a phone browser 390 px wide without horizontal scrolling or loss of function; below 640 px a top bar and a bottom tab bar replace the sidebar, and touch targets are at least 40 px. |
-| Browser support | The application must work correctly on the two most recent stable versions of Google Chrome, Microsoft Edge, Mozilla Firefox and Safari (desktop), and on Chrome for Android and Safari on iOS for the mobile-capable screens. The online meeting room requires a WebRTC-capable browser; when the browser or device permissions are not suitable, the system tells the user what is missing instead of failing silently. |
-| Accessibility basics | Screens should follow the basic WCAG 2.1 Level AA practices: every form field has a visible label, all functions are reachable with the keyboard with a visible focus indicator, text has a contrast ratio of at least 4.5:1, status and errors are not conveyed by colour alone, and pages remain usable when the browser zoom is set to 200%. |
-| Clear error messages with codes | Every error or warning shown to a user uses the wording and code defined in the System Messages catalogue (Section V.2, MSGnn), explains in plain Vietnamese what happened and what the user can do next, is displayed next to the affected field when it concerns a field, and never shows stack traces or technical internals. Data already entered in a form is preserved after a validation error. |
-| Confirmation of destructive and irreversible actions | Before any action that deletes, cancels, revokes or cannot be undone - e.g. deleting an agenda item or document, cancelling a meeting, removing a participant or revoking a Guest, deactivating an account, rejecting a meeting, closing a vote, issuing minutes - the system asks the user to confirm in a dialog that names the affected object and states the consequence. Actions that cannot be reversed must say so explicitly. |
-| Feedback on long-running operations | Any operation that takes longer than 1 second shows a loading indicator, and the user cannot submit the same form twice. File uploads show progress, and audio processing (transcription and summary generation) shows its current status (e.g. queued, processing, completed, failed) so that the Secretary does not need to wait on the page. |
+| Learnability and training time | With basic computer skills, a Member must be able to find a meeting, RSVP, open a document, and vote after ≤ 30 minutes of guidance; a Member, Secretary, Chair, or System Admin must complete their full role workflow (meeting lifecycle, agenda/participants, audio/summary, minutes) after ≤ 2 hours of training. External Guests require zero training to verify email and RSVP. |
+| Vietnamese user interface | All UI text, messages, notifications, emails, and exports are in UTF-8 Vietnamese with proper diacritics. Search handles Vietnamese diacritics accurately, and terminology strictly follows the SRS glossary (e.g. Meeting, Agenda Item, Secretary). |
+| Consistency | All screens share one shell (desktop sidebar; phone top and bottom bars), consistent action placement, date/time formats, and status badges (meeting, agenda item, vote, minutes). Lists share unified search, filter, sort, and paging controls, showing an empty-state message rather than an error. |
+| Responsive, desktop-first layout | Full functionality on ≥ 1280 px desktop/laptop screens, remaining usable at 1024 px. On 390 px mobile browsers, every screen works without horizontal scroll or lost functions; below 640 px, top/bottom bars replace the sidebar with ≥ 40 px touch targets. |
+| Browser support | Supports the two latest stable releases of Chrome, Edge, Firefox, and Safari (desktop), plus Chrome for Android and iOS Safari for mobile screens. The online room requires WebRTC and clearly reports missing browser support or device permissions instead of failing silently. |
+| Accessibility basics | Follows WCAG 2.1 Level AA basics: visible labels on all form fields, full keyboard navigation with visible focus indicators, ≥ 4.5:1 text contrast, non-colour-only status/error cues, and usability at 200% browser zoom. |
+| Clear error messages with codes | Errors and warnings use the System Messages catalogue (Section V.2, MSGnn) in plain Vietnamese stating cause and next step, appear inline beside affected fields, hide stack traces/internals, and preserve entered form data after validation errors. |
+| Confirmation of destructive and irreversible actions | Destructive or irreversible actions (deleting items/documents, cancelling/rejecting meetings, removing participants/Guests, deactivating accounts, closing votes, issuing minutes) require a confirmation dialog naming the target object, stating the consequence, and explicitly warning when irreversible. |
+| Feedback on long-running operations | Operations > 1 second show a loading indicator and prevent duplicate submission. File uploads display progress; audio transcription and summary generation show live status (queued, processing, completed, failed) so the Secretary need not stay on the page. |
 
 #### 2.2 Performance
 
