@@ -59,7 +59,7 @@ Khi gửi duyệt theo UC-17, người tổ chức chọn một tài khoản đa
 | Mã | Nhãn | Ghi chú |
 |---|---|---|
 | `Normal` | Thường | Mặc định |
-| `Internal` | Nội bộ | Như Thường (dự thảo AI của mọi mức mật do máy AI của nhóm viết, ADR-0088) |
+| `Internal` | Nội bộ | Thành viên nội bộ tải tài liệu, biên bản có ghi nhật ký kiểm toán (`document.downloaded`, `minutes.downloaded`); Khách mời chỉ xem trực tuyến, không tải tài liệu (`MSG485`); chia sẻ lịch bận ở Mốc 2 (ADR-0058, ADR-0089) |
 | `Secret` | Mật | Không tải tài liệu, ghi âm, biên bản; mỗi lần xem tài liệu ghi nhật ký; ẩn khỏi kho khi Quản trị xem tài khoản đã khoá; cảnh báo khi mời Khách |
 
 Hiện thực phía frontend: [types/meeting.ts](../../frontend/src/types/meeting.ts).

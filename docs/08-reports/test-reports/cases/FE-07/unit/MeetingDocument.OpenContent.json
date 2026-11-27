@@ -85,6 +85,36 @@
           "round1": "Passed",
           "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
+        },
+        {
+          "id": "UTC006",
+          "preconditions": [
+            "Meeting Published (Internal sensitivity); reader is a verified Guest of this meeting; M1 is a PDF in the meeting."
+          ],
+          "inputs": "meetingDocumentId: M1; download: true.",
+          "return": "Failure DownloadForbidden (HTTP 403, MSG485); the file is not opened.",
+          "exception": "N/A",
+          "log": "No audit row.",
+          "type": "Abnormal",
+          "note": "UC-35b · BR-055 · BR-081 · MSG485",
+          "round1": "Passed",
+          "date1": "2026-11-27",
+          "tester1": "Phạm Gia Khánh"
+        },
+        {
+          "id": "UTC007",
+          "preconditions": [
+            "Meeting Published (Internal sensitivity); reader is an internal Member; M1 is a PDF in the meeting; the file exists in storage."
+          ],
+          "inputs": "meetingDocumentId: M1; download: true.",
+          "return": "Content stream, file name, content type and size of M1; audit row \"document.downloaded\" recorded before streaming.",
+          "exception": "N/A",
+          "log": "Audit row document.downloaded recorded.",
+          "type": "Normal",
+          "note": "UC-35b · BR-010 · BR-081",
+          "round1": "Passed",
+          "date1": "2026-11-27",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }

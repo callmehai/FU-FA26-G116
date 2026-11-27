@@ -46,16 +46,16 @@
     {
       "id": "TC-SEC-004",
       "requirement": "Document security levels",
-      "scenario": "Secret document is not reachable through a guessed download link",
+      "scenario": "Secret and Internal document download rules are enforced and audited",
       "role": "Member (other)",
-      "given": "A Secret document attached to a meeting Member D is not on; its download link copied from an authorised browser",
-      "when": "Signed in as Member D, open the copied link and call the file API; then as a participant view and download it",
-      "then": "No file bytes are returned (404); the attempt does not appear as a successful access in the audit log; the participant may view it online (audited as document.viewed) but not download it (403 MSG159)",
+      "given": "A Secret document attached to a meeting Member D is not on; an Internal meeting with a PDF and a verified Guest invitation",
+      "when": "Signed in as Member D, call the Secret file API; as a participant view and download the Secret file; as a Guest download the Internal file; as an internal participant download the Internal file and minutes",
+      "then": "Outsider gets 404 with no audit row; Secret participant views online (200, document.viewed) and cannot download (403 MSG159); Internal Guest cannot download (403 MSG485); Internal participant download succeeds (200) and writes document.downloaded / minutes.downloaded",
       "priority": "Critical",
-      "aiNote": "Measured: outsider download 404 MSG156, view 404, no audit row for the outsider; participant view 200, download 403 MSG159; document.viewed rows recorded. · Evidence: QA run SYS-NFR 20261122-184055 · Re-run on a clean local database: same result, QA run SYS-NFR 20261123-070126-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
+      "aiNote": "Report 3 §IV: Document security levels. Updated 2026-11-27 for ADR-0089 (Internal Guest download 403 MSG485; internal downloads audited as document.downloaded and minutes.downloaded).",
       "status": "Pass",
-      "date": "2026-11-23",
-      "tester": "Nguyễn Trường Huy"
+      "date": "2026-11-27",
+      "tester": "Phạm Gia Khánh"
     },
     {
       "id": "TC-SEC-005",
