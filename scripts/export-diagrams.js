@@ -9,13 +9,16 @@ function getRepoRoot(defaultRoot) {
 
 function parseOptions(args) {
   // Tách cờ --originals-dir= / --no-originals / --no-compress khỏi danh sách target.
-  const options = { originalsDir: null, noOriginals: false, noCompress: false };
+  const options = { originalsDir: null, noOriginals: false, noCompress: false, scale: 1 };
   const targets = [];
   for (const arg of args) {
     if (arg.startsWith('--originals-dir=')) {
       options.originalsDir = arg.slice('--originals-dir='.length);
     } else if (arg === '--no-originals') {
       options.noOriginals = true;
+    } else if (arg.startsWith('--scale=')) {
+      options.scale = Number(arg.slice('--scale='.length));
+      if (!(options.scale >= 1)) throw new Error(`--scale must be a number >= 1: ${arg}`);
     } else if (arg === '--no-compress') {
       options.noCompress = true;
     } else {
@@ -119,6 +122,7 @@ Examples:
   node export-diagrams.js docs/06-sequencediagram/meeting-management/UC17_ViewMeetingDetails.txt
   node export-diagrams.js meeting-management
   node export-diagrams.js --all
+  node export-diagrams.js --all --scale=3     # 3x the engine's actual size (sharper in the report)
 `);
     return;
   }
@@ -170,13 +174,26 @@ Examples:
 
     try {
       const sourceText = fs.readFileSync(txtFile, 'utf-8');
-      const pngDataUrl = await page.evaluate(async (text) => {
-        return new Promise((resolve) => {
-          window.SEQ.api.generatePngDataUrl(text, (dataUrl) => {
-            resolve(dataUrl);
-          });
-        });
-      }, sourceText);
+      // generatePngDataUrl only renders at actual size, so a larger image is the
+      // engine's own SVG rasterised N times bigger; the canvas side is capped at
+      // 16000 px (the browser canvas limit).
+      const pngDataUrl = await page.evaluate(async ({ text, scale }) => {
+        if (scale === 1) {
+          return new Promise((resolve) => window.SEQ.api.generatePngDataUrl(text, resolve));
+        }
+        const svgUrl = await new Promise((resolve) => window.SEQ.api.generateSvgDataUrl(text, resolve));
+        const img = new Image();
+        await new Promise((resolve, reject) => { img.onload = resolve; img.onerror = reject; img.src = svgUrl; });
+        const s = Math.min(scale, 16000 / img.width, 16000 / img.height);
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(img.width * s);
+        canvas.height = Math.round(img.height * s);
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        return canvas.toDataURL('image/png');
+      }, { text: sourceText, scale: options.scale });
 
       if (!pngDataUrl || !pngDataUrl.startsWith('data:image/png;base64,')) {
         throw new Error('Invalid PNG data returned from engine.');
@@ -195,7 +212,9 @@ Examples:
       }
       if (!options.noCompress) {
         const py = process.env.PYTHON || 'python';
-        const res = spawnSync(py, [path.join(repoRoot, 'scripts', 'compress_png.py'), pngFile], { encoding: 'utf-8' });
+        // A scaled export keeps its size: only the palette is reduced.
+        const widthArgs = options.scale > 1 ? ['--max-width', '100000'] : [];
+        const res = spawnSync(py, [path.join(repoRoot, 'scripts', 'compress_png.py'), ...widthArgs, pngFile], { encoding: 'utf-8' });
         if (res.status !== 0) {
           console.error(`[${i + 1}/${files.length}] ❌ Compress failed for ${relPng}: ${(res.stderr || res.error?.message || '').trim()}`);
           failCount++;

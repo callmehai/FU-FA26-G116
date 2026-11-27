@@ -54,12 +54,13 @@ def compress_file(path: Path, max_width: int = MAX_WIDTH) -> tuple[int, int, boo
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Nén PNG sơ đồ về bản nhẹ (palette 256 màu).")
     parser.add_argument("files", nargs="+", help="File PNG cần nén tại chỗ")
+    parser.add_argument("--max-width", type=int, default=MAX_WIDTH, help="cạnh rộng tối đa (mặc định 1920)")
     args = parser.parse_args(argv)
     failed = 0
     for name in args.files:
         path = Path(name)
         try:
-            old, new, changed = compress_file(path)
+            old, new, changed = compress_file(path, args.max_width)
             print(f"{'GHI-DE' if changed else 'GIU-nguyen'} {path} ({old/1e3:.0f} -> {new/1e3:.0f} KB)")
         except (OSError, RuntimeError) as exc:
             print(f"loi: {exc}", file=sys.stderr)

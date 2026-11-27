@@ -90,7 +90,8 @@ def main() -> int:
             cmd += ["--no-compress"]
         run(cmd)
     if args.only != "drawio":
-        cmd = ["node", str(SCRIPTS / "export-diagrams.js"), *abs_paths]
+        # 3x the engine's actual size: Report 4 prints wide diagrams at page width (supervisor review 27/11/2026)
+        cmd = ["node", str(SCRIPTS / "export-diagrams.js"), *abs_paths, "--scale=3"]
         if args.originals_dir:
             cmd += [f"--originals-dir={args.originals_dir}"]
         if args.no_originals:

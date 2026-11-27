@@ -342,6 +342,14 @@ số mục và số Figure đi theo), thêm heading UC + ảnh + caption `Figure
 `--refresh UC-01,FE-15` (hoặc `all`): khi đó thay byte ảnh, giữ bề rộng, chiều cao theo tỉ lệ mới. Tên UC trong ảnh lấy
 từ dòng `title` của file `.txt`, nên heading Report 4 phải trùng dòng đó (đã đồng bộ theo Report 3). Mục lục vẫn cập nhật bằng Word.
 
+**Report 4 và 5.0 (27/11/2026, comment của supervisor trên Drive):** comment nằm trong chính file `.docx` trên Drive
+(`word/comments.xml`), Drive API `comments.list` trả rỗng — tải bản Drive về thư mục tạm chỉ để đọc comment. Report 4:
+136 sequence diagram xuất lại ở 3x (`--scale=3`), thay vào report bằng `--refresh` (giữ bề rộng hiển thị), thêm link
+ảnh gốc Drive dưới ba hình mục IV; diagram đã đẩy Drive (`push_diagrams.py sequence --confirm`), report chưa đẩy. Mục lục
+còn thiếu "2.3 Capacity Design" (có từ trước) — cần Update Field trong Word. Report 5.0 (sửa thẳng DOCX vì
+`generate_test_reports.py` cần file mẫu không có trong repo): lịch test theo sprint Jira, version công cụ, code
+coverage đo bằng coverlet, hình mục 4–5 render lại từ workbook ở 300 dpi đúng tỉ lệ (trước bị ép dẹt).
+
 **Report 3 đồng bộ Markdown gần nhất:** 24/10/2026, gộp sáu dòng Change Log 24/10 của KhanhPG thành
 một. Lần đẩy 25/10 đưa trọn đợt 16/10 → 24/10 lên Drive trong một lần (9 ngày, 4 dòng Change Log).
 
