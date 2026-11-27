@@ -184,8 +184,6 @@ The buffer of 20% covers the time the team spends in meetings, reviews and retro
 | 8 | Requirement Completeness | % | 90 | 93 | Implemented and accepted requirements / Requirements baselined in Report 3. Failed if <= 75%. Actual to 24/11/2026: 41 of the 44 active Jira user stories are Done after BA Final Review; FE-11 voting (SCRUM-28, 96) and meeting notes (SCRUM-30) are still in review. |
 | 9 | Unit Test Code Coverage | % | 70 | 72 | Measured on the core business logic of the backend, excluding generated code and configuration. Checked in the testing phase of every iteration. Actual to 24/11/2026: 72.3% line coverage of the Domain and Application projects by the 1,034 tests of TrustCabinet.Application.Tests (Coverlet, app commit 5761ee98). |
 
-The Planned column is the commitment made at the start of the project. The Actual column shows the values measured up to 24/11/2026, in Iteration 5, from Jira, GitHub and the Report 5 workbooks. It is updated in every revision of this plan and completed at project closing, where a deviation of more than 20% on any metric is explained in Report 7 - Final Project Document.
-
 ### 6. Risks and Mitigations
 
 Risks are reviewed in the evaluation phase of every iteration. Probability and impact are re-assessed from what that iteration actually showed, a risk that has materialised is converted into an issue with an owner and a deadline in the planning phase of the next iteration, and a risk that no longer applies is closed with a note in the Change Log.
@@ -256,11 +254,9 @@ Objectives:
 
 ●  	Fix the overall system architecture and the boundary between the web application and the audio-processing component, so that the iterations extend a stable structure instead of renegotiating it.
 
-●  Carry out the technical feasibility study on the two features that carry the most uncertainty: a minimal browser-to-browser meeting room (FE-08) and speaker-attributed transcription of a real Vietnamese meeting recording (FE-10).
+●    Carry out the technical feasibility study on the two features that carry the most uncertainty: a minimal browser-to-browser meeting room (FE-08) and speaker-attributed transcription of a real Vietnamese meeting recording (FE-10).
 
-●  	Agree within the team the acceptance threshold for transcription quality that Iteration 3 will be measured against, and record it in Report 3.
-
-●  	Confirm the technology stack decision (Section II.6.3); the choice of environment for the speech-processing model is carried forward under risk R03.
+●  	Confirm the technology stack decision the choice of environment for the speech-processing model is carried forward under risk R03.
 
 ●  	Produce the UI mock-up for the Iteration 1 scope and the initial feature list that the iterations will draw from.
 
@@ -269,10 +265,6 @@ Objectives:
 Deliverables:
 
 ●  	Development environment, repository and Jira project fully configured; conventions and definition of done agreed.
-
-●  	Overall architecture document.
-
-●  	Feasibility study results, with a recommendation and a measured accuracy figure for Vietnamese speaker-attributed transcription.
 
 ●  	UI mock-up for Iteration 1.
 
@@ -298,7 +290,9 @@ Phases of this iteration:
 
 ●  	Evaluation - Demonstrate account creation, role assignment and a permission denial, and confirm the role model before any later feature is scoped against it. Record the effort consumed, the defects found and any unfinished task as input to the planning phase of Iteration 2.
 
-Increment delivered: Software Package v1.0 - a running system in which a user can sign in and an administrator can manage accounts, roles and permissions. Reports delivered: Report 1 v1.0, Report 2 v1.0, Report 3 - SRS v0.9.
+Increment delivered: Software Package v1.0 - a running system in which a user can sign in and an administrator can manage accounts, roles and permissions.
+
+Reports delivered: Report 1 v1.0, Report 2 v1.0, Report 3 - SRS v0.9.
 
 Iteration 2: Meeting, Document & Notification Core - FE-04 to FE-07, FE-13 (2 weeks)
 
@@ -386,7 +380,9 @@ Phases of this iteration:
 
 ●  Evaluation - Demonstrate the lifecycle in order: prepare and publish a Meeting; start and record it after informing the attendees; hold voting, close each Vote and record Chair conclusions; end the Meeting; correct the transcript and approve the AI draft; generate minutes with the tallies and conclusions; submit, approve and issue them.
 
-Increment delivered: Software Package v5.0 - increment 4 plus in-meeting voting, recorded Chair conclusions and approved, issued meeting minutes. Reports delivered: Report 3 v1.3, Report 4 v1.3, Reports 5.2 and 5.3.
+Increment delivered: Software Package v5.0 - increment 4 plus in-meeting voting, recorded Chair conclusions and approved, issued meeting minutes.
+
+Reports delivered: Report 3 v1.3, Report 4 v1.3, Reports 5.2 and 5.3.
 
 Iteration 6: Reporting & Calendar - FE-14, FE-15 (2 weeks)
 
