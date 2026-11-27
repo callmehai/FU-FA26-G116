@@ -28,8 +28,11 @@ LiveKit, còn lại sang app), `deploy/livekit.yaml` (webhook về `app:8080`), 
 
 ## Quy ước
 
-- Bốn khung theo tầng: Client Tier (trình duyệt), Application Tier (một tiến trình ASP.NET Core 10),
-  Data Tier, External Services. Caddy nằm giữa client và ứng dụng.
+- Năm khung: Client Tier (trình duyệt), Application Tier (một tiến trình ASP.NET Core 10), Data Tier,
+  Internal Services (self-hosted) và External Services. Caddy nằm giữa client và ứng dụng.
+- LiveKit SFU, speech worker và language model là dịch vụ tự chạy, thuộc hệ thống: nằm trong khung Internal
+  Services (màu xanh như Application Tier). SeaweedFS là kho tệp nên nằm ở Data Tier cạnh PostgreSQL, Recording files
+  và Redis. External Services chỉ còn Google Identity Services và Resend email API (28/11/2026).
 - Mũi tên liền là chiều gọi hoặc chiều dữ liệu; hai đầu là trao đổi hai chiều (WebRTC, email gửi đi
   và webhook báo trạng thái gửi). Mũi tên nét đứt `maps to` là ánh xạ entity, không phải lời gọi.
 - Mũi tên nét đứt đầu tam giác rỗng `implements` là cài đặt interface: Repository Layer và Integration adapters (ở
@@ -58,7 +61,7 @@ Sửa trực tiếp `.drawio` theo [quy tắc chỉnh draw.io](../../DRAWIO_EDIT
 PNG và thay ảnh ở mục I.1 của Report 4 (`docs/08-reports/source/`):
 
 ```bash
-draw.io -x -f png -s 2 -o kien-truc-phan-mem.png kien-truc-phan-mem.drawio
+draw.io -x -f png --width 1920 -o kien-truc-phan-mem.png kien-truc-phan-mem.drawio
 draw.io -x -f png -s 2 -o trien-khai-vat-ly.png trien-khai-vat-ly.drawio
 ```
 
