@@ -143,8 +143,22 @@ NEW_FILES: dict[str, tuple[str, Path, str]] = {
 TEST_SET = ("5.0", "5.1", "5.2", "5.2.2", "5.3", "5.4", "5.5")
 
 # A minutes file renamed locally keeps its Drive file: the old Drive name is renamed and
-# its content replaced, instead of leaving a second copy beside a new one.
-MINUTES_RENAMED = {"Meeting_Minutes_21-10-2026_Week7.docx": "Meeting_Minutes_22-10-2026_Week7.docx"}
+# its content replaced, instead of leaving a second copy beside a new one. Each local name
+# lists the names its Drive file may still carry. The date in every minutes name changed
+# from dd-mm-yyyy to dd_mm_yyyy on 27/11/2026, so the dash date is always an old name.
+MINUTES_RENAMED = {
+    "Meeting_Minutes_21_10_2026_Week7.docx": ("Meeting_Minutes_22-10-2026_Week7.docx",),
+}
+MINUTES_DATE = re.compile(r"^(Meeting_Minutes_)(\d{2})_(\d{2})_(\d{4})_")
+
+
+def minutes_old_names(name: str) -> tuple[str, ...]:
+    return MINUTES_RENAMED.get(name, ()) + (MINUTES_DATE.sub(r"\1\2-\3-\4_", name),)
+
+
+def minutes_old_name(name: str, remote: dict) -> str | None:
+    """The Drive name this local minutes file replaces, when only the old name is on Drive."""
+    return next((old for old in minutes_old_names(name) if old in remote), None)
 
 # The Drive folder that holds the meeting minutes. Minutes are not fixed targets:
 # each session adds a new file, so they are matched by name inside this folder.
@@ -425,6 +439,11 @@ def run_minutes(args: argparse.Namespace) -> int:
         missing = outdated = 0
         for path in local:
             info = remote.get(path.name)
+            old_name = minutes_old_name(path.name, remote) if info is None else None
+            if old_name:
+                outdated += 1
+                print(f"{path.name:<58} {'RENAME':<12} on Drive as {old_name}")
+                continue
             if info is None:
                 missing += 1
                 print(f"{path.name:<58} {'MISSING':<12} not on Drive ({path.stat().st_size:,} bytes)")
@@ -438,7 +457,9 @@ def run_minutes(args: argparse.Namespace) -> int:
             else:
                 outdated += 1
                 print(f"{path.name:<58} {'OUT OF DATE':<12} text matches {ratio:.1%}")
-        renamed_from = {old for new, old in MINUTES_RENAMED.items() if new not in remote}
+        renamed_from = {
+            minutes_old_name(path.name, remote) for path in local if path.name not in remote
+        } - {None}
         for name in sorted(set(remote) - {path.name for path in local} - renamed_from):
             print(f"{name:<58} {'DRIVE ONLY':<12} not in the repo; left alone")
         print(
@@ -450,8 +471,8 @@ def run_minutes(args: argparse.Namespace) -> int:
     if not args.confirm:
         for path in local:
             info = remote.get(path.name)
-            old_name = MINUTES_RENAMED.get(path.name)
-            if info is None and old_name in remote:
+            old_name = minutes_old_name(path.name, remote)
+            if info is None and old_name:
                 print(f"would rename  {old_name} -> {path.name} and replace (id={remote[old_name]['id']})")
                 continue
             if info is None:
@@ -466,8 +487,8 @@ def run_minutes(args: argparse.Namespace) -> int:
     created = replaced = 0
     for path in local:
         info = remote.get(path.name)
-        old_name = MINUTES_RENAMED.get(path.name)
-        if info is None and old_name in remote:
+        old_name = minutes_old_name(path.name, remote)
+        if info is None and old_name:
             old = remote[old_name]
             upload(old["id"], path, old["mimeType"], path.name)
             replaced += 1
