@@ -3,9 +3,9 @@
 - [trustcabinet-erd-chen.drawio](trustcabinet-erd-chen.drawio) — sơ đồ editable.
 - [trustcabinet-erd-chen.drawio.png](trustcabinet-erd-chen.drawio.png) — ảnh xuất hiện có.
 
-Đây là góc nhìn Chen của **cùng mô hình đích** với [ERD mục tiêu](../muc-tieu/README.md): 36 thực thể
-hình chữ nhật, 71 quan hệ hình thoi, không ghi thuộc tính. Từ 22/11/2026 hình khớp ERD dạng bảng: thêm
-`CalendarShare`, `AiProviderSetting` và mọi cặp bảng có khoá ngoại mà bản trước chưa vẽ (quan hệ của Khách với
+Đây là góc nhìn Chen của **cùng mô hình đích** với [ERD mục tiêu](../muc-tieu/README.md): 35 thực thể
+hình chữ nhật, 70 quan hệ hình thoi, không ghi thuộc tính. Từ 22/11/2026 hình khớp ERD dạng bảng: thêm
+`CalendarShare` và mọi cặp bảng có khoá ngoại mà bản trước chưa vẽ (quan hệ của Khách với
 `SpeakingRequest`, `AgendaItem`, `DocumentComment`, `VoteChoice`, `TranscriptSpeaker`, `GuestSession`; xác nhận đã
 đọc tài liệu; `Meeting`–`VoiceSample`, `CallSession`–`Recording`, `AgendaItem`–`MeetingNote`/`SpeakingRequest`,
 `MeetingStatusHistory`–`Notification`); `MeetingDocument`–`AgendaItem` vẽ lại thành nhiều–nhiều (ADR-0020). Bốn bảng
