@@ -6,6 +6,7 @@ control ":Minutes Controller" as MinutesController
 control ":Minutes Service" as MinutesService
 participant ":Meeting Access Policy" as MeetingAccessPolicy
 participant ":Minutes Repository" as MinutesRepository
+participant ":Audit Log Repository" as AuditLogRepository
 database ":Database" as Database
 
 Actor->MeetingPage: Open the Biên bản tab
@@ -49,6 +50,17 @@ else Meeting is accessible
             MinutesController-->MeetingPage: MSG405 - The minutes of a Secret meeting cannot be downloaded.
             MeetingPage-->Actor: MSG405 - The minutes of a Secret meeting cannot be downloaded.
         else Minutes can be read
+            opt Meeting is Internal and download requested - AF-3
+                MinutesService->AuditLogRepository: Record minutes.downloaded with the actor and time,\nbefore delivering the file
+                activate AuditLogRepository
+                AuditLogRepository->Database: Insert audit entry
+                activate Database
+                Database-->AuditLogRepository: Entry saved
+                deactivate Database
+                AuditLogRepository-->MinutesService: Entry saved
+                deactivate AuditLogRepository
+            end
+
             MinutesService-->MinutesController: Minutes content and status
             MinutesController-->MeetingPage: Minutes content and status
             MeetingPage-->Actor: Show minutes as paper

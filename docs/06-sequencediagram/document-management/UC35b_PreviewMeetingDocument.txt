@@ -47,6 +47,11 @@ else Download requested for a Secret Meeting - EX-2
     DocumentController-->DocumentViewer: MSG159 - Secret Meeting documents can only be viewed online and cannot be downloaded.
     DocumentViewer-->User: MSG159 - Secret Meeting documents can only be viewed online and cannot be downloaded.
 
+else Guest requests download for an Internal Meeting - EX-4
+    DocumentService-->DocumentController: MSG485 - Guests can only view Internal Meeting documents online and cannot download them.
+    DocumentController-->DocumentViewer: MSG485 - Guests can only view Internal Meeting documents online and cannot download them.
+    DocumentViewer-->User: MSG485 - Guests can only view Internal Meeting documents online and cannot download them.
+
 else Document can be provided
     DocumentService->FileStorage: Read the uploaded file unchanged
     activate FileStorage
@@ -59,8 +64,8 @@ else Document can be provided
         DocumentViewer-->User: MSG382 - The file of this document is no longer in storage and cannot be opened.\nPlease contact the administrator.
 
     else File read
-        opt Meeting is Secret
-            DocumentService->AuditLogRepository: Record the view with the actor and time,\nbefore any content is sent
+        opt Meeting is Secret (view) or Internal (download)
+            DocumentService->AuditLogRepository: Record document.viewed (Secret) or document.downloaded (Internal) with the actor and time,\nbefore any content is sent
             activate AuditLogRepository
             AuditLogRepository->Database: Insert audit entry
             activate Database
@@ -73,7 +78,7 @@ else Document can be provided
         DocumentService-->DocumentController: File content and file name
         DocumentController-->DocumentViewer: File content and file name
 
-        alt Download chosen for a Meeting that is not Secret - AF-1
+        alt Download chosen and permitted - AF-1
             DocumentViewer-->User: Provide the original file
         else Viewing
             DocumentViewer-->User: Show the document with its name and the Meeting sensitivity

@@ -876,7 +876,7 @@
             "Click \"Tải về\" in the viewer, and the download icon of a row on the Tài liệu tab."
           ],
           "expected": [
-            "The browser saves the file under its original name with the original bytes; the button is disabled while it downloads; a Normal or Internal meeting writes no audit row."
+            "The browser saves the file under its original name with the original bytes; the button is disabled while it downloads; a Normal meeting writes no audit row."
           ],
           "preconditions": [
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
@@ -907,6 +907,26 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
+          "description": "Verify an Internal meeting blocks Guests from downloading and audits internal downloads.",
+          "procedure": [
+            "Open the verified Guest link of an Internal meeting and open a document.",
+            "As an internal Member, open the same document and click \"Tải về\", then inspect \"Nhật ký hệ thống\" as Admin."
+          ],
+          "expected": [
+            "Step 1: the Guest sees \"Chỉ xem trực tuyến\" with no download button; requesting ?download=true returns 403 MSG485 (BR-081).",
+            "Step 2: the Member downloads the file and \"Nhật ký hệ thống\" records \"document.downloaded\" (BR-010)."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A Published Internal meeting with a PDF, a verified Guest invitation, an internal Member and an Administrator."
+          ],
+          "note": "UC-35b · BR-010 · BR-081 · MSG485 · Manual only",
+          "id": "DOC_FT43",
+          "round1": "Passed",
+          "date1": "2026-11-27",
+          "tester1": "Phạm Gia Khánh"
+        },
+        {
           "description": "Verify a document removed while it is open shows the not-found page.",
           "procedure": [
             "Open a document in the viewer.",
@@ -920,7 +940,7 @@
             "Signed in as a Member; a Secretary in a second browser."
           ],
           "note": "UC-32c · BR-211 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentReadEndpointsTests.cs (Removed_document_and_a_document_of_another_meeting_are_MSG156) · Evidence(AC32): tests/qa/out/SCRUM-194/20261121-195601-eb5a3255/01-member-AC32-desktop-tai-lieu-bi-go-khi-dang-mo.png (Mở viewer + bảng góp ý, gỡ qua API, tải lại thì \"Không tìm thấy trang\" (API 404 MSG156); bản trong kho giữ nguyên.)",
-          "id": "DOC_FT43",
+          "id": "DOC_FT44",
           "round1": "Passed",
           "date1": "2026-11-22",
           "tester1": "Phạm Gia Khánh"
@@ -946,7 +966,7 @@
             "Signed in as a Member of an InProgress meeting; a document without comments."
           ],
           "note": "UC-35 · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentCommentEndpointsTests.cs (Member_comments_on_a_pdf_page_and_a_docx_comment_has_no_page) · Evidence(AC27): tests/qa/out/SCRUM-194/20261121-195509-eb5a3255/01-member-AC27-desktop-bang-gop-y-trong.png",
-          "id": "DOC_FT44",
+          "id": "DOC_FT45",
           "round1": "Passed",
           "date1": "2026-11-22",
           "tester1": "Phạm Gia Khánh"
@@ -965,7 +985,7 @@
             "Signed in as a Member of an InProgress meeting; a PDF of at least 3 pages."
           ],
           "note": "UC-35 AF-1 · BR-250 · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentCommentEndpointsTests.cs (Member_comments_on_a_pdf_page_and_a_docx_comment_has_no_page) · Evidence(AC22): tests/qa/out/SCRUM-194/20261121-195400-eb5a3255/01-member-AC22-desktop-soan-gop-y.png; tests/qa/out/SCRUM-194/20261121-195400-eb5a3255/04-member-AC22-desktop-tra-loi-trong-luong.png",
-          "id": "DOC_FT45",
+          "id": "DOC_FT46",
           "round1": "Passed",
           "date1": "2026-11-22",
           "tester1": "Phạm Gia Khánh"
@@ -985,7 +1005,7 @@
             "Signed in as a Member; a document with a comment."
           ],
           "note": "UC-35 AF-2 · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentCommentEndpointsTests.cs (A_reply_to_a_reply_joins_the_thread_of_the_top_level_comment) · Evidence(AC22): tests/qa/out/SCRUM-194/20261121-195400-eb5a3255/04-member-AC22-desktop-tra-loi-trong-luong.png",
-          "id": "DOC_FT46",
+          "id": "DOC_FT47",
           "round1": "Passed",
           "date1": "2026-11-22",
           "tester1": "Phạm Gia Khánh"
@@ -1003,7 +1023,7 @@
             "Signed in as a Member; an Ended and a Cancelled meeting with commented documents."
           ],
           "note": "UC-35 · BR-282 · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentCommentEndpointsTests.cs (Comments_are_read_only_once_the_meeting_has_ended) · Evidence(AC23): tests/qa/out/SCRUM-194/20261121-195400-eb5a3255/09-secretary-AC23-desktop-da-ket-thuc-chi-doc.png; tests/qa/out/SCRUM-194/20261121-195400-eb5a3255/10-secretary-AC23-desktop-gop-y-chi-doc.png",
-          "id": "DOC_FT47",
+          "id": "DOC_FT48",
           "round1": "Passed",
           "date1": "2026-11-22",
           "tester1": "Phạm Gia Khánh"
@@ -1021,7 +1041,7 @@
             "Signed in as a Member of an InProgress meeting that the Chair can end."
           ],
           "note": "UC-35 · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentCommentEndpointsTests.cs (Comments_are_read_only_once_the_meeting_has_ended) · Evidence(AC33): tests/qa/out/SCRUM-194/20261121-194219-eb5a3255/01-member-AC33-desktop-ket-thuc-khi-dang-go.png (409 MSG251; chữ đã gõ còn nguyên; bảng thành chỉ đọc. Bắt khoảnh khắc bằng delay GET comments 2 giây (nếu không bảng tải lại quá nhanh).)",
-          "id": "DOC_FT48",
+          "id": "DOC_FT49",
           "round1": "Passed",
           "date1": "2026-11-22",
           "tester1": "Phạm Gia Khánh"
@@ -1039,7 +1059,7 @@
             "Two users who can view the meeting in two browsers."
           ],
           "note": "UC-35 · Manual only · Evidence(AC22): tests/qa/out/SCRUM-194/20261121-195400-eb5a3255/04-member-AC22-desktop-tra-loi-trong-luong.png",
-          "id": "DOC_FT49",
+          "id": "DOC_FT50",
           "round1": "Passed",
           "date1": "2026-11-22",
           "tester1": "Phạm Gia Khánh"
@@ -1065,7 +1085,7 @@
             "Signed in as a Member who is a voter of an Open vote linking two documents."
           ],
           "note": "UC-74 · Automated: tests/TrustCabinet.Web.Tests/Votes/VoteReadConfirmationTests.cs (A_voter_confirms_each_vote_document_before_the_ballot_is_accepted) · Chưa làm: panel vote hỏi đọc trước khi bỏ phiếu — thuộc vùng vote FE-11 (cần biểu quyết + xác nhận đọc), chưa có AC. · Round1 chạy tay 23/11 (HuyNT, fe-11 AC17, app = origin/app e7dc0e7a, DB riêng): Passed. Biểu quyết đang mở có 1 tài liệu (case ghi 2): tài liệu hiện \"Chưa đọc\", câu \"Mở từng tài liệu, đọc tới trang cuối rồi xác nhận.\", \"Gửi phiếu\" khoá; xác nhận đọc xong thì gửi được. Evidence: tests/qa/out/SCRUM-198/20261123-073902-03594e25/03-member-AC17-desktop-chua-doc-khoa-gui.png; tests/qa/out/SCRUM-198/20261123-073902-03594e25/05-member-AC17-desktop-da-doc-da-gui.png",
-          "id": "DOC_FT50",
+          "id": "DOC_FT51",
           "round1": "Passed",
           "date1": "2026-11-23",
           "tester1": "HuyNT"
@@ -1088,7 +1108,7 @@
             "Signed in as a voter of an Open vote linking a PDF of several pages."
           ],
           "note": "UC-74 · BR-290 · Automated: tests/TrustCabinet.Web.Tests/Votes/VoteReadConfirmationTests.cs (A_voter_confirms_each_vote_document_before_the_ballot_is_accepted) · Evidence(AC32): tests/qa/out/SCRUM-198/20261124-052353-02ec608b/01-member-AC32-desktop-chua-cuoi-khoa-xac-nhan.png; tests/qa/out/SCRUM-198/20261124-052353-02ec608b/02-member-AC32-desktop-cuoi-trang-mo-xac-nhan.png; tests/qa/out/SCRUM-198/20261124-052353-02ec608b/03-member-AC32-desktop-da-xac-nhan-doc.png; tests/qa/out/SCRUM-198/20261124-052353-02ec608b/05-member-AC32-phone-chua-cuoi-khoa-xac-nhan.png; tests/qa/out/SCRUM-198/20261124-052353-02ec608b/06-member-AC32-phone-cuoi-trang-mo-xac-nhan.png; tests/qa/out/SCRUM-198/20261124-052353-02ec608b/07-member-AC32-phone-da-xac-nhan-doc.png",
-          "id": "DOC_FT51",
+          "id": "DOC_FT52",
           "round1": "Passed",
           "date1": "2026-11-24",
           "tester1": "Phạm Gia Khánh"

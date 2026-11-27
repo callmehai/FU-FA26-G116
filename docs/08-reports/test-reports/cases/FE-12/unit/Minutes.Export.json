@@ -74,6 +74,22 @@
           "round1": "Passed",
           "date1": "2026-11-23",
           "tester1": "Phạm Gia Khánh"
+        },
+        {
+          "id": "UTC005",
+          "preconditions": [
+            "Issued revision of an Internal meeting.",
+            "Actor is a Member who reads the meeting."
+          ],
+          "inputs": "minutesId: the Issued revision; actor: the Member; format: Pdf.",
+          "return": "PDF file built from the minutes content; audit row \"minutes.downloaded\" recorded before delivering the file.",
+          "exception": "N/A",
+          "log": "Audit row minutes.downloaded recorded.",
+          "type": "Normal",
+          "note": "UC-69 · BR-010 · BR-139",
+          "round1": "Passed",
+          "date1": "2026-11-27",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }
