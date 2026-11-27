@@ -82,6 +82,11 @@ tuyệt đối không ghi `Automated:`, đường dẫn file test hay tên test 
 Trong Acceptance Test, giữ nguyên bảng tiêu chí/phản hồi ngắn của mẫu. Workbook không có Notes (ghi chú ô) và ô
 Notes để trống; precondition, procedure, expected result và source của từng kịch bản nằm trong `scripts/test_reports/manual_cases.py`.
 
+Phản hồi UAT ngày 27/11/2026 (2 người, form "Phiếu đánh giá UAT") được điền thẳng vào `Report5.5_Acceptance_Test.xlsx`
+ngày 28/11/2026: Statistics mục 9–15, ba ảnh tóm tắt ở Customer Feedback Statistics và bảng Customers Feedbacks (email
+che bớt vì repo công khai). UAT-01 → UAT-08 vẫn `NotRun` vì form không chấm từng kịch bản. Chạy lại
+`generate-test-reports.cmd --overwrite` sẽ sinh 5.5 lại từ mẫu và mất phần này.
+
 ## Sinh lại
 
 Tại thư mục gốc repository:

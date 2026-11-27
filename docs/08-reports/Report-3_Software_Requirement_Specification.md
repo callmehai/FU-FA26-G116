@@ -14,17 +14,17 @@ Table of Contents
 
 | Date | A*<br>M, D | In charge | Change Description |
 | --- | --- | --- | --- |
-| 27/09/2026 | A | KhanhPG | Initial SRS: context diagram, actors and authentication use cases. |
-| 30/09–05/10/2026 | A, M | KhanhPG | Meeting, agenda, participant and notification use cases with their rules and messages; use cases grouped under the features confirmed by the PO. |
-| 08–09/10/2026 | M, D | KhanhPG | PO decision: no Meeting Session layer; agenda items and votes belong to the Meeting; votes are held in the meeting and the Chair records the conclusion. |
-| 12–24/10/2026 | M | KhanhPG, HaiTV, LocHD | Participants, documents and voting specified as built: one unchangeable file per document, documents grouped by agenda item and vote, Chair-selected voters; screens matched to wireframes v4–v8. |
-| 27/10–04/11/2026 | M, A | KhanhPG, HuyNQ, LocHD, HuyNT | Online room, recording, transcription, Voice ID and Guest access by email code specified as built; ERD redrawn from the code. |
-| 07–11/11/2026 | A, M | HuyNQ, HuyNT, LocHD, KhanhPG | Working calendar and meeting time search, reports and audit log added; three sensitivity levels; meeting summary and minutes approval aligned with the code. |
-| 15/11/2026 | M, D | KhanhPG, HaiTV | PO decisions: the Chair approves and issues the minutes, which are not signed; the Secretary collects Voice ID samples for attendees; the system ends overdue meetings. |
-| 19–23/11/2026 | M | KhanhPG, BA | Aligned with the app after the 21/11 trial: three system roles with Chair and Secretary as meeting roles, Take Meeting Notes, report queries, hand corrections kept when a recording is transcribed again. |
-| 24–26/11/2026 | M | HuyNQ, LocHD, KhanhPG | Business rules renumbered BR-001–153 and use cases UC-01–UC-81; UC diagrams in strict UML; system-run steps moved to Report 4; section III screens matched to wireframe v16 and the running app. |
-| 26/11/2026 | M, D | LocHD, KhanhPG | Review by KhanhPG: the AI drafting service and the in-house services are no longer actors or external APIs; Organizer replaced by the Member who created the Meeting; actor and screen descriptions without UC/BR references; Change Log condensed. Section III screens condensed to the G158 template: one “Related UC” line per screen, no business-rule references, shorter field descriptions. |
-| 27/11/2026 | M | LocHD | AI Configuration removed: every draft is written by the team’s own AI server; screen figures re-captured from wireframe v17 without the AI Configuration menu item; MSG394 now reads “Please try again later”. Meeting reminders and data retention periods given their own business rules; the outside language-model API removed from the deployment requirement; messages no longer used removed from the message list, which is renumbered. |
+| 27/09/2026 | A | KhanhPG | Initial SRS: context diagram, actors and sign-in use cases. |
+| 05/10/2026 | A, M | KhanhPG | Added meeting, agenda, participant and notification use cases. |
+| 09/10/2026 | M, D | KhanhPG | Removed Meeting Session; agenda and votes belong to the meeting. |
+| 24/10/2026 | M | KhanhPG, HaiTV, LocHD | Participants, documents and voting matched to the built system. |
+| 04/11/2026 | A, M | KhanhPG, HuyNQ, LocHD, HuyNT | Added online room, recording, transcription, Voice ID and Guest access. |
+| 11/11/2026 | A, M | HuyNQ, HuyNT, LocHD, KhanhPG | Added calendar, reports and audit log; three sensitivity levels. |
+| 15/11/2026 | M, D | KhanhPG, HaiTV | The Chair approves and issues the minutes; no signing. |
+| 23/11/2026 | M | KhanhPG, BA | Aligned with the app after the 21/11 trial. |
+| 26/11/2026 | M, D | HuyNQ, LocHD, KhanhPG | Renumbered BR and UC; screens matched to wireframe v16. |
+| 27/11/2026 | M, D | LocHD | Removed AI Configuration; renumbered the message list. |
+| 28/11/2026 | A, M | LocHD, KhanhPG | Added BF-05; shortened the Change Log. |
 
 *A - Added M - Modified D - Deleted
 
