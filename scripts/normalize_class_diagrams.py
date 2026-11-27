@@ -14,6 +14,10 @@ Usage:
     python scripts/normalize_class_diagrams.py docs/07-classdiagram/feature-07-*.drawio ...
     python scripts/normalize_class_diagrams.py --no-route <files>     # boxes only
     python scripts/normalize_class_diagrams.py --no-boxes <files>     # edges only
+    python scripts/normalize_class_diagrams.py --relayout <files>     # also place every class again
+
+--relayout drops the manual layout: one band per layer (boundary, control, service/policy/utility,
+repository, entity/enumeration), classes in a band ordered to cut crossings, each under its neighbours.
 
 Files already in the new layout keep their boxes. The script rewrites the file in place; the PNG
 has to be exported again (see docs/07-classdiagram/README.md).
@@ -23,7 +27,9 @@ from __future__ import annotations
 import argparse
 import heapq
 import html
+import copy
 import math
+import random
 import re
 import sys
 import xml.etree.ElementTree as ET
@@ -321,14 +327,17 @@ class Router:
                     self.occ_h[(i, aj)] = self.occ_h.get((i, aj), 0) + 1
 
 
-def simplify(pts):
+def simplify(pts, tol: float = 0.5):
+    def same(u, v):
+        return abs(u - v) <= tol
+
     out = [pts[0]]
     for p in pts[1:]:
-        if p != out[-1]:
+        if not (same(p[0], out[-1][0]) and same(p[1], out[-1][1])):
             out.append(p)
     res = [out[0]]
     for a, b, c in zip(out, out[1:], out[2:]):
-        if (a[0] == b[0] == c[0]) or (a[1] == b[1] == c[1]):
+        if (same(a[0], b[0]) and same(b[0], c[0])) or (same(a[1], b[1]) and same(b[1], c[1])):
             continue
         res.append(b)
     res.append(out[-1])
@@ -341,6 +350,45 @@ def set_style(style: str, **kv) -> str:
     for k, v in kv.items():
         keep.append(f"{k}={v}")
     return ";".join(keep) + ";"
+
+
+OPPOSITE = {"top": "bottom", "bottom": "top", "left": "right", "right": "left"}
+
+
+def straighten(edges, choice, fracs, slots, boxes, margin: int = 12, gap: int = 16) -> None:
+    """Two boxes that face each other and overlap on the shared axis get one shared port coordinate,
+    so the line between them runs straight instead of jogging; other ports stay `gap` px away."""
+    def coord(bid, side, f):
+        x, y, w, h = boxes[bid]
+        return x + f * w if side in ("top", "bottom") else y + f * h
+
+    def frac(bid, side, v):
+        x, y, w, h = boxes[bid]
+        return (v - x) / w if side in ("top", "bottom") else (v - y) / h
+
+    for c in edges:
+        cid = c.get("id")
+        if cid not in choice:
+            continue
+        ss, ts = choice[cid]
+        if OPPOSITE[ss] != ts:
+            continue
+        s, t = c.get("source"), c.get("target")
+        (sx, sy, sw, sh), (tx, ty, tw, th) = boxes[s], boxes[t]
+        if ss in ("top", "bottom"):
+            lo, hi = max(sx, tx) + margin, min(sx + sw, tx + tw) - margin
+        else:
+            lo, hi = max(sy, ty) + margin, min(sy + sh, ty + th) - margin
+        if lo > hi:
+            continue
+        want = (coord(s, ss, fracs[(cid, "s")]) + coord(t, ts, fracs[(cid, "t")])) / 2
+        others = [coord(bid, side, fracs[(o.get("id"), end)])
+                  for bid, side in ((s, ss), (t, ts)) for o, end in slots[(bid, side)] if o is not c]
+        grid = range(int(math.ceil(lo / GRID)) * GRID, int(hi) + 1, GRID)
+        for v in sorted(grid, key=lambda v: abs(v - want)) or [min(max(want, lo), hi)]:
+            if all(abs(v - o) >= gap for o in others):
+                fracs[(cid, "s")], fracs[(cid, "t")] = frac(s, ss, v), frac(t, ts, v)
+                break
 
 
 def route_edges(root: ET.Element, title_cell=None) -> tuple[int, int]:
@@ -447,6 +495,7 @@ def route_edges(root: ET.Element, title_cell=None) -> tuple[int, int]:
         for k, item in enumerate(lst):
             f = 0.5 if n == 1 else lo + (hi - lo) * k / (n - 1)
             fracs[(item[0].get("id"), item[1])] = round(f, 4)
+    straighten(edges, choice, fracs, slots, boxes)
     extra_x, extra_y = set(), set()
     for c in edges:
         cid = c.get("id")
@@ -576,11 +625,212 @@ def fit_page(root: ET.Element, model: ET.Element):
     return w, h
 
 
-def process(path: Path, boxes: bool, route: bool, gap: int = 0):
+# Layer of each stereotype, top to bottom: UI, controllers, services and rules, repositories, entities, value types.
+TIER = {"boundary": 0, "control": 1, "service": 2, "policy": 2, "utility": 2, "interface": 2,
+        "repository": 3, "entity": 4, "enumeration": 5, "dto": 5, "value": 5}
+
+
+def _pava(targets: list[float]) -> list[float]:
+    """Non-decreasing sequence closest (least squares) to targets."""
+    blocks: list[list[float]] = []  # [mean, weight]
+    for t in targets:
+        blocks.append([t, 1.0])
+        while len(blocks) > 1 and blocks[-2][0] > blocks[-1][0]:
+            m2, w2 = blocks.pop()
+            m1, w1 = blocks.pop()
+            blocks.append([(m1 * w1 + m2 * w2) / (w1 + w2), w1 + w2])
+    out = []
+    for m, w in blocks:
+        out += [m] * int(w)
+    return out
+
+
+def _cross(a, b, c, d) -> bool:
+    def o(p, q, r):
+        return (q[0] - p[0]) * (r[1] - p[1]) - (q[1] - p[1]) * (r[0] - p[0])
+    return o(a, b, c) * o(a, b, d) < 0 and o(c, d, a) * o(c, d, b) < 0
+
+
+def _hits_box(a, b, r) -> bool:
+    x, y, w, h = r
+    t0, t1 = 0.0, 1.0
+    dx, dy = b[0] - a[0], b[1] - a[1]
+    for p, q in ((-dx, a[0] - x), (dx, x + w - a[0]), (-dy, a[1] - y), (dy, y + h - a[1])):
+        if p == 0:
+            if q < 0:
+                return False
+        else:
+            t = q / p
+            if p < 0:
+                t0 = max(t0, t)
+            else:
+                t1 = min(t1, t)
+    return t0 < t1
+
+
+def relayout(root: ET.Element, aspect: float = 2.2, seed: int | None = None,
+             hgap: int = 100, vgap: int = 120, top: int = 80) -> None:
+    """Place every class again: one band per layer (TIER), long bands wrapped at about
+    sqrt(area * aspect) px, classes in a band ordered to cut crossings and line length, each pulled under its neighbours."""
+    geo, tier = {}, {}
+    for c in root.iter("mxCell"):
+        if c.get("vertex") == "1" and c.get("parent") == "1" and c.get("id") != "title":
+            m = re.search(r"«([^»]+)»|<<(.+?)>>", html.unescape(c.get("value") or ""))
+            st = (m.group(1) or m.group(2)).split()[0].lower() if m else ""
+            geo[c.get("id")] = c.find("mxGeometry")
+            tier[c.get("id")] = TIER.get(st, 2)
+    W = {i: float(g.get("width")) for i, g in geo.items()}
+    H = {i: float(g.get("height")) for i, g in geo.items()}
+    edges = sorted({tuple(sorted((c.get("source"), c.get("target")))) for c in root.iter("mxCell")
+                    if c.get("edge") == "1" and c.get("source") in geo and c.get("target") in geo
+                    and c.get("source") != c.get("target")})
+    nbr: dict[str, list[str]] = {i: [] for i in geo}
+    for s, t in edges:
+        nbr[s].append(t)
+        nbr[t].append(s)
+    area = sum((W[i] + hgap) * (H[i] + vgap) for i in geo)
+    max_w = max(2000.0, math.sqrt(area * aspect))
+    start = sorted(geo, key=lambda i: float(geo[i].get("x")))
+    if seed is not None:
+        random.Random(seed).shuffle(start)
+    order = {}
+    for i in start:
+        order.setdefault(tier[i], []).append(i)
+
+    def place(order):
+        rows = []  # a long band is split into k rows of about equal width, order kept
+        for t in sorted(order):
+            ids = order[t]
+            total = sum(W[i] + hgap for i in ids)
+            k = max(1, math.ceil(total / max_w))
+            band, acc = [[]], 0.0
+            for i in ids:
+                if len(band) < k and band[-1] and acc + (W[i] + hgap) / 2 > total * len(band) / k:
+                    band.append([])
+                band[-1].append(i)
+                acc += W[i] + hgap
+            rows += band
+        pos, y = {}, float(top)
+        for row in rows:
+            x = (max_w - sum(W[i] + hgap for i in row) + hgap) / 2
+            for i in row:
+                pos[i] = [x, y]
+                x += W[i] + hgap
+            y += max(H[i] for i in row) + vgap
+        for _ in range(4):
+            for row in rows:
+                off, acc = [], 0.0
+                for i in row:
+                    off.append(acc)
+                    acc += W[i] + hgap
+                want = []
+                for i, o in zip(row, off):
+                    ns = [n for n in nbr[i] if n not in row]
+                    cx = (sum(pos[n][0] + W[n] / 2 for n in ns) / len(ns)) if ns else pos[i][0] + W[i] / 2
+                    want.append(cx - W[i] / 2 - o)
+                for i, o, v in zip(row, off, _pava(want)):
+                    pos[i][0] = v + o
+        return pos
+
+    def cost(pos):
+        seg = [((pos[s][0] + W[s] / 2, pos[s][1] + H[s] / 2), (pos[t][0] + W[t] / 2, pos[t][1] + H[t] / 2), s, t)
+               for s, t in edges]
+        c = sum(math.dist(a, b) for a, b, _, _ in seg) / 300
+        for k, (a, b, s, t) in enumerate(seg):
+            for a2, b2, s2, t2 in seg[k + 1:]:
+                if {s, t} & {s2, t2}:
+                    continue
+                if _cross(a, b, a2, b2):
+                    c += 1
+            for i in geo:
+                if i not in (s, t) and _hits_box(a, b, (pos[i][0], pos[i][1], W[i], H[i])):
+                    c += 2
+        return c
+
+    best = cost(place(order))
+    improved = True
+    passes = 0
+    while improved and passes < 6:
+        improved = False
+        passes += 1
+        for t in sorted(order):
+            ids = order[t]
+            for i in list(ids):
+                for j in range(len(ids)):
+                    cur = ids.index(i)
+                    if j == cur:
+                        continue
+                    trial = ids[:cur] + ids[cur + 1:]
+                    trial.insert(j, i)
+                    order[t] = trial
+                    c = cost(place(order))
+                    if c < best - 1e-6:
+                        best, ids, improved = c, trial, True
+                    else:
+                        order[t] = ids
+                order[t] = ids
+    pos = place(order)
+    x0 = min(p[0] for p in pos.values())
+    for i, (x, y) in pos.items():  # snap the centre, so boxes aligned on one axis get straight lines
+        geo[i].set("x", f"{round((x - x0 + 30 + W[i] / 2) / GRID) * GRID - W[i] / 2:g}")
+        geo[i].set("y", f"{round(y / GRID) * GRID:g}")
+
+
+def route_score(root: ET.Element) -> tuple[int, float, int]:
+    """(crossing edge pairs, total line length, bends) of the routed edges; crossings are counted the
+    way the drawio-skill validator counts them."""
+    box = {}
+    for c in root.iter("mxCell"):
+        if c.get("vertex") == "1" and c.get("parent") == "1":
+            g = c.find("mxGeometry")
+            box[c.get("id")] = tuple(float(g.get(k)) for k in ("x", "y", "width", "height"))
+    paths = []
+    for c in root.iter("mxCell"):
+        if c.get("edge") != "1" or c.get("source") not in box or c.get("target") not in box or c.get("source") == c.get("target"):
+            continue
+        st = dict(p.split("=", 1) for p in (c.get("style") or "").split(";") if "=" in p)
+        (sx, sy, sw, sh), (tx, ty, tw, th) = box[c.get("source")], box[c.get("target")]
+        pts = [(sx + float(st.get("exitX", 0.5)) * sw, sy + float(st.get("exitY", 0.5)) * sh)]
+        pts += [(float(p.get("x")), float(p.get("y"))) for p in c.iter("mxPoint") if p.get("x") is not None]
+        pts.append((tx + float(st.get("entryX", 0.5)) * tw, ty + float(st.get("entryY", 0.5)) * th))
+        paths.append(list(zip(pts, pts[1:])))
+    n = 0
+    for k, a in enumerate(paths):
+        for b in paths[k + 1:]:
+            if any(_cross(p, q, r, s) for p, q in a for r, s in b):
+                n += 1
+    length = sum(math.dist(p, q) for a in paths for p, q in a)
+    bends = sum(len(a) - 1 for a in paths)
+    return n, length, bends
+
+
+def best_layout(root: ET.Element, title) -> ET.Element:
+    """Relayout with several band widths and start orders, route each, keep the cleanest routing."""
+    best = None
+    for aspect in (1.4, 2.2):  # wider pages print too small in Report 4
+        for seed in (None, 1, 2, 3, 4, 5):
+            trial = copy.deepcopy(root)
+            relayout(trial, aspect, seed)
+            t = next((c for c in trial.iter("mxCell") if c.get("id") == "title"), None)
+            route_edges(trial, t)
+            x, length, bends = route_score(trial)
+            x = x * 1500 + length + bends * 40  # one crossing weighs like 1500 px of line
+            if best is None or x < best[0]:
+                best = (x, trial)
+    return best[1]
+
+
+def process(path: Path, boxes: bool, route: bool, gap: int = 0, layout: bool = False):
     tree = ET.parse(path)
     model = tree.getroot().find(".//mxGraphModel")
     root = model.find("root")
     n = normalise_boxes(root) if boxes else 0
+    if layout:
+        title = next((c for c in root.iter("mxCell") if c.get("id") == "title"), None)
+        new = best_layout(root, title)
+        model.remove(root)
+        model.append(new)
+        root = new
     if gap:
         compact(root, gap)
     bad = overlaps(root)
@@ -602,9 +852,10 @@ def main():
     ap.add_argument("--no-route", action="store_true")
     ap.add_argument("--no-boxes", action="store_true")
     ap.add_argument("--compact", type=int, metavar="GAP", default=0, help="close empty space, keeping GAP px between boxes")
+    ap.add_argument("--relayout", action="store_true", help="place every class again by layer (replaces the manual layout)")
     a = ap.parse_args()
     for f in a.files:
-        process(f, not a.no_boxes, not a.no_route, a.compact)
+        process(f, not a.no_boxes, not a.no_route, a.compact, a.relayout)
 
 
 if __name__ == "__main__":

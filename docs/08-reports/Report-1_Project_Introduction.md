@@ -14,21 +14,16 @@ Table of Contents
 
 | Date | A*<br>M, D | In charge | Change Description |
 | --- | --- | --- | --- |
-| 18/09/2026 | A | KhanhPG | Add Overview, Product Background, Existing Systems |
-| 19/09/2026 | A, M | LocHD | Add Project Scope & Limitations; align Project Purpose, Existing Solutions summary and Proposed Solution with the project scope |
-| 27/09/2026 | M | KhanhPG | Update the Fellow, Project Purpose and Product Background sections. |
-| 27/09/2026 | M, D | LocHD | Remove FE-12 Task & Action Item Lifecycle Management and renumber FE-13 to FE-15 as FE-12 to FE-14 |
-| 27/09/2026 | M | LocHD | Update stakeholder roles: Tran Viet Hai becomes Team Leader and Frontend Lead; Pham Gia Khanh becomes Business Analyst |
-| 05/10/2026 | M, D | KhanhPG | Remove Department & Team Management; split Meeting & Schedule Management into FE-04 Meeting, FE-05 Meeting Session, FE-06 Agenda and FE-07 Participant Management; renumber the rest to FE-08–FE-16. |
-| 05/10/2026 | M | KhanhPG | Sync the PO-confirmed Master UC baseline: personal document library, two-source meeting documents, Secretary uploads meeting audio; attendance, summaries, comments, audit log and minutes-revision scope. |
-| 08/10/2026 | M, D | KhanhPG | Remove FE-04; consolidate Meeting and former Meeting Session scope in FE-05; Agenda, Vote and Resolution attach to Meeting. |
-| 09/10/2026 | M, D | KhanhPG | Renumber active features FE-01–FE-15; in-meeting voting with Chair conclusions (no time-box, quorum or separate Resolution scope); audio safeguards kept; schedule and effort preserved. |
-| 13/10/2026 | M | HaiTV | FE-07: no document versions, one immutable file, Chair/Secretary manage meeting documents, library folders, browser previews. FE-11: Chair-selected voters, Guests vote, ending a Meeting needs no closed Votes. |
-| 03/11/2026 | M, D | KhanhPG | Remove stakeholder emails and phone numbers from the public report; keep names and roles only. |
-| 15/11/2026 | M, D | KhanhPG | Drop FE-14 Personal Dashboard & Meeting Workspace and account unlock; sign-in keeps per-minute attempt limits only. |
-| 24/11/2026 | M, A | LocHD | Supervisor review: align with the built system: minutes are approved, not signed (FE-12); AI environment decided; in-meeting recording, Voice ID, notifications and reports as built; add FE-16; Architecture moves to Nguyen Quang Huy. |
-| 25/11/2026 | M | LocHD | Email via Resend only; no blank page after the Change Log; FE-01 to FE-15; no Vietnamese or decision records. |
-| 27/11/2026 | M | LocHD | The AI draft of the minutes runs on the self-hosted language model for every meeting; no meeting content goes to an outside AI service. |
+| 18/09/2026 | A | KhanhPG | Added Overview, Product Background and Existing Systems. |
+| 19/09/2026 | A, M | LocHD | Added Project Scope & Limitations; aligned Purpose and Proposed Solution. |
+| 27/09/2026 | M, D | KhanhPG, LocHD | Updated Purpose, Background and stakeholder roles; removed Task Management. |
+| 05/10/2026 | M, D | KhanhPG | Removed Department Management; split meeting features; synced the UC baseline. |
+| 09/10/2026 | M, D | KhanhPG | Merged Meeting Session into FE-05; renumbered FE-01–FE-15; simplified voting. |
+| 13/10/2026 | M | HaiTV | Updated document handling (FE-07) and voter selection (FE-11). |
+| 03/11/2026 | M, D | KhanhPG | Removed stakeholder emails and phone numbers. |
+| 15/11/2026 | M, D | KhanhPG | Removed Personal Dashboard (FE-14) and account unlock. |
+| 24/11/2026 | M, A | LocHD | Aligned features with the built system; minutes are approved, not signed. |
+| 25/11/2026 | M | LocHD | Email via Resend only; fixed feature numbering and page layout. |
 
 *A - Added M - Modified D - Deleted
 

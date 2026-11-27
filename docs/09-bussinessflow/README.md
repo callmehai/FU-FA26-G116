@@ -1,6 +1,6 @@
 # Business Flow (BF)
 
-Bốn swimlane mô tả luồng nghiệp vụ chính, bản PO đã duyệt ngày 09/10/2026 (nguồn: thư mục `Diagrams/Main flow Swimlane`
+Năm swimlane mô tả luồng nghiệp vụ chính, bản PO đã duyệt ngày 09/10/2026 (nguồn: thư mục `Diagrams/Main flow Swimlane`
 của nhóm, đồng bộ vào repo ngày 10/10/2026). File `.drawio` là nguồn để sửa; file `.drawio.png` có nhúng XML nên mở bằng
 draw.io vẫn sửa tiếp được. Diễn giải chi tiết từng bước, kèm UC và BR, ở
 [02-design/04-luong-nghiep-vu-chinh.md](../02-design/04-luong-nghiep-vu-chinh.md).
@@ -11,9 +11,12 @@ draw.io vẫn sửa tiếp được. Diễn giải chi tiết từng bước, k�
 | [BF-02](BF-02_Meeting_Preparation_Approval.drawio.png) Meeting Preparation, Approval & Participant Coordination | Member cần tổ chức họp → cuộc họp `Published`, lời mời đã gửi (hoặc `Cancelled` trước khi họp) | Member (Meeting Creator), Chair / Secretary, TrustCabinet, Approver, Participant / Guest, Resend Email | UC-04, UC-13 → UC-19, UC-22, UC-23, UC-29 → UC-32, UC-36, UC-81 |
 | [BF-03](BF-03_Meeting_Execution_Decision_Making.drawio.png) Meeting Execution & Decision Making | Chair bắt đầu cuộc họp `Published` → cuộc họp `Ended`, kết quả agenda, biểu quyết và bản ghi đã lưu | Participant / Guest, Chair, TrustCabinet, Secretary | UC-20, UC-21, UC-24, UC-25, UC-27, UC-33, UC-42 → UC-48, UC-50, UC-52, UC-62 → UC-67 |
 | [BF-04](BF-04_Post_Meeting_Processing_Formal_Records.drawio.png) Post-Meeting Processing & Formal Records | Cuộc họp `Ended` → biên bản được Chủ toạ duyệt là ban hành, khoá, tra cứu theo quyền | AI Drafting Service, TrustCabinet, Secretary, Chair, Authorized User | UC-51 → UC-55, UC-58 → UC-61, UC-69 → UC-74 |
+| [BF-05](BF-05_Meeting_Document_Sharing_Review.drawio.png) Meeting Document Sharing & Review | Chair / Secretary cần chia sẻ tài liệu cho cuộc họp → tài liệu đã lưu (gắn agenda / dự thảo biểu quyết khi cần), người tham dự mở theo quyền, bình luận và xác nhận đã đọc được ghi | Chair / Secretary, TrustCabinet, Participant / Guest | UC-35 → UC-42 (FE-07) |
 
 Số UC theo Report 3 sau đợt đánh số lại ngày 24/11/2026 ([ADR-0079](../05-decisions/0079-cho-danh-so-lai-br-uc-co-bang-anh-xa.md));
 các mục cũ bên dưới giữ số tại thời điểm viết.
+
+BF-05 thêm ngày 28/11/2026 (Report 3 §2.5, Figure 6; các hình sau lùi một số).
 
 ## Điểm chính của bản BF 09/10/2026
 

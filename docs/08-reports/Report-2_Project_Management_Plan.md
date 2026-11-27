@@ -582,8 +582,6 @@ All application code, migrations, deployment configs and report sources reside i
 
 ●  	app - Main integration branch; every pull request runs CI checks and merges auto-deploy to the staging server.
 
-●  	main - Frozen demonstration branch holding the verified release for council review.
-
 ●  	task branches - Short-lived branches created from app per task and deleted after merge.
 
 Code enters app only via reviewed pull requests linked to Jira issues with passing CI builds and lead approval; direct pushes are disabled and secrets are excluded from version control.

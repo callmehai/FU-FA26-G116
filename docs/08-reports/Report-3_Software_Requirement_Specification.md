@@ -101,11 +101,21 @@ Figure 5: Business Flow BF-04 – Post-Meeting Processing & Formal Records
 
 View the full-size image on Google Drive
 
+#### 2.5 Meeting Document Sharing & Review (BF-05)
+
+Trigger: The Chair or Secretary needs to share documents with the participants of a meeting.
+
+End condition: The meeting documents are saved and, where needed, linked to agenda items or draft votes; participants and guests open them according to their access, and their comments and read confirmations are recorded.
+
+Figure 6: Business Flow BF-05 – Meeting Document Sharing & Review
+
+View the full-size image on Google Drive
+
 ### 3. Conceptual Data Model
 
 #### 3.1 Entity Relationship Diagram
 
-Figure 6: Entity Relationship Diagram
+Figure 7: Entity Relationship Diagram
 
 View the full-size image on Google Drive
 
@@ -813,7 +823,7 @@ Feature priority. Every use case above belongs to one of the 15 features agreed 
 
 The System Admin manages user accounts (create, update, deactivate or reactivate, reset passwords, assign system roles), configures roles and permissions, and reviews the audit log. The System Admin can also create and run meetings as a Member does, and view meetings, reports, notifications and the personal document library.
 
-Figure 7: Use Case Diagram – System Admin
+Figure 8: Use Case Diagram – System Admin
 
 View the full-size image on Google Drive
 
@@ -821,7 +831,7 @@ View the full-size image on Google Drive
 
 The Member creates and updates meetings with their first participants, submits them for approval, publishes approved meetings and cancels them before they start. The Member also views meetings and their records, comments on documents, uses the online room, views reports and notifications, keeps a personal document library, shares calendars and finds a common free time for a meeting.
 
-Figure 8: Use Case Diagram – Member
+Figure 9: Use Case Diagram – Member
 
 View the full-size image on Google Drive
 
@@ -829,7 +839,7 @@ View the full-size image on Google Drive
 
 The Approver reviews the meeting approval requests assigned to them and approves or rejects them. The Approver can also create and run meetings as a Member does, view meetings and their records, use the online room, and view reports and notifications.
 
-Figure 9: Use Case Diagram – Approver
+Figure 10: Use Case Diagram – Approver
 
 View the full-size image on Google Drive
 
@@ -837,7 +847,7 @@ View the full-size image on Google Drive
 
 The Chair starts and ends the meeting, steers the agenda, moderates the online room, opens and closes votes and records their conclusions, and casts a vote when eligible. The Chair also manages meeting documents, approves the meeting summary, approves and issues the minutes or returns them for revision, and views every record of the meeting.
 
-Figure 10: Use Case Diagram – Chair
+Figure 11: Use Case Diagram – Chair
 
 View the full-size image on Google Drive
 
@@ -845,7 +855,7 @@ View the full-size image on Google Drive
 
 The Secretary prepares the meeting: agenda, participants and meeting roles, attendance and meeting documents, and takes part in the meeting and the online room, casting a vote when eligible. During and after the meeting the Secretary records the room audio, takes notes, corrects the transcript and the speaker names, drafts and approves the meeting summary, and prepares the minutes and sends them to the Chair for approval.
 
-Figure 11: Use Case Diagram – Secretary
+Figure 12: Use Case Diagram – Secretary
 
 View the full-size image on Google Drive
 
@@ -853,7 +863,7 @@ View the full-size image on Google Drive
 
 The Participant responds to the invitation, joins the online room, views the meeting, its agenda, documents and recordings, comments on documents and casts a vote when eligible. The Participant can also view reports, notifications and the personal document library.
 
-Figure 12: Use Case Diagram – Participant
+Figure 13: Use Case Diagram – Participant
 
 View the full-size image on Google Drive
 
@@ -861,7 +871,7 @@ View the full-size image on Google Drive
 
 The Guest opens the invitation link, verifies the invited email with a one-time code and enters a display name. In the invited Meeting only, the Guest takes part like a Participant: joins the online room, reads and comments on documents, responds to the invitation and votes when eligible. The Guest cannot hold the Chair or Secretary role, moderate the room or keep a personal library.
 
-Figure 13: Use Case Diagram – Guest
+Figure 14: Use Case Diagram – Guest
 
 View the full-size image on Google Drive
 
@@ -979,7 +989,7 @@ Notes:
 
 ##### a. Screen Flow
 
-Figure 14: Screen Flow
+Figure 15: Screen Flow
 
 View the full-size image on Google Drive
 
@@ -2600,7 +2610,7 @@ Scope: the current Chair or the current Secretary may prepare Vote drafts while 
 
 #### 1.1 Sign In
 
-Figure 15: Sign In
+Figure 16: Sign In
 
 The Sign In screen is the entry point of the system for every internal user (System Admin, Member, Approver, Chair, Secretary and Participant). It is displayed when a signed-out user opens the application or a meeting link, or when the sign-in session has expired, and supports signing in with email and password or with a Google account; signing out is confirmed from the account menu.
 
@@ -2634,7 +2644,7 @@ Field Description
 
 #### 1.2 Reset Password
 
-Figure 16: Reset Password
+Figure 17: Reset Password
 
 The Reset Password screen is opened by the account owner from the one-time link in the password-reset email that the System Admin sent from the Send Password Reset Link Dialog. The link is valid once, for 60 minutes, and lets the user set a new password without signing in; this is the completion part of Reset User Password.
 
@@ -2666,7 +2676,7 @@ Field Description
 
 After OTP verification, Guest enters display name and job title. State that only the invited email is verified and display information is self-declared. This revision does not prescribe additional required fields, validation messages or profile-save gates.
 
-Figure 17: Guest Verification
+Figure 18: Guest Verification
 
 Guest opens the invitation and verifies the invited email by OTP, then enters self-declared display name and job title. The Guest can use Member participation functions only in the invited Meeting. Only email control is verified; display information is not a verified legal identity.
 
@@ -2705,7 +2715,7 @@ Field Description
 
 #### 2.1 User List
 
-Figure 18: User List
+Figure 19: User List
 
 The User List screen is the System Admin’s account management page, reached from Administration › Users in the sidebar. It lists all user accounts, one per row, and provides the per-account actions edit (including the system role), deactivate/reactivate and send password reset link.
 
@@ -2749,7 +2759,7 @@ Field Description
 
 #### 2.2 Create / Edit User Account Dialog
 
-Figure 19: Create / Edit User Account Dialog
+Figure 20: Create / Edit User Account Dialog
 
 The Create / Edit User Account Dialog opens over the User List when the System Admin clicks “Create account” or the Edit action of an account. In create mode it collects full name, email, an initial password and the system role; in edit mode it changes full name, email and system role only.
 
@@ -2782,7 +2792,7 @@ Field Description
 
 #### 2.3 Send Password Reset Link Dialog
 
-Figure 20: Send Password Reset Link Dialog
+Figure 21: Send Password Reset Link Dialog
 
 The Send Password Reset Link Dialog opens when the System Admin clicks the reset-password action of an account in the User List. It confirms sending a one-time reset link to the user’s registered email; the user then completes the reset on the Reset Password screen. The same dialog style is used to confirm deactivating an account.
 
@@ -2813,7 +2823,7 @@ Field Description
 
 #### 3.1 Role List
 
-Figure 21: Role List
+Figure 22: Role List
 
 The Role List screen is reached from Administration › Roles in the sidebar and is the first tab of the role management page. The System Admin views the system roles with the number of accounts holding each, creates custom roles, and edits or deletes custom roles; predefined (Default) roles are protected.
 
@@ -2851,7 +2861,7 @@ Field Description
 
 #### 3.2 Permission Matrix
 
-Figure 22: Permission Matrix
+Figure 23: Permission Matrix
 
 The Permission Matrix screen is the second tab of the Roles page. It shows every role against every system permission as a matrix of toggles so that the System Admin can grant or revoke permissions, saving or undoing changes role by role.
 
@@ -2886,7 +2896,7 @@ Field Description
 
 #### 3.3 System Audit Log
 
-Figure 23: System Audit Log
+Figure 24: System Audit Log
 
 The System Audit Log screen is reached from Administration › Audit Log in the sidebar. It shows the read-only log of business and security events (not technical logs) so that the System Admin can trace who did what and when, and open the details recorded with each entry.
 
@@ -2923,7 +2933,7 @@ Field Description
 
 #### 4.1 Meeting Calendar – Calendar View
 
-Figure 24: Meeting Calendar – Calendar View
+Figure 25: Meeting Calendar – Calendar View
 
 The Meeting Calendar – Calendar View is the work-schedule page reached from “Calendar” in the sidebar. The toolbar is the first line of the page (there is no page title). It places every Meeting the user is allowed to see on a weekly day/hour grid according to the Meeting’s own planned start and end time, colours each Meeting by its lifecycle status, and opens the Meeting detail when a block is clicked.
 
@@ -2964,7 +2974,7 @@ Field Description
 
 #### 4.2 Meeting Calendar – List View
 
-Figure 25: Meeting Calendar – List View
+Figure 26: Meeting Calendar – List View
 
 The Meeting Calendar – List View shows the same weekly Meetings as the Calendar View, but as cards grouped by day in chronological order. It is opened with the List toggle of the calendar toolbar and uses the same data and access rules as the calendar. A Meeting the user has declined is not listed. On a card of a Published or In Progress Meeting the invitee may also answer the invitation once.
 
@@ -3005,9 +3015,9 @@ Field Description
 
 #### 4.3 Meeting List
 
-Figure 26: Meeting List
+Figure 27: Meeting List
 
-Figure 27: Meeting List – time filter open
+Figure 28: Meeting List – time filter open
 
 The Meeting List screen is reached from “Meetings” in the sidebar. It lists only the Meetings the user has an authorized relationship with – Meetings s/he created (any status), Meetings assigned to him/her for approval from Pending Approval onward, and Meetings where s/he is active assigned Secretary before publication, or Chair at any status, or Participant from Published onward; Guests do not use the internal list – with search, filters and paging. Visibility is enforced on the server.
 
@@ -3052,9 +3062,9 @@ Field Description
 
 #### 4.4 Create / Edit Meeting
 
-Figure 28: Create Meeting dialog
+Figure 29: Create Meeting dialog
 
-Figure 29: Edit Meeting dialog
+Figure 30: Edit Meeting dialog
 
 The Create / Edit Meeting dialog opens over the current page with “Create meeting” from the calendar or the Meeting List, or with “Edit” on the detail of a Draft or Rejected Meeting. It is a dialog, not a separate page. The planned schedule (date, start and end time) is entered directly on the Meeting, which represents one sitting. A new Meeting is saved as Draft and is visible only to its Member until it is submitted for approval. Rescheduling a Published Meeting is done in the Reschedule Meeting dialog (4.9).
 
@@ -3088,11 +3098,11 @@ Field Description
 
 #### 4.5 Meeting Detail – General Information
 
-Figure 30: Meeting Detail – General Information of a Draft Meeting (Member view)
+Figure 31: Meeting Detail – General Information of a Draft Meeting (Member view)
 
-Figure 31: Meeting Detail – General Information of a Published Meeting with the invitation response banner
+Figure 32: Meeting Detail – General Information of a Published Meeting with the invitation response banner
 
-Figure 32: Meeting Detail – General Information after accepting the invitation
+Figure 33: Meeting Detail – General Information after accepting the invitation
 
 The Meeting Detail – General Information tab is the default tab of the Meeting detail page, opened from the calendar, the Meeting List or a notification. Only users with an authorized relationship to the Meeting can open it. The header shows the Meeting name, status, confidentiality, the user’s own invitation response and schedule, a lifecycle bar and the action buttons allowed for the current status and the user’s role; from publication onward an invitee other than the Chair who has not answered also sees the attendance question under the lifecycle bar; the tab itself shows the Meeting information, a readiness checklist and the status history.
 
@@ -3141,7 +3151,7 @@ Field Description
 
 #### 4.6 Submit Meeting for Approval
 
-Figure 33: Submit Meeting for Approval
+Figure 34: Submit Meeting for Approval
 
 The Submit Meeting for Approval dialog opens over the Meeting detail when the Member clicks “Submit for approval” on a Draft Meeting, or resubmits a Rejected Meeting after correcting it. The Member chooses the Approver and may leave a message; after submission the Meeting becomes Pending Approval and locks general Meeting information until a decision is made; the assigned Secretary can still manage Agenda Items.
 
@@ -3175,7 +3185,7 @@ Field Description
 
 #### 4.7 Approve / Reject Meeting
 
-Figure 34: Approve / Reject Meeting
+Figure 35: Approve / Reject Meeting
 
 The Approve / Reject Meeting function appears on the Meeting detail of a Pending Approval Meeting for its assigned Approver, who usually reaches it from the “pending approval” notification. The approver reviews all tabs in read-only mode and either approves the Meeting or rejects it with a reason. Approval does not publish the Meeting; a rejected Meeting goes back to the Member for correction and resubmission.
 
@@ -3209,7 +3219,7 @@ Field Description
 
 #### 4.8 Publish Meeting
 
-Figure 35: Publish Meeting
+Figure 36: Publish Meeting
 
 The Publish Meeting dialog opens over the Meeting detail when the Member clicks “Publish” on an Approved Meeting. It checks that the Meeting has an active Chair and an active Secretary, states how many internal participants and external Guests will be invited, and warns that after publication the Member who created it may change only planned time, location and link; the assigned Secretary may still manage Agenda Items. Confirming moves the Meeting to Published and starts invitation delivery.
 
@@ -3242,7 +3252,7 @@ Field Description
 
 #### 4.9 Reschedule Meeting
 
-Figure 36: Reschedule Meeting
+Figure 37: Reschedule Meeting
 
 The Reschedule Meeting dialog opens over the detail of a Published Meeting when the Member clicks “Reschedule”. It is the reschedule path of Update Meeting: only the planned date and time, the location and the online link can be changed, while the Meeting name and confidentiality level are locked. Saving keeps the Meeting Published and notifies every invitee of the new schedule. The same header carries “Start meeting” for the Chair.
 
@@ -3281,7 +3291,7 @@ Field Description
 
 #### 4.10 Cancel Meeting
 
-Figure 37: Cancel Meeting
+Figure 38: Cancel Meeting
 
 The Cancel Meeting dialog opens from the red “Cancel meeting” button in the header of the Meeting details, shown only to the Member who organizes the Meeting and only before it starts. It asks for a reason and says who will be informed; a Cancelled Meeting stays as a read-only record.
 
@@ -3305,7 +3315,7 @@ Field Description
 
 #### 4.11 Start Meeting
 
-Figure 38: Start Meeting
+Figure 39: Start Meeting
 
 The Chair or the Secretary starts a Published Meeting with “Start meeting” in the header of the Meeting details. At or after the planned time the Meeting starts at once; earlier, a confirmation asks first. A Meeting without an active Secretary cannot start.
 
@@ -3327,7 +3337,7 @@ Field Description
 
 #### 4.12 End Meeting
 
-Figure 39: End Meeting
+Figure 40: End Meeting
 
 The Chair ends an In Progress Meeting with “End meeting” in the header of the Meeting details. A confirmation explains that the Meeting cannot be reopened and that the online room closes.
 
@@ -3351,7 +3361,7 @@ Field Description
 
 #### 5.1 Meeting Detail – Meeting Content Tab
 
-Figure 40: Meeting Detail – Meeting Content tab
+Figure 41: Meeting Detail – Meeting Content tab
 
 The Meeting Detail – Meeting Content tab shows the agenda of the selected Meeting. Agenda items belong directly to the Meeting and are listed in order with presenter and the number of attached documents; an item has no duration or planned time. Every user related to the meeting can view the agenda; the Secretary builds it (add, edit, delete, drag-and-drop reorder) while the Meeting is Draft, WaitingApproval, Rejected, Approved, Published or InProgress. When the Meeting is InProgress, the same tab switches to the Meeting Facilitation screen (5.3) for the Chair. Title, Presenter, Description and document links can be edited, and Items can be reordered, whatever their execution status, Done Items included; only Pending Items can be deleted. The complete Agenda automatically reflects successfully saved changes for its authorized viewers.
 
@@ -3391,13 +3401,13 @@ Field Description
 
 5.1b Meeting Content Tab – Meeting InProgress
 
-Figure 41: Meeting Content tab while the Meeting is InProgress (Secretary view)
+Figure 42: Meeting Content tab while the Meeting is InProgress (Secretary view)
 
 Once the Meeting is InProgress the agenda list gains a Status column (Done, Concluded, In discussion) and the Secretary keeps full control of it. Every row, including Done and InProgress Items, has a drag handle and an Edit action; Delete appears only on Pending rows. The Chair’s execution controls are on the Meeting Facilitation screen (5.3).
 
 #### 5.2 Add / Edit Agenda Item Drawer
 
-Figure 42: Add / Edit Agenda Item Drawer
+Figure 43: Add / Edit Agenda Item Drawer
 
 The Add / Edit Agenda Item Drawer slides in from the right of the Meeting Content tab, so the agenda stays visible behind it, when the Secretary clicks “Add content” or chooses Edit on an item. It collects the content to discuss (title), an optional presenter, a note and a checklist of the Meeting’s documents linked to the item, with Cancel and Save buttons. Items can be added or edited only while the Meeting is Draft, WaitingApproval, Rejected, Approved, Published or InProgress. All four fields stay editable whatever the Item’s status.
 
@@ -3431,7 +3441,7 @@ Field Description
 
 #### 5.3 Meeting Facilitation
 
-Figure 43: Meeting Facilitation
+Figure 44: Meeting Facilitation
 
 The Meeting Facilitation screen is the Meeting Content tab of a Meeting that is InProgress, after the Chair or the Secretary has started the Meeting. It shows the agenda with the execution status and actual times of each item, a card for the current agenda item and a preview of the online room. The Chair sets which item is being discussed, completes it and moves to the next one, may create a vote for the current item and finally ends the Meeting; the assigned Secretary may continue to create, update, delete and reorder Agenda Items, while agenda execution remains Chair-only; other authorized viewers follow the same progress read-only and in real time. The Chair must start the first Pending Item in the current order and may complete it regardless of Planned Duration; the next Item never starts automatically. Pending Items stay Pending when the Meeting ends.
 
@@ -3475,11 +3485,11 @@ Field Description
 
 #### 6.1 Meeting Detail – Participants Tab
 
-Figure 44: Meeting Detail – Participants tab (Secretary view)
+Figure 45: Meeting Detail – Participants tab (Secretary view)
 
-Figure 45: Change Role dialog – the Chair hands over the Chair role
+Figure 46: Change Role dialog – the Chair hands over the Chair role
 
-Figure 46: Change Role dialog – the Secretary changes a role
+Figure 47: Change Role dialog – the Secretary changes a role
 
 The Meeting Detail – Participants tab shows current internal participants and external Guests. The assigned Secretary manages the roster and roles; the Member who created the Meeting may assign a missing Secretary. Everyone who can open the Meeting sees the roster and the invitation responses; a verified Guest sees names but not other people’s email addresses. View-only access does not permit changes.
 
@@ -3540,7 +3550,7 @@ Change Role Dialog. The Change Role dialog opens from the “Change role” butt
 
 For a Guest invitation, enter name and email. Secret shows inline warning: “The guest may access the documents and take part as a Member of this meeting.” No extra confirmation/approval step. Guest has no Chair/Secretary role selector.
 
-Figure 47: Add Participant Dialog
+Figure 48: Add Participant Dialog
 
 The Add Participant Dialog opens from the Participants tab with “Add participants” (Internal users tab) or “Invite external guest” (External guests tab). The Secretary searches active internal users, ticks the people to add and chooses their meeting role, or invites an external Guest by name and email. When the Meeting has no Secretary yet, the Member uses the same dialog to add the missing Secretary.
 
@@ -3574,9 +3584,9 @@ Field Description
 
 #### 6.3 Attendance Check
 
-Figure 48: Attendance Check – the Secretary records attendance
+Figure 49: Attendance Check – the Secretary records attendance
 
-Figure 49: Attendance Check – participant view
+Figure 50: Attendance Check – participant view
 
 Attendance Check is the Attendance column of the participant table on the Participants tab of the Meeting detail, shown while the Meeting is InProgress or Ended; it is not a separate screen. The assigned Secretary marks each current internal participant and external Guest Present or Absent by choosing a value in the cell; choosing a value saves it at once, and there is no Save button and no Present/Absent total. Other participants read the attendance. A person not yet recorded has no official attendance value and is shown as “Not recorded”, which is not Absent. Invitation responses and online-room presence never determine attendance. Saved attendance is available for the meeting minutes. In the online meeting room the same attendance is also available in the Attendance panel (8.7).
 
@@ -3602,9 +3612,9 @@ Field Description
 
 #### 6.4 Invitation Response
 
-Figure 50: Invitation Response – before answering
+Figure 51: Invitation Response – before answering
 
-Figure 51: Invitation Response – after answering
+Figure 52: Invitation Response – after answering
 
 The Invitation Response screen is a mobile-friendly page opened from the invitation email; an external Guest reaches it after Guest Verification (1.3). Internal users normally answer on the card in the calendar list (4.2) or at the top of the Meeting detail (4.5); this page gives the same answer from a phone. The invitee sees the meeting title, status, confidentiality level, planned time, mode and location, his/her own meeting role and the Chair, and answers Accept or Decline once; after that the answer is shown and cannot be changed. The Chair does not answer. An invitee who never answers is treated as attending.
 
@@ -3637,7 +3647,7 @@ Field Description
 
 #### 7.1 Document Library – Empty State
 
-Figure 52: Document Library – Empty State
+Figure 53: Document Library – Empty State
 
 The Document Library – Empty State screen is what a signed-in internal user sees on opening Document Library from the sidebar before he/she has created any folder or uploaded any file. The folder panel holds only All documents with 0 files, and the file area shows an empty-state panel explaining how the library is used. The New folder and Upload buttons inside the panel do the same as those at the top of the page; a file uploaded while All documents is selected is stored at the root of the library. Once the library holds folders or files, the page is the Personal Document Library (7.2). External Guests have no personal library.
 
@@ -3669,7 +3679,7 @@ Field Description
 
 #### 7.2 Personal Document Library
 
-Figure 53: Personal Document Library
+Figure 54: Personal Document Library
 
 The Personal Document Library is the Document Library page once the user’s library holds folders or files; an empty library shows the empty state (7.1). Each internal user has a private library: folders on the left and the file table on the right, with size, upload date and the number of meetings that use each file. Files have no versions; to change a document the user uploads a new file. Uploading a file to the library does not attach it to a meeting; files are attached through the Add Document to Meeting Dialog (7.4). A file uploaded straight into a meeting lands in a folder named after that meeting. External Guests have no personal library.
 
@@ -3711,7 +3721,7 @@ Field Description
 
 #### 7.3 Meeting Detail – Documents Tab
 
-Figure 54: Meeting Detail – Documents Tab
+Figure 55: Meeting Detail – Documents Tab
 
 The Meeting Detail – Documents tab lists the documents attached to the selected Meeting in three groups: By meeting content, with one block per Agenda Item in agenda order; Voting, with the documents of each Vote the user can see and the user's own read state; and General documents, linked to no Agenda Item. A file linked to several Agenda Items appears under each of them and is uploaded only once; a document linked to a Vote appears only in the Voting group, and a document linked only to a Draft Vote is not shown to a Member or Guest at all. The Meeting keeps its own reference to each file, so deleting the file from a personal library does not remove it from the Meeting. Anyone who can view the Meeting reads its documents; until the Meeting ends the Chair and the Secretary add documents from the computer or their personal library, attach them to an Agenda Item, unlink them from an item and remove them from the Meeting.
 
@@ -3750,7 +3760,7 @@ Field Description
 
 #### 7.4 Add Document to Meeting Dialog
 
-Figure 55: Add Document to Meeting Dialog
+Figure 56: Add Document to Meeting Dialog
 
 The Add Document to Meeting Dialog opens from “Add general document” on the Documents tab, from the paperclip of an Agenda Item block, or for a Draft Vote on the Voting tab. Its source switch offers From the computer and From my library, and also In the meeting when it was opened for an Agenda Item or a Vote. A document selected from the personal library stays in that library; a file uploaded from the computer is also stored in the uploader’s personal library, in the folder of the meeting. Files from the computer are queued and sent one at a time, so the dialog closes at once and a tray in the corner follows the uploads; documents chosen from the library or the meeting are added together, or none is added.
 
@@ -3782,7 +3792,7 @@ Field Description
 
 #### 7.5 Document Viewer – Preview & Comments
 
-Figure 56: Document Viewer – Preview & Comments
+Figure 57: Document Viewer – Preview & Comments
 
 The Document Viewer opens when a user clicks a document on the Documents tab, on an Agenda Item or in the Documents panel of the online room; opened from the room, it opens in a new browser tab so the call continues. It renders the document in the browser – a PDF page by page, a DOCX as one continuous scrollable document – with zoom, next to the comments panel. Users who can view the Meeting preview the document and download it unless the Meeting is Secret, and comment and reply until the Meeting ends. Opened from a Vote the user has still to cast, it also offers read confirmation once the last page is reached.
 
@@ -3822,9 +3832,9 @@ Field Description
 
 #### 8.1 Meeting Lobby
 
-Figure 57: Meeting Lobby
+Figure 58: Meeting Lobby
 
-Figure 58: Meeting Lobby – microphone list open
+Figure 59: Meeting Lobby – microphone list open
 
 The Meeting Lobby is the pre-join screen of the Online Meeting Room, laid out like Google Meet. It opens when a user clicks “Join online room” on an In Progress Online or Hybrid meeting, or when a verified Guest continues to the room. The page has its own top bar with the TrustCabinet mark and the signed-in account; the left side shows the camera preview with the microphone and camera switches and the device pickers, the right side the meeting and the Join button. The second image shows the open device tray and, when recording applies to the Meeting, the notice that the meeting is recorded for the minutes and the recording is deleted automatically after 180 days.
 
@@ -3860,9 +3870,9 @@ Field Description
 
 #### 8.2 Online Meeting Room – Video Grid
 
-Figure 59: Online Meeting Room – Video Grid
+Figure 60: Online Meeting Room – Video Grid
 
-Figure 60: Online Meeting Room – call in a floating window
+Figure 61: Online Meeting Room – call in a floating window
 
 The Online Meeting Room – Video Grid is the full-screen main view of the online room, laid out like Google Meet: a one-line blue header with a gold bottom edge, a navy stage with the video tiles, the call controls centred at the bottom as icons with tooltips, and the People and Chat panel buttons at the bottom right. The header back button opens the Meeting detail without leaving the call. Leaving the room does not change the meeting lifecycle; only the Chair ends the meeting. The second image shows the call in the floating window: the main window says that the meeting is in the floating window and offers to bring it back.
 
@@ -3907,9 +3917,9 @@ Field Description
 
 #### 8.3 In-Room Participants Panel
 
-Figure 61: In-Room Participants Panel
+Figure 62: In-Room Participants Panel
 
-Figure 62: In-Room Participants Panel – attendance
+Figure 63: In-Room Participants Panel – attendance
 
 The In-Room Participants Panel is the white 360 px panel on the right of the online room, opened with the Participants icon at the bottom right. It lists the users currently connected to the room with their meeting role. Every connected user can view the list; only the Chair can mute another user. A separate Attendance panel beside Participants and Chat lets the Secretary record attendance without leaving the room.
 
@@ -3941,7 +3951,7 @@ Field Description
 
 #### 8.4 Screen Sharing & Chat
 
-Figure 63: Screen Sharing & Chat
+Figure 64: Screen Sharing & Chat
 
 The Screen Sharing & Chat layout appears when a connected user presents his/her screen and/or opens the Chat panel. The shared screen takes the main stage and the video tiles move to a strip beside it. Chat lives only in the room: messages are seen by the people currently in the room and are not kept after the meeting.
 
@@ -3974,7 +3984,7 @@ Field Description
 
 #### 8.5 In-Room Voting Panel
 
-Figure 64: In-Room Voting Panel
+Figure 65: In-Room Voting Panel
 
 The In-Room Voting Panel opens from the Voting icon next to Participants and Chat and shows the Voting tab of the meeting detail page in a side panel. When the Chair opens a Vote, everyone in the room who has not voted in it sees a notice with “Vote” that opens the panel.
 
@@ -3999,7 +4009,7 @@ Field Description
 
 #### 8.6 In-Room Documents Panel
 
-Figure 65: In-Room Documents Panel
+Figure 66: In-Room Documents Panel
 
 The In-Room Documents Panel opens from the Documents icon in the bottom bar of the online room. It shows the Documents tab in a room layout and is read-only: the current Agenda Item comes first with its documents open and the other items folded, and a document opens in the Document Viewer in a new browser tab so the call is not interrupted. On a phone the panel sits behind the ⋯ menu together with Meeting content and Attendance.
 
@@ -4026,7 +4036,7 @@ Field Description
 
 #### 8.7 My Recorded Speech
 
-Figure 66: My Recorded Speech
+Figure 67: My Recorded Speech
 
 My Recorded Speech is a side panel of the online room, opened from the My recording button. It lists only the sentences recorded from the user’s own microphone, so each person can listen to them again and delete a sentence.
 
@@ -4054,7 +4064,7 @@ Field Description
 
 #### 9.1 Meeting Detail – Recordings Tab
 
-Figure 67: Meeting Detail – Recordings Tab
+Figure 68: Meeting Detail – Recordings Tab
 
 The Meeting Detail – Recordings tab holds the audio of a Meeting and its speaker-attributed transcript. Audio comes from the room microphone that the Secretary records (9.3), from the microphone of each participant in the online room, or from a file recorded elsewhere that the Secretary uploads (9.2); the system also builds a Combined recording that lines up the room microphone and every online microphone by real time. Each recording is transcribed in-house and its sentences are shown by time and speaker. Everyone who may view the Meeting listens and reads here; uploading, correcting the transcript and deleting are for the assigned Secretary.
 
@@ -4095,7 +4105,7 @@ Field Description
 
 #### 9.2 Upload Audio Dialog
 
-Figure 68: Upload Audio Dialog
+Figure 69: Upload Audio Dialog
 
 The Upload Audio Dialog is opened by the Secretary from the Recordings tab with “Choose file” or by dropping a file on the upload area. Because the system never records meetings, this dialog is the only way to add a recording: the Secretary chooses an audio file (no video), confirms that attendees were informed of and agreed to the recording, and uploads it. After a successful upload the system starts transcription automatically and the progress is shown on the Recordings tab.
 
@@ -4125,7 +4135,7 @@ Field Description
 
 #### 9.3 Room Microphone Recorder
 
-Figure 69: Room Microphone Recorder
+Figure 70: Room Microphone Recorder
 
 The room microphone recorder is a floating card at the bottom right of every page of an In-person Meeting that is In Progress, shown to its Secretary. It records the sound of the meeting room in takes and keeps recording while the Secretary moves between tabs; for a Hybrid Meeting the Secretary’s microphone in the online room is the room microphone instead.
 
@@ -4151,7 +4161,7 @@ Field Description
 
 #### 9.4 My Voice ID
 
-Figure 70: My Voice ID
+Figure 71: My Voice ID
 
 My Voice ID is reached from the account menu by every signed-in internal user. Voice ID needs its own consent, separate from recording consent, and can be withdrawn at any time; voice features are kept only in protected form.
 
@@ -4183,7 +4193,7 @@ Field Description
 
 #### 10.1 Speaker-Attributed Transcript
 
-Figure 71: Speaker-Attributed Transcript
+Figure 72: Speaker-Attributed Transcript
 
 The Speaker-Attributed Transcript opens under a recording on the Recordings tab once the system has transcribed it. The transcript is split into timed sentences grouped into turns; the system separates the voices as “Speaker 1, 2, …”, suggests a name when a voice matches a consented voice sample, and fills the name in by itself only when the match is clear. The Secretary names each voice from the attendee list – once for all sentences of that voice – corrects the wording and can transcribe the recording again. Everyone who may view the Meeting reads the transcript and listens to it. There is no real-time transcription and no translation.
 
@@ -4224,7 +4234,7 @@ Field Description
 
 #### 10.2 Meeting Summary
 
-Figure 72: Meeting Summary
+Figure 73: Meeting Summary
 
 The Meeting Summary is the “Content draft” card at the top of the Minutes tab: the AI draft of the Meeting’s content, written by the local language model from the agenda, the Votes and the transcript, and the review that makes it usable. The draft always has three sections — I. Objectives and scope of the meeting, II. Discussion and assessment, III. Conclusions and assignments — and is always labelled as written by AI. Only the current Chair and Secretary see and correct it; after they approve it the other participants read it. Correcting it withdraws the approval, and the minutes use the draft as it stands. Vote results are copied from the data and are never written by the model; action items stay plain text with no assignee or deadline. There is no publish step.
 
@@ -4261,7 +4271,7 @@ Field Description
 
 #### 10.3 Collect Voice Samples for Attendees
 
-Figure 73: Collect Voice Samples for Attendees
+Figure 74: Collect Voice Samples for Attendees
 
 The voice collection dialog opens from a user row on the Users screen, for holders of the Voice sample collection permission. It records a sample for a person under that person’s own Voice ID consent, asking for agreement on every take.
 
@@ -4290,7 +4300,7 @@ Scope: create/open/cast only while Meeting is InProgress. End Meeting is indepen
 
 #### 11.1 Meeting Detail – Voting Tab
 
-Figure 74: Meeting Detail – Voting Tab
+Figure 75: Meeting Detail – Voting Tab
 
 The Meeting Detail – Voting tab lists every Vote that belongs directly to the selected Meeting. It remains readable after Ended; casting stops at Meeting end. While InProgress, the header shows the actual start time, elapsed time and the current Agenda Item. The Chair creates/opens during InProgress, and may close outstanding Open Votes during InProgress or after Ended; other users involved in the Meeting see the same list read-only. Votes are never held before or after the Meeting and have no deadline or quorum.
 
@@ -4334,7 +4344,7 @@ Field Description
 
 #### 11.2 Create & Open Vote Dialog
 
-Figure 75: Create & Open Vote Dialog
+Figure 76: Create & Open Vote Dialog
 
 The Create & Open Vote Dialog opens over the Voting tab when the Chair clicks “Create vote” (or “Edit” on a Draft Vote). The title shows the Agenda Item the Vote is linked to, normally the current item (“Create vote · Item 2”). The Vote belongs directly to the Meeting, can only be created while the Meeting is InProgress and has no deadline or quorum.
 
@@ -4370,7 +4380,7 @@ Field Description
 
 #### 11.3 Cast Vote
 
-Figure 76: Cast Vote
+Figure 77: Cast Vote
 
 The Cast Vote screen (shown here in its compact/mobile layout) is opened by an eligible voter from the open Vote card, the in-room meeting panel. It shows one open Vote of the InProgress Meeting and lets the voter submit exactly one ballot.
 
@@ -4396,7 +4406,7 @@ Field Description
 
 #### 11.4 Vote Result & Conclusion
 
-Figure 77: Vote Result & Conclusion
+Figure 78: Vote Result & Conclusion
 
 The Vote Result & Conclusion screen is shown on the Voting tab after the Chair closes a Vote. It presents the tally per option and, for a public Vote, each person’s choice. The Chair then records the conclusion Passed, NotPassed or Deferred; the tally and conclusion are carried into the Meeting Minutes.
 
@@ -4428,7 +4438,7 @@ Field Description
 
 #### 12.1 Minutes Editor
 
-Figure 78: Minutes Editor
+Figure 79: Minutes Editor
 
 The Minutes Editor is the Minutes tab of an InProgress or Ended Meeting as seen by its current Chair or Secretary. It has two cards. “Content draft” holds sections I–III that the local language model writes from the transcript, for the Chair or the Secretary to review and approve. “Minutes” is filled from one fixed template — meeting minutes, Form 1.4 of Decree 30/2020/ND-CP — with the Meeting’s information, attendance, each agenda item’s recorded conclusion, the Vote results and conclusions, and the content draft as it stands; a notice warns when that draft is not approved yet. The text is edited in a word-processor editor and saved explicitly; the Secretary sends the minutes to the Chair for approval; the Chair approves and issues them, or returns them with a reason. The right column keeps the Status history and the Notes card.
 
@@ -4469,7 +4479,7 @@ Field Description
 
 #### 12.2 Finalized Meeting Minutes
 
-Figure 79: Finalized Meeting Minutes
+Figure 80: Finalized Meeting Minutes
 
 The Finalized Meeting Minutes screen is the Minutes tab after the Chair has approved and issued the minutes. The issued minutes are the official record of the Meeting and can no longer be edited; the Meeting itself remains Ended. Every user allowed to view the Meeting’s minutes sees this read-only version.
 
@@ -4498,7 +4508,7 @@ Field Description
 
 #### 13.1 Notification Panel
 
-Figure 80: Notification Panel
+Figure 81: Notification Panel
 
 The Notification Panel opens from the bell at the bottom of the sidebar and is anchored next to it, over the current page. Every signed-in user uses it to read in-app notifications, mark them as read and open the related meeting.
 
@@ -4532,7 +4542,7 @@ Field Description
 
 #### 13.2 Meeting Invitation Email
 
-Figure 81: Meeting Invitation Email
+Figure 82: Meeting Invitation Email
 
 This email is sent asynchronously to internal participants and external Guests when a Meeting is published, or when a person is added to a Published or InProgress Meeting. Its buttons lead to the Invitation Response screen (6.4); a Guest first verifies the invited email with a one-time code on Guest Verification (1.3).
 
@@ -4565,7 +4575,7 @@ Field Description
 
 #### 14.1 Reports & Statistics
 
-Figure 82: Reports & Statistics
+Figure 83: Reports & Statistics
 
 The Reports & Statistics screen is reached from Reports in the sidebar. For a period of months it shows the key figures of the Meetings the user may read and a query table that counts one kind of data, grouped one way, and it exports that table as an Excel file. Every signed-in internal user sees only the Meetings they may read, the System Admin as for anyone else.
 
@@ -4599,7 +4609,7 @@ Field Description
 
 #### 15.1 Calendar Sharing
 
-Figure 83: Calendar Sharing
+Figure 84: Calendar Sharing
 
 The Calendar Sharing screen opens from the account menu. Its first tab lists who can see the user’s calendar and, for a Member, whose calendars are shared with the user. Sharing shows busy or free hours only, never meeting content, and Secret meetings are never shared.
 
@@ -4627,7 +4637,7 @@ Field Description
 
 #### 15.2 Request / Share Calendar Dialog
 
-Figure 84: Request / Share Calendar Dialog
+Figure 85: Request / Share Calendar Dialog
 
 Two dialogs start a share: a Member asks another user to see his or her calendar (Request calendar), or the owner shares directly with a Member (Share calendar), always at Level 1.
 
@@ -4651,7 +4661,7 @@ Field Description
 
 #### 15.3 Respond to Calendar Share
 
-Figure 85: Respond to Calendar Share
+Figure 86: Respond to Calendar Share
 
 Accepting a request opens a dialog where the owner may grant less than was asked: a lower level or a shorter period. The same dialog approves a change request.
 
@@ -4674,7 +4684,7 @@ Field Description
 
 #### 15.4 Change or Stop Calendar Share
 
-Figure 86: Change or Stop Calendar Share
+Figure 87: Change or Stop Calendar Share
 
 From the ⋮ menu of a share, the viewer asks for a higher level or a longer period, the owner lowers the level or changes the dates at once, and either side can stop the share.
 
@@ -4699,7 +4709,7 @@ Field Description
 
 #### 15.5 Shared Calendar – Week View
 
-Figure 87: Shared Calendar – Week View
+Figure 88: Shared Calendar – Week View
 
 The Shared calendars tab shows a Member a week of busy hours of the people who share with him or her. Only busy blocks at the shared level are drawn, never a title, location, attendee or confidentiality level.
 
@@ -4720,7 +4730,7 @@ Field Description
 
 #### 15.6 Find Meeting Time
 
-Figure 88: Find Meeting Time
+Figure 89: Find Meeting Time
 
 Find meeting time is a sidebar item for users who can create meetings. It finds slots where the chosen people are free, using only calendars shared with the user.
 
@@ -4750,7 +4760,7 @@ Field Description
 
 #### 15.7 Create Draft Meeting from Slot
 
-Figure 89: Create Draft Meeting from Slot
+Figure 90: Create Draft Meeting from Slot
 
 Create draft opens the meeting form filled with the chosen slot and people. The slot is checked again against the same shared data before saving; the new Meeting is a Draft and follows the normal approval flow.
 
