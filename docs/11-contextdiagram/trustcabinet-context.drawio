@@ -1,217 +1,182 @@
 <mxfile host="Electron" agent="Codex" scale="1" border="0">
   <diagram id="trustcabinet-context" name="Context Diagram">
-    <mxGraphModel dx="11027" dy="4413" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="4800" pageHeight="4050" background="#ffffff" math="0" shadow="0">
+    <mxGraphModel dx="5021" dy="3295" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="4800" pageHeight="3630" background="#ffffff" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="title" parent="1" style="text;html=1;strokeColor=none;fillColor=none;fontFamily=Arial;fontSize=48;fontStyle=1;" value="TrustCabinet — Context Diagram" vertex="1">
-          <mxGeometry height="70" width="2600" x="2130" y="3850" as="geometry" />
+        <mxCell id="title" parent="1" style="text;html=1;strokeColor=none;fillColor=none;fontFamily=Arial;fontSize=48;fontStyle=1;align=center;verticalAlign=middle;" value="TrustCabinet — Context Diagram" vertex="1">
+          <mxGeometry height="70" width="2600" x="1100" y="3480" as="geometry" />
         </mxCell>
         <mxCell id="TC" parent="1" style="ellipse;aspect=fixed;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#222222;strokeWidth=3;fontColor=#111111;fontFamily=Arial;fontSize=58;align=center;" value="&lt;b&gt;&lt;br&gt;TrustCabinet&lt;/b&gt;&lt;br&gt;&lt;br&gt;&lt;div&gt;Internal Meeting and&lt;/div&gt;&lt;div&gt;Document Management&lt;/div&gt;&lt;div&gt;System&lt;/div&gt;" vertex="1">
           <mxGeometry height="850" width="850" x="1975" y="1425" as="geometry" />
         </mxCell>
         <mxCell id="E01" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#222222;strokeWidth=2.5;fontColor=#111111;fontFamily=Arial;fontSize=40;fontStyle=1;align=center;verticalAlign=middle;spacing=12;" value="System Admin" vertex="1">
-          <mxGeometry height="140" width="400" x="3150" y="90" as="geometry" />
+          <mxGeometry height="140" width="400" x="3700" y="1070" as="geometry" />
         </mxCell>
         <mxCell id="E02" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#222222;strokeWidth=2.5;fontColor=#111111;fontFamily=Arial;fontSize=40;fontStyle=1;align=center;verticalAlign=middle;spacing=12;" value="Member" vertex="1">
-          <mxGeometry height="140" width="400" x="1250" y="140" as="geometry" />
+          <mxGeometry height="140" width="400" x="2200" y="400" as="geometry" />
         </mxCell>
         <mxCell id="E03" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#222222;strokeWidth=2.5;fontColor=#111111;fontFamily=Arial;fontSize=40;fontStyle=1;align=center;verticalAlign=middle;spacing=12;" value="Approver" vertex="1">
-          <mxGeometry height="140" width="400" x="90" y="1260" as="geometry" />
+          <mxGeometry height="140" width="400" x="700" y="1070" as="geometry" />
         </mxCell>
         <mxCell id="E04" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#222222;strokeWidth=2.5;fontColor=#111111;fontFamily=Arial;fontSize=40;fontStyle=1;align=center;verticalAlign=middle;spacing=12;" value="Chair" vertex="1">
-          <mxGeometry height="140" width="400" x="90" y="2150" as="geometry" />
+          <mxGeometry height="140" width="400" x="450" y="1780" as="geometry" />
         </mxCell>
         <mxCell id="E05" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#222222;strokeWidth=2.5;fontColor=#111111;fontFamily=Arial;fontSize=40;fontStyle=1;align=center;verticalAlign=middle;spacing=12;" value="Secretary" vertex="1">
-          <mxGeometry height="140" width="400" x="4330" y="2780" as="geometry" />
+          <mxGeometry height="140" width="400" x="2200" y="3230" as="geometry" />
         </mxCell>
         <mxCell id="E06" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#222222;strokeWidth=2.5;fontColor=#111111;fontFamily=Arial;fontSize=40;fontStyle=1;align=center;verticalAlign=middle;spacing=12;" value="Participant" vertex="1">
-          <mxGeometry height="140" width="400" x="1250" y="3600" as="geometry" />
+          <mxGeometry height="140" width="400" x="700" y="2490" as="geometry" />
         </mxCell>
         <mxCell id="E07" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#222222;strokeWidth=2.5;fontColor=#111111;fontFamily=Arial;fontSize=40;fontStyle=1;align=center;verticalAlign=middle;spacing=12;" value="Guest" vertex="1">
-          <mxGeometry height="140" width="400" x="3150" y="3600" as="geometry" />
+          <mxGeometry height="140" width="400" x="3700" y="2490" as="geometry" />
         </mxCell>
         <mxCell id="E08" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#222222;strokeWidth=2.5;fontColor=#111111;fontFamily=Arial;fontSize=40;fontStyle=1;align=center;verticalAlign=middle;spacing=12;" value="OAuth Provider" vertex="1">
-          <mxGeometry height="140" width="400" x="4330" y="1220" as="geometry" />
+          <mxGeometry height="140" width="400" x="3950" y="1630" as="geometry" />
         </mxCell>
         <mxCell id="E10" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#222222;strokeWidth=2.5;fontColor=#111111;fontFamily=Arial;fontSize=40;fontStyle=1;align=center;verticalAlign=middle;spacing=12;" value="Resend Email" vertex="1">
-          <mxGeometry height="140" width="400" x="4330" y="2000" as="geometry" />
+          <mxGeometry height="140" width="400" x="3950" y="1930" as="geometry" />
         </mxCell>
-
-        <mxCell id="E01-in" data-flow-ids="A01 A02 A03 C01 C03 K02" edge="1" parent="1" source="E01" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=40;align=left;verticalAlign=middle;labelBackgroundColor=none;exitX=0.7500000000;exitY=1.0000000000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.7941176471;entryY=0.0956470588;entryDx=0;entryDy=0;entryPerimeter=0;" target="TC" value="">
+        <mxCell id="E01-in" data-flow-ids="A01 A02 A03 C01 C03 K02" edge="1" parent="1" source="E01" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=40;align=left;verticalAlign=middle;labelBackgroundColor=none;exitX=0;exitY=0.785714;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.735294;entryY=0.058824;entryDx=0;entryDy=0;entryPerimeter=0;" target="TC" value="">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="3450" y="1000" />
-              <mxPoint x="2650" y="1000" />
+              <mxPoint x="2600" y="1180" />
             </Array>
           </mxGeometry>
         </mxCell>
         <mxCell id="E01-in-label" parent="1" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=nowrap;overflow=visible;strokeColor=none;fillColor=none;spacing=0;fontFamily=Arial;fontSize=40;fontColor=#111111;" value="Account &amp;amp; personal workspace data&lt;br&gt;Meeting participation &amp;amp; search data&lt;br&gt;Meeting setup &amp;amp; approval data&lt;br&gt;User, role &amp;amp; permission data&lt;br&gt;Voice samples &amp;amp; consent data&lt;br&gt;Audit search criteria" vertex="1">
-          <mxGeometry height="300" width="658" x="3470" y="700" as="geometry" />
+          <mxGeometry height="300" width="658" x="2982" y="1192" as="geometry" />
         </mxCell>
-        <mxCell id="E01-out" data-flow-ids="A04 A05 C02 C04 K01" edge="1" parent="1" source="TC" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=40;align=left;verticalAlign=middle;labelBackgroundColor=none;exitX=0.6764705882;exitY=0.0322352941;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5000000000;entryY=1.0000000000;entryDx=0;entryDy=0;entryPerimeter=0;" target="E01" value="">
+        <mxCell id="E01-out" data-flow-ids="A04 A05 C02 C04 K01" edge="1" parent="1" source="TC" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=40;align=left;verticalAlign=middle;labelBackgroundColor=none;exitX=0.641176;exitY=0.020345;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.214286;entryDx=0;entryDy=0;entryPerimeter=0;" target="E01" value="">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="2550" y="700" />
-              <mxPoint x="3350" y="700" />
+              <mxPoint x="2520" y="1100" />
             </Array>
           </mxGeometry>
         </mxCell>
         <mxCell id="E01-out-label" parent="1" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=nowrap;overflow=visible;strokeColor=none;fillColor=none;spacing=0;fontFamily=Arial;fontSize=40;fontColor=#111111;" value="Account &amp;amp; access information&lt;br&gt;Workspace, notifications &amp;amp; meeting information&lt;br&gt;Meeting status &amp;amp; approval results&lt;br&gt;Account &amp;amp; permission information&lt;br&gt;Voice sample status&lt;br&gt;Audit logs" vertex="1">
-          <mxGeometry height="300" width="852" x="2430" y="386" as="geometry" />
+          <mxGeometry height="300" width="852" x="2788" y="788" as="geometry" />
         </mxCell>
-        <mxCell id="E02-in" data-flow-ids="O01 O02 O03 C01 C03 K02" edge="1" parent="1" source="E02" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=40;align=left;verticalAlign=middle;labelBackgroundColor=none;exitX=0.2500000000;exitY=1.0000000000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.2058823529;entryY=0.0956470588;entryDx=0;entryDy=0;entryPerimeter=0;" target="TC" value="">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="1350" y="1000" />
-              <mxPoint x="2150" y="1000" />
-            </Array>
-          </mxGeometry>
+        <mxCell id="E02-in" data-flow-ids="O01 O02 O03 C01 C03 K02" edge="1" parent="1" source="E02" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=40;align=left;verticalAlign=middle;labelBackgroundColor=none;exitX=0.600000;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.547059;entryY=0.002219;entryDx=0;entryDy=0;entryPerimeter=0;" target="TC" value="">
+          <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="E02-in-label" parent="1" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=nowrap;overflow=visible;strokeColor=none;fillColor=none;spacing=0;fontFamily=Arial;fontSize=40;fontColor=#111111;" value="Account &amp;amp; personal workspace data&lt;br&gt;Meeting participation &amp;amp; search data&lt;br&gt;Meeting setup &amp;amp; approval data" vertex="1">
-          <mxGeometry height="153" width="658" x="700" y="819" as="geometry" />
+          <mxGeometry height="153" width="658" x="2464" y="562" as="geometry" />
         </mxCell>
-        <mxCell id="E02-out" data-flow-ids="O04 C02 C04 K01" edge="1" parent="1" source="TC" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=40;align=left;verticalAlign=middle;labelBackgroundColor=none;exitX=0.3235294118;exitY=0.0322352941;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5000000000;entryY=1.0000000000;entryDx=0;entryDy=0;entryPerimeter=0;" target="E02" value="">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="2250" y="700" />
-              <mxPoint x="1450" y="700" />
-            </Array>
-          </mxGeometry>
+        <mxCell id="E02-out" data-flow-ids="O04 C02 C04 K01" edge="1" parent="1" source="TC" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=40;align=left;verticalAlign=middle;labelBackgroundColor=none;exitX=0.452941;exitY=0.002219;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.400000;entryY=1;entryDx=0;entryDy=0;entryPerimeter=0;" target="E02" value="">
+          <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="E02-out-label" parent="1" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=nowrap;overflow=visible;strokeColor=none;fillColor=none;spacing=0;fontFamily=Arial;fontSize=40;fontColor=#111111;" value="Account &amp;amp; access information&lt;br&gt;Workspace, notifications &amp;amp; meeting information&lt;br&gt;Meeting status &amp;amp; approval results" vertex="1">
-          <mxGeometry height="153" width="852" x="1470" y="533" as="geometry" />
+          <mxGeometry height="153" width="852" x="1484" y="562" as="geometry" />
         </mxCell>
-        <mxCell id="E03-in" data-flow-ids="P02 C01 C03 K02" edge="1" parent="1" source="E03" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=40;align=left;verticalAlign=middle;labelBackgroundColor=none;exitX=1.0000000000;exitY=0.7142857143;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.0882352941;entryY=0.2163529412;entryDx=0;entryDy=0;entryPerimeter=0;" target="TC" value="">
+        <mxCell id="E03-in" data-flow-ids="P02 C01 C03 K02" edge="1" parent="1" source="E03" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=40;align=left;verticalAlign=middle;labelBackgroundColor=none;exitX=1;exitY=0.785714;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.264706;entryY=0.058824;entryDx=0;entryDy=0;entryPerimeter=0;" target="TC" value="">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="2050" y="1360" />
+              <mxPoint x="2200" y="1180" />
             </Array>
           </mxGeometry>
         </mxCell>
         <mxCell id="E03-in-label" parent="1" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=nowrap;overflow=visible;strokeColor=none;fillColor=none;spacing=0;fontFamily=Arial;fontSize=40;fontColor=#111111;" value="Account &amp;amp; personal workspace data&lt;br&gt;Meeting participation &amp;amp; search data&lt;br&gt;Meeting setup &amp;amp; approval data&lt;br&gt;Approval decision &amp;amp; rationale" vertex="1">
-          <mxGeometry height="202" width="658" x="730" y="1385" as="geometry" />
+          <mxGeometry height="202" width="658" x="1160" y="1192" as="geometry" />
         </mxCell>
-        <mxCell id="E03-out" data-flow-ids="P01 C02 C04 K01" edge="1" parent="1" source="TC" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=40;align=left;verticalAlign=middle;labelBackgroundColor=none;exitX=0.1470588235;exitY=0.1458823529;exitDx=0;exitDy=0;exitPerimeter=0;entryX=1.0000000000;entryY=0.2857142857;entryDx=0;entryDy=0;entryPerimeter=0;" target="E03" value="">
+        <mxCell id="E03-out" data-flow-ids="P01 C02 C04 K01" edge="1" parent="1" source="TC" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=40;align=left;verticalAlign=middle;labelBackgroundColor=none;exitX=0.358824;exitY=0.020345;exitDx=0;exitDy=0;exitPerimeter=0;entryX=1;entryY=0.214286;entryDx=0;entryDy=0;entryPerimeter=0;" target="E03" value="">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="2100" y="1300" />
+              <mxPoint x="2280" y="1100" />
             </Array>
           </mxGeometry>
         </mxCell>
         <mxCell id="E03-out-label" parent="1" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=nowrap;overflow=visible;strokeColor=none;fillColor=none;spacing=0;fontFamily=Arial;fontSize=40;fontColor=#111111;" value="Account &amp;amp; access information&lt;br&gt;Workspace, notifications &amp;amp; meeting information&lt;br&gt;Meeting status &amp;amp; approval results&lt;br&gt;Meeting approval request &amp;amp; details" vertex="1">
-          <mxGeometry height="202" width="852" x="730" y="1081" as="geometry" />
+          <mxGeometry height="202" width="852" x="1160" y="886" as="geometry" />
         </mxCell>
-        <mxCell id="E04-in" data-flow-ids="H01 H02 H03 C01 C03 R01 K02" edge="1" parent="1" source="E04" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=40;align=left;verticalAlign=middle;labelBackgroundColor=none;exitX=1.000000;exitY=0.571429;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.276084;entryY=0.947059;entryDx=0;entryDy=0;entryPerimeter=0;" target="TC" value="">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points"></Array>
-          </mxGeometry>
+        <mxCell id="E04-in" data-flow-ids="H01 H02 H03 C01 C03 R01 K02" edge="1" parent="1" source="E04" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=40;align=left;verticalAlign=middle;labelBackgroundColor=none;exitX=1;exitY=0.785714;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.002219;entryY=0.547059;entryDx=0;entryDy=0;entryPerimeter=0;" target="TC" value="">
+          <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="E04-in-label" parent="1" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=nowrap;overflow=visible;strokeColor=none;fillColor=none;spacing=0;fontFamily=Arial;fontSize=40;fontColor=#111111;" value="Account &amp;amp; personal workspace data&lt;br&gt;Meeting participation &amp;amp; search data&lt;br&gt;Meeting &amp;amp; agenda data&lt;br&gt;Chair handover &amp;amp; exit data&lt;br&gt;Vote creation &amp;amp; moderation data&lt;br&gt;Room interaction data" vertex="1">
-          <mxGeometry height="300" width="658" x="540" y="2245" as="geometry" />
+          <mxGeometry height="300" width="658" x="910" y="1902" as="geometry" />
         </mxCell>
-        <mxCell id="E04-out" data-flow-ids="H04 H05 C02 C04 R02 K01" edge="1" parent="1" source="TC" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=40;align=left;verticalAlign=middle;labelBackgroundColor=none;exitX=0.184923;exitY=0.888235;exitDx=0;exitDy=0;exitPerimeter=0;entryX=1.000000;entryY=0.214286;entryDx=0;entryDy=0;entryPerimeter=0;" target="E04" value="">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points"></Array>
-          </mxGeometry>
+        <mxCell id="E04-out" data-flow-ids="H04 H05 C02 C04 R02 K01" edge="1" parent="1" source="TC" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=40;align=left;verticalAlign=middle;labelBackgroundColor=none;exitX=0.002219;exitY=0.452941;exitDx=0;exitDy=0;exitPerimeter=0;entryX=1;entryY=0.214286;entryDx=0;entryDy=0;entryPerimeter=0;" target="E04" value="">
+          <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="E04-out-label" parent="1" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=nowrap;overflow=visible;strokeColor=none;fillColor=none;spacing=0;fontFamily=Arial;fontSize=40;fontColor=#111111;" value="Account &amp;amp; access information&lt;br&gt;Workspace, notifications &amp;amp; meeting information&lt;br&gt;Meeting &amp;amp; agenda information&lt;br&gt;Chair handover &amp;amp; exit status&lt;br&gt;Voting results &amp;amp; resolutions&lt;br&gt;Room information &amp;amp; media" vertex="1">
-          <mxGeometry height="300" width="852" x="540" y="1870" as="geometry" />
+          <mxGeometry height="300" width="852" x="910" y="1498" as="geometry" />
         </mxCell>
-        <mxCell id="E05-in" data-flow-ids="S01 S02 S03 S04 S05 S06 C01 C03 R01 K02" edge="1" parent="1" source="E05" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=40;align=left;verticalAlign=middle;labelBackgroundColor=none;exitX=0.000000;exitY=0.714286;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.664706;entryY=0.972093;entryDx=0;entryDy=0;entryPerimeter=0;" target="TC" value="">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points"><mxPoint x="2540" y="2880" /></Array>
-          </mxGeometry>
+        <mxCell id="E05-in" data-flow-ids="S01 S02 S03 S04 S05 S06 C01 C03 R01 K02" edge="1" parent="1" source="E05" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=40;align=left;verticalAlign=middle;labelBackgroundColor=none;exitX=0.600000;exitY=0;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.547059;entryY=0.997781;entryDx=0;entryDy=0;entryPerimeter=0;" target="TC" value="">
+          <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="E05-in-label" parent="1" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=nowrap;overflow=visible;strokeColor=none;fillColor=none;spacing=0;fontFamily=Arial;fontSize=40;fontColor=#111111;" value="Account &amp;amp; personal workspace data&lt;br&gt;Meeting participation &amp;amp; search data&lt;br&gt;Meeting preparation &amp;amp; attendance data&lt;br&gt;Vote creation &amp;amp; moderation data&lt;br&gt;Meeting audio, transcript &amp;amp; summary data&lt;br&gt;Meeting minutes &amp;amp; approval data&lt;br&gt;Room interaction data" vertex="1">
-          <mxGeometry height="349" width="758" x="3500" y="2895" as="geometry" />
+          <mxGeometry height="349" width="758" x="2464" y="2860" as="geometry" />
         </mxCell>
-        <mxCell id="E05-out" data-flow-ids="S07 S08 S09 S10 C02 C04 R02 K01" edge="1" parent="1" source="TC" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=40;align=left;verticalAlign=middle;labelBackgroundColor=none;exitX=0.749412;exitY=0.933352;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.000000;entryY=0.285714;entryDx=0;entryDy=0;entryPerimeter=0;" target="E05" value="">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points"><mxPoint x="2612" y="2820" /></Array>
-          </mxGeometry>
+        <mxCell id="E05-out" data-flow-ids="S07 S08 S09 S10 C02 C04 R02 K01" edge="1" parent="1" source="TC" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=40;align=left;verticalAlign=middle;labelBackgroundColor=none;exitX=0.452941;exitY=0.997781;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.400000;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;" target="E05" value="">
+          <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="E05-out-label" parent="1" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=nowrap;overflow=visible;strokeColor=none;fillColor=none;spacing=0;fontFamily=Arial;fontSize=40;fontColor=#111111;" value="Account &amp;amp; access information&lt;br&gt;Workspace, notifications &amp;amp; meeting information&lt;br&gt;Meeting preparation &amp;amp; attendance information&lt;br&gt;Voting results &amp;amp; resolutions&lt;br&gt;Transcript &amp;amp; draft summary&lt;br&gt;Meeting minutes &amp;amp; approval status&lt;br&gt;Room information &amp;amp; media" vertex="1">
-          <mxGeometry height="349" width="852" x="3500" y="2421" as="geometry" />
+          <mxGeometry height="349" width="852" x="1484" y="2860" as="geometry" />
         </mxCell>
-        <mxCell id="E06-in" data-flow-ids="T01 T02 C01 C03 R01 K02" edge="1" parent="1" source="E06" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=40;align=left;verticalAlign=middle;labelBackgroundColor=none;exitX=0.7500000000;exitY=0.0000000000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.3941176471;entryY=0.9887058824;entryDx=0;entryDy=0;entryPerimeter=0;" target="TC" value="">
+        <mxCell id="E06-in" data-flow-ids="T01 T02 C01 C03 R01 K02" edge="1" parent="1" source="E06" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=40;align=left;verticalAlign=middle;labelBackgroundColor=none;exitX=1;exitY=0.785714;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.358824;entryY=0.979655;entryDx=0;entryDy=0;entryPerimeter=0;" target="TC" value="">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="1550" y="3350" />
-              <mxPoint x="2310" y="3350" />
+              <mxPoint x="2280" y="2600" />
             </Array>
           </mxGeometry>
         </mxCell>
         <mxCell id="E06-in-label" parent="1" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=nowrap;overflow=visible;strokeColor=none;fillColor=none;spacing=0;fontFamily=Arial;fontSize=40;fontColor=#111111;" value="Account &amp;amp; personal workspace data&lt;br&gt;Meeting participation &amp;amp; search data&lt;br&gt;Invitation, comment &amp;amp; ballot data&lt;br&gt;Room interaction data" vertex="1">
-          <mxGeometry height="202" width="658" x="1570" y="3374" as="geometry" />
+          <mxGeometry height="202" width="658" x="1160" y="2612" as="geometry" />
         </mxCell>
-        <mxCell id="E06-out" data-flow-ids="T03 C02 C04 R02 K01" edge="1" parent="1" source="TC" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=40;align=left;verticalAlign=middle;labelBackgroundColor=none;exitX=0.3117647059;exitY=0.9631764706;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.2500000000;entryY=0.0000000000;entryDx=0;entryDy=0;entryPerimeter=0;" target="E06" value="">
+        <mxCell id="E06-out" data-flow-ids="T03 C02 C04 R02 K01" edge="1" parent="1" source="TC" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=40;align=left;verticalAlign=middle;labelBackgroundColor=none;exitX=0.264706;exitY=0.941176;exitDx=0;exitDy=0;exitPerimeter=0;entryX=1;entryY=0.214286;entryDx=0;entryDy=0;entryPerimeter=0;" target="E06" value="">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="2240" y="3250" />
-              <mxPoint x="1350" y="3250" />
+              <mxPoint x="2200" y="2520" />
             </Array>
           </mxGeometry>
         </mxCell>
         <mxCell id="E06-out-label" parent="1" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=nowrap;overflow=visible;strokeColor=none;fillColor=none;spacing=0;fontFamily=Arial;fontSize=40;fontColor=#111111;" value="Account &amp;amp; access information&lt;br&gt;Workspace, notifications &amp;amp; meeting information&lt;br&gt;Authorized meeting information&lt;br&gt;Room information &amp;amp; media" vertex="1">
-          <mxGeometry height="202" width="852" x="483" y="3324" as="geometry" />
+          <mxGeometry height="202" width="852" x="1160" y="2306" as="geometry" />
         </mxCell>
-        <mxCell id="E07-in" data-flow-ids="G01 G02 R01" edge="1" parent="1" source="E07" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=40;align=left;verticalAlign=middle;labelBackgroundColor=none;exitX=0.750000;exitY=0.000000;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.620000;entryY=0.985386;entryDx=0;entryDy=0;entryPerimeter=0;" target="TC" value="">
+        <mxCell id="E07-in" data-flow-ids="G01 G02 R01" edge="1" parent="1" source="E07" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=40;align=left;verticalAlign=middle;labelBackgroundColor=none;exitX=0;exitY=0.785714;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.641176;entryY=0.979655;entryDx=0;entryDy=0;entryPerimeter=0;" target="TC" value="">
           <mxGeometry relative="1" as="geometry">
-            <Array as="points"><mxPoint x="3450" y="3200" /><mxPoint x="2502" y="3200" /></Array>
+            <Array as="points">
+              <mxPoint x="2520" y="2600" />
+            </Array>
           </mxGeometry>
         </mxCell>
         <mxCell id="E07-in-label" parent="1" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=nowrap;overflow=visible;strokeColor=none;fillColor=none;spacing=0;fontFamily=Arial;fontSize=40;fontColor=#111111;" value="Guest invitation &amp;amp; verification data&lt;br&gt;Room interaction data" vertex="1">
-          <mxGeometry height="104" width="625" x="2560" y="3085" as="geometry" />
+          <mxGeometry height="104" width="625" x="3015" y="2612" as="geometry" />
         </mxCell>
-        <mxCell id="E07-out" data-flow-ids="G03 G04 R02" edge="1" parent="1" source="TC" target="E07" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=40;align=left;verticalAlign=middle;labelBackgroundColor=none;exitX=0.560000;exitY=0.996387;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.250000;entryY=0.000000;entryDx=0;entryDy=0;entryPerimeter=0;" value="">
+        <mxCell id="E07-out" data-flow-ids="G03 G04 R02" edge="1" parent="1" source="TC" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=40;align=left;verticalAlign=middle;labelBackgroundColor=none;exitX=0.735294;exitY=0.941176;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.214286;entryDx=0;entryDy=0;entryPerimeter=0;" target="E07" value="">
           <mxGeometry relative="1" as="geometry">
-            <Array as="points"><mxPoint x="2451" y="3300" /><mxPoint x="3250" y="3300" /></Array>
+            <Array as="points">
+              <mxPoint x="2600" y="2520" />
+            </Array>
           </mxGeometry>
         </mxCell>
         <mxCell id="E07-out-label" parent="1" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=nowrap;overflow=visible;strokeColor=none;fillColor=none;spacing=0;fontFamily=Arial;fontSize=40;fontColor=#111111;" value="Guest access &amp;amp; meeting information&lt;br&gt;Authorized meeting documents&lt;br&gt;Room information &amp;amp; media" vertex="1">
-          <mxGeometry height="153" width="662" x="2520" y="3315" as="geometry" />
+          <mxGeometry height="153" width="662" x="2978" y="2355" as="geometry" />
         </mxCell>
-        <mxCell id="E08-in" data-flow-ids="I02" edge="1" parent="1" source="E08" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=40;align=left;verticalAlign=middle;labelBackgroundColor=none;exitX=0.0000000000;exitY=0.7142857143;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.9117647059;entryY=0.2163529412;entryDx=0;entryDy=0;entryPerimeter=0;" target="TC" value="">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="2750" y="1320" />
-            </Array>
-          </mxGeometry>
+        <mxCell id="E08-in" data-flow-ids="I02" edge="1" parent="1" source="E08" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=40;align=left;verticalAlign=middle;labelBackgroundColor=none;exitX=0;exitY=0.785714;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.982962;entryY=0.370588;entryDx=0;entryDy=0;entryPerimeter=0;" target="TC" value="">
+          <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="E08-in-label" parent="1" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=nowrap;overflow=visible;strokeColor=none;fillColor=none;spacing=0;fontFamily=Arial;fontSize=40;fontColor=#111111;" value="Google authentication result &amp;amp; identity data" vertex="1">
-          <mxGeometry height="55" width="781" x="3200" y="1334" as="geometry" />
+          <mxGeometry height="55" width="781" x="3109" y="1752" as="geometry" />
         </mxCell>
-        <mxCell id="E08-out" data-flow-ids="I01" edge="1" parent="1" source="TC" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=40;align=left;verticalAlign=middle;labelBackgroundColor=none;exitX=0.8529411765;exitY=0.1458823529;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.0000000000;entryY=0.2857142857;entryDx=0;entryDy=0;entryPerimeter=0;" target="E08" value="">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="2700" y="1260" />
-            </Array>
-          </mxGeometry>
+        <mxCell id="E08-out" data-flow-ids="I01" edge="1" parent="1" source="TC" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=40;align=left;verticalAlign=middle;labelBackgroundColor=none;exitX=0.947252;exitY=0.276471;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.214286;entryDx=0;entryDy=0;entryPerimeter=0;" target="E08" value="">
+          <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="E08-out-label" parent="1" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=nowrap;overflow=visible;strokeColor=none;fillColor=none;spacing=0;fontFamily=Arial;fontSize=40;fontColor=#111111;" value="Google authentication request" vertex="1">
-          <mxGeometry height="55" width="553" x="3300" y="1191" as="geometry" />
+          <mxGeometry height="55" width="553" x="3337" y="1593" as="geometry" />
         </mxCell>
-        <mxCell id="E10-in" data-flow-ids="M02" edge="1" parent="1" source="E10" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=40;align=left;verticalAlign=middle;labelBackgroundColor=none;exitX=0.0000000000;exitY=0.6428571429;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.9125882353;entryY=0.7823529412;entryDx=0;entryDy=0;entryPerimeter=0;" target="TC" value="">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points" />
-          </mxGeometry>
+        <mxCell id="E10-in" data-flow-ids="M02" edge="1" parent="1" source="E10" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=40;align=left;verticalAlign=middle;labelBackgroundColor=none;exitX=0;exitY=0.785714;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.947252;entryY=0.723529;entryDx=0;entryDy=0;entryPerimeter=0;" target="TC" value="">
+          <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="E10-in-label" parent="1" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=nowrap;overflow=visible;strokeColor=none;fillColor=none;spacing=0;fontFamily=Arial;fontSize=40;fontColor=#111111;" value="Email submission status" vertex="1">
-          <mxGeometry height="55" width="451" x="3400" y="2104" as="geometry" />
+        <mxCell id="E10-in-label" parent="1" style="text;html=1;align=right;verticalAlign=middle;whiteSpace=nowrap;overflow=visible;strokeColor=none;fillColor=none;spacing=0;fontFamily=Arial;fontSize=40;fontColor=#111111;" value="Email submission status" vertex="1">
+          <mxGeometry height="55" width="451" x="3439" y="2052" as="geometry" />
         </mxCell>
-        <mxCell id="E10-out" data-flow-ids="M01" edge="1" parent="1" source="TC" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=40;align=left;verticalAlign=middle;labelBackgroundColor=none;exitX=0.9529411765;exitY=0.7117647059;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.0000000000;entryY=0.2142857143;entryDx=0;entryDy=0;entryPerimeter=0;" target="E10" value="">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points" />
-          </mxGeometry>
+        <mxCell id="E10-out" data-flow-ids="M01" edge="1" parent="1" source="TC" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;endSize=14;startArrow=none;strokeWidth=2.2;strokeColor=#222222;fontColor=#111111;fontFamily=Arial;fontSize=40;align=left;verticalAlign=middle;labelBackgroundColor=none;exitX=0.982962;exitY=0.629412;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.214286;entryDx=0;entryDy=0;entryPerimeter=0;" target="E10" value="">
+          <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="E10-out-label" parent="1" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=nowrap;overflow=visible;strokeColor=none;fillColor=none;spacing=0;fontFamily=Arial;fontSize=40;fontColor=#111111;" value="Email delivery data" vertex="1">
-          <mxGeometry height="55" width="360" x="3400" y="1961" as="geometry" />
+        <mxCell id="E10-out-label" parent="1" style="text;html=1;align=right;verticalAlign=middle;whiteSpace=nowrap;overflow=visible;strokeColor=none;fillColor=none;spacing=0;fontFamily=Arial;fontSize=40;fontColor=#111111;" value="Email delivery data" vertex="1">
+          <mxGeometry height="55" width="360" x="3530" y="1893" as="geometry" />
         </mxCell>
-
-
-
-
       </root>
     </mxGraphModel>
   </diagram>
