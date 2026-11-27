@@ -2,13 +2,11 @@
  * TrustCabinet — AI-draft evaluation on real meetings: ask the app itself for drafts and save them for kit.py.
  *
  * Paste into the DevTools console of a tab signed in at https://app.trustcabinet.workspace-hub.space, as the Chair or
- * Secretary of the meetings (and an administrator, to switch Local/Api). Then, for example:
+ * Secretary of the meetings. The app writes every draft with its in-house model (ADR-0088). Then, for example:
  *
- *   await tcEval.getMode()                                   // { mode, apiModel, localModel, ... } — note it to restore
- *   await tcEval.setMode('Api')                              // body: mode + the stored address/model, key untouched
  *   const r = await tcEval.draft('<meeting id>')             // { content, model, elapsedMs, ... }
- *   tcEval.save(r, 'test-mic-api-1')                         // downloads test-mic-api-1.md and test-mic-api-1.json
- *   await tcEval.campaign([{ id: '<meeting id>', slug: 'test-mic' }], { runs: 3 })   // Local x3 then Api x3, mode restored
+ *   tcEval.save(r, 'test-mic-local-1')                       // downloads test-mic-local-1.md and test-mic-local-1.json
+ *   await tcEval.campaign([{ id: '<meeting id>', slug: 'test-mic' }], { runs: 3 })   // three drafts per meeting
  *
  * No secret lives here. The access token is obtained the way the app does (features/auth/session.ts): POST
  * /api/auth/refresh with the HttpOnly refresh cookie the browser already holds, inside the Web Lock
@@ -70,11 +68,6 @@
     )
   }
 
-  /** ADR-0056: a meeting marked Internal or Secret always goes to the in-house model, whatever the mode. */
-  async function sensitivity(meetingId) {
-    return (await call('GET', `/api/meetings/${meetingId}`)).sensitivity
-  }
-
   /**
    * Asks for a new draft of one meeting and waits until it is Ready (or Failed). elapsedMs runs from the POST to the
    * first poll that sees it Ready, so it includes any wait in the queue and is coarse by `pollMs`.
@@ -132,52 +125,21 @@
     download(`${name}.json`, JSON.stringify({ ...meta, source: 'generate.js' }, null, 1), 'application/json')
   }
 
-  async function getMode() {
-    const s = await call('GET', '/api/admin/ai')
-    return { mode: s.mode, apiModel: s.apiModel, localModel: s.localModel, hasApiKey: s.hasApiKey, localConfigured: s.localConfigured }
-  }
-
-  /**
-   * Switches which model writes drafts. The PUT saves the address and model as sent (an absent one becomes empty), so
-   * they are sent back exactly as stored; apiKey null tells the server to keep the stored key, which never reaches us.
-   */
-  async function setMode(mode) {
-    if (mode !== 'Local' && mode !== 'Api') throw new Error("mode is 'Local' or 'Api'")
-    const s = await call('GET', '/api/admin/ai')
-    if (s.mode === mode) return mode
-    const saved = await call('PUT', '/api/admin/ai', { mode, apiBaseUrl: s.apiBaseUrl, apiModel: s.apiModel, apiKey: null })
-    return saved.settings.mode
-  }
-
-  /** Every meeting, `runs` drafts from each provider, saved as <slug>-<provider>-<run>; the original mode is restored. */
-  async function campaign(meetings, { runs = 3, providers = [['local', 'Local'], ['api', 'Api']], pollMs = 2000 } = {}) {
-    const original = await getMode()
+  /** Every meeting, `runs` drafts from the in-house model, saved as <slug>-<provider>-<run>. */
+  async function campaign(meetings, { runs = 3, provider = 'local', pollMs = 2000 } = {}) {
     const done = []
-    try {
-      for (const [provider, mode] of providers) {
-        await setMode(mode)
-        const expectModel = mode === 'Api' ? original.apiModel : original.localModel
-        for (const { id, slug } of meetings) {
-          if (mode === 'Api' && (await sensitivity(id)) !== 'Normal') {
-            console.warn(`${slug}: not marked Normal, so the app keeps it on the in-house model — skipped for ${provider}.`)
-            continue
-          }
-          for (let run = 1; run <= runs; run++) {
-            const result = await draft(id, { expectModel, pollMs })
-            save(result, `${slug}-${provider}-${run}`)
-            done.push({ slug, provider, run, model: result.model, elapsedMs: result.elapsedMs })
-            console.log(`${slug}-${provider}-${run}: ${result.model}, ${(result.elapsedMs / 1000).toFixed(1)} s`)
-          }
-        }
+    for (const { id, slug } of meetings) {
+      for (let run = 1; run <= runs; run++) {
+        const result = await draft(id, { pollMs })
+        save(result, `${slug}-${provider}-${run}`)
+        done.push({ slug, provider, run, model: result.model, elapsedMs: result.elapsedMs })
+        console.log(`${slug}-${provider}-${run}: ${result.model}, ${(result.elapsedMs / 1000).toFixed(1)} s`)
       }
-    } finally {
-      await setMode(original.mode)
-      console.log(`Mode restored to ${original.mode}.`)
     }
     console.table(done)
     return done
   }
 
-  window.tcEval = { draft, save, getMode, setMode, campaign, sensitivity }
-  console.log('tcEval ready: draft, save, getMode, setMode, campaign, sensitivity')
+  window.tcEval = { draft, save, campaign }
+  console.log('tcEval ready: draft, save, campaign')
 })()

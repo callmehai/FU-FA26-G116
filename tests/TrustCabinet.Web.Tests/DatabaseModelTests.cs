@@ -41,7 +41,7 @@ public class DatabaseModelTests
         // this is also what catches one that was written but never registered.
         Assert.Equal(
             [
-                "agenda_items", "ai_provider_settings", "audit_log", "calendar_shares", "call_participants", "call_sessions",
+                "agenda_items", "audit_log", "calendar_shares", "call_participants", "call_sessions",
                 "document_comments", "document_read_confirmations", "documents", "email_messages", "folders",
                 "guest_sessions", "guest_verification_challenges",
                 "meeting_document_agenda_items", "meeting_documents", "meeting_guest_invitations", "meeting_invitation_dispatches",

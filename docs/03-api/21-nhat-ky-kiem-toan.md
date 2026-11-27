@@ -75,7 +75,7 @@ Không có dòng nào khớp (AF-3) là `200` với `items: []`, `totalCount: 0`
   `VoiceConsent`, `VoiceSample` họ tên chủ giọng · `CalendarShare` "chủ lịch → người xem" · `GuestSession` tên được
   mời. Đọc dòng còn sống trước (đổi tên thì hiện tên mới); dòng đã xoá thì lấy tên ghi trong `details` (`name`, `title`,
   `fileName` — vai trò đã xoá, nháp biểu quyết bị xoá khi kết thúc họp); câu nói, lượt ghi đã xoá thì lấy tiêu đề cuộc
-  họp theo `meetingId` trong `details`. Không biết tên thì `null` (`AiProviderSetting`, `Report`). Chỉ đọc tên: xem
+  họp theo `meetingId` trong `details`. Không biết tên thì `null` (`Report`). Chỉ đọc tên: xem
   nhật ký không mở được gì mà nó nêu tên. Tra theo lô cho cả trang (một truy vấn), không N+1.
 - **Cuộc họp Mật không lộ tên** (Hải 20/11/2026): đối tượng là, hoặc thuộc về, một cuộc họp `Secret` — chính cuộc họp,
   tài liệu, biểu quyết, biên bản, bản ghi, câu nói, người nói, phiên Khách — có `objectName: null` và

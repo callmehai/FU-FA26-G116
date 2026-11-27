@@ -117,7 +117,7 @@ GRID = [
     [None, "MeetingMinutes", "MeetingParticipant", "Meeting", "MeetingNote", "AgendaItem", "MeetingGuestInvitation", "DocumentComment", "MeetingDocumentAgendaItem"],
     [None, None, "Notification", "MeetingStatusHistory", "CalendarShare", "SpeechClip", "DocumentReadConfirmation", "MeetingDocument", None],
     ["VoiceSample", "RoleCapability", "Role", "User", "VoteReceipt", "Folder", "Document", "VoteDocument", "StoredFile"],
-    ["VoiceConsent", None, "AiProviderSetting", "AuditLogEntry", "VoteEligibleVoter", "VotingSession", None, "VotingOption", "VoteChoice"],
+    ["VoiceConsent", None, None, "AuditLogEntry", "VoteEligibleVoter", "VotingSession", None, "VotingOption", "VoteChoice"],
 ]
 pos = {t: (r, c) for r, row in enumerate(GRID) for c, t in enumerate(row) if t}
 assert sorted(pos) == sorted(m), set(m) ^ set(pos)

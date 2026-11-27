@@ -56,17 +56,12 @@ const RECORDING_DETAIL =
   'Khi micro bật, lời bạn được lưu chữ và tiếng từng câu. Người trong cuộc họp đọc và nghe được; bạn xoá được câu của mình.'
 
 /**
- * ADR-0056: where the words go when the AI drafts the minutes. Only a Normal meeting's transcript (text, never audio) may
- * go to an outside AI service; Internal and Secret ones stay on the team's own machine. A guest is not told the
- * meeting's sensitivity, and the PO chose to leave the AI out of their notice (2026-11-14).
+ * ADR-0088: every meeting's draft is written by the team's own AI machine, whatever its sensitivity. The PO chose to
+ * leave the AI out of a guest's notice (2026-11-14); a guest is the one without a sensitivity.
  */
 function recordingDetail(sensitivity: Sensitivity | null) {
   if (!sensitivity) return RECORDING_DETAIL
-  const ai =
-    sensitivity === 'Normal'
-      ? 'Để viết dự thảo biên bản, lời thoại (chữ, không có tiếng) có thể được gửi tới dịch vụ AI bên ngoài.'
-      : 'Dự thảo biên bản do máy AI của nhóm viết; lời thoại không ra khỏi hệ thống.'
-  return `${RECORDING_DETAIL} ${ai}`
+  return `${RECORDING_DETAIL} Dự thảo biên bản do máy AI của nhóm viết; lời thoại không ra khỏi hệ thống.`
 }
 
 type Phase = { kind: 'lobby' } | { kind: 'inRoom' } | { kind: 'left'; reason: DisconnectReason | undefined }

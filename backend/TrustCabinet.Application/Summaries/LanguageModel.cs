@@ -13,9 +13,6 @@ public interface ILanguageModel
     /// <summary>The model's name, kept with what it wrote so a summary can be judged against how it was made.</summary>
     string Model { get; }
 
-    /// <summary>A hosted API (ADR-0056) rather than the in-house model: the draft then uses the hosted harness.</summary>
-    bool Remote => false;
-
     /// <summary>One chat turn; the answer is plain text, as AI-eCabinet asks of its model (JSON makes small models worse).</summary>
     Task<string> CompleteAsync(string system, string user, CancellationToken ct);
 }

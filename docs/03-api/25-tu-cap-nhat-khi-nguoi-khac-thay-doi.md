@@ -42,7 +42,6 @@ Góp ý trong trình xem tài liệu của Khách dùng chung `CommentsPanel` n�
 | Tìm giờ họp (danh sách người đã chia sẻ) | `CalendarShare*` | — |
 | Người dùng | — | có, trừ khi đang mở hộp thoại |
 | Vai trò và ma trận quyền | — | có, trừ khi còn dòng đang sửa chưa lưu, đang lưu hoặc mở hộp thoại |
-| Cấu hình AI | — | có, trừ khi biểu mẫu đang sửa, đang lưu hoặc đang thử kết nối |
 | Nhật ký kiểm toán, Báo cáo thống kê | — | có |
 | Kho tài liệu cá nhân, Kho của tài khoản (quản trị) | — | có; kho cá nhân trừ khi đang mở hộp thoại |
 

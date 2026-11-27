@@ -12,7 +12,6 @@ const OBJECT_TYPE_LABEL: Record<string, string> = {
   VoiceConsent: 'Đồng ý Voice ID',
   VoiceSample: 'Mẫu giọng',
   GuestSession: 'Phiên của Khách',
-  AiProviderSetting: 'Cấu hình AI',
   // SCRUM-38: an export of the meeting report (report.exported); it has no object id.
   Report: 'Báo cáo',
   // SCRUM-142: the thirteen calendar_share.* events.

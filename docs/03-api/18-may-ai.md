@@ -1,97 +1,27 @@
-# Cấu hình AI viết dự thảo — `/api/admin/ai`
+# Máy AI viết dự thảo — cấu hình server, không có endpoint
 
-[ADR-0056](../05-decisions/0056-ai-du-thao-qua-api-cho-hop-thuong.md). Quản trị chọn máy viết dự thảo AI
-([17-du-thao-bien-ban.md](17-du-thao-bien-ban.md)): **máy local** cấu hình bằng `Ai:BaseUrl`, `Ai:Model` (ADR-0054), hoặc
-một **API chuẩn OpenAI** (`POST {apiBaseUrl}/chat/completions`, ví dụ OpenCode Zen `https://opencode.ai/zen/v1`).
+Mọi dự thảo AI ([17-du-thao-bien-ban.md](17-du-thao-bien-ban.md)) do **máy AI của nhóm** viết, với mọi cuộc họp và mọi
+mức mật ([ADR-0054](../05-decisions/0054-ai-du-thao-bien-ban-chay-tai-cho.md),
+[ADR-0088](../05-decisions/0088-bo-cau-hinh-ai-chi-dung-may-ai-cua-nhom.md)). Máy là một server chuẩn OpenAI
+(`POST {Ai:BaseUrl}/chat/completions`: Ollama, llama.cpp `llama-server`, LM Studio, vLLM) trên máy của thành viên, server
+gọi qua Tailscale. Lời thoại không ra khỏi hệ thống của nhóm.
 
-- **Chỉ cuộc họp Thường gửi ra API.** Nội bộ và Mật luôn dùng máy local; `aiReady` của dự thảo và lỗi `503 MSG394`
-  tính theo máy mà cuộc họp đó được dùng.
-- Mọi endpoint cần capability `AdminUsers` (token và database): chưa đăng nhập `401`, thiếu quyền `403`.
-- Key gửi lên và **không bao giờ trả về**; server lưu mã hoá AES-256-GCM, chỉ trả `hasApiKey` và 4 ký tự cuối.
-- Mỗi lần gọi API gửi `User-Agent: TrustCabinet/1.0` và `x-opencode-session` (một GUID mới). OpenCode Go
-  (`https://opencode.ai/inference/go/v1`, cũng nhận `https://opencode.ai/zen/go/v1`; gói trả theo tháng) từ chối lời gọi thiếu header này; OpenCode Zen
-  (`https://opencode.ai/zen/v1`, trả theo số dư) và các API khác bỏ qua nó. Key Go chỉ dùng được với địa chỉ Go, key Zen
-  với địa chỉ Zen: gọi nhầm thì Zen báo `402 Insufficient account funds`.
-- Model suy luận (DeepSeek V4.1) tính cả phần suy luận vào `max_tokens`: API được `Ai:ApiMaxTokens` (8192), máy local
-  `Ai:MaxTokens` (2048). Hết giới hạn trước khi trả lời thì dự thảo báo `API AI dùng hết … token khi đang suy luận`.
-- Lời gọi API kèm `reasoning_effort` = `Ai:ApiReasoningEffort` (mặc định `none`: tắt suy luận). Bộ đo `tests/ai` với
-  DeepSeek V4.1 Flash qua OpenCode Go: bật suy luận 28/33 ý, 350 giây, một cuộc họp hết token; tắt suy luận 33/33 ý
-  (trừ một ý do dữ liệu mẫu đã bị gán tên giọng), 103 giây. Máy local qwen2.5 7B: 33/33, 1.082 giây (khoảng 18 phút).
-- Viết qua API có cách gọi riêng ([17-du-thao-bien-ban.md](17-du-thao-bien-ban.md)): mỗi mục chương trình đọc cả lời
-  thoại trong một lần và viết song song (`Ai:ApiParallelism`); máy local giữ nguyên cách cắt đoạn 9.000 ký tự cho context
-  8K. Đo 07/11 trên 8 cuộc họp mẫu, thời gian từ lúc bấm tới lúc xong: 65,9 giây, họp dài 15,4 giây (trước đó 40), 33/33 ý.
-  Gửi cả cuộc họp trong một lần như AI-eCabinet cũng đã thử: 67,1 giây, 33/33 ý, không nhanh hơn nên không giữ.
-- Qua API, prompt có thêm một quy tắc riêng (`SummaryWriter.ApiSpellingRule`, máy local không nhận): từ tiếng Anh mà máy
-  nhận dạng giọng nói chép sai thì viết lại đúng chính tả; tên riêng không chắc thì giữ nguyên. Quy tắc nêu hai kiểu chép
-  sai: chép theo âm tiếng Việt ("đét lai") và chép thành chữ trông như tiếng Anh nhưng sai ("Develoment"), và nói rõ từ
-  đọc lên gần trùng một từ thông dụng thì không phải tên riêng. Đo bằng `tests/ai` (case `9-noi-chem-tieng-anh` và bản gỡ
-  băng thật của `Test04.mp3`, giữ ngoài repo), mỗi case 3 lần, ngày 07/11:
+- Cấu hình bằng các khoá `Ai:*` ở [17-du-thao-bien-ban.md § Cấu hình máy AI](17-du-thao-bien-ban.md#cấu-hình-máy-ai).
+  Không có màn hình hay endpoint nào đổi máy viết dự thảo.
+- `Ai:BackupBaseUrl` đặt thì có **máy dự phòng** ([ADR-0063](../05-decisions/0063-may-ai-du-phong.md)): máy chính không
+  nhận kết nối trong `Ai:ConnectTimeoutSeconds` (10 giây) thì lời gọi chuyển sang máy dự phòng, và 2 phút sau mới hỏi lại
+  máy chính. Cả hai không kết nối được thì dự thảo lỗi với `Không kết nối được máy AI chính lẫn máy dự phòng. Cả hai có thể
+  đang tắt.`
+- `aiReady` của dự thảo là `false` khi server chưa đặt `Ai:BaseUrl` và `Ai:Model`; khi đó yêu cầu dự thảo trả
+  `503 MSG394` `Máy AI chưa sẵn sàng. Vui lòng thử lại sau.` Máy đã cấu hình mà đang tắt thì yêu cầu vẫn vào hàng chờ và
+  dự thảo lỗi kèm lý do.
+- Máy trả lỗi thì lý do kèm lời của máy nếu đọc được (`Máy AI trả lỗi 404. Máy AI báo: model "…" not found`, tối đa 200
+  ký tự). Model suy luận (Qwen 3, DeepSeek R1) dùng hết `Ai:MaxTokens` trước khi trả lời thì lỗi là `Máy AI dùng hết …
+  token khi đang suy luận, chưa kịp trả lời.`; phần `<think>` trong câu trả lời bị bỏ.
 
-  | | Case mẫu (11 từ chép theo âm) | Test04.mp3 (18 từ) |
-  |---|---|---|
-  | Máy local qwen2.5 7B, không có quy tắc | 2/11, các từ khác bị bỏ khỏi dự thảo | 3/18 |
-  | API, quy tắc chỉ nêu kiểu chép theo âm | 10–11/11 | 3–7/18: "Proction" chỉ sửa 1/4 lần |
-  | API, quy tắc hiện hành | 10–11/11 | 7/18 cả 3 lần: Production, ready, upload, final luôn đúng |
+## Đã bỏ
 
-  Vẫn không sửa: "UIT" (UAT), "inqui" (inquiry) và tên riêng "On Ou DINH" (One Housing), "ONE" (OneHub), "TNGC" (T&C):
-  model không đủ căn cứ, và tên riêng đúng ra phải sửa ở bước gỡ băng (Whisper large-v3 nghe đúng các từ này). Bộ 8 cuộc
-  họp mẫu vẫn 33/33 ý, 0 lỗi bịa.
-- Khi API từ chối, `message` kèm lời của nhà cung cấp (`… Nhà cung cấp: Insufficient account funds`, tối đa 200 ký tự).
-
-| Method | Đường dẫn | Kết quả |
-|---|---|---|
-| `GET` | `/api/admin/ai` | `200` cấu hình hiện hành |
-| `PUT` | `/api/admin/ai` | `200` `MSG408` `{ code, message, settings }` |
-| `POST` | `/api/admin/ai/test` | `200` `MSG412` `{ code, message, model, elapsedMs }`; không lưu gì |
-
-## Cấu hình (`GET`, `settings`)
-
-```json
-{
-  "mode": "Api",
-  "apiBaseUrl": "https://opencode.ai/inference/go/v1",
-  "apiModel": "deepseek-v4.1-flash",
-  "hasApiKey": true,
-  "apiKeyHint": "abcd",
-  "localModel": "qwen2.5:7b-instruct",
-  "localConfigured": true,
-  "updatedAt": "2026-11-06T16:00:00+00:00",
-  "updatedByName": "Phạm Quản Trị"
-}
-```
-
-Chưa lưu lần nào thì `mode` là `Local`, các trường API rỗng, `updatedAt` `null`.
-
-## Lưu (`PUT`) và gọi thử (`POST …/test`)
-
-Body: `{ mode, apiBaseUrl, apiModel, apiKey }`.
-
-- `mode`: `Local` hoặc `Api` (đúng chữ hoa thường). Giá trị khác, kể cả `api` hay `LOCAL`, là `400 MSG409` với
-  `errors.mode`, khi lưu cũng như khi gọi thử (gọi thử không gọi ra ngoài).
-- `apiBaseUrl`: `https://…`, tối đa 500 ký tự, không chứa user/password; bắt buộc khi `mode` là `Api`. Chọn `Local` thì
-  địa chỉ và model vẫn được giữ cho lần sau.
-- `apiModel`: không khoảng trắng, tối đa 100 ký tự; bắt buộc khi `Api`.
-- `apiKey`: `null` giữ key đã lưu, `""` xoá key, chuỗi khác (8–500 ký tự, không khoảng trắng) thay key. Chọn `Api` thì
-  phải có key (mới hoặc đã lưu) và không được xoá.
-- Gọi thử với `mode` là `Api` dùng key trong body, không có thì dùng key đã lưu; gửi một câu ngắn, chờ tối đa 1 phút.
-- Gọi thử với `mode` là `Local` gọi máy local mà server đang cấu hình (`Ai:BaseUrl`, qua Tailscale), đúng đường dự thảo
-  của cuộc họp Nội bộ, Mật, Tối mật đi; bỏ qua các trường API trong body; chờ tối đa 90 giây. Server chưa cấu hình máy
-  local, máy tắt hay ra khỏi Tailscale đều là `502 MSG413` kèm lý do. Màn Cấu hình AI có một nút **Thử kết nối** ở
-  chân form, thử đúng thứ của tab đang chọn: tab Máy local thử máy local, tab API thử API. Đang dùng API mà muốn kiểm máy
-  local trước buổi họp thì chọn tab Máy local rồi bấm thử; chọn tab không lưu gì.
-- Server có thêm máy dự phòng (`Ai:BackupBaseUrl`, [ADR-0063](../05-decisions/0063-may-ai-du-phong.md)) thì gọi thử
-  `Local` hỏi cả hai máy cùng lúc và `message` nói rõ từng máy. Một trong hai trả lời là `200 MSG412`, `elapsedMs` là
-  thời gian của máy viết dự thảo (máy chính nếu nó trả lời, không thì máy dự phòng); cả hai không trả lời là
-  `502 MSG413` kèm lý do của từng máy.
-
-## Lỗi
-
-| Mã | HTTP | Khi nào |
-|---|---|---|
-| `MSG409` | 400 | Dữ liệu sai; `errors` theo trường `mode`, `apiBaseUrl`, `apiModel`, `apiKey` |
-| `MSG410` | 500 | Lỗi database khi đọc |
-| `MSG411` | 503 | Lỗi database khi lưu |
-| `MSG413` | 502 | Gọi thử thất bại; `message` là lý do: `API AI từ chối key (401).`, `API AI đòi thanh toán (402)…` (model trả phí, tài khoản hết tiền), `…giới hạn số lần gọi (429)…`, không kết nối được, API trả lỗi khác |
-
-Mỗi lần lưu ghi nhật ký kiểm toán `ai_settings.updated` (chế độ, địa chỉ, model, key `kept`/`replaced`/`removed`), không
-có key.
+Màn Cấu hình AI của quản trị (`GET`, `PUT /api/admin/ai`, `POST /api/admin/ai/test`, ADR-0056) cho cuộc họp Thường viết
+dự thảo qua API bên ngoài; bỏ ngày 27/11/2026 cùng bảng `ai_provider_settings` (migration `RemoveAiProviderSetting`), sự
+kiện kiểm toán `ai_settings.updated` và các khoá `Ai:EncryptionKey`, `Ai:ApiMaxTokens`, `Ai:ApiReasoningEffort`,
+`Ai:ApiParallelism`. Mã `MSG408`–`MSG413` ngừng dùng, không tái cấp.

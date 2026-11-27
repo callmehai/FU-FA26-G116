@@ -59,7 +59,7 @@ Khi gửi duyệt theo UC-17, người tổ chức chọn một tài khoản đa
 | Mã | Nhãn | Ghi chú |
 |---|---|---|
 | `Normal` | Thường | Mặc định |
-| `Internal` | Nội bộ | Như Thường; dự thảo AI luôn ở máy local (ADR-0056) |
+| `Internal` | Nội bộ | Như Thường (dự thảo AI của mọi mức mật do máy AI của nhóm viết, ADR-0088) |
 | `Secret` | Mật | Không tải tài liệu, ghi âm, biên bản; mỗi lần xem tài liệu ghi nhật ký; ẩn khỏi kho khi Quản trị xem tài khoản đã khoá; cảnh báo khi mời Khách |
 
 Hiện thực phía frontend: [types/meeting.ts](../../frontend/src/types/meeting.ts).

@@ -1,7 +1,9 @@
 # Đo độ chính xác dự thảo AI trên cuộc họp thật
 
-Bộ công cụ so độ chính xác của dự thảo biên bản do AI viết (SCRUM-36) giữa máy local (`qwen2.5:7b-instruct`) và API
-(`deepseek-v4.1-flash`) trên các cuộc họp thật của nhóm, theo cách hội đồng chấp nhận được: có căn cứ đúng sai độc lập,
+Bộ công cụ đo độ chính xác của dự thảo biên bản do AI viết (SCRUM-36) trên các cuộc họp thật của nhóm. Vòng 1 so máy
+local (`qwen2.5:7b-instruct`) với API (`deepseek-v4.1-flash`); từ 27/11/2026 app bỏ đường API, chỉ còn máy AI của nhóm
+([ADR-0088](../../../docs/05-decisions/0088-bo-cau-hinh-ai-chi-dung-may-ai-cua-nhom.md)), nên các vòng sau so hai nguồn
+dự thảo bất kỳ (hai model local, hoặc với bản API đã sinh ở vòng 1), theo cách hội đồng chấp nhận được: có căn cứ đúng sai độc lập,
 chấm mù, hai người chấm độc lập và đo mức đồng thuận. Bộ đo trên cuộc họp mẫu ở [`../README.md`](../README.md) vẫn
 dùng khi đổi prompt; bộ này trả lời câu "trên họp thật thì AI viết đúng bao nhiêu".
 
@@ -61,29 +63,24 @@ vào `tests/ai/out/real/`. `kit.py` tự ghép sheet với cuộc họp theo ng�
 
 ### 3. Sinh dự thảo
 
-Mở tab app đã đăng nhập (Thư ký/Chủ toạ của các cuộc họp, và quản trị để đổi Local/API), dán
-[`generate.js`](generate.js) vào DevTools Console, rồi:
+Mở tab app đã đăng nhập (Thư ký/Chủ toạ của các cuộc họp), dán [`generate.js`](generate.js) vào DevTools Console,
+rồi:
 
 ```js
-await tcEval.getMode()        // ghi lại chế độ hiện tại
 await tcEval.campaign([
   { id: '01a1fc63-0818-7007-9e26-8532a29914d7', slug: 'test-mic' },
   { id: '01a1fce5-d8f0-7293-97f6-4ead9928272b', slug: 'thu-ho' },
-], { runs: 3 })               // Local × 3 rồi Api × 3 mỗi cuộc họp, xong trả lại chế độ cũ
+], { runs: 3 })               // 3 bản mỗi cuộc họp, bằng model đang cấu hình trên server
 ```
 
 Trình duyệt tải về `<slug>-local-1.md`, `<slug>-local-1.json`… (Chrome hỏi cho phép tải nhiều file: chọn Cho phép).
-Chuyển hết vào `tests/ai/out/real/drafts/`. Từng bước lẻ: `tcEval.setMode('Api')`, `tcEval.draft(id)`,
-`tcEval.save(r, 'test-mic-api-1')`.
+Chuyển hết vào `tests/ai/out/real/drafts/`. Từng bước lẻ: `tcEval.draft(id)`, `tcEval.save(r, 'test-mic-local-1')`.
+Nguồn thứ hai đặt tên khác qua `{ provider: 'qwen3' }` (đổi `Ai:Model` trên server giữa hai lần chạy).
 
 - Token lấy đúng như app: `POST /api/auth/refresh` bằng cookie có sẵn, trong Web Lock `trustcabinet.refresh`; snippet
   không chứa bí mật nào.
-- Đổi chế độ gửi lại địa chỉ và model API đang lưu cùng `apiKey: null` (giữ nguyên key): `PUT /api/admin/ai` lưu đúng
-  những gì gửi lên, nên gửi mỗi `{ mode }` sẽ xoá địa chỉ và model API.
 - **Mỗi lần sinh thay dự thảo đang lưu của cuộc họp** (kể cả phần Thư ký đã sửa hay đã duyệt). Bản trước đó được
   `export.py` giữ ở `stored/`.
-- **Cuộc họp mức Nội bộ hoặc Mật luôn dùng máy local** (ADR-0056), dù chế độ là API: `campaign` bỏ qua phần API của
-  cuộc họp đó và báo trong console. Muốn so cả hai trên cuộc họp đó thì cả nhóm phải quyết đổi mức mật về Thường.
 - Đừng sửa lời thoại hay gán tên người nói trong lúc chạy: file meta ghi `transcriptChangedAt` và `kit.py` cảnh báo nếu
   các bản không cùng một phiên bản lời thoại.
 

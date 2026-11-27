@@ -345,8 +345,7 @@ function checker(qa) {
   }
 }
 
-const NOTICE_NORMAL = 'lời thoại (chữ, không có tiếng) có thể được gửi tới dịch vụ AI bên ngoài'
-const NOTICE_RESTRICTED = 'Dự thảo biên bản do máy AI của nhóm viết; lời thoại không ra khỏi hệ thống.'
+const NOTICE_AI = 'Dự thảo biên bản do máy AI của nhóm viết; lời thoại không ra khỏi hệ thống.'
 
 // ---------------------------------------------------------------------------------------------------------------------
 // Guest helpers (OTP mailbox: example.test lands in the local Mailpit, the pattern proven by FE-01/AC27).
@@ -470,13 +469,13 @@ export default {
       id: 'AC2',
       role: 'member',
       devices: ['desktop', 'phone'],
-      title: 'Thông báo ghi âm ở màn chờ nói đúng nơi lời thoại đi theo mức độ mật (ADR-0056); cuộc họp Mật có nhãn Mật',
+      title: 'Thông báo ghi âm ở màn chờ nói dự thảo do máy AI của nhóm viết, mọi mức độ mật (ADR-0088); cuộc họp Mật có nhãn Mật',
       steps: [
         'thanhvien@ mở màn chờ của cuộc họp Thường, bấm (i) cạnh thông báo ghi âm',
         'Mở màn chờ của cuộc họp Mật (kết hợp), bấm (i)',
       ],
       expected:
-        'Thường: (i) nói lời thoại (chữ) có thể gửi tới dịch vụ AI bên ngoài. Mật: (i) nói dự thảo do máy AI của nhóm viết, lời thoại không ra khỏi hệ thống; màn chờ có nhãn "Mật"',
+        'Thường và Mật: (i) nói dự thảo do máy AI của nhóm viết, lời thoại không ra khỏi hệ thống, không nhắc dịch vụ AI bên ngoài; màn chờ cuộc họp Mật có nhãn "Mật"',
       run: guarded(async (qa) => {
         const normal = await reused(qa, 'live')
         const secret = await reused(qa, 'secret')
@@ -484,14 +483,16 @@ export default {
         const side = qa.page.getByRole('region', { name: 'Sẵn sàng tham gia?' })
         const tip = side.locator('.prejoin-recording .info-tip')
         await qa.expect(tip).toBeVisible({ timeout: 10_000 })
-        qa.expect(await tip.getAttribute('aria-label')).toContain(NOTICE_NORMAL)
+        const normalLabel = await tip.getAttribute('aria-label')
+        qa.expect(normalLabel).toContain(NOTICE_AI)
+        qa.expect(normalLabel).not.toContain('dịch vụ AI bên ngoài')
         await press(qa, tip)
         await qa.shot('thuong - thong bao ghi am')
         await openLobby(qa, secret)
         await qa.expect(side.locator('.level').filter({ hasText: 'Mật' })).toBeVisible()
         await qa.expect(tip).toBeVisible({ timeout: 10_000 })
         const label = await tip.getAttribute('aria-label')
-        qa.expect(label).toContain(NOTICE_RESTRICTED)
+        qa.expect(label).toContain(NOTICE_AI)
         qa.expect(label).not.toContain('dịch vụ AI bên ngoài')
         await press(qa, tip)
         await noSidewaysScroll(qa)

@@ -1,6 +1,6 @@
 # ADR-0056: Quản trị chọn máy AI viết dự thảo — máy local hoặc API, chỉ cuộc họp Thường được gửi ra API
 
-- **Trạng thái:** Chấp nhận — PO (Hải) đề xuất 06/11/2026, chấp nhận 14/11/2026; bổ sung, không thay [ADR-0054](0054-ai-du-thao-bien-ban-chay-tai-cho.md)
+- **Trạng thái:** Thay thế bởi [ADR-0088](0088-bo-cau-hinh-ai-chi-dung-may-ai-cua-nhom.md) (27/11/2026). Trước đó: Chấp nhận — PO (Hải) đề xuất 06/11/2026, chấp nhận 14/11/2026; bổ sung, không thay [ADR-0054](0054-ai-du-thao-bien-ban-chay-tai-cho.md)
 - **Ngày:** 2026-11-06
 - **Người quyết định:** Hải (PO)
 - **Liên quan:** SCRUM-36 (dự thảo AI); SCRUM-186 (chế độ API); [ADR-0054](0054-ai-du-thao-bien-ban-chay-tai-cho.md) (AI chạy tại chỗ);

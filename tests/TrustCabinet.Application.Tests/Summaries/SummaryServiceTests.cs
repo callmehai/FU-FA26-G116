@@ -19,14 +19,12 @@ public sealed class SummaryServiceTests
     private readonly FakeUnitOfWork _unitOfWork = new();
     private readonly FakeMeetingRepository _meetings = new();
     private readonly FakeLanguageModel _local = new("qwen-local");
-    private readonly FakeLanguageModelProvider _models;
     private readonly Guid _secretary = Guid.CreateVersion7();
     private readonly Guid _member = Guid.CreateVersion7();
     private readonly Guid _meeting = Guid.CreateVersion7();
 
     public SummaryServiceTests()
     {
-        _models = new FakeLanguageModelProvider(_local);
         MeetingParticipant Participant(Guid userId, MeetingRole role) => new()
         {
             MeetingId = _meeting, UserId = userId, Role = role, AssignmentStatus = AssignmentStatus.Current,
@@ -42,9 +40,8 @@ public sealed class SummaryServiceTests
         _meetings.ActiveUsers.UnionWith([_secretary, _member]);
     }
 
-    private SummaryService Service() => new(_summaries, _sources, _unitOfWork, _meetings, _models,
-        new MeetingTranscriptReader(_transcript), new FixedClock(Now), NullLogger<SummaryService>.Instance,
-        Options.Create(new LanguageModelOptions { ApiParallelism = 1 }));
+    private SummaryService Service() => new(_summaries, _sources, _unitOfWork, _meetings, _local,
+        new MeetingTranscriptReader(_transcript), new FixedClock(Now), NullLogger<SummaryService>.Instance);
 
     [Fact]
     public async Task The_secretary_queues_a_draft_and_reads_it_back_as_queued()
@@ -123,7 +120,7 @@ public sealed class SummaryServiceTests
     }
 
     [Fact]
-    public async Task The_worker_writes_the_draft_with_the_in_house_harness_for_the_in_house_model()
+    public async Task The_worker_writes_the_draft_with_the_in_house_model()
     {
         await Service().RequestAsync(_meeting, _secretary);
 
@@ -133,21 +130,7 @@ public sealed class SummaryServiceTests
         Assert.Equal(SummaryStatus.Ready, row.Status);
         Assert.Equal("qwen-local", row.Model);
         Assert.Contains("Rà soát tiến độ.", row.Content);
-        Assert.DoesNotContain(_local.Systems, s => s.Contains(SummaryWriter.ApiSpellingRule.Trim(), StringComparison.Ordinal));
         Assert.False(await Service().ProcessNextAsync());
-    }
-
-    [Fact]
-    public async Task A_remote_model_writes_the_draft_with_the_hosted_harness()
-    {
-        var api = new FakeLanguageModel("deepseek-v4", remote: true);
-        _models.Model = api;
-        await Service().RequestAsync(_meeting, _secretary);
-
-        Assert.True(await Service().ProcessNextAsync());
-
-        Assert.Equal("deepseek-v4", Assert.Single(_summaries.Rows).Model);
-        Assert.Contains(api.Systems, s => s.Contains(SummaryWriter.ApiSpellingRule.Trim(), StringComparison.Ordinal));
     }
 
     [Fact]

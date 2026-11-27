@@ -1445,9 +1445,9 @@ export default {
     {
       id: 'AC30',
       role: 'admin',
-      title: 'Quản trị viên thấy đủ 4 mục Quản trị, mỗi mục mở đúng màn hình (RBAC_FT39)',
+      title: 'Quản trị viên thấy đủ 3 mục Quản trị, mỗi mục mở đúng màn hình (RBAC_FT39)',
       steps: ['Đăng nhập quantri@', 'Mở nhóm Quản trị, bấm từng mục'],
-      expected: 'Nhóm "Quản trị" có "Người dùng", "Vai trò", "Cấu hình AI", "Nhật ký hệ thống"; mỗi mục mở đúng màn hình của nó',
+      expected: 'Nhóm "Quản trị" có "Người dùng", "Vai trò", "Nhật ký hệ thống" (không còn "Cấu hình AI"); mỗi mục mở đúng màn hình của nó',
       async run(qa) {
         await qa.goto('/calendar')
         const open = qa.page.getByRole('button', { name: 'Quản trị' })
@@ -1455,11 +1455,11 @@ export default {
         for (const [name, heading] of [
           ['Người dùng', 'Người dùng'],
           ['Vai trò', 'Vai trò'],
-          ['Cấu hình AI', 'Cấu hình AI'],
           ['Nhật ký hệ thống', 'Nhật ký hệ thống'],
         ]) {
           await qa.expect(qa.page.getByRole('link', { name, exact: true })).toBeVisible()
         }
+        await qa.expect(qa.page.getByRole('link', { name: 'Cấu hình AI', exact: true })).toHaveCount(0)
         for (const [name, heading] of [
           ['Người dùng', 'Người dùng'],
           ['Vai trò', 'Vai trò'],
@@ -1468,7 +1468,7 @@ export default {
           await qa.expect(qa.page.getByRole('heading', { name: heading, exact: true })).toBeVisible()
         }
         await settled(qa)
-        await qa.shot('du-4-muc-quan-tri')
+        await qa.shot('du-3-muc-quan-tri')
         await noSidewaysScroll(qa)
       },
     },

@@ -1,6 +1,6 @@
 # ADR-0063: Máy AI local dự phòng cho dự thảo biên bản
 
-- **Trạng thái:** Đề xuất — PO (Hải) 14/11/2026
+- **Trạng thái:** Đề xuất — PO (Hải) 14/11/2026; điểm 5 (nút "Thử kết nối") thay thế bởi [ADR-0088](0088-bo-cau-hinh-ai-chi-dung-may-ai-cua-nhom.md)
 - **Ngày:** 2026-11-15
 - **Người quyết định:** Hải (PO)
 - **Bổ sung:** [ADR-0054](0054-ai-du-thao-bien-ban-chay-tai-cho.md) (AI viết dự thảo chạy tại chỗ),

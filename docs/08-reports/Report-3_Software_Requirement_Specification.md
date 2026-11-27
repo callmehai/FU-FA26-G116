@@ -24,6 +24,7 @@ Table of Contents
 | 19–23/11/2026 | M | KhanhPG, BA | Aligned with the app after the 21/11 trial: three system roles with Chair and Secretary as meeting roles, Take Meeting Notes, report queries, hand corrections kept when a recording is transcribed again. |
 | 24–26/11/2026 | M | HuyNQ, LocHD, KhanhPG | Business rules renumbered BR-001–153 and use cases UC-01–UC-81; UC diagrams in strict UML; system-run steps moved to Report 4; section III screens matched to wireframe v16 and the running app. |
 | 26/11/2026 | M, D | LocHD, KhanhPG | Review by KhanhPG: the AI drafting service and the in-house services are no longer actors or external APIs; Organizer replaced by the Member who created the Meeting; actor and screen descriptions without UC/BR references; Change Log condensed. Section III screens condensed to the G158 template: one “Related UC” line per screen, no business-rule references, shorter field descriptions. |
+| 27/11/2026 | M | LocHD | AI Configuration removed (ADR-0088): every draft is written by the team’s own AI server; screen figures re-captured from wireframe v17 without the AI Configuration menu item; MSG394 now reads “Please try again later”. |
 
 *A - Added M - Modified D - Deleted
 
@@ -5505,7 +5506,7 @@ The quality attributes below are stated as measurable targets for a single-organ
 | 391 | MSG391 | Toast / Inline success | UC-61 / Step 4 | Draft approved. |
 | 392 | MSG392 | Page / Panel message | UC-58 / EX-7; UC-59 / EX-1 | Unable to load the draft. |
 | 393 | MSG393 | Form error | UC-58 / EX-5; UC-60 / EX-4; UC-61 / EX-3 | Unable to save the draft. Please try again. |
-| 394 | MSG394 | Form error | UC-58 / EX-4 | The AI server is not ready. Contact the system administrator. |
+| 394 | MSG394 | Form error | UC-58 / EX-4 | The AI server is not ready. Please try again later. |
 | 395 | MSG395 | Toast / Inline success | UC-70 / Step 5 | Minutes draft created. |
 | 396 | MSG396 | Toast / Inline success | UC-71 / Step 5 | Minutes saved. |
 | 397 | MSG397 | Form error | UC-70 / EX-1; UC-71 / EX-4 | Only the Chair or Secretary may write the minutes. |

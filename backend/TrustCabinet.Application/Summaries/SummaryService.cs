@@ -2,9 +2,7 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Unicode;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using TrustCabinet.Application.Abstractions;
-using TrustCabinet.Application.Ai;
 using TrustCabinet.Application.Meetings;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
@@ -20,8 +18,8 @@ namespace TrustCabinet.Application.Summaries;
 /// (SCRUM-32) take the draft as their starting point, and a person is answerable for what they say.
 /// </summary>
 public sealed class SummaryService(IMeetingSummaryRepository summaries, ISummarySourceQuery sources, IUnitOfWork unitOfWork,
-    IMeetingRepository meetings, ILanguageModelProvider models, MeetingTranscriptReader transcript, TimeProvider clock,
-    ILogger<SummaryService> logger, IOptions<LanguageModelOptions> aiOptions, IMeetingChangePublisher? changes = null)
+    IMeetingRepository meetings, ILanguageModel model, MeetingTranscriptReader transcript, TimeProvider clock,
+    ILogger<SummaryService> logger, IMeetingChangePublisher? changes = null)
     : ISummaryService
 {
     /// <summary>
@@ -40,10 +38,6 @@ public sealed class SummaryService(IMeetingSummaryRepository summaries, ISummary
         if (outcome.Failure == SummaryFailure.None) await AnnounceAsync(meetingId);
         return outcome;
     }
-    /// <summary>ADR-0056 — the hosted harness: whole agenda items, <c>Ai:ApiParallelism</c> of them at once.</summary>
-    private Task<SummaryDraft> WriteThroughApiAsync(ILanguageModel model, MeetingFacts facts, CancellationToken ct)
-        => new SummaryWriter(model, SummaryWriter.ApiChunkChars, SummaryWriter.ApiSpellingRule)
-            .WritePartsAsync(facts, Math.Clamp(aiOptions.Value.ApiParallelism, 1, 8), ct);
 
     /// <summary>
     /// Vietnamese letters are stored as they are: the default encoder writes each one as a six-character <c>\uXXXX</c>,
@@ -66,7 +60,7 @@ public sealed class SummaryService(IMeetingSummaryRepository summaries, ISummary
                 var row = await summaries.FindWithPeopleAsync(meetingId, token);
                 var visible = row is not null && (manages || row.ReviewedAt is not null);
                 // Ready for this meeting: an ordinary one may be written by the API, any other only by the in-house model.
-                var ready = (await models.ForAsync(meeting.Sensitivity, token)).IsConfigured;
+                var ready = model.IsConfigured;
                 return new(Data: new SummaryState(visible ? View(row!) : null, manages, ready,
                     manages ? await sources.ReadinessAsync(meetingId, token) : null));
             }, ct);
@@ -91,7 +85,7 @@ public sealed class SummaryService(IMeetingSummaryRepository summaries, ISummary
                 // the agenda and the votes alone the model has nothing to summarise and fills the gap itself (Khánh 19/11/2026).
                 if (meeting.Status != MeetingStatus.Ended) return new(SummaryFailure.WrongMeetingStatus);
                 if (await sources.CountSentencesAsync(meetingId, token) == 0) return new(SummaryFailure.NothingSaid);
-                if (!(await models.ForAsync(meeting.Sensitivity, token)).IsConfigured) return new(SummaryFailure.AiUnavailable);
+                if (!model.IsConfigured) return new(SummaryFailure.AiUnavailable);
                 var row = await summaries.FindByMeetingAsync(meetingId, true, token);
                 if (row is { Status: SummaryStatus.Queued or SummaryStatus.Running }) return new(SummaryFailure.Busy);
                 var now = clock.GetUtcNow();
@@ -194,7 +188,6 @@ public sealed class SummaryService(IMeetingSummaryRepository summaries, ISummary
         await AnnounceAsync(next.MeetingId);
 
         string? content = null;
-        ILanguageModel? model = null;
         var error = "";
         // The draft is of the record as it stood now, when it is read: a line corrected while the model writes (minutes
         // on a laptop) is not in it, so the draft must read as behind that correction (readiness.transcriptChangedAt).
@@ -202,13 +195,7 @@ public sealed class SummaryService(IMeetingSummaryRepository summaries, ISummary
         try
         {
             var facts = await ReadAsync(token => FactsAsync(next.MeetingId, token), ct);
-            // Chosen now, as the job runs: a meeting marked Internal or Secret since it was queued stays on the in-house model.
-            var sensitivity = await ReadAsync(token => sources.FindSensitivityAsync(next.MeetingId, token), ct);
-            model = await models.ForAsync(sensitivity, ct);
-            // The in-house model keeps its own harness untouched; a hosted API reads whole agenda items, side by side or in one call.
-            var draft = model.Remote
-                ? await WriteThroughApiAsync(model, facts, ct)
-                : await new SummaryWriter(model).WriteAsync(facts, ct);
+            var draft = await new SummaryWriter(model).WriteAsync(facts, ct);
             content = JsonSerializer.Serialize(draft, Json);
         }
         catch (LanguageModelException failure)
@@ -228,7 +215,7 @@ public sealed class SummaryService(IMeetingSummaryRepository summaries, ISummary
             try
             {
                 // A new draft replaces the old one whole: what was reviewed or corrected was the old text.
-                await ReadAsync(token => summaries.StoreDraftAsync(next.Id, content, model!.Model, readAt, now, token), ct);
+                await ReadAsync(token => summaries.StoreDraftAsync(next.Id, content, model.Model, readAt, now, token), ct);
                 await AnnounceAsync(next.MeetingId);
                 return true;
             }

@@ -9,10 +9,9 @@
 // 08/11; a Guest never sees the minutes, PO 07/11; no recall of a submitted revision and no email on issue, PO 11/11).
 // Signing the minutes, even simulated (former UC-62, former UC-63, SCRUM-37), was dropped by the PO on 14/11 and is not tested.
 //
-// AI: the server is set to write Normal meetings through a paid outside API (ADR-0056). This plan therefore never asks
-// for an AI draft of a Normal meeting — not through the API and not by pressing "Tạo dự thảo" — and never changes the
-// AI settings. A draft is only asked for on Internal meetings, which always stay on the in-house machine (BR-129); when
-// that machine is off, the request fails with a reason the Secretary can act on, which is what is checked here.
+// AI: every draft is written by the team's in-house machine (ADR-0088), which is often off. A draft is only asked for on
+// one reused Internal meeting, so a run does not queue a draft per meeting; when the machine is off, the request fails
+// with a reason the Secretary can act on, which is what is checked here.
 //
 // Safe on a shared local database: every meeting is created here through the API, titled "[QA] FE-12 …", nine weeks
 // ahead, organised by thuky@ (Secretary) with chutoa@ as Chair and approver and thanhvien@ as Member. Meetings whose
@@ -1266,23 +1265,17 @@ export default {
     {
       id: 'AC19',
       role: 'secretary',
-      title: 'Dự thảo AI — quyền và trạng thái (không gọi API trả phí): thành viên 403 MSG385; chưa họp, đang họp 409 MSG386; đã kết thúc mà chưa có câu nói 409 MSG481; chưa có dự thảo 409 MSG390; họp Thường chỉ đọc aiReady',
+      title: 'Dự thảo AI — quyền và trạng thái: thành viên 403 MSG385; chưa họp, đang họp 409 MSG386; đã kết thúc mà chưa có câu nói 409 MSG481; chưa có dự thảo 409 MSG390; họp Thường chỉ đọc aiReady',
       steps: [
-        'Đọc cấu hình AI (quantri@ GET /api/admin/ai), không đổi gì',
         'Cuộc họp Nội bộ đã kết thúc: thanhvien@ POST, PUT …/summary, POST …/summary/review',
         'Cuộc họp Nội bộ chưa họp: Thư ký POST …/summary; PUT …/summary; POST …/summary/review',
         'Cuộc họp Thường đang họp: POST …/summary',
         'Cuộc họp Thường đã kết thúc, không có câu nói nào: GET …/summary; POST …/summary (bị chặn trước khi vào hàng chờ)',
-        'Đọc lại cấu hình AI',
       ],
       expected:
-        'Thành viên 403 MSG385 ba lần; chưa họp: POST 409 MSG386 "Chỉ tạo dự thảo khi cuộc họp đã kết thúc.", PUT/review 409 MSG390 (không có gì vào hàng chờ); đang họp: POST 409 MSG386; họp Thường đã kết thúc: aiReady true, canManage true, readiness.sentences 0, POST 409 MSG481 "Cuộc họp chưa có lời thoại nào để AI tóm tắt." và không có gì vào hàng chờ; cấu hình AI trước và sau giống hệt',
+        'Thành viên 403 MSG385 ba lần; chưa họp: POST 409 MSG386 "Chỉ tạo dự thảo khi cuộc họp đã kết thúc.", PUT/review 409 MSG390 (không có gì vào hàng chờ); đang họp: POST 409 MSG386; họp Thường đã kết thúc: aiReady true, canManage true, readiness.sentences 0, POST 409 MSG481 "Cuộc họp chưa có lời thoại nào để AI tóm tắt." và không có gì vào hàng chờ',
       async run(qa) {
         const c = checker(qa)
-        const admin = await client(qa, 'admin')
-        const before = await admin.get('/api/admin/ai')
-        c.check('đọc cấu hình AI', before, 200)
-        qa.note(`Cấu hình AI: mode ${before.body.mode}, localConfigured ${before.body.localConfigured}, model local ${before.body.localModel}`)
         const S = (id) => `/api/meetings/${id}/summary`
         const member = await client(qa, 'member')
         const sec = await client(qa, 'secretary')
@@ -1310,9 +1303,7 @@ export default {
           const silent = await sec.post(S(normal.id))
           if (c.check('chưa có câu nói POST', silent, 409, 'MSG481')) c.fact('message MSG481', silent.body.message === 'Cuộc họp chưa có lời thoại nào để AI tóm tắt.', silent.body.message)
           c.fact('không có gì vào hàng chờ (MSG481)', (await sec.get(S(normal.id))).body?.summary === null)
-        } else qa.note(`Bỏ qua MSG481: cuộc họp Thường có ${n.body?.readiness?.sentences} câu nói (không gửi để khỏi gọi API trả phí)`)
-        const after = await admin.get('/api/admin/ai')
-        c.fact('cấu hình AI không đổi', JSON.stringify(after.body) === JSON.stringify(before.body), JSON.stringify(after.body))
+        } else qa.note(`Bỏ qua MSG481: cuộc họp Thường có ${n.body?.readiness?.sentences} câu nói (không gửi để khỏi xếp thêm dự thảo)`)
         c.done()
       },
     },
@@ -1349,7 +1340,7 @@ export default {
     {
       id: 'AC21',
       role: 'secretary',
-      title: 'Thư ký yêu cầu dự thảo AI cho cuộc họp Nội bộ: vào hàng chờ (MSG384), luôn chạy trên máy AI local; máy tắt thì thẻ báo lỗi dễ hiểu, không gọi API ngoài',
+      title: 'Thư ký yêu cầu dự thảo AI cho cuộc họp Nội bộ: vào hàng chờ (MSG384), chạy trên máy AI local; máy tắt thì thẻ báo lỗi dễ hiểu',
       steps: [
         'Cuộc họp "[QA] FE-12 dùng lại dự thảo AI (Nội bộ)" chưa có câu nói nào thì Thư ký tải lên một bản ghi giọng máy và chờ chuyển chữ (dự thảo cần lời thoại, MSG481)',
         'Mở tab Biên bản của cuộc họp đó (đã kết thúc)',
@@ -1357,14 +1348,13 @@ export default {
         'Chờ tối đa 90 giây',
       ],
       expected:
-        'Toast "Đã gửi yêu cầu. Dự thảo sẽ tự hiện khi AI viết xong." (MSG384), chip "Đang chờ"/"AI đang viết"; POST lần nữa khi đang chờ 409 MSG387; kết thúc: chip "Lỗi" + lý do của máy local ("Không kết nối được máy AI…", không phải "API AI"), hoặc dự thảo 3 mục có nhãn "Nội dung do AI tạo — cần rà soát", model là model local',
+        'Toast "Đã gửi yêu cầu. Dự thảo sẽ tự hiện khi AI viết xong." (MSG384), chip "Đang chờ"/"AI đang viết"; POST lần nữa khi đang chờ 409 MSG387; kết thúc: chip "Lỗi" + lý do của máy local ("Không kết nối được máy AI…"), hoặc dự thảo 3 mục có nhãn "Nội dung do AI tạo — cần rà soát", có tên model',
       async run(qa) {
         const S = (id) => `/api/meetings/${id}/summary`
         const sec = await client(qa, 'secretary')
         const ai = await reused(qa, 'ai')
-        qa.expect(ai.sensitivity, 'never ask for a draft of a Normal meeting (it would call the paid API)').toBe('Internal')
+        qa.expect(ai.sensitivity, 'drafts are only asked for on the reused Internal meeting').toBe('Internal')
         await ensureSaid(qa, ai)
-        const settings = (await (await client(qa, 'admin')).get('/api/admin/ai')).body
         const state0 = (await sec.get(S(ai.id))).body
         const status0 = state0.summary?.status
         await openMinutes(qa, ai)
@@ -1406,11 +1396,10 @@ export default {
           await qa.expect(alert).toContainText(s.errorMessage)
           await snap(qa, 'may-ai-tat-bao-loi')
           qa.expect(s.errorMessage, 'the failure reason is empty').not.toBe('')
-          qa.expect(s.errorMessage, 'an Internal meeting went to the outside API (ADR-0056)').not.toMatch(/API AI|Nhà cung cấp/)
           qa.note(`Máy AI local không viết được: "${s.errorMessage}". Phần viết dự thảo thật cần bật máy AI local (xem AC22)`)
         } else {
           qa.expect(s.status).toBe('Ready')
-          qa.expect(s.model, 'an Internal meeting was written by another model than the local one').toBe(settings.localModel)
+          qa.expect(s.model, 'the draft names the model that wrote it').toBeTruthy()
           await qa.expect(draftCard(qa).getByText('Nội dung do AI tạo — cần rà soát')).toBeVisible()
           await snap(qa, 'du-thao-da-viet')
         }
@@ -1524,7 +1513,7 @@ export default {
         const sec = await client(qa, 'secretary')
         // Mỗi màn hình một cuộc họp riêng: lượt desktop đã tạo biên bản thì lượt phone vẫn còn chỗ làm.
         const ai = await reused(qa, qa.device === 'phone' ? 'aiPhone' : 'ai')
-        qa.expect(ai.sensitivity, 'never ask for a draft of a Normal meeting (it would call the paid API)').toBe('Internal')
+        qa.expect(ai.sensitivity, 'drafts are only asked for on the reused Internal meeting').toBe('Internal')
         let state = (await sec.get(S(ai.id))).body
         if (state.summary?.status !== 'Ready' || !state.summary?.draft) {
           await ensureSaid(qa, ai)

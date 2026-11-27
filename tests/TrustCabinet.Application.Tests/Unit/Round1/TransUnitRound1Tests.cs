@@ -523,7 +523,7 @@ internal sealed class T1Meetings(FakeMeetingRepository inner) : IMeetingReposito
 }
 
     private sealed record SumSvc(FakeMeetingSummaryRepository Summaries, FakeSummarySourceQuery Sources, FakeUnitOfWork Uow,
-        FakeMeetingRepository Meetings, FakeLanguageModelProvider Models, FakeLanguageModel Local, FakeMeetingTranscriptQuery Transcript,
+        FakeMeetingRepository Meetings, FakeLanguageModel Local, FakeMeetingTranscriptQuery Transcript,
         T1Logger<SummaryService> Log, SummaryService Service, Meeting Meeting, Guid Chair, Guid Secretary, Guid Member);
 
     private static SumSvc SummarySvc(MeetingStatus status = MeetingStatus.Ended)
@@ -533,12 +533,11 @@ internal sealed class T1Meetings(FakeMeetingRepository inner) : IMeetingReposito
         var sources = new FakeSummarySourceQuery();
         var uow = new FakeUnitOfWork();
         var local = new FakeLanguageModel("qwen-local");
-        var models = new FakeLanguageModelProvider(local);
         var transcript = new FakeMeetingTranscriptQuery();
         var log = new T1Logger<SummaryService>();
-        var service = new SummaryService(summaries, sources, uow, meetings, models, new MeetingTranscriptReader(transcript),
-            new FixedClock(Now), log, Options.Create(new LanguageModelOptions { ApiParallelism = 1 }));
-        return new(summaries, sources, uow, meetings, models, local, transcript, log, service, meeting, chair, secretary, member);
+        var service = new SummaryService(summaries, sources, uow, meetings, local, new MeetingTranscriptReader(transcript),
+            new FixedClock(Now), log);
+        return new(summaries, sources, uow, meetings, local, transcript, log, service, meeting, chair, secretary, member);
     }
 
     private static MeetingSummary ReadyDraft(SumSvc f, SummaryStatus status = SummaryStatus.Ready, bool reviewed = true)
