@@ -620,6 +620,24 @@
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
+        },
+        {
+          "id": "MIN_API_IT27",
+          "description": "Verify GET /api/minutes/{minutesId}/export records minutes.downloaded in the audit log for an Internal meeting.",
+          "procedure": [
+            "Sign in as the Member of an Internal Ended meeting (POST /api/auth/login) and keep the access token.",
+            "Send GET /api/minutes/{issuedId}/export?format=pdf with Authorization: Bearer <accessToken>."
+          ],
+          "expected": [
+            "HTTP 200 OK with the PDF file.",
+            "An audit row \"minutes.downloaded\" (objectType MeetingMinutes, details.meetingId, sensitivity \"Internal\", format \"pdf\") is recorded (BR-010)."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "An Ended Internal meeting with issued minutes; the Member is on it."
+          ],
+          "note": "UC-69 | BR-010 | Manual only",
+          "round1": "Pending"
         }
       ]
     },
@@ -630,7 +648,7 @@
       ],
       "cases": [
         {
-          "id": "MIN_API_IT27",
+          "id": "MIN_API_IT28",
           "description": "Verify POST /api/minutes/{minutesId}/submit sends the draft to the Chair.",
           "procedure": [
             "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
@@ -656,7 +674,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MIN_API_IT28",
+          "id": "MIN_API_IT29",
           "description": "Verify POST /api/minutes/{minutesId}/submit sends returned minutes again.",
           "procedure": [
             "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
@@ -678,7 +696,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MIN_API_IT29",
+          "id": "MIN_API_IT30",
           "description": "Verify POST /api/minutes/{minutesId}/submit answers 403 MSG425 to the Chair.",
           "procedure": [
             "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
@@ -699,7 +717,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MIN_API_IT30",
+          "id": "MIN_API_IT31",
           "description": "Verify POST /api/minutes/{minutesId}/submit refuses while the meeting is still in progress.",
           "procedure": [
             "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
@@ -721,7 +739,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MIN_API_IT31",
+          "id": "MIN_API_IT32",
           "description": "Verify POST /api/minutes/{minutesId}/submit refuses an old copy of the minutes.",
           "procedure": [
             "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
@@ -744,7 +762,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MIN_API_IT32",
+          "id": "MIN_API_IT33",
           "description": "Verify POST /api/minutes/{minutesId}/submit refuses minutes already sent for approval.",
           "procedure": [
             "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
@@ -773,7 +791,7 @@
       ],
       "cases": [
         {
-          "id": "MIN_API_IT33",
+          "id": "MIN_API_IT34",
           "description": "Verify POST /api/minutes/{minutesId}/approve issues the minutes and records the issue.",
           "procedure": [
             "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
@@ -800,7 +818,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MIN_API_IT34",
+          "id": "MIN_API_IT35",
           "description": "Verify POST /api/minutes/{minutesId}/approve tells every reader of the meeting in the app and by email.",
           "procedure": [
             "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
@@ -825,7 +843,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MIN_API_IT35",
+          "id": "MIN_API_IT36",
           "description": "Verify POST /api/minutes/{minutesId}/approve on a correction supersedes the revision it corrects.",
           "procedure": [
             "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
@@ -849,7 +867,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MIN_API_IT36",
+          "id": "MIN_API_IT37",
           "description": "Verify POST /api/minutes/{minutesId}/approve answers 403 MSG428 to the Secretary and 404 to a Member.",
           "procedure": [
             "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
@@ -872,7 +890,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MIN_API_IT37",
+          "id": "MIN_API_IT38",
           "description": "Verify POST /api/minutes/{minutesId}/approve refuses minutes that are not waiting for approval.",
           "procedure": [
             "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
@@ -894,7 +912,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MIN_API_IT38",
+          "id": "MIN_API_IT39",
           "description": "Verify POST /api/minutes/{minutesId}/approve refuses an old copy of the minutes.",
           "procedure": [
             "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
@@ -915,7 +933,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MIN_API_IT39",
+          "id": "MIN_API_IT40",
           "description": "Verify POST /api/minutes/{minutesId}/approve issues nothing when the state cannot be saved.",
           "procedure": [
             "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
@@ -947,7 +965,7 @@
       ],
       "cases": [
         {
-          "id": "MIN_API_IT40",
+          "id": "MIN_API_IT41",
           "description": "Verify POST /api/minutes/{minutesId}/reject returns the minutes to the Secretary with the reason.",
           "procedure": [
             "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
@@ -973,7 +991,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MIN_API_IT41",
+          "id": "MIN_API_IT42",
           "description": "Verify POST /api/minutes/{minutesId}/reject refuses an empty reason.",
           "procedure": [
             "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
@@ -995,7 +1013,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MIN_API_IT42",
+          "id": "MIN_API_IT43",
           "description": "Verify POST /api/minutes/{minutesId}/reject answers 403 MSG428 to the Secretary and 404 to a Member.",
           "procedure": [
             "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
@@ -1018,7 +1036,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MIN_API_IT43",
+          "id": "MIN_API_IT44",
           "description": "Verify POST /api/minutes/{minutesId}/reject refuses minutes that are not waiting for approval.",
           "procedure": [
             "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
@@ -1039,7 +1057,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MIN_API_IT44",
+          "id": "MIN_API_IT45",
           "description": "Verify POST /api/minutes/{minutesId}/reject refuses an old copy of the minutes.",
           "procedure": [
             "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
@@ -1060,7 +1078,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MIN_API_IT45",
+          "id": "MIN_API_IT46",
           "description": "Verify POST /api/minutes/{minutesId}/reject keeps only the reason of the latest return.",
           "procedure": [
             "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
@@ -1082,7 +1100,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MIN_API_IT46",
+          "id": "MIN_API_IT47",
           "description": "Verify POST /api/minutes/{minutesId}/reject changes nothing when the state cannot be saved.",
           "procedure": [
             "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
@@ -1114,7 +1132,7 @@
       ],
       "cases": [
         {
-          "id": "MIN_API_IT47",
+          "id": "MIN_API_IT48",
           "description": "Verify POST /api/minutes/{minutesId}/corrections creates a draft revision from the issued text.",
           "procedure": [
             "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
@@ -1138,7 +1156,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MIN_API_IT48",
+          "id": "MIN_API_IT49",
           "description": "Verify POST /api/minutes/{minutesId}/corrections answers 403 MSG397 to a reader of the issued minutes.",
           "procedure": [
             "Sign in as the Member (POST /api/auth/login) and keep the access token.",
@@ -1159,7 +1177,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MIN_API_IT49",
+          "id": "MIN_API_IT50",
           "description": "Verify POST /api/minutes/{minutesId}/corrections allows one correction at a time.",
           "procedure": [
             "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
@@ -1180,7 +1198,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MIN_API_IT50",
+          "id": "MIN_API_IT51",
           "description": "Verify POST /api/minutes/{minutesId}/corrections refuses a revision that is not the issued one.",
           "procedure": [
             "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
@@ -1201,7 +1219,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "MIN_API_IT51",
+          "id": "MIN_API_IT52",
           "description": "Verify POST /api/minutes/{minutesId}/corrections creates nothing when the revision cannot be saved.",
           "procedure": [
             "Sign in as the Chair (POST /api/auth/login) and keep the access token.",

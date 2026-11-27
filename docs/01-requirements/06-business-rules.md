@@ -30,7 +30,7 @@ thông báo `MSG`.
 | `BR-007` | Only capabilities defined by the system can be granted to a role. |
 | `BR-008` | A change to a role's capabilities or to a user's role takes effect from the user's next action, without ending the session. |
 | `BR-009` | Account and role administration changes and every sign-in are recorded in the audit log. |
-| `BR-010` | Issuing minutes, viewing a document of a Secret Meeting, exporting a report and sharing a calendar are recorded in the audit log. |
+| `BR-010` | Issuing minutes, viewing a document of a Secret Meeting, downloading a document or minutes of an Internal Meeting, exporting a report and sharing a calendar are recorded in the audit log. |
 | `BR-011` | Recording, playing or deleting a voice sample, and reading a deactivated account's library, are recorded in the audit log. |
 | `BR-012` | Only a role with the user-administration capability views the audit log; the audit log is read-only and nobody can edit or delete it. |
 | `BR-013` | A new Meeting starts in Draft; its planned start is later than now and its planned end is later than its planned start. |
@@ -75,7 +75,7 @@ thông báo `MSG`.
 | `BR-052` | A Guest enters through their own invitation, only into that Meeting, without an internal account. |
 | `BR-053` | A Guest must prove control of the invited email address. |
 | `BR-054` | Guest access lasts 12 hours from verification without extension, and ends earlier on sign-out, invitation revocation or the end of the Meeting. |
-| `BR-055` | While the Meeting is Published or InProgress, a Guest has the rights of a participant, except moderating the room, a personal library and sharing documents. |
+| `BR-055` | While the Meeting is Published or InProgress, a Guest has the rights of a participant, except moderating the room, a personal library, sharing documents and downloading documents of an Internal Meeting. |
 | `BR-056` | Only an active Secretary records or corrects official attendance, while the Meeting is InProgress. |
 | `BR-057` | Attendance covers internal participants and Guests as Present or Absent; a person not yet recorded stays blank and is not counted as absent. |
 | `BR-058` | An agenda item belongs to one Meeting. |
@@ -101,7 +101,7 @@ thông báo `MSG`.
 | `BR-078` | A document links only to agenda items of the same Meeting. |
 | `BR-079` | Anyone who can view a Meeting reads its documents, except a document attached only to a draft Vote, which only the Chair and the Secretary see. |
 | `BR-080` | After the Meeting ends, its documents and comments are read-only. |
-| `BR-081` | A document of a Secret Meeting can be read only online and never downloaded. |
+| `BR-081` | A document of a Secret Meeting can be read only online and never downloaded; a Guest can read documents of an Internal Meeting only online and cannot download them. |
 | `BR-082` | Anyone who can view a document can comment on it until the Meeting ends. |
 | `BR-083` | A personal library and its folders belong to one person, and only that person accesses them. |
 | `BR-084` | A folder cannot be moved into itself or one of its subfolders; only an empty folder can be deleted. |

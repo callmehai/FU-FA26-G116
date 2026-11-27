@@ -1349,7 +1349,7 @@
           "expected": [
             "HTTP 200 OK; the body equals the uploaded bytes (BR-183, BR-216).",
             "Headers: Content-Type = the stored contentType; Content-Length = byteSize; Content-Disposition \"attachment; filename=...; filename*=UTF-8''...\"; Cache-Control \"private, no-store\"; X-Content-Type-Options \"nosniff\".",
-            "A Normal or Internal meeting writes no audit row."
+            "A Normal meeting writes no audit row."
           ],
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
@@ -1422,6 +1422,42 @@
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
+        },
+        {
+          "description": "Verify an Internal meeting's document download by an internal user is recorded in the audit log.",
+          "procedure": [
+            "Sign in as a Member of an Internal meeting (POST /api/auth/login) and keep the access token.",
+            "Send GET .../content?download=true with Authorization: Bearer <accessToken>."
+          ],
+          "expected": [
+            "HTTP 200 OK with the stored file bytes.",
+            "An audit row \"document.downloaded\" (objectType MeetingDocument, details.meetingId, fileName, sensitivity \"Internal\") is written (BR-010)."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A Published Internal meeting with an uploaded PDF and an internal Member."
+          ],
+          "note": "UC-35b · BR-010 · Manual only",
+          "id": "DOC_API_IT65",
+          "round1": "Pending"
+        },
+        {
+          "description": "Verify a Guest can view an Internal meeting's document online but is refused download with 403 MSG485.",
+          "procedure": [
+            "With a verified Guest token for an Internal meeting, send GET .../content.",
+            "Send GET .../content?download=true."
+          ],
+          "expected": [
+            "Step 1: HTTP 200 with the file bytes; no audit row.",
+            "Step 2: HTTP 403 Forbidden with { \"code\": \"MSG485\", \"message\": \"Khách mời chỉ được xem trực tuyến, không được tải tài liệu của cuộc họp Nội bộ.\" } (BR-081)."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "A verified Guest invitation for a Published Internal meeting with an uploaded PDF."
+          ],
+          "note": "UC-35b · BR-055 · BR-081 · MSG485 · Manual only",
+          "id": "DOC_API_IT66",
+          "round1": "Pending"
         }
       ]
     },
@@ -1447,7 +1483,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. A document linked to an agenda item with two comments."
           ],
           "note": "UC-33c · BR-281 · BR-284 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Chair_removes_a_document_keeping_its_comments_and_links_out_of_every_list)",
-          "id": "DOC_API_IT65",
+          "id": "DOC_API_IT67",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1466,7 +1502,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead."
           ],
           "note": "UC-33c · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Removing_is_refused_to_others_after_the_end_for_another_meetings_document_and_on_failure)",
-          "id": "DOC_API_IT66",
+          "id": "DOC_API_IT68",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1485,7 +1521,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. A Cancelled meeting."
           ],
           "note": "UC-33c · BR-299 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Every_change_is_refused_once_the_meeting_is_cancelled)",
-          "id": "DOC_API_IT67",
+          "id": "DOC_API_IT69",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1514,7 +1550,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. Two meeting documents and two agenda items; one document already linked to the second item."
           ],
           "note": "UC-33b · BR-277 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Chair_links_meeting_documents_to_an_item_keeping_their_other_links)",
-          "id": "DOC_API_IT68",
+          "id": "DOC_API_IT70",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1534,7 +1570,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. One removed document."
           ],
           "note": "UC-33b · BR-304 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Linking_checks_the_item_and_that_every_document_is_still_in_the_meeting_all_or_none)",
-          "id": "DOC_API_IT69",
+          "id": "DOC_API_IT71",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1555,7 +1591,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead."
           ],
           "note": "UC-33b · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Linking_is_refused_to_others_after_the_end_and_on_failure)",
-          "id": "DOC_API_IT70",
+          "id": "DOC_API_IT72",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1574,7 +1610,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. A Cancelled meeting."
           ],
           "note": "UC-33b · BR-299 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Every_change_is_refused_once_the_meeting_is_cancelled)",
-          "id": "DOC_API_IT71",
+          "id": "DOC_API_IT73",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1603,7 +1639,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. A document in the Chair's library."
           ],
           "note": "UC-33b AF-2 · BR-304 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (From_the_library_adds_to_the_meeting_and_links_in_one_go)",
-          "id": "DOC_API_IT72",
+          "id": "DOC_API_IT74",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1622,7 +1658,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead."
           ],
           "note": "UC-33b AF-2 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (From_the_library_adds_to_the_meeting_and_links_in_one_go)",
-          "id": "DOC_API_IT73",
+          "id": "DOC_API_IT75",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1643,7 +1679,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead."
           ],
           "note": "UC-33b AF-2 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Linking_is_refused_to_others_after_the_end_and_on_failure)",
-          "id": "DOC_API_IT74",
+          "id": "DOC_API_IT76",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1662,7 +1698,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. A Cancelled meeting."
           ],
           "note": "UC-33b AF-2 · BR-299 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Every_change_is_refused_once_the_meeting_is_cancelled)",
-          "id": "DOC_API_IT75",
+          "id": "DOC_API_IT77",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1691,7 +1727,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead."
           ],
           "note": "UC-33b AF-1 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Upload_into_an_item_adds_to_the_library_folder_the_meeting_and_the_item)",
-          "id": "DOC_API_IT76",
+          "id": "DOC_API_IT78",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1710,7 +1746,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead."
           ],
           "note": "UC-33b AF-1 · BR-187 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Upload_into_an_item_adds_to_the_library_folder_the_meeting_and_the_item)",
-          "id": "DOC_API_IT77",
+          "id": "DOC_API_IT79",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1729,7 +1765,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead."
           ],
           "note": "UC-33b AF-1 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Upload_into_an_item_adds_to_the_library_folder_the_meeting_and_the_item)",
-          "id": "DOC_API_IT78",
+          "id": "DOC_API_IT80",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1749,7 +1785,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. One Ended and one Cancelled meeting."
           ],
           "note": "UC-33b AF-1 · BR-299 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Every_change_is_refused_once_the_meeting_is_cancelled)",
-          "id": "DOC_API_IT79",
+          "id": "DOC_API_IT81",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1776,7 +1812,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead."
           ],
           "note": "UC-33d · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Unlinking_is_refused_to_others_for_a_removed_document_an_unknown_item_after_the_end_and_on_failure)",
-          "id": "DOC_API_IT80",
+          "id": "DOC_API_IT82",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1796,7 +1832,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead."
           ],
           "note": "UC-33d · BR-299 · Automated: tests/TrustCabinet.Web.Tests/Documents/MeetingDocumentChangeEndpointsTests.cs (Every_change_is_refused_once_the_meeting_is_cancelled)",
-          "id": "DOC_API_IT81",
+          "id": "DOC_API_IT83",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1825,7 +1861,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. InProgress meeting; a document with a comment and a reply."
           ],
           "note": "UC-35 · BR-317 · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentCommentEndpointsTests.cs (A_reply_to_a_reply_joins_the_thread_of_the_top_level_comment)",
-          "id": "DOC_API_IT82",
+          "id": "DOC_API_IT84",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1844,7 +1880,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead."
           ],
           "note": "UC-35 · BR-282 · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentCommentEndpointsTests.cs (Comments_are_read_only_once_the_meeting_has_ended)",
-          "id": "DOC_API_IT83",
+          "id": "DOC_API_IT85",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1873,7 +1909,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. InProgress meeting with a PDF of at least 3 pages."
           ],
           "note": "UC-35 AF-1 · BR-250 · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentCommentEndpointsTests.cs (Member_comments_on_a_pdf_page_and_a_docx_comment_has_no_page)",
-          "id": "DOC_API_IT84",
+          "id": "DOC_API_IT86",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1892,7 +1928,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. A document with one comment."
           ],
           "note": "UC-35 AF-2 · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentCommentEndpointsTests.cs (A_reply_to_a_reply_joins_the_thread_of_the_top_level_comment)",
-          "id": "DOC_API_IT85",
+          "id": "DOC_API_IT87",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1912,7 +1948,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead."
           ],
           "note": "UC-35 · BR-246 · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentCommentEndpointsTests.cs (A_comment_must_have_text_within_the_limit)",
-          "id": "DOC_API_IT86",
+          "id": "DOC_API_IT88",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1932,7 +1968,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. An Approver of the meeting."
           ],
           "note": "UC-35 · BR-249 · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentCommentEndpointsTests.cs (Organizer_and_approver_comment_as_anyone_who_views_the_meeting)",
-          "id": "DOC_API_IT87",
+          "id": "DOC_API_IT89",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1951,7 +1987,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. A Cancelled meeting."
           ],
           "note": "UC-35 · BR-299 · Automated: tests/TrustCabinet.Web.Tests/Documents/DocumentCommentEndpointsTests.cs (Comments_are_read_only_once_the_meeting_is_cancelled)",
-          "id": "DOC_API_IT88",
+          "id": "DOC_API_IT90",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -1981,7 +2017,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. InProgress meeting; an Open vote linking one document; the Member is on the voter list."
           ],
           "note": "UC-74 · BR-290 · Automated: Votes/VoteReadConfirmationTests.cs (A_voter_confirms_each_vote_document_before_the_ballot_is_accepted)",
-          "id": "DOC_API_IT89",
+          "id": "DOC_API_IT91",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -2000,7 +2036,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. A voter who has confirmed the document."
           ],
           "note": "UC-74 AF-1 · BR-291 · Automated: Votes/VoteReadConfirmationTests.cs (A_voter_confirms_each_vote_document_before_the_ballot_is_accepted)",
-          "id": "DOC_API_IT90",
+          "id": "DOC_API_IT92",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
@@ -2021,7 +2057,7 @@
             "A meeting with a Chair, a Secretary, a Member and an Organizer, in the needed status, supplied by QA lead. An Open vote whose fixed voter list excludes this Member."
           ],
           "note": "UC-74 · Automated: Votes/VoteReadConfirmationTests.cs (Only_a_voter_of_an_open_vote_confirms_and_the_confirmation_outlives_a_detach)",
-          "id": "DOC_API_IT91",
+          "id": "DOC_API_IT93",
           "round1": "Passed",
           "date1": "2026-11-21",
           "tester1": "Phạm Gia Khánh"
