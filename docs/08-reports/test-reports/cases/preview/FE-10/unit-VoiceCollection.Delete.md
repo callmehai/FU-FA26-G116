@@ -10,5 +10,5 @@ Layer: Application · `backend/TrustCabinet.Application/VoiceId/VoiceCollectionS
 
 | ID | Pre-conditions | Inputs | Expected | Type | Note |
 |---|---|---|---|---|---|
-| UTC001 | A proxy sample exists for the active person. | actorId: the collector; userId: the person; sampleId: a proxy sample of the person. | Return: Success with the sample id (MSG474 "Đã xoá giọng mẫu thu hộ.").<br>Exception: N/A<br>Log Message: Saved: sample removed; audit row records the deletion with the proxy scope. | Normal | UC-86d · BR-452 · MSG474 |
-| UTC002 | The sample is one the person recorded themself. | actorId: the collector; userId: the person; sampleId: the person own self-recorded sample. | Return: Failure NotFound; a collector never touches the person own set.<br>Exception: N/A<br>Log Message: N/A | Abnormal | UC-86d · BR-452 · BR-448 |
+| UTC001 | A proxy sample exists for the active person. | actorId: the collector; userId: the person; sampleId: a proxy sample of the person. | Return: Success with the sample id (MSG474 "Đã xoá giọng mẫu thu hộ.").<br>Exception: N/A<br>Log Message: Saved: sample removed; audit row records the deletion with the proxy scope. | Normal | UC-57d · BR-118, BR-119 · MSG474 |
+| UTC002 | The sample is one the person recorded themself. | actorId: the collector; userId: the person; sampleId: the person own self-recorded sample. | Return: Failure NotFound; a collector never touches the person own set.<br>Exception: N/A<br>Log Message: N/A | Abnormal | UC-57d · BR-118, BR-119 |

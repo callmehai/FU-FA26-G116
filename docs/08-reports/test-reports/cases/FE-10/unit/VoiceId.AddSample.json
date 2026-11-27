@@ -22,9 +22,9 @@
           "exception": "N/A",
           "log": "Saved: encrypted sample with the model and speech length; audit row records the new sample.",
           "type": "Normal",
-          "note": "UC-81c · BR-363 · BR-369 · MSG307",
+          "note": "UC-56c · BR-118, BR-119 · BR-121 · MSG307",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -37,9 +37,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-81c · BR-361 · MSG308",
+          "note": "UC-56c · BR-116 · MSG308",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -52,9 +52,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-81c · BR-363 · MSG310",
+          "note": "UC-56c · BR-118, BR-119 · MSG310",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -67,9 +67,9 @@
           "exception": "N/A",
           "log": "Saved: encrypted sample; audit row records the new sample.",
           "type": "Boundary",
-          "note": "UC-81c · BR-363 · MSG307",
+          "note": "UC-56c · BR-118, BR-119 · MSG307",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         }
       ]

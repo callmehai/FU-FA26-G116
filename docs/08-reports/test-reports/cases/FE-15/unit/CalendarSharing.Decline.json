@@ -1,5 +1,5 @@
 {
-  "feature": "FE-16",
+  "feature": "FE-15",
   "module": "CAL",
   "sheet": "CalendarSharing.Decline",
   "description": "Answering a share request: accept and decline with state rules.",
@@ -22,9 +22,9 @@
           "exception": "N/A",
           "log": "Notification CalendarShareDeclined queued for Binh; audit calendar_share.declined.",
           "type": "Normal",
-          "note": "UC-84c · MSG437",
+          "note": "UC-80c · MSG437",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -39,9 +39,9 @@
           "exception": "N/A",
           "log": "Share closed; notification queued; audit calendar_share.declined.",
           "type": "Boundary",
-          "note": "UC-84c · MSG437",
+          "note": "UC-80c · MSG437",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -55,9 +55,9 @@
           "exception": "N/A",
           "log": "Notification CalendarShareChangeDeclined queued for Binh; audit calendar_share.change_declined with the declined Level and end date.",
           "type": "Normal",
-          "note": "UC-84c · MSG452",
+          "note": "UC-80c · MSG452",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -71,9 +71,9 @@
           "exception": "N/A",
           "log": "Pending change cleared; notification queued for Binh; audit calendar_share.change_declined.",
           "type": "Boundary",
-          "note": "UC-84c · BR-431 · MSG452",
+          "note": "UC-80c · UC-80a · MSG452",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -87,9 +87,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-84c · MSG450",
+          "note": "UC-80c · MSG450",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         }
       ]

@@ -21,9 +21,9 @@
           "exception": "N/A",
           "log": "Audit SpeechClipExcluded (sentence, meeting, speaker, reason); a ClipEdited change is published.",
           "type": "Normal",
-          "note": "UC-46c · BR-357 · MSG351",
+          "note": "UC-55c · BR-114, BR-115 · MSG351",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -36,9 +36,9 @@
           "exception": "N/A",
           "log": "Audit SpeechClipRestored; a ClipEdited change is published.",
           "type": "Normal",
-          "note": "UC-46c · BR-357 · MSG352",
+          "note": "UC-55c · BR-114, BR-115 · MSG352",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -51,9 +51,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-46c · BR-357 · MSG353",
+          "note": "UC-55c · BR-114, BR-115 · MSG353",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -66,9 +66,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-46c · BR-357 · MSG354",
+          "note": "UC-55c · BR-114, BR-115 · MSG354",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         }
       ]

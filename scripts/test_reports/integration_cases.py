@@ -297,9 +297,9 @@ TEXT_COLOURS = ('FF993300', 'FF008000', 'FF0000FF')   # brown labels, green note
 
 
 def harmonise(wb):
-    """Give Cover, Test Cases and Test Statistics the look of the feature sheets: Calibri 11, the green
-    header fill, thin borders, black text (links stay blue), instead of the house template's Tahoma,
-    navy headers, hair borders and brown/green/blue text."""
+    """Give Cover, Test Cases and Test Statistics the look of the feature sheets: Times New Roman 11,
+    the green header fill, thin borders, black text (links stay blue), instead of the house template's
+    Tahoma, navy headers, hair borders and brown/green/blue text."""
     from openpyxl.styles import Border, Font, PatternFill, Side
     thin = Side(style='thin')
     for name in ('Cover', 'Test Cases', 'Test Statistics'):
@@ -315,7 +315,7 @@ def harmonise(wb):
                     colour = None
                 else:
                     colour = font.color
-                cell.font = Font(name='Calibri', sz=size, b=font.b, i=False if size == 11 else font.i,
+                cell.font = Font(name='Times New Roman', sz=size, b=font.b, i=False if size == 11 else font.i,
                                  u=font.u if cell.hyperlink else None, color=colour)
                 fill = cell.fill
                 if fill.fill_type == 'solid' and fill.fgColor.type == 'rgb' and fill.fgColor.rgb in HEADER_BLUE:
@@ -325,10 +325,8 @@ def harmonise(wb):
                     cell.border = Border(*(thin if side is not None and side.style else side
                                            for side in (border.left, border.right, border.top, border.bottom)))
 
-    # Feature sheets: their data cells carry Calibri without a size, and the workbook default font
-    # (template) is MS PGothic, so any cell left unstyled shows another face. Make both explicit.
-    # NOTE: never copy() a StyleProxy — the copy does not serialise and the
-    # cell falls back to the Normal style on reload. Build a real Font.
+    # Unify all feature sheet cells and template font entries to Times New Roman 11.
+    # NOTE: never copy() a StyleProxy — build a fresh Font and clear template scheme entries.
     from openpyxl.styles import Font as _IFont
     for ws in wb.worksheets:
         if ws.title in ('Cover', 'Test Cases', 'Test Statistics'):
@@ -336,21 +334,48 @@ def harmonise(wb):
         for row in ws.iter_rows():
             for cell in row:
                 font = cell.font
-                if font.name != 'Calibri' or font.sz != 11:
-                    cell.font = _IFont(name='Calibri', size=11, bold=font.bold,
-                                       italic=font.italic, underline=font.underline,
-                                       strike=font.strike, color=font.color,
-                                       vertAlign=font.vertAlign)
+                cell.font = _IFont(name='Times New Roman', size=11, bold=font.bold,
+                                   italic=font.italic, underline=font.underline,
+                                   strike=font.strike, color=font.color,
+                                   vertAlign=font.vertAlign)
     normal = wb._named_styles['Normal']
-    normal.font = Font(name='Calibri', sz=11)
-    wb._fonts[0] = Font(name='Calibri', sz=11)
+    normal.font = Font(name='Times New Roman', sz=11)
+    for idx in range(len(wb._fonts)):
+        wf = wb._fonts[idx]
+        wb._fonts[idx] = _IFont(name='Times New Roman', sz=wf.sz or 11, bold=wf.bold,
+                                italic=wf.italic, underline=wf.underline,
+                                strike=wf.strike, color=wf.color, vertAlign=wf.vertAlign)
 
 
-def case_values(c):
+def visible_actual(c, book):
+    if c.get('actual'):
+        return c['actual']
+    status = c.get('round1', 'Pending')
+    note = c.get('note', '')
+    if book == 'api':
+        methods = []
+        for grp in re.findall(r'Automated:\s*[^(]+\(([^)]+)\)', note):
+            for name in re.split(r'\s*;\s*', grp):
+                if name.strip():
+                    methods.append(name.strip())
+        if methods:
+            return f"Automated: {', '.join(methods)}"
+        return status
+    # UI book: concise outcome/defect without file paths or Deviation wording
+    if status == 'Failed':
+        if c['id'] == 'REC_FT02':
+            return 'Failed — Phone: tapping meta line does not show tooltip (AC19 phone Failed).'
+        return 'Failed'
+    if status == 'Pending':
+        return 'Pending'
+    return 'Passed'
+
+
+def case_values(c, book='ui'):
     return [c['id'], c['description'], numbered(c['procedure']), numbered(c['expected']),
             bulleted(c['preconditions']), c.get('round1', 'Pending'), c.get('date1'), c.get('tester1'),
             c.get('round2'), c.get('date2'), c.get('tester2'),
-            c.get('round3'), c.get('date3'), c.get('tester3'), '', c['note']]
+            c.get('round3'), c.get('date3'), c.get('tester3'), visible_actual(c, book), c['note']]
 
 
 def build_book(book, m):
@@ -369,7 +394,8 @@ def build_book(book, m):
     cover['B2'] = meta['title']
     cover['B4'] = m['project']
     cover['B5'] = m['projectCode']
-    cover['F4'] = m['cover']['creator']
+    cover['B6'] = f'=B5&"_{"API_Test" if book == "api" else "Integration_Test"}_v"&F6'
+    cover['F4'] = meta.get('creator', m['cover']['creator'])
     cover['F5'] = issue_date
     cover['F6'] = version
     change_style = styles_of(cover, 11, 6)
@@ -392,17 +418,17 @@ def build_book(book, m):
     CAPS = {'A': (14, 20), 'B': (23, 45), 'C': (22, 45), 'D': (18, 50),
             'E': (16, 45), 'F': (9, 12), 'G': (11, 13), 'H': (8, 20),
             'I': (9, 12), 'J': (11, 13), 'K': (8, 20), 'L': (9, 12),
-            'M': (11, 13), 'N': (8, 20), 'O': (10, 15)}
+            'M': (11, 13), 'N': (8, 20), 'O': (28, 45)}
     HEADERS = ['Test Case ID', 'Test Case Description', 'Test Case Procedure',
                'Expected Results', 'Pre-conditions', 'Round 1', 'Test date',
                'Tester', 'Round 2', 'Test date', 'Tester', 'Round 3',
-               'Test date', 'Tester', '']
+               'Test date', 'Tester', 'Actual result / Evidence / Defect']
     docs = [(sheet, load(case_file(book, sheet))) for sheet in m['sheets']]
     longest = {col: len(h) for col, h in zip('ABCDEFGHIJKLMNO', HEADERS)}
     for _, doc in docs:
         for g in doc['groups']:
             for c in g['cases']:
-                for col, v in zip('ABCDEFGHIJKLMNO', case_values(c)):
+                for col, v in zip('ABCDEFGHIJKLMNO', case_values(c, book)):
                     for part in str(v or '').split('\n'):
                         longest[col] = max(longest[col], len(part))
     widths = {col: min(cap, max(mn, longest[col] + 2))
@@ -418,9 +444,11 @@ def build_book(book, m):
         ws.row_dimensions[10].height = 18
         # Column O stays visible but empty for the council; the real evidence lives in
         # hidden column P so agents (openpyxl reads hidden cells normally) still fetch it.
+        ws['O10'] = 'Actual result / Evidence / Defect'
         ws.column_dimensions['P'].hidden = True
-        header_from = copy(ws['O10']._style)
-        ws['P10'] = 'Actual result / Evidence / Defect (hidden)'
+        header_from = copy(ws['N10']._style)
+        ws['O10']._style = copy(header_from)
+        ws['P10'] = 'AI context (hidden)'
         ws['P10']._style = header_from
         ws['B2'] = sheet['sheet']
         ws['B3'] = sheet[book]['requirement']
@@ -433,16 +461,16 @@ def build_book(book, m):
             r += 1
             for c in g['cases']:
                 apply(ws, r, case_style)
-                values = case_values(c)
+                values = case_values(c, book)
                 for col, v in enumerate(values, 1):
                     ws.cell(r, col, v)
                 ws.row_dimensions[r].height = height_for(
-                    # Hidden P (long evidence note) must not drive the height.
-                    [(values[i], widths.get(col, 10)) for i, col in enumerate('ABCDE')])
+                    # Hidden P (long raw note) must not drive the height.
+                    [(values[i], widths.get(col, 10)) for i, col in enumerate('ABCDE')] + [(values[14], widths['O'])])
                 case_rows.append(r)
                 r += 1
         last = max(r - 1, 12)
-        ws['B4'] = len(case_rows)
+        ws['B4'] = f'=COUNTIF(A12:A{last},"{id_prefix(book, sheet["code"])}*")'
         # An added-but-empty validation serialises as <dataValidations count="0"/>, which is
         # schema-invalid and makes Excel offer a repair. Only attach it to real cells.
         if case_rows:
@@ -491,6 +519,7 @@ def build_book(book, m):
     ts['C5'] = f"{m['projectCode']}_{'API_Test' if book == 'api' else 'Integration_Test'}_v{version}"
     ts['G5'] = issue_date
     ts['C6'] = meta['note']
+    ts['H10'] = 'Number of test cases'
     clear_from(ts, 11)
     for i, (sheet, _, _) in enumerate(built, 1):
         r = 10 + i
@@ -506,6 +535,8 @@ def build_book(book, m):
     ts[f'C{t}'] = 'Sub total'
     for col in 'DEFGH':
         ts[f'{col}{t}'] = f'=SUM({col}11:{col}{last})'
+    from openpyxl.styles import Border as _Border, Side as _Side
+    _thin = _Side(style='thin')
     for k, (label, formula) in enumerate((
             ('Test coverage', f'=IFERROR((D{t}+E{t})*100/(H{t}-G{t}),0)'),
             ('Test successful coverage', f'=IFERROR(D{t}*100/(H{t}-G{t}),0)'))):
@@ -514,10 +545,19 @@ def build_book(book, m):
         ts[f'C{r}'] = label
         ts[f'E{r}'] = formula
         ts[f'F{r}'] = '%'
+        for col_idx in range(2, 9):
+            ts.cell(r, col_idx).border = _Border(
+                left=_thin if col_idx == 2 else None,
+                right=_thin if col_idx == 8 else None,
+                top=_thin if k == 0 else None,
+                bottom=_thin if k == 1 else None,
+            )
 
     for r in range(11, t):
         ts.row_dimensions[r].height = 21 if len(str(ts[f'C{r}'].value)) <= 18 else 32
     ts.row_dimensions[t].height = 21
+    ts.column_dimensions['C'].width = max(ts.column_dimensions['C'].width or 24, 26)
+    ts.row_dimensions[6].height = max(36, height_for([(ts['C6'].value, 55)], line_height=15))
     notes = copy(ts['C6'].alignment)
     notes.wrap_text = True
     notes.vertical = 'top'

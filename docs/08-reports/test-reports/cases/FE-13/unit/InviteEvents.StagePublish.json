@@ -21,9 +21,9 @@
           "exception": "N/A",
           "log": "Each dispatch has the participant's initial delivery key (or the Guest's) as its deduplication key. No in-app notification is staged.",
           "type": "Normal",
-          "note": "UC-20 · BR-300",
+          "note": "UC-19 · UC-22",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -36,9 +36,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-20 · BR-300",
+          "note": "UC-19 · UC-22",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         }
       ]

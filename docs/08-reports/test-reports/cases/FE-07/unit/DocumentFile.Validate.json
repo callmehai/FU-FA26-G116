@@ -20,9 +20,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-33a · BR-187 · BR-214",
+          "note": "UC-36a · BR-069 · UC-36a, UC-39, NFR",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -35,9 +35,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-33a · BR-319 · MSG288",
+          "note": "UC-36a · UC-36a, UC-36b, UC-39 · MSG288",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -50,9 +50,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-33a · BR-319 · MSG288",
+          "note": "UC-36a · UC-36a, UC-36b, UC-39 · MSG288",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -65,9 +65,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-33a · BR-214 · MSG164",
+          "note": "UC-36a · UC-36a, UC-39, NFR · MSG164",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         }
       ],

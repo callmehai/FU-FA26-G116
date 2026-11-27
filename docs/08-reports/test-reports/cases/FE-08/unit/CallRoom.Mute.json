@@ -22,9 +22,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-41",
+          "note": "UC-47",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-13",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -38,9 +38,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-41 · MSG123",
+          "note": "UC-47 · MSG123",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-13",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -53,9 +53,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-41 · MSG117",
+          "note": "UC-47 · MSG117",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-13",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -69,9 +69,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-41 · MSG281",
+          "note": "UC-47 · MSG281",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-13",
           "tester1": "Phạm Gia Khánh"
         }
       ]

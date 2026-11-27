@@ -9,7 +9,7 @@ instructions in this repo. Read [README.md](README.md) and the root [AGENTS.md](
 
 - **Not split by Feature.** 5.2.2 has sheets `Access, Agenda, Authentication, Core, Meetings, …` —
   the xUnit folder names. 5.2 has its own ad-hoc list (`Create Meeting`, `Approval`, …) and stops at
-  notifications. The system is split into **FE-01 … FE-16**
+  notifications. The system is split into **FE-01 … FE-15**
   ([00-master-use-case-inventory.md](../../01-requirements/00-master-use-case-inventory.md)).
 - **5.2.2 is a dump of the C# tests.** IDs are hashes (`TC-ABB2CD5300B6`), the procedure is
   "Run: dotnet test --filter …", the expected result is `Assert.Equal(...)` lines, the precondition is
@@ -70,9 +70,8 @@ Feature codes (use exactly these):
 | FE-11 | VOTE | Voting | 15-bieu-quyet |
 | FE-12 | MIN | Minutes | 17-du-thao-bien-ban |
 | FE-13 | NOTI | Notifications | 06-thong-bao-trong-ung-dung, 07-gui-email-thu-moi |
-| FE-14 | DASH | — (no sheet: UC-69 is a placeholder) | — |
-| FE-15 | RPT | Reporting | 22-bao-cao-thong-ke |
-| FE-16 | CAL | Calendar | 23-chia-se-lich |
+| FE-14 | RPT | Reporting | 22-bao-cao-thong-ke |
+| FE-15 | CAL | Calendar | 23-chia-se-lich |
 
 The endpoint → feature mapping is decided by the **UC** the endpoint serves (inventory), not by the
 file it lives in, and is already written down in `sheets.json`. `/api/health` is in `excludedRoutes`:

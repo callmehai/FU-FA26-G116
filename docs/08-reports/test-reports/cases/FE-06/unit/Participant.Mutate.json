@@ -16,14 +16,14 @@
           "id": "UTC001",
           "inputs": "operation: AddInternal; actor: Secretary S; revision: \"5\"; userIds: [U1, U2] (two active users not on the roster); role: \"Member\".",
           "log": "Two participants (Pending response) added; ParticipantsRevision 5 to 6; audit MeetingParticipants(AddInternal) with before/after; no invitation staged because the meeting is not published; participants-changed event published to readers.",
-          "note": "UC-28a · BR-168 · BR-88 · MSG96",
+          "note": "UC-30a · MSG96",
           "preconditions": [
             "Meeting in status Draft with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
           ],
           "return": "Success Created; 201 / MSG96; createdIds holds two new participant ids; revision \"6\".",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -31,14 +31,14 @@
           "id": "UTC002",
           "inputs": "operation: AddInternal; actor: Member A.",
           "log": "N/A",
-          "note": "UC-28a · BR-79 · MSG85",
+          "note": "UC-30a · BR-036, BR-037 · MSG85",
           "preconditions": [
             "Meeting in status Published with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
           ],
           "return": "Failure Forbidden; 403 / MSG85.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -46,14 +46,14 @@
           "id": "UTC003",
           "inputs": "operation: AddInternal; actor: Secretary S.",
           "log": "N/A",
-          "note": "UC-28a · BR-79 · BR-80 · MSG98",
+          "note": "UC-30a · BR-036, BR-037 · MSG98",
           "preconditions": [
             "Meeting in status WaitingApproval with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
           ],
           "return": "Failure Locked; 409 / MSG98.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -61,14 +61,14 @@
           "id": "UTC004",
           "inputs": "operation: AddInternal; userIds: 100 distinct active users; role: \"Member\".",
           "log": "N/A",
-          "note": "UC-28a · BR-168 · MSG96",
+          "note": "UC-30a · MSG96",
           "preconditions": [
             "Meeting in status Draft with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
           ],
           "return": "Success Created; 201 / MSG96 with 100 ids.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -76,14 +76,14 @@
           "id": "UTC005",
           "inputs": "operation: AddInternal; userIds: 101 distinct users.",
           "log": "N/A",
-          "note": "UC-28a · BR-168 · MSG97",
+          "note": "UC-30a · MSG97",
           "preconditions": [
             "Meeting in status Draft with roster revision 5: an active Chair C, an active Secretary S and an active Member A (all Current)."
           ],
           "return": "Failure Invalid on userIds; 400 / MSG97.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         }
       ]

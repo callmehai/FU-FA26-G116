@@ -16,14 +16,14 @@
           "id": "UTC001",
           "inputs": "AutoEndAfterHours: 24.",
           "log": "N/A",
-          "note": "UC-22 · BR-460",
+          "note": "UC-21 · BR-027",
           "preconditions": [
             "No meeting is overrun."
           ],
           "return": "Returns 0; the lifecycle service is not called.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -31,14 +31,14 @@
           "id": "UTC002",
           "inputs": "AutoEndAfterHours: 24.",
           "log": "N/A",
-          "note": "UC-22 · BR-460",
+          "note": "UC-21 · BR-027",
           "preconditions": [
             "Three overrun meetings; each end succeeds."
           ],
           "return": "Returns 3.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -46,14 +46,14 @@
           "id": "UTC003",
           "inputs": "AutoEndAfterHours: 24.",
           "log": "N/A",
-          "note": "UC-22 · BR-460",
+          "note": "UC-21 · BR-027",
           "preconditions": [
             "Three overrun meetings; one has been ended by the Chair before the sweep reaches it."
           ],
           "return": "Returns 2 (the skipped one is not counted).",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -61,14 +61,14 @@
           "id": "UTC004",
           "inputs": "AutoEndAfterHours: 48.",
           "log": "N/A",
-          "note": "UC-22 · BR-460",
+          "note": "UC-21 · BR-027",
           "preconditions": [
             "Configured AutoEndAfterHours is 48."
           ],
           "return": "Cutoff is now-48h and the reason text says 48 giờ.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         }
       ]

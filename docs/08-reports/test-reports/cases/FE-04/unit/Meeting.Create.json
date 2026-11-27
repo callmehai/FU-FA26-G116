@@ -15,7 +15,7 @@
           "id": "UTC001",
           "inputs": "input: title \"Họp giao ban\", start 2026-11-19T02:00:00Z, end 03:00:00Z, InPerson; participants: Chair user A, Secretary user B.",
           "log": "Saved: Meeting row, 2 participant rows, history row Create (from none to Draft) by the organizer.",
-          "note": "UC-14 · BR-24 · BR-26 · BR-162 · BR-320 · MSG29",
+          "note": "UC-13 · BR-013 · MSG29",
           "preconditions": [
             "Clock is 2026-11-18T08:00:00Z.",
             "Chair and Secretary users exist and are active."
@@ -23,7 +23,7 @@
           "return": "MeetingResult Success; meeting Draft, CreatedById = actor, no approver; participants A (Chair) and B (Secretary) each with response Pending.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -31,14 +31,14 @@
           "id": "UTC002",
           "inputs": "input: title \"\", rest valid; participants: valid.",
           "log": "N/A",
-          "note": "UC-14 · BR-24 · MSG31",
+          "note": "UC-13 · BR-013 · MSG31",
           "preconditions": [
             "Input has an empty title."
           ],
           "return": "MeetingResult Invalid; errors { title }; MSG31; nothing saved.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -46,14 +46,14 @@
           "id": "UTC003",
           "inputs": "start = now.",
           "log": "N/A",
-          "note": "UC-14 · BR-162 · MSG31",
+          "note": "UC-13 · BR-013 · MSG31",
           "preconditions": [
             "Planned start is not after the clock."
           ],
           "return": "MeetingResult Invalid; errors { plannedStartTime: \"Thời gian bắt đầu phải sau thời điểm hiện tại.\" }; MSG31.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -61,14 +61,14 @@
           "id": "UTC004",
           "inputs": "participants: 101 distinct active users, one Chair.",
           "log": "N/A",
-          "note": "UC-14 · BR-320 · MSG277",
+          "note": "UC-13 · MSG277",
           "preconditions": [
             "Participants list has 101 rows."
           ],
           "return": "InvalidParticipants; errors { participants }; MSG277.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -76,14 +76,14 @@
           "id": "UTC005",
           "inputs": "participants: [A Member, B Secretary].",
           "log": "N/A",
-          "note": "UC-14 · BR-320 · MSG277",
+          "note": "UC-13 · MSG277",
           "preconditions": [
             "No participant is Chair."
           ],
           "return": "InvalidParticipants; errors { participants: \"Cuộc họp phải có đúng một Chủ toạ.\" }; MSG277.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         }
       ],

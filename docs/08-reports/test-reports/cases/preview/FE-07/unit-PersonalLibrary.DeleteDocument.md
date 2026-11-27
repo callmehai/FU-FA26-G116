@@ -10,6 +10,6 @@ Layer: Application · `backend/TrustCabinet.Application/Documents/PersonalLibrar
 
 | ID | Pre-conditions | Inputs | Expected | Type | Note |
 |---|---|---|---|---|---|
-| UTC001 | Owner U1 has D1 used by two meetings. | documentId: D1. | Return: None; endpoint answers MSG180.<br>Exception: N/A<br>Log Message: Library row of D1 deleted; the meeting copies keep their stored file (DocumentId becomes null). | Normal | UC-71a · BR-186 · BR-213 · MSG180 |
-| UTC002 | D9 missing or another user's. | documentId: D9. | Return: NotFound (HTTP 404, MSG175).<br>Exception: N/A<br>Log Message: N/A | Abnormal | UC-71a · BR-242 · MSG175 |
-| UTC003 | D1 already deleted. | documentId: D1. | Return: NotFound (HTTP 404, MSG175); delete affects 0 rows.<br>Exception: N/A<br>Log Message: N/A | Boundary | UC-71a · MSG175 |
+| UTC001 | Owner U1 has D1 used by two meetings. | documentId: D1. | Return: None; endpoint answers MSG180.<br>Exception: N/A<br>Log Message: Library row of D1 deleted; the meeting copies keep their stored file (DocumentId becomes null). | Normal | UC-40a · BR-074–BR-076 · BR-077 · MSG180 |
+| UTC002 | D9 missing or another user's. | documentId: D9. | Return: NotFound (HTTP 404, MSG175).<br>Exception: N/A<br>Log Message: N/A | Abnormal | UC-40a · BR-083 · MSG175 |
+| UTC003 | D1 already deleted. | documentId: D1. | Return: NotFound (HTTP 404, MSG175); delete affects 0 rows.<br>Exception: N/A<br>Log Message: N/A | Boundary | UC-40a · MSG175 |

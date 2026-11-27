@@ -16,14 +16,14 @@
           "id": "UTC001",
           "inputs": "Meeting: Draft; userId: creator.",
           "log": "N/A",
-          "note": "UC-16 · BR-29 · BR-118 · BR-119",
+          "note": "UC-15 · BR-016, BR-017 · BR-016, BR-017, BR-030",
           "preconditions": [
             "Meeting in Draft created by the user."
           ],
           "return": "true.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -31,14 +31,14 @@
           "id": "UTC002",
           "inputs": "userId: Chair.",
           "log": "N/A",
-          "note": "UC-16 · BR-29 · BR-118 · BR-119",
+          "note": "UC-15 · BR-016, BR-017 · BR-016, BR-017, BR-030",
           "preconditions": [
             "Draft meeting; user is the current Chair."
           ],
           "return": "true; a Chair reads at any status.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -46,14 +46,14 @@
           "id": "UTC003",
           "inputs": "userId: Member.",
           "log": "N/A",
-          "note": "UC-16 · BR-29 · BR-118 · BR-119",
+          "note": "UC-15 · BR-016, BR-017 · BR-016, BR-017, BR-030",
           "preconditions": [
             "Published meeting; user is a Member."
           ],
           "return": "true.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -61,14 +61,14 @@
           "id": "UTC004",
           "inputs": "userId: Member.",
           "log": "N/A",
-          "note": "UC-16 · BR-29 · BR-118 · BR-119",
+          "note": "UC-15 · BR-016, BR-017 · BR-016, BR-017, BR-030",
           "preconditions": [
             "Approved meeting; user is only a Member."
           ],
           "return": "false; a Member reads only from Published.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -76,14 +76,14 @@
           "id": "UTC005",
           "inputs": "userId: Member; CancelledFromStatus: Published.",
           "log": "N/A",
-          "note": "UC-16 · BR-29 · BR-300",
+          "note": "UC-15 · BR-016, BR-017 · UC-22",
           "preconditions": [
             "Cancelled meeting that was Published before it was cancelled; user is a Member."
           ],
           "return": "true.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         }
       ]

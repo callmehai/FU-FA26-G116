@@ -7,7 +7,7 @@
     {
       "title": "GET /api/meetings/{meetingId}/recordings",
       "uc": [
-        "UC-43a"
+        "UC-51a"
       ],
       "cases": [
         {
@@ -26,9 +26,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. One stored recording."
           ],
-          "note": "UC-43a · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Secretary_stores_a_recording_with_consent_purpose_and_retention)",
+          "note": "UC-51a · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Secretary_stores_a_recording_with_consent_purpose_and_retention)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-31",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -46,9 +46,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. One stored recording."
           ],
-          "note": "UC-43a · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Only_the_secretary_manages_and_only_the_roster_listens)",
+          "note": "UC-51a · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Only_the_secretary_manages_and_only_the_roster_listens)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-31",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -67,9 +67,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A Hybrid meeting in InProgress with a Chair, a Secretary and a Member on its participant list. The outsider and the creator are not participants."
           ],
-          "note": "UC-43a · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Only_the_secretary_manages_and_only_the_roster_listens)",
+          "note": "UC-51a · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Only_the_secretary_manages_and_only_the_roster_listens)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-31",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -87,9 +87,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A Guest invitation admitted to the call."
           ],
-          "note": "UC-43a · Automated: tests/TrustCabinet.Web.Tests/Recordings/GuestSpeechClipTests.cs (A_guest_reads_hears_and_deletes_only_their_own_sentences_and_never_the_transcript)",
+          "note": "UC-51a · Automated: tests/TrustCabinet.Web.Tests/Recordings/GuestSpeechClipTests.cs (A_guest_reads_hears_and_deletes_only_their_own_sentences_and_never_the_transcript)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-31",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -109,9 +109,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. The Secretary has consented for the first take."
           ],
-          "note": "UC-44b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (The_first_take_streams_in_parts_and_becomes_the_meetings_room_recording)",
+          "note": "UC-52a · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (The_first_take_streams_in_parts_and_becomes_the_meetings_room_recording)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-31",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -130,9 +130,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "One Online and one Hybrid meeting in InProgress, each with the same Secretary."
           ],
-          "note": "UC-43a · UC-44a · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (A_hybrid_meeting_is_recorded_live_and_takes_no_uploaded_file)",
+          "note": "UC-51a · UC-52a · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (A_hybrid_meeting_is_recorded_live_and_takes_no_uploaded_file)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-31",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -151,9 +151,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A Hybrid meeting in Ended with a Chair, a Secretary and a Member on its participant list. A room-mic recording and online sentences with sound; the combined recording has been built."
           ],
-          "note": "UC-43a · ADR-0061 · Automated: tests/TrustCabinet.Web.Tests/Recordings/CombinedRecordingTests.cs (It_is_listed_played_and_never_sent_to_transcription)",
+          "note": "UC-51a · ADR-0061 · Automated: tests/TrustCabinet.Web.Tests/Recordings/CombinedRecordingTests.cs (It_is_listed_played_and_never_sent_to_transcription)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-31",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -161,7 +161,7 @@
     {
       "title": "POST /api/meetings/{meetingId}/recordings",
       "uc": [
-        "UC-44c"
+        "UC-52c"
       ],
       "cases": [
         {
@@ -181,9 +181,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A small valid mp3."
           ],
-          "note": "UC-44c · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Secretary_stores_a_recording_with_consent_purpose_and_retention)",
+          "note": "UC-52c · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Secretary_stores_a_recording_with_consent_purpose_and_retention)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-31",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -202,9 +202,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A small valid mp3."
           ],
-          "note": "UC-44c · Consent (Law 91/2025) · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Refused_uploads_leave_no_audio_behind)",
+          "note": "UC-52c · Consent (Law 91/2025) · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Refused_uploads_leave_no_audio_behind)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-31",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -223,9 +223,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list."
           ],
-          "note": "UC-44c · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingRound1Tests.cs (Upload_rejects_a_non_multipart_or_fileless_request)",
+          "note": "UC-52c · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingRound1Tests.cs (Upload_rejects_a_non_multipart_or_fileless_request)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-31",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -244,9 +244,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A small valid mp3."
           ],
-          "note": "UC-44c · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (A_form_carries_a_file_recorded_elsewhere_and_codec_parameters_are_accepted)",
+          "note": "UC-52c · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (A_form_carries_a_file_recorded_elsewhere_and_codec_parameters_are_accepted)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-31",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -265,9 +265,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list."
           ],
-          "note": "UC-44c · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Refused_uploads_leave_no_audio_behind)",
+          "note": "UC-52c · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Refused_uploads_leave_no_audio_behind)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-31",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -286,9 +286,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InPerson meeting in Scheduled with a Chair, a Secretary and a Member on its participant list."
           ],
-          "note": "UC-44c · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Nothing_is_recorded_before_the_meeting_starts)",
+          "note": "UC-52c · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Nothing_is_recorded_before_the_meeting_starts)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-31",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -306,9 +306,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list."
           ],
-          "note": "UC-44c · ADR-0040 · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (An_online_meeting_has_no_room_recording)",
+          "note": "UC-52c · ADR-0040 · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (An_online_meeting_has_no_room_recording)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-31",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -326,9 +326,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A Hybrid meeting in InProgress with a Chair, a Secretary and a Member on its participant list."
           ],
-          "note": "UC-44c · ADR-0061 · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (A_hybrid_meeting_is_recorded_live_and_takes_no_uploaded_file)",
+          "note": "UC-52c · ADR-0061 · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (A_hybrid_meeting_is_recorded_live_and_takes_no_uploaded_file)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-31",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -348,9 +348,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list."
           ],
-          "note": "UC-44c · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Only_the_secretary_manages_and_only_the_roster_listens)",
+          "note": "UC-52c · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Only_the_secretary_manages_and_only_the_roster_listens)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-31",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -358,7 +358,7 @@
     {
       "title": "PUT /api/recordings/{recordingId}/parts/{part}",
       "uc": [
-        "UC-44c"
+        "UC-52c"
       ],
       "cases": [
         {
@@ -377,9 +377,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. The Secretary has opened a take (partSize 320000). Part 1 already sent."
           ],
-          "note": "UC-44b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (Parts_come_in_order_at_their_size_from_the_takes_maker_until_it_is_saved)",
+          "note": "UC-52a · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (Parts_come_in_order_at_their_size_from_the_takes_maker_until_it_is_saved)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-31",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -396,9 +396,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. The Secretary has opened a take (partSize 320000)."
           ],
-          "note": "UC-44b · Boundary: partSize · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (Parts_come_in_order_at_their_size_from_the_takes_maker_until_it_is_saved)",
+          "note": "UC-52a · Boundary: partSize · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (Parts_come_in_order_at_their_size_from_the_takes_maker_until_it_is_saved)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-31",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -406,7 +406,7 @@
     {
       "title": "POST /api/recordings/{recordingId}/complete",
       "uc": [
-        "UC-44c"
+        "UC-52c"
       ],
       "cases": [
         {
@@ -425,9 +425,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. An open first take with sound uploaded in parts."
           ],
-          "note": "UC-44b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (The_first_take_streams_in_parts_and_becomes_the_meetings_room_recording)",
+          "note": "UC-52a · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (The_first_take_streams_in_parts_and_becomes_the_meetings_room_recording)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-31",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -445,9 +445,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. Two Secretaries; a take opened by the first and left open."
           ],
-          "note": "UC-44b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (The_room_mic_switches_on_only_for_the_secretary_of_a_running_meeting_with_a_room)",
+          "note": "UC-52a · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (The_room_mic_switches_on_only_for_the_secretary_of_a_running_meeting_with_a_room)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-31",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -465,9 +465,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. An open take."
           ],
-          "note": "UC-44b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (The_room_mic_switches_on_only_for_the_secretary_of_a_running_meeting_with_a_room)",
+          "note": "UC-52a · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (The_room_mic_switches_on_only_for_the_secretary_of_a_running_meeting_with_a_room)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-31",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -475,7 +475,7 @@
     {
       "title": "POST /api/meetings/{meetingId}/recordings/takes",
       "uc": [
-        "UC-44b"
+        "UC-52a"
       ],
       "cases": [
         {
@@ -494,9 +494,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. No room recording yet."
           ],
-          "note": "UC-44b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (The_first_take_streams_in_parts_and_becomes_the_meetings_room_recording)",
+          "note": "UC-52a · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (The_first_take_streams_in_parts_and_becomes_the_meetings_room_recording)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-31",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -514,9 +514,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. No room recording yet."
           ],
-          "note": "UC-44b · Consent (Law 91/2025) · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (The_room_mic_switches_on_only_for_the_secretary_of_a_running_meeting_with_a_room)",
+          "note": "UC-52a · Consent (Law 91/2025) · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (The_room_mic_switches_on_only_for_the_secretary_of_a_running_meeting_with_a_room)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-31",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -534,9 +534,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A room recording already saved from an earlier take; no take open."
           ],
-          "note": "UC-44b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (A_later_take_is_appended_to_the_room_recording_and_the_whole_is_transcribed_again)",
+          "note": "UC-52a · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (A_later_take_is_appended_to_the_room_recording_and_the_whole_is_transcribed_again)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-31",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -554,9 +554,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list."
           ],
-          "note": "UC-44b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (The_room_mic_switches_on_only_for_the_secretary_of_a_running_meeting_with_a_room)",
+          "note": "UC-52a · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (The_room_mic_switches_on_only_for_the_secretary_of_a_running_meeting_with_a_room)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-31",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -564,7 +564,7 @@
     {
       "title": "DELETE /api/recordings/{recordingId}/takes/{take}",
       "uc": [
-        "UC-44d"
+        "UC-52d"
       ],
       "cases": [
         {
@@ -584,9 +584,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A room recording of three takes with a finished transcript."
           ],
-          "note": "UC-44d · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (A_take_is_cut_out_of_the_room_recording_and_its_lines_out_of_the_transcript_keeping_the_rest)",
+          "note": "UC-52d · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (A_take_is_cut_out_of_the_room_recording_and_its_lines_out_of_the_transcript_keeping_the_rest)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-31",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -605,9 +605,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A room recording with a single take."
           ],
-          "note": "UC-44d · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (A_take_is_cut_out_of_the_room_recording_and_its_lines_out_of_the_transcript_keeping_the_rest)",
+          "note": "UC-52d · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (A_take_is_cut_out_of_the_room_recording_and_its_lines_out_of_the_transcript_keeping_the_rest)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-31",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -625,9 +625,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A room recording of two takes."
           ],
-          "note": "UC-44d · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (A_take_is_cut_out_of_the_room_recording_and_its_lines_out_of_the_transcript_keeping_the_rest)",
+          "note": "UC-52d · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (A_take_is_cut_out_of_the_room_recording_and_its_lines_out_of_the_transcript_keeping_the_rest)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-31",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -635,7 +635,7 @@
     {
       "title": "DELETE /api/recordings/{recordingId}",
       "uc": [
-        "UC-44e"
+        "UC-52e"
       ],
       "cases": [
         {
@@ -655,9 +655,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A stored recording with a finished transcript."
           ],
-          "note": "UC-44e · Erasure on request · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Erasing_removes_the_audio_and_its_transcript_but_keeps_the_evidence)",
+          "note": "UC-52e · Erasure on request · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Erasing_removes_the_audio_and_its_transcript_but_keeps_the_evidence)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-31",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -677,9 +677,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A stored recording."
           ],
-          "note": "UC-44e · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Only_the_secretary_manages_and_only_the_roster_listens)",
+          "note": "UC-52e · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Only_the_secretary_manages_and_only_the_roster_listens)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-31",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -697,9 +697,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A take open (status Pending)."
           ],
-          "note": "UC-44e · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (The_room_mic_switches_on_only_for_the_secretary_of_a_running_meeting_with_a_room)",
+          "note": "UC-52e · Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (The_room_mic_switches_on_only_for_the_secretary_of_a_running_meeting_with_a_room)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-31",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -707,7 +707,7 @@
     {
       "title": "GET /api/recordings/{recordingId}/playback",
       "uc": [
-        "UC-43b"
+        "UC-51b"
       ],
       "cases": [
         {
@@ -726,9 +726,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A stored recording."
           ],
-          "note": "UC-43b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Playback_url_streams_with_ranges_and_cannot_be_forged_or_reused_late)",
+          "note": "UC-51b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Playback_url_streams_with_ranges_and_cannot_be_forged_or_reused_late)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-31",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -746,9 +746,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A Hybrid meeting in Ended with a Chair, a Secretary and a Member on its participant list. A combined recording built."
           ],
-          "note": "UC-43b · ADR-0061 · Automated: tests/TrustCabinet.Web.Tests/Recordings/CombinedRecordingTests.cs (It_is_listed_played_and_never_sent_to_transcription)",
+          "note": "UC-51b · ADR-0061 · Automated: tests/TrustCabinet.Web.Tests/Recordings/CombinedRecordingTests.cs (It_is_listed_played_and_never_sent_to_transcription)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-31",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -756,7 +756,7 @@
     {
       "title": "GET /api/recordings/{recordingId}/audio",
       "uc": [
-        "UC-43b"
+        "UC-51b"
       ],
       "cases": [
         {
@@ -775,9 +775,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A stored recording."
           ],
-          "note": "UC-43b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Playback_url_streams_with_ranges_and_cannot_be_forged_or_reused_late)",
+          "note": "UC-51b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Playback_url_streams_with_ranges_and_cannot_be_forged_or_reused_late)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-31",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -794,9 +794,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A valid link for the recording."
           ],
-          "note": "UC-43b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Playback_url_streams_with_ranges_and_cannot_be_forged_or_reused_late)",
+          "note": "UC-51b · Automated: tests/TrustCabinet.Web.Tests/Recordings/RecordingEndpointTests.cs (Playback_url_streams_with_ranges_and_cannot_be_forged_or_reused_late)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-31",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -804,7 +804,7 @@
     {
       "title": "GET /api/recordings/{recordingId}/download",
       "uc": [
-        "UC-43c"
+        "UC-51c"
       ],
       "cases": [
         {
@@ -824,9 +824,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A stored recording on a non-Secret meeting."
           ],
-          "note": "UC-43c · Automated: tests/TrustCabinet.Web.Tests/Recordings/ExportEndpointTests.cs (The_chair_or_a_secretary_saves_the_original_file_and_a_playback_link_cannot_be_turned_into_one)",
+          "note": "UC-51c · Automated: tests/TrustCabinet.Web.Tests/Recordings/ExportEndpointTests.cs (The_chair_or_a_secretary_saves_the_original_file_and_a_playback_link_cannot_be_turned_into_one)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-31",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -843,9 +843,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A stored recording on a non-Secret meeting."
           ],
-          "note": "UC-43c · Automated: tests/TrustCabinet.Web.Tests/Recordings/ExportEndpointTests.cs (The_chair_or_a_secretary_saves_the_original_file_and_a_playback_link_cannot_be_turned_into_one)",
+          "note": "UC-51c · Automated: tests/TrustCabinet.Web.Tests/Recordings/ExportEndpointTests.cs (The_chair_or_a_secretary_saves_the_original_file_and_a_playback_link_cannot_be_turned_into_one)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-31",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -864,9 +864,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. A stored recording."
           ],
-          "note": "UC-43c · Automated: tests/TrustCabinet.Web.Tests/Recordings/ExportEndpointTests.cs (The_chair_or_a_secretary_saves_the_original_file_and_a_playback_link_cannot_be_turned_into_one)",
+          "note": "UC-51c · Automated: tests/TrustCabinet.Web.Tests/Recordings/ExportEndpointTests.cs (The_chair_or_a_secretary_saves_the_original_file_and_a_playback_link_cannot_be_turned_into_one)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-31",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -886,9 +886,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member on its participant list. The meeting is Secret (Mật)."
           ],
-          "note": "UC-43c · Automated: tests/TrustCabinet.Web.Tests/Recordings/ExportEndpointTests.cs (A_secret_meeting_keeps_its_audio_and_words_inside)",
+          "note": "UC-51c · Automated: tests/TrustCabinet.Web.Tests/Recordings/ExportEndpointTests.cs (A_secret_meeting_keeps_its_audio_and_words_inside)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-31",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -896,8 +896,8 @@
     {
       "title": "GET /api/meetings/{meetingId}/speech-clips",
       "uc": [
-        "UC-43a",
-        "UC-80"
+        "UC-51a",
+        "UC-53"
       ],
       "cases": [
         {
@@ -915,9 +915,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. Sentences from two members."
           ],
-          "note": "UC-43a · UC-80 · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (A_meeting_joined_from_afar_is_captured_per_mic)",
+          "note": "UC-51a · UC-53 · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (A_meeting_joined_from_afar_is_captured_per_mic)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-31",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -936,9 +936,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. An earlier read with its readAt."
           ],
-          "note": "UC-80 · Boundary: 2 seconds · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (A_quiet_copy_of_a_neighbours_sentence_is_marked_for_everyone_and_kept)",
+          "note": "UC-53 · Boundary: 2 seconds · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (A_quiet_copy_of_a_neighbours_sentence_is_marked_for_everyone_and_kept)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-31",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -957,9 +957,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. One sentence excluded from the record."
           ],
-          "note": "UC-46c · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (A_sentence_taken_out_of_the_record_is_heard_only_by_the_chair_and_the_secretary)",
+          "note": "UC-55c · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (A_sentence_taken_out_of_the_record_is_heard_only_by_the_chair_and_the_secretary)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-31",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -977,9 +977,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. One Online and one InPerson meeting."
           ],
-          "note": "UC-80 · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (The_secretary_corrects_a_sentence_and_nobody_else_can)",
+          "note": "UC-53 · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (The_secretary_corrects_a_sentence_and_nobody_else_can)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-31",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -997,9 +997,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A Guest admitted who has spoken, and sentences of members."
           ],
-          "note": "UC-80 · ADR-0051 · Automated: tests/TrustCabinet.Web.Tests/Recordings/GuestSpeechClipTests.cs (A_guest_reads_hears_and_deletes_only_their_own_sentences_and_never_the_transcript)",
+          "note": "UC-53 · ADR-0051 · Automated: tests/TrustCabinet.Web.Tests/Recordings/GuestSpeechClipTests.cs (A_guest_reads_hears_and_deletes_only_their_own_sentences_and_never_the_transcript)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-31",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -1007,7 +1007,7 @@
     {
       "title": "PUT /api/meetings/{meetingId}/speech-clips/{clientClipId}",
       "uc": [
-        "UC-80"
+        "UC-53"
       ],
       "cases": [
         {
@@ -1026,9 +1026,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. The speech worker running; clientClipId is a new GUID."
           ],
-          "note": "UC-80 · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (A_sentence_from_my_mic_is_transcribed_without_diarization_and_named_after_me_once)",
+          "note": "UC-53 · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (A_sentence_from_my_mic_is_transcribed_without_diarization_and_named_after_me_once)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-31",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1047,9 +1047,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list."
           ],
-          "note": "UC-80 · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (A_malformed_or_oversized_sentence_is_refused_before_the_worker_hears_it)",
+          "note": "UC-53 · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (A_malformed_or_oversized_sentence_is_refused_before_the_worker_hears_it)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-31",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1068,9 +1068,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list."
           ],
-          "note": "UC-80 · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (A_malformed_or_oversized_sentence_is_refused_before_the_worker_hears_it)",
+          "note": "UC-53 · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (A_malformed_or_oversized_sentence_is_refused_before_the_worker_hears_it)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-31",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1088,9 +1088,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list."
           ],
-          "note": "UC-80 · Boundary: 3 MB · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (A_malformed_or_oversized_sentence_is_refused_before_the_worker_hears_it)",
+          "note": "UC-53 · Boundary: 3 MB · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (A_malformed_or_oversized_sentence_is_refused_before_the_worker_hears_it)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-31",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1109,9 +1109,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An Online meeting in Ended with a Chair, a Secretary and a Member on its participant list. Clock control by the QA lead."
           ],
-          "note": "UC-80 · Boundary: 7 days · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (A_sentence_kept_on_the_device_still_arrives_up_to_a_week_after_the_meeting)",
+          "note": "UC-53 · Boundary: 7 days · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (A_sentence_kept_on_the_device_still_arrives_up_to_a_week_after_the_meeting)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-31",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1130,9 +1130,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A Guest invitation that was never admitted with the notice confirmed."
           ],
-          "note": "UC-80 · Consent (Law 91/2025) · Automated: tests/TrustCabinet.Web.Tests/Recordings/GuestSpeechClipTests.cs (A_guest_is_recorded_only_after_the_notice_and_reads_in_the_transcript_under_their_name_as_a_guest)",
+          "note": "UC-53 · Consent (Law 91/2025) · Automated: tests/TrustCabinet.Web.Tests/Recordings/GuestSpeechClipTests.cs (A_guest_is_recorded_only_after_the_notice_and_reads_in_the_transcript_under_their_name_as_a_guest)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-31",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -1140,7 +1140,7 @@
     {
       "title": "GET /api/speech-clips/{clipId}/playback",
       "uc": [
-        "UC-43b"
+        "UC-51b"
       ],
       "cases": [
         {
@@ -1159,9 +1159,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A sentence excluded from the record."
           ],
-          "note": "UC-46c · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (A_sentence_taken_out_of_the_record_is_heard_only_by_the_chair_and_the_secretary)",
+          "note": "UC-55c · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (A_sentence_taken_out_of_the_record_is_heard_only_by_the_chair_and_the_secretary)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-31",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -1169,7 +1169,7 @@
     {
       "title": "GET /api/speech-clips/{clipId}/audio",
       "uc": [
-        "UC-43b"
+        "UC-51b"
       ],
       "cases": [
         {
@@ -1188,9 +1188,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A stored sentence with audio."
           ],
-          "note": "UC-43b · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (Everyone_who_reads_the_transcript_hears_a_sentence_through_a_signed_link)",
+          "note": "UC-51b · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (Everyone_who_reads_the_transcript_hears_a_sentence_through_a_signed_link)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-31",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1208,9 +1208,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A valid link for the sentence."
           ],
-          "note": "UC-43b · Boundary: link lifetime · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (Everyone_who_reads_the_transcript_hears_a_sentence_through_a_signed_link)",
+          "note": "UC-51b · Boundary: link lifetime · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (Everyone_who_reads_the_transcript_hears_a_sentence_through_a_signed_link)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-31",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -1218,8 +1218,8 @@
     {
       "title": "PUT /api/speech-clips/{clipId}/exclusion",
       "uc": [
-        "UC-80",
-        "UC-46c"
+        "UC-53",
+        "UC-55c"
       ],
       "cases": [
         {
@@ -1238,9 +1238,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A sentence marked as leaked."
           ],
-          "note": "UC-46c · UC-80 · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (The_chair_or_a_secretary_takes_a_sentence_out_and_puts_it_back)",
+          "note": "UC-55c · UC-53 · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (The_chair_or_a_secretary_takes_a_sentence_out_and_puts_it_back)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-31",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1258,9 +1258,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A sentence."
           ],
-          "note": "UC-46c · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (The_chair_or_a_secretary_takes_a_sentence_out_and_puts_it_back)",
+          "note": "UC-55c · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (The_chair_or_a_secretary_takes_a_sentence_out_and_puts_it_back)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-31",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1278,9 +1278,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A sentence."
           ],
-          "note": "UC-46c · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (The_chair_or_a_secretary_takes_a_sentence_out_and_puts_it_back)",
+          "note": "UC-55c · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (The_chair_or_a_secretary_takes_a_sentence_out_and_puts_it_back)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-31",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1298,9 +1298,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A Guest admitted who has spoken."
           ],
-          "note": "UC-46c · ADR-0051 · Automated: tests/TrustCabinet.Web.Tests/Recordings/GuestSpeechClipTests.cs (A_guest_reads_hears_and_deletes_only_their_own_sentences_and_never_the_transcript)",
+          "note": "UC-55c · ADR-0051 · Automated: tests/TrustCabinet.Web.Tests/Recordings/GuestSpeechClipTests.cs (A_guest_reads_hears_and_deletes_only_their_own_sentences_and_never_the_transcript)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-31",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -1308,8 +1308,8 @@
     {
       "title": "DELETE /api/speech-clips/{clipId}",
       "uc": [
-        "UC-80",
-        "UC-46d"
+        "UC-53",
+        "UC-55d"
       ],
       "cases": [
         {
@@ -1328,9 +1328,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A sentence spoken by the Member."
           ],
-          "note": "UC-80 · UC-46d · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (The_speaker_or_the_secretary_takes_a_sentence_back)",
+          "note": "UC-53 · UC-55d · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (The_speaker_or_the_secretary_takes_a_sentence_back)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-31",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1348,9 +1348,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A sentence spoken by a Member."
           ],
-          "note": "UC-46d · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (The_speaker_or_the_secretary_takes_a_sentence_back)",
+          "note": "UC-55d · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (The_speaker_or_the_secretary_takes_a_sentence_back)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-31",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1369,9 +1369,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An Online meeting in InProgress with a Chair, a Secretary and a Member on its participant list. A sentence spoken by a Member."
           ],
-          "note": "UC-46d · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (The_speaker_or_the_secretary_takes_a_sentence_back)",
+          "note": "UC-55d · Automated: tests/TrustCabinet.Web.Tests/Recordings/SpeechClipEndpointTests.cs (The_speaker_or_the_secretary_takes_a_sentence_back)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-31",
           "tester1": "Phạm Gia Khánh"
         }
       ]

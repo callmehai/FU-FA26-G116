@@ -1,7 +1,33 @@
 {
+  "project": "TrustCabinet",
+  "projectCode": "SEP490-G116",
   "file": "Report5.4_System_Test_NFRs.xlsx",
   "source": "Report 3 §IV.2 Quality Attributes",
   "environment": "Test server app.trustcabinet.workspace-hub.space (Staging) or a local build of the same app commit. Round 1 (23/11/2026): app commit 6baba24f; changed on app since: room mic takes of 30 minutes (ADR-0080), transcription progress bar (#504), app server on 4 vCPU (ADR-0082)",
+  "cover": {
+    "title": "SYSTEM TEST NFRs REPORT DOCUMENT",
+    "creator": "Nguyễn Trường Huy",
+    "issueDate": "2026-11-27",
+    "version": "1.1",
+    "changes": [
+      {
+        "date": "23/11/2026",
+        "version": "1.0",
+        "item": "All NFR sheets",
+        "type": "A",
+        "description": "Created 41 NFR system test cases (Security, Performance, Usability, Reliability, Availability) and ran Round 1 (34 Pass, 1 Fail, 2 Blocked, 4 Skip).",
+        "reference": "Report 5.0 Test Documentation"
+      },
+      {
+        "date": "27/11/2026",
+        "version": "1.1",
+        "item": "Cover, Test Statistics, Performance",
+        "type": "M",
+        "description": "Added Cover and live Test Statistics sheets; exposed Test Date and Tester columns; marked TC-PERF-004 and TC-PERF-006 Blocked due to unmet test conditions (32 Pass, 1 Fail, 4 Blocked, 4 Skip).",
+        "reference": "Report 5.0 Test Documentation"
+      }
+    ]
+  },
   "sheets": [
     {
       "sheet": "Security",

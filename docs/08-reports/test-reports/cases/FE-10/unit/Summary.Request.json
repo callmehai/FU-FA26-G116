@@ -22,9 +22,9 @@
           "exception": "N/A",
           "log": "Saved: Queued draft row with requester and request time.",
           "type": "Normal",
-          "note": "UC-47 · BR-374 · BR-375 · MSG384 · Deviation: drafts are Ended-only since 518e9ce2 (20/11); PRE updated from InProgress",
+          "note": "UC-58 · BR-126, BR-127 · MSG384",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -37,9 +37,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-47 · BR-374 · MSG385 · Deviation: drafts are Ended-only since 518e9ce2 (20/11); PRE updated from InProgress",
+          "note": "UC-58 · BR-126, BR-127 · MSG385",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -52,9 +52,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-47 · BR-375 · MSG386 · Deviation: drafts are Ended-only since 518e9ce2 (20/11); PRE updated from InProgress",
+          "note": "UC-58 · BR-126, BR-127 · MSG386",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -68,9 +68,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-47 · MSG387 · Deviation: drafts are Ended-only since 518e9ce2 (20/11); PRE updated from InProgress",
+          "note": "UC-58 · MSG387",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -84,9 +84,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-47 · BR-381 · MSG394 · Deviation: drafts are Ended-only since 518e9ce2 (20/11); PRE updated from InProgress",
+          "note": "UC-58 · BR-129 · MSG394",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         }
       ]

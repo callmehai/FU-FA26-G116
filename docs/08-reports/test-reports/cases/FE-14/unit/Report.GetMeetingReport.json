@@ -1,5 +1,5 @@
 {
-  "feature": "FE-15",
+  "feature": "FE-14",
   "module": "RPT",
   "sheet": "Report.GetMeetingReport",
   "description": "Meeting report: who may read, period handling and totals.",
@@ -22,9 +22,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-70a · BR-432 · BR-434 · BR-435 · BR-436 · BR-437",
+          "note": "UC-79a · BR-149, BR-150 · BR-151 · BR-152",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -37,9 +37,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-70a EX-1 · BR-433 · MSG463",
+          "note": "UC-79a EX-1 · UC-79a · MSG463",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -53,9 +53,9 @@
           "exception": "N/A",
           "log": "Error: \"Could not read the meeting report 2026-01–2026-12\" with the database error as cause.",
           "type": "Abnormal",
-          "note": "UC-70a EX-2 · MSG464",
+          "note": "UC-79a EX-2 · MSG464",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -68,9 +68,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-70a · BR-435 · BR-436",
+          "note": "UC-79a · BR-151",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         }
       ]

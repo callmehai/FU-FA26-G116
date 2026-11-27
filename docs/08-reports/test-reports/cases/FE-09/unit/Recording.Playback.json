@@ -22,9 +22,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-43b · BR-350",
+          "note": "UC-51b · BR-111, BR-112",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -37,9 +37,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-43b · BR-350 · BR-348",
+          "note": "UC-51b · BR-111, BR-112 · BR-110",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -52,9 +52,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-44a · UC-43b · BR-350",
+          "note": "UC-52a · UC-51b · BR-111, BR-112",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -67,9 +67,9 @@
           "exception": "PersistenceException caught; logged.",
           "log": "Error log 'Failed to sign playback'.",
           "type": "Abnormal",
-          "note": "UC-43b · BR-350 · MSG297",
+          "note": "UC-51b · BR-111, BR-112 · MSG297",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         }
       ]

@@ -21,9 +21,9 @@
           "exception": "N/A",
           "log": "Saved: sample removed; audit row records the deletion with the proxy scope.",
           "type": "Normal",
-          "note": "UC-86d · BR-452 · MSG474",
+          "note": "UC-57d · BR-118, BR-119 · MSG474",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -36,9 +36,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-86d · BR-452 · BR-448",
+          "note": "UC-57d · BR-118, BR-119",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         }
       ]

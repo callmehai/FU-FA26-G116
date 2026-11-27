@@ -42,7 +42,7 @@
           "preconditions": [
             "TC01 passed; a published Thường meeting with Member B as Thư ký and Member C as member."
           ],
-          "aiNote": "BF-02 · UC-36a · MSG161 · 5.2: DOC_FT53 · Evidence: QA run SYS-WF08 20261123-065433-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
+          "aiNote": "BF-02 · UC-36a · MSG161 · 5.2: DOC_FT28 · Evidence: QA run SYS-WF08 20261123-065433-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
           "round1": "Passed",
           "date1": "2026-11-23",
           "tester1": "Nguyễn Trường Huy"
@@ -66,7 +66,7 @@
           "preconditions": [
             "TC02 passed."
           ],
-          "aiNote": "BF-02 · UC-38 · MSG199 · 5.2: DOC_FT82, DOC_FT84 · Evidence: QA run SYS-WF08 20261123-065433-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
+          "aiNote": "BF-02 · UC-38 · MSG199 · 5.2: DOC_FT46, DOC_FT47 · Evidence: QA run SYS-WF08 20261123-065433-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
           "round1": "Passed",
           "date1": "2026-11-23",
           "tester1": "Nguyễn Trường Huy"
@@ -91,7 +91,7 @@
           "preconditions": [
             "TC02 passed; a published Mật meeting with the same roster."
           ],
-          "aiNote": "BF-02 · UC-35a, UC-35b · BR-079, BR-080 · MSG159, MSG156 · 5.2: DOC_FT73, DOC_FT79 · Evidence: QA run SYS-WF08 20261123-065433-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
+          "aiNote": "BF-02 · UC-35a, UC-35b · BR-079, BR-080 · MSG159, MSG156 · 5.2: DOC_FT42, DOC_FT44 · Evidence: QA run SYS-WF08 20261123-065433-0c98bde8 · Run by the QA runner on a local build of app 6baba24f.",
           "round1": "Passed",
           "date1": "2026-11-23",
           "tester1": "Nguyễn Trường Huy"

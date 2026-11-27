@@ -22,9 +22,9 @@
           "exception": "N/A",
           "log": "Audit row RecordingDownloaded for the recording with meetingId, file name and byte size, actor = the Chair.",
           "type": "Normal",
-          "note": "UC-43c · BR-351",
+          "note": "UC-51c · BR-111, BR-112",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -37,9 +37,9 @@
           "exception": "N/A",
           "log": "No audit row.",
           "type": "Abnormal",
-          "note": "UC-43c · BR-351 · MSG355",
+          "note": "UC-51c · BR-111, BR-112 · MSG355",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -52,9 +52,9 @@
           "exception": "N/A",
           "log": "No audit row.",
           "type": "Abnormal",
-          "note": "UC-43c · BR-351 · MSG356",
+          "note": "UC-51c · BR-111, BR-112 · MSG356",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -67,9 +67,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-43c · BR-351 · MSG355",
+          "note": "UC-51c · BR-111, BR-112 · MSG355",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -83,9 +83,9 @@
           "exception": "N/A",
           "log": "No audit row.",
           "type": "Abnormal",
-          "note": "UC-43c · BR-351 · MSG482 · Deviation: downloads leave as MP3 since ADR-0069 (ea9b880a), after these UTCs were written",
+          "note": "UC-51c · BR-111, BR-112 · MSG482",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         }
       ]

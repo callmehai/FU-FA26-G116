@@ -10,5 +10,5 @@ Layer: Application · `backend/TrustCabinet.Application/VoiceId/VoiceCollectionS
 
 | ID | Pre-conditions | Inputs | Expected | Type | Note |
 |---|---|---|---|---|---|
-| UTC001 | A proxy sample with its recording exists for the active person. | actorId: the collector; userId: the person; sampleId: a proxy sample of the person. | Return: The decrypted bytes with their content type.<br>Exception: N/A<br>Log Message: Saved: audit row records the play with the owner, before the bytes are returned. | Normal | UC-86c · BR-452 · BR-453 |
-| UTC002 | The sample is one the person recorded themself. | actorId: the collector; userId: the person; sampleId: the person own self-recorded sample. | Return: Null; a collector only hears samples taken for the person, never the person own set.<br>Exception: N/A<br>Log Message: N/A | Abnormal | UC-86c · BR-452 |
+| UTC001 | A proxy sample with its recording exists for the active person. | actorId: the collector; userId: the person; sampleId: a proxy sample of the person. | Return: The decrypted bytes with their content type.<br>Exception: N/A<br>Log Message: Saved: audit row records the play with the owner, before the bytes are returned. | Normal | UC-57c · BR-118, BR-119 · BR-011 |
+| UTC002 | The sample is one the person recorded themself. | actorId: the collector; userId: the person; sampleId: the person own self-recorded sample. | Return: Null; a collector only hears samples taken for the person, never the person own set.<br>Exception: N/A<br>Log Message: N/A | Abnormal | UC-57c · BR-118, BR-119 |

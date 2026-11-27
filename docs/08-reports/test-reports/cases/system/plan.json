@@ -5,9 +5,9 @@
   "title": "SYSTEM TEST REPORT DOCUMENT",
   "environment": "1. TrustCabinet test server (Staging build of app) or local build of the same commit. Round 1 (23-24/11/2026): QA runner on a local build of app 6baba24f (+docs); hand runs on the app server — 23/11 daytime Staging app e7dc0e7a (deployed 04:12Z, Deployments 7990246591), 24/11 Staging app 1acb600a (deployed 09:00Z, Deployments 8023165204); changed on app since: room mic takes of 30 minutes (ADR-0080), transcription progress bar (#504)\n2. Database: PostgreSQL 17\n3. LiveKit server, speech worker, local language model for the AI steps\n4. Google Chrome (latest) and Microsoft Edge on desktop; Chrome on an Android phone (390px)\n5. Mailbox the tester can read for invitation and notification emails",
   "cover": {
-    "creator": "TrustCabinet Team",
-    "issueDate": "2026-11-22",
-    "version": "1.1",
+    "creator": "Nguyễn Trường Huy",
+    "issueDate": "2026-11-27",
+    "version": "1.2",
     "changes": [
       {
         "date": "22/11/2026",
@@ -23,6 +23,14 @@
         "item": "WorkFlow1, WorkFlow4",
         "type": "M",
         "description": "Password reset and correction of issued minutes added; five cases corrected to match the app.",
+        "reference": "Report 5.0 Test Documentation"
+      },
+      {
+        "date": "27/11/2026",
+        "version": "1.2",
+        "item": "All workflows",
+        "type": "M",
+        "description": "Fixed 31 Report 5.2 cross-references, populated visible Note column with execution evidence, updated Issue Date and statistics formatting.",
         "reference": "Report 5.0 Test Documentation"
       }
     ]

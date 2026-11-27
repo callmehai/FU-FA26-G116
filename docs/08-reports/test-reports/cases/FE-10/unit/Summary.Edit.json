@@ -21,9 +21,9 @@
           "exception": "N/A",
           "log": "Saved: corrected content with editor and edit time; review cleared.",
           "type": "Normal",
-          "note": "UC-49 · BR-377 · MSG388",
+          "note": "UC-60 · UC-60, UC-61 · MSG388",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -36,9 +36,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-49 · MSG390",
+          "note": "UC-60 · MSG390",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -51,9 +51,9 @@
           "exception": "N/A",
           "log": "Saved: corrected content with editor and edit time; review cleared.",
           "type": "Boundary",
-          "note": "UC-49 · MSG388",
+          "note": "UC-60 · MSG388",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -66,9 +66,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-49 · BR-374 · MSG385",
+          "note": "UC-60 · BR-126, BR-127 · MSG385",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         }
       ]

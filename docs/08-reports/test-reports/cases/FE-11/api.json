@@ -7,7 +7,7 @@
     {
       "title": "GET /api/meetings/{meetingId}/votes",
       "uc": [
-        "UC-52a"
+        "UC-62a"
       ],
       "cases": [
         {
@@ -18,7 +18,7 @@
             "Drafts appear only for the Chair and Secretary; a Member gets the same 200 without them."
           ],
           "id": "VOTE_API_IT01",
-          "note": "UC-52a | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (Secretary_prepares_drafts_that_only_the_chair_and_secretary_see)",
+          "note": "UC-62a | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (Secretary_prepares_drafts_that_only_the_chair_and_secretary_see)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "A meeting in InProgress chaired by the Chair, with a Secretary, a Member and one draft vote."
@@ -29,7 +29,7 @@
             "Sign in as the Member and repeat step 2."
           ],
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -39,7 +39,7 @@
             "Body: { \"code\": \"MSG205\", \"message\": \"Không truy cập được biểu quyết của cuộc họp này.\" }."
           ],
           "id": "VOTE_API_IT02",
-          "note": "UC-52a | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRound1Tests.cs (VoteList_OutsideMeetingIs404)",
+          "note": "UC-62a | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRound1Tests.cs (VoteList_OutsideMeetingIs404)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "A meeting the caller is not a participant of, or a Draft meeting an outsider cannot read."
@@ -49,7 +49,7 @@
             "Send GET /api/meetings/{meetingId}/votes with Authorization: Bearer <accessToken>."
           ],
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -59,7 +59,7 @@
             "No vote is returned with the error."
           ],
           "id": "VOTE_API_IT03",
-          "note": "UC-52a | EX | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (Database_failures_answer_their_own_codes_and_change_nothing)",
+          "note": "UC-62a | EX | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (Database_failures_answer_their_own_codes_and_change_nothing)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "Active Chair account of the meeting.",
@@ -73,7 +73,7 @@
             "Headers: Authorization: Bearer <access_token>"
           ],
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -81,7 +81,7 @@
     {
       "title": "GET /api/meetings/{meetingId}/votes/{voteId}",
       "uc": [
-        "UC-52b"
+        "UC-62b"
       ],
       "cases": [
         {
@@ -92,7 +92,7 @@
             "A secret vote returns \"voters\": null; a public one names each voter and choice."
           ],
           "id": "VOTE_API_IT04",
-          "note": "UC-52b | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (One_person_one_ballot_and_a_closed_public_vote_shows_each_choice; A_secret_ballot_leaves_nothing_that_pairs_a_choice_with_its_voter)",
+          "note": "UC-62b | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (One_person_one_ballot_and_a_closed_public_vote_shows_each_choice; A_secret_ballot_leaves_nothing_that_pairs_a_choice_with_its_voter)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "A closed public vote and a closed secret vote in the same meeting."
@@ -103,7 +103,7 @@
             "Send GET /api/meetings/{meetingId}/votes/{secretVoteId}."
           ],
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -112,7 +112,7 @@
             "HTTP 404 Not Found, body code \"MSG205\"."
           ],
           "id": "VOTE_API_IT05",
-          "note": "UC-52b | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRound1Tests.cs (VoteDetail_UnknownOrForeignVoteIs404)",
+          "note": "UC-62b | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRound1Tests.cs (VoteDetail_UnknownOrForeignVoteIs404)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "A meeting the Chair may read; a random vote id. A second meeting with its own vote."
@@ -123,7 +123,7 @@
             "Send GET /api/meetings/{meetingId}/votes/{otherMeetingsVoteId}."
           ],
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -133,7 +133,7 @@
             "No option, count or ballot is returned with the error."
           ],
           "id": "VOTE_API_IT06",
-          "note": "UC-52b | EX | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (Database_failures_answer_their_own_codes_and_change_nothing)",
+          "note": "UC-62b | EX | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (Database_failures_answer_their_own_codes_and_change_nothing)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "Active Chair account of the meeting.",
@@ -147,7 +147,7 @@
             "Headers: Authorization: Bearer <access_token>"
           ],
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -155,7 +155,7 @@
     {
       "title": "POST /api/meetings/{meetingId}/votes",
       "uc": [
-        "UC-53"
+        "UC-63"
       ],
       "cases": [
         {
@@ -166,7 +166,7 @@
             "GET /api/meetings/{meetingId}/votes lists the new draft for the Chair and Secretary, not for the Member."
           ],
           "id": "VOTE_API_IT07",
-          "note": "UC-53 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (Secretary_prepares_drafts_that_only_the_chair_and_secretary_see)",
+          "note": "UC-63 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (Secretary_prepares_drafts_that_only_the_chair_and_secretary_see)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "A meeting in Approved chaired by the Chair, with a Secretary and a Member."
@@ -178,7 +178,7 @@
             "Body: { \"title\": \"Thông qua kế hoạch quý IV\", \"description\": \"\", \"options\": [\"Thông qua\", \"Không thông qua\"], \"isAnonymous\": false, \"eligibleRoles\": [\"Chair\", \"Member\"] }"
           ],
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -189,7 +189,7 @@
             "No draft is saved: the list is unchanged."
           ],
           "id": "VOTE_API_IT08",
-          "note": "UC-53 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (Invalid_configuration_is_rejected_and_saves_nothing)",
+          "note": "UC-63 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (Invalid_configuration_is_rejected_and_saves_nothing)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "A meeting in Approved chaired by the Chair."
@@ -201,7 +201,7 @@
             "Body: { \"title\": \"\", \"options\": [\"Một\"], \"eligibleRoles\": [] } (missing isAnonymous, one option, no roles)"
           ],
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -211,7 +211,7 @@
             "An Approved meeting managed by a Chair without the role: HTTP 409, body code \"MSG213\"."
           ],
           "id": "VOTE_API_IT09",
-          "note": "UC-53 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (Only_the_current_chair_or_secretary_manage_drafts_and_only_before_or_during_the_sitting)",
+          "note": "UC-63 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (Only_the_current_chair_or_secretary_manage_drafts_and_only_before_or_during_the_sitting)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "A meeting in Approved with a Chair, a Secretary and a Member."
@@ -221,7 +221,7 @@
             "Sign in as the Chair and repeat it."
           ],
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -229,7 +229,7 @@
     {
       "title": "PUT /api/meetings/{meetingId}/votes/{voteId}",
       "uc": [
-        "UC-53"
+        "UC-63"
       ],
       "cases": [
         {
@@ -239,7 +239,7 @@
             "GET the vote shows the new title, options and roles."
           ],
           "id": "VOTE_API_IT10",
-          "note": "UC-53 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (Secretary_prepares_drafts_that_only_the_chair_and_secretary_see)",
+          "note": "UC-63 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (Secretary_prepares_drafts_that_only_the_chair_and_secretary_see)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "A draft vote the Chair manages."
@@ -251,7 +251,7 @@
             "Body: the full draft with a new title and new options."
           ],
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -261,7 +261,7 @@
             "The draft keeps its previous configuration: GET shows the old title and options."
           ],
           "id": "VOTE_API_IT11",
-          "note": "UC-53 | UC-54 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (Opening_from_the_edit_form_keeps_the_edits_only_when_the_vote_opens)",
+          "note": "UC-63 | UC-64 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (Opening_from_the_edit_form_keeps_the_edits_only_when_the_vote_opens)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "A draft vote and a second, already open vote in an InProgress meeting."
@@ -272,7 +272,7 @@
             "Send GET /api/meetings/{meetingId}/votes/{draftId} and check the title."
           ],
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -281,7 +281,7 @@
             "HTTP 404 Not Found, body code \"MSG205\"."
           ],
           "id": "VOTE_API_IT12",
-          "note": "UC-53 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (Secretary_prepares_drafts_that_only_the_chair_and_secretary_see)",
+          "note": "UC-63 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (Secretary_prepares_drafts_that_only_the_chair_and_secretary_see)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "A draft vote in a meeting with a Member."
@@ -291,7 +291,7 @@
             "Send PUT /api/meetings/{meetingId}/votes/{voteId} with a valid draft body."
           ],
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -299,7 +299,7 @@
     {
       "title": "DELETE /api/meetings/{meetingId}/votes/{voteId}",
       "uc": [
-        "UC-53"
+        "UC-63"
       ],
       "cases": [
         {
@@ -309,7 +309,7 @@
             "The vote is gone from the list."
           ],
           "id": "VOTE_API_IT13",
-          "note": "UC-53 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (Secretary_prepares_drafts_that_only_the_chair_and_secretary_see)",
+          "note": "UC-63 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (Secretary_prepares_drafts_that_only_the_chair_and_secretary_see)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "A draft vote the Chair manages."
@@ -319,7 +319,7 @@
             "Send DELETE /api/meetings/{meetingId}/votes/{voteId} with Authorization: Bearer <accessToken>."
           ],
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -329,7 +329,7 @@
             "Open vote by the Chair: HTTP 409, body code \"MSG213\"."
           ],
           "id": "VOTE_API_IT14",
-          "note": "UC-53 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (Secretary_prepares_drafts_that_only_the_chair_and_secretary_see)",
+          "note": "UC-63 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (Secretary_prepares_drafts_that_only_the_chair_and_secretary_see)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "A draft vote and an open vote in the same meeting."
@@ -339,7 +339,7 @@
             "Sign in as the Chair and send DELETE for the open vote."
           ],
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -347,7 +347,7 @@
     {
       "title": "POST /api/meetings/{meetingId}/votes/{voteId}/documents",
       "uc": [
-        "UC-76a"
+        "UC-68a"
       ],
       "cases": [
         {
@@ -357,7 +357,7 @@
             "The vote detail shows the documents; the meeting documents stay in the meeting."
           ],
           "id": "VOTE_API_IT15",
-          "note": "UC-76a | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteDocumentEndpointTests.cs (Secretary_attaches_meeting_documents_to_a_draft_and_detaches_one_that_stays_in_the_meeting)",
+          "note": "UC-68a | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteDocumentEndpointTests.cs (Secretary_attaches_meeting_documents_to_a_draft_and_detaches_one_that_stays_in_the_meeting)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "A draft vote and two meeting documents the Chair may read."
@@ -369,7 +369,7 @@
             "Body: { \"meetingDocumentIds\": [\"<doc1>\", \"<doc2>\"] }"
           ],
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -379,7 +379,7 @@
             "Nothing is linked."
           ],
           "id": "VOTE_API_IT16",
-          "note": "UC-76a | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRound1Tests.cs (VoteDocuments_AttachForeignDocumentIs404)",
+          "note": "UC-68a | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRound1Tests.cs (VoteDocuments_AttachForeignDocumentIs404)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "A draft vote; a document id from another meeting."
@@ -389,7 +389,7 @@
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/documents with Body: { \"meetingDocumentIds\": [\"<foreign doc>\"] }."
           ],
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -398,7 +398,7 @@
             "HTTP 409, body code \"MSG266\"."
           ],
           "id": "VOTE_API_IT17",
-          "note": "UC-76a | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRound1Tests.cs (VoteDocuments_AttachDuplicateIs409)",
+          "note": "UC-68a | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRound1Tests.cs (VoteDocuments_AttachDuplicateIs409)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "A draft vote with one linked document."
@@ -408,7 +408,7 @@
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/documents with the already linked document id."
           ],
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -417,7 +417,7 @@
             "HTTP 409, body code \"MSG213\"."
           ],
           "id": "VOTE_API_IT18",
-          "note": "UC-76a | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteDocumentEndpointTests.cs (Documents_change_only_while_the_vote_is_a_draft_and_only_by_the_chair_or_secretary)",
+          "note": "UC-68a | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteDocumentEndpointTests.cs (Documents_change_only_while_the_vote_is_a_draft_and_only_by_the_chair_or_secretary)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "An open vote in an InProgress meeting."
@@ -427,7 +427,7 @@
             "Send POST /api/meetings/{meetingId}/votes/{openVoteId}/documents with a meeting document id."
           ],
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -435,7 +435,7 @@
     {
       "title": "POST /api/meetings/{meetingId}/votes/{voteId}/documents/from-library",
       "uc": [
-        "UC-76a"
+        "UC-68a"
       ],
       "cases": [
         {
@@ -445,7 +445,7 @@
             "The files become meeting documents and appear on the vote."
           ],
           "id": "VOTE_API_IT19",
-          "note": "UC-76a | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteDocumentEndpointTests.cs (Chair_attaches_from_the_library_and_from_the_computer_adding_them_to_the_meeting_in_the_same_save)",
+          "note": "UC-68a | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteDocumentEndpointTests.cs (Chair_attaches_from_the_library_and_from_the_computer_adding_them_to_the_meeting_in_the_same_save)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "A draft vote; a PDF in the Chair's personal library."
@@ -457,7 +457,7 @@
             "Body: { \"documentIds\": [\"<library doc>\"] }"
           ],
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -466,7 +466,7 @@
             "HTTP 400, body code \"MSG249\"."
           ],
           "id": "VOTE_API_IT20",
-          "note": "UC-76a | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRound1Tests.cs (VoteDocuments_AttachFromEmptyLibraryIs400)",
+          "note": "UC-68a | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRound1Tests.cs (VoteDocuments_AttachFromEmptyLibraryIs400)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "A draft vote."
@@ -476,7 +476,7 @@
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/documents/from-library with Body: { \"documentIds\": [] }."
           ],
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -484,7 +484,7 @@
     {
       "title": "POST /api/meetings/{meetingId}/votes/{voteId}/documents/upload",
       "uc": [
-        "UC-76a"
+        "UC-68a"
       ],
       "cases": [
         {
@@ -494,7 +494,7 @@
             "The file is also in the uploader's personal library."
           ],
           "id": "VOTE_API_IT21",
-          "note": "UC-76a | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteDocumentEndpointTests.cs (Chair_attaches_from_the_library_and_from_the_computer_adding_them_to_the_meeting_in_the_same_save)",
+          "note": "UC-68a | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteDocumentEndpointTests.cs (Chair_attaches_from_the_library_and_from_the_computer_adding_them_to_the_meeting_in_the_same_save)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "A draft vote; a PDF file under 50 MB on the test machine."
@@ -504,7 +504,7 @@
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/documents/upload as multipart with the PDF file."
           ],
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -514,7 +514,7 @@
             "Nothing is added to the meeting or the vote."
           ],
           "id": "VOTE_API_IT22",
-          "note": "UC-76a | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRound1Tests.cs (VoteDocuments_UploadNonPdfIs400)",
+          "note": "UC-68a | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRound1Tests.cs (VoteDocuments_UploadNonPdfIs400)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "A draft vote; a .txt file on the test machine."
@@ -524,7 +524,7 @@
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/documents/upload as multipart with the .txt file."
           ],
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -534,7 +534,7 @@
             "Nothing is added to the meeting or the vote."
           ],
           "id": "VOTE_API_IT23",
-          "note": "UC-76a | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRound1Tests.cs (VoteDocuments_UploadElevenFilesIs400)",
+          "note": "UC-68a | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRound1Tests.cs (VoteDocuments_UploadElevenFilesIs400)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "A draft vote; 11 small PDFs on the test machine."
@@ -544,7 +544,7 @@
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/documents/upload as multipart with the 11 files."
           ],
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -554,7 +554,7 @@
             "Nothing is added to the meeting, the vote or the personal library; no stored object is left (ADR-0034)."
           ],
           "id": "VOTE_API_IT24",
-          "note": "UC-76a | ADR-0034 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRound1Tests.cs (VoteDocuments_UploadWhenStorageFullIs409)",
+          "note": "UC-68a | ADR-0034 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRound1Tests.cs (VoteDocuments_UploadWhenStorageFullIs409)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "A draft vote; a PDF file larger than the storage still free (FileStorage:MaxTotalGigabytes set low by QA lead)."
@@ -564,7 +564,7 @@
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/documents/upload as multipart with the PDF file."
           ],
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -572,7 +572,7 @@
     {
       "title": "DELETE /api/meetings/{meetingId}/votes/{voteId}/documents/{meetingDocumentId}",
       "uc": [
-        "UC-76b"
+        "UC-68b"
       ],
       "cases": [
         {
@@ -582,7 +582,7 @@
             "The vote detail no longer shows the document; GET /api/meetings/{meetingId}/documents still lists it."
           ],
           "id": "VOTE_API_IT25",
-          "note": "UC-76b | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteDocumentEndpointTests.cs (Secretary_attaches_meeting_documents_to_a_draft_and_detaches_one_that_stays_in_the_meeting)",
+          "note": "UC-68b | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteDocumentEndpointTests.cs (Secretary_attaches_meeting_documents_to_a_draft_and_detaches_one_that_stays_in_the_meeting)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "A draft vote with one linked document."
@@ -592,7 +592,7 @@
             "Send DELETE /api/meetings/{meetingId}/votes/{voteId}/documents/{meetingDocumentId} with Authorization: Bearer <accessToken>."
           ],
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -601,7 +601,7 @@
             "HTTP 404, body code \"MSG269\"."
           ],
           "id": "VOTE_API_IT26",
-          "note": "UC-76b | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRound1Tests.cs (VoteDocuments_DetachNeverLinkedIs404)",
+          "note": "UC-68b | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRound1Tests.cs (VoteDocuments_DetachNeverLinkedIs404)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "A draft vote; a meeting document that was never linked to it."
@@ -611,7 +611,7 @@
             "Send DELETE for that document id."
           ],
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -619,7 +619,7 @@
     {
       "title": "POST /api/meetings/{meetingId}/votes/{voteId}/open",
       "uc": [
-        "UC-54"
+        "UC-64"
       ],
       "cases": [
         {
@@ -629,7 +629,7 @@
             "The vote status is Open; the eligible list is the active role holders at this instant (later roster changes change nothing)."
           ],
           "id": "VOTE_API_IT27",
-          "note": "UC-54 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (Opening_fixes_who_may_vote_from_the_selected_roles_regardless_of_attendance)",
+          "note": "UC-64 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (Opening_fixes_who_may_vote_from_the_selected_roles_regardless_of_attendance)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "A draft vote with eligible roles covering the roster, in an InProgress meeting chaired by the Chair."
@@ -639,7 +639,7 @@
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/open with Authorization: Bearer <accessToken>."
           ],
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -648,7 +648,7 @@
             "HTTP 409, body code \"MSG218\"."
           ],
           "id": "VOTE_API_IT28",
-          "note": "UC-54 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRound1Tests.cs (VoteOpen_ByNonChairIs409)",
+          "note": "UC-64 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRound1Tests.cs (VoteOpen_ByNonChairIs409)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "A draft vote in an InProgress meeting."
@@ -658,7 +658,7 @@
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/open with Authorization: Bearer <accessToken>."
           ],
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -668,7 +668,7 @@
             "The first vote stays open; the draft stays a draft."
           ],
           "id": "VOTE_API_IT29",
-          "note": "UC-54 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (Simultaneous_opens_leave_one_vote_open)",
+          "note": "UC-64 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (Simultaneous_opens_leave_one_vote_open)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "An open vote and a draft vote in the same InProgress meeting."
@@ -678,7 +678,7 @@
             "Send POST /api/meetings/{meetingId}/votes/{draftId}/open with Authorization: Bearer <accessToken>."
           ],
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -688,7 +688,7 @@
             "The vote stays a draft."
           ],
           "id": "VOTE_API_IT30",
-          "note": "UC-54 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (A_vote_with_nobody_eligible_does_not_open)",
+          "note": "UC-64 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (A_vote_with_nobody_eligible_does_not_open)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "A draft vote whose eligible roles match nobody in the meeting."
@@ -698,7 +698,7 @@
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/open with Authorization: Bearer <accessToken>."
           ],
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -706,7 +706,7 @@
     {
       "title": "POST /api/meetings/{meetingId}/votes/{voteId}/ballots",
       "uc": [
-        "UC-55"
+        "UC-65"
       ],
       "cases": [
         {
@@ -716,7 +716,7 @@
             "The option count grows by one."
           ],
           "id": "VOTE_API_IT31",
-          "note": "UC-55 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (One_person_one_ballot_and_a_closed_public_vote_shows_each_choice)",
+          "note": "UC-65 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (One_person_one_ballot_and_a_closed_public_vote_shows_each_choice)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "An open vote in an InProgress meeting; a Member on the eligible list."
@@ -728,7 +728,7 @@
             "Body: { \"optionId\": \"<one option id from the vote detail>\" }"
           ],
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -738,7 +738,7 @@
             "The counts stay as after the first ballot."
           ],
           "id": "VOTE_API_IT32",
-          "note": "UC-55 | BR-265 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (One_person_one_ballot_and_a_closed_public_vote_shows_each_choice; Simultaneous_ballots_from_one_person_record_exactly_one)",
+          "note": "UC-65 | BR-092, BR-093 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (One_person_one_ballot_and_a_closed_public_vote_shows_each_choice; Simultaneous_ballots_from_one_person_record_exactly_one)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "An open vote in an InProgress meeting; a Member on the eligible list who has already voted."
@@ -749,7 +749,7 @@
             "Send GET /api/meetings/{meetingId}/votes/{voteId} and check the counts."
           ],
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -759,7 +759,7 @@
             "No ballot is saved."
           ],
           "id": "VOTE_API_IT33",
-          "note": "UC-55 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (Only_holders_of_the_selected_roles_at_opening_may_vote)",
+          "note": "UC-65 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (Only_holders_of_the_selected_roles_at_opening_may_vote)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "An open vote whose eligible list has no Member."
@@ -769,7 +769,7 @@
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/ballots with Body: { \"optionId\": \"<option id>\" }."
           ],
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -778,7 +778,7 @@
             "HTTP 409, body code \"MSG225\"."
           ],
           "id": "VOTE_API_IT34",
-          "note": "UC-55 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRound1Tests.cs (Ballot_OnClosedVoteIs409)",
+          "note": "UC-65 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRound1Tests.cs (Ballot_OnClosedVoteIs409)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "A closed vote; a Member who was eligible."
@@ -788,7 +788,7 @@
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/ballots with Body: { \"optionId\": \"<option id>\" }."
           ],
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -798,7 +798,7 @@
             "No ballot is saved."
           ],
           "id": "VOTE_API_IT35",
-          "note": "UC-55 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (One_person_one_ballot_and_a_closed_public_vote_shows_each_choice)",
+          "note": "UC-65 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (One_person_one_ballot_and_a_closed_public_vote_shows_each_choice)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "An open vote; a Member on the eligible list."
@@ -808,7 +808,7 @@
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/ballots with Body: {}."
           ],
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -818,7 +818,7 @@
             "No ballot is saved."
           ],
           "id": "VOTE_API_IT36",
-          "note": "UC-55 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (One_person_one_ballot_and_a_closed_public_vote_shows_each_choice)",
+          "note": "UC-65 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (One_person_one_ballot_and_a_closed_public_vote_shows_each_choice)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "An open vote; a Member on the eligible list; an option id from another vote."
@@ -828,7 +828,7 @@
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/ballots with Body: { \"optionId\": \"<foreign option id>\" }."
           ],
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -838,7 +838,7 @@
             "After confirming each document read (POST .../read-confirmation with lastPageReached true), the ballot returns HTTP 200, code \"MSG227\"."
           ],
           "id": "VOTE_API_IT37",
-          "note": "UC-55 | UC-74 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteReadConfirmationTests.cs (A_voter_confirms_each_vote_document_before_the_ballot_is_accepted)",
+          "note": "UC-65 | UC-42 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteReadConfirmationTests.cs (A_voter_confirms_each_vote_document_before_the_ballot_is_accepted)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "An open vote with one linked document; a Member on the eligible list who has not confirmed it."
@@ -849,7 +849,7 @@
             "Confirm the document read, then repeat step 2."
           ],
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -859,7 +859,7 @@
             "A second ballot answers 409, code \"MSG226\"."
           ],
           "id": "VOTE_API_IT38",
-          "note": "UC-55 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (A_verified_guest_votes_once_by_invitation)",
+          "note": "UC-65 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (A_verified_guest_votes_once_by_invitation)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "An open vote whose eligible roles include Guest; a verified Guest session for the meeting."
@@ -869,7 +869,7 @@
             "Repeat step 1."
           ],
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -879,7 +879,7 @@
             "Step 3: HTTP 409, body code \"MSG252\" with the document still in \"documents\"; no ballot is recorded."
           ],
           "id": "VOTE_API_IT39",
-          "note": "UC-55 | UC-74 | BR-290 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteReadConfirmationTests.cs (A_voter_confirms_each_vote_document_before_the_ballot_is_accepted)",
+          "note": "UC-65 | UC-42 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteReadConfirmationTests.cs (A_voter_confirms_each_vote_document_before_the_ballot_is_accepted)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "An open vote linking one meeting document the Member has not confirmed; the Member is on its eligible list."
@@ -890,7 +890,7 @@
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/ballots with Body: { \"optionId\": \"<option id>\" }."
           ],
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -898,7 +898,7 @@
     {
       "title": "POST /api/meetings/{meetingId}/votes/{voteId}/close",
       "uc": [
-        "UC-56"
+        "UC-66"
       ],
       "cases": [
         {
@@ -908,7 +908,7 @@
             "No further ballot is accepted (HTTP 409, code \"MSG225\")."
           ],
           "id": "VOTE_API_IT40",
-          "note": "UC-56 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (After_the_meeting_ends_the_chair_still_closes_and_concludes_once)",
+          "note": "UC-66 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (After_the_meeting_ends_the_chair_still_closes_and_concludes_once)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "An open vote with ballots, in a meeting the Chair chairs."
@@ -919,7 +919,7 @@
             "Sign in as a voter and send a ballot."
           ],
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -928,7 +928,7 @@
             "HTTP 409, body code \"MSG230\"."
           ],
           "id": "VOTE_API_IT41",
-          "note": "UC-56 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRound1Tests.cs (VoteClose_ByNonChairIs409)",
+          "note": "UC-66 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRound1Tests.cs (VoteClose_ByNonChairIs409)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "An open vote in an InProgress meeting."
@@ -938,7 +938,7 @@
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/close with Authorization: Bearer <accessToken>."
           ],
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -946,7 +946,7 @@
     {
       "title": "POST /api/meetings/{meetingId}/votes/{voteId}/conclusion",
       "uc": [
-        "UC-57"
+        "UC-67"
       ],
       "cases": [
         {
@@ -956,7 +956,7 @@
             "The detail shows the conclusion; recording again answers 409, code \"MSG233\"."
           ],
           "id": "VOTE_API_IT42",
-          "note": "UC-57 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (After_the_meeting_ends_the_chair_still_closes_and_concludes_once)",
+          "note": "UC-67 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteEndpointTests.cs (After_the_meeting_ends_the_chair_still_closes_and_concludes_once)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "A closed vote with no conclusion, in a meeting the Chair chairs."
@@ -969,7 +969,7 @@
             "Repeat step 2 with \"conclusion\": \"NotPassed\"."
           ],
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -978,7 +978,7 @@
             "HTTP 400, body code \"MSG232\"."
           ],
           "id": "VOTE_API_IT43",
-          "note": "UC-57 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRound1Tests.cs (Conclusion_OutsideAllowedSetIs400)",
+          "note": "UC-67 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRound1Tests.cs (Conclusion_OutsideAllowedSetIs400)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "A closed vote with no conclusion."
@@ -988,7 +988,7 @@
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/conclusion with Body: { \"conclusion\": \"Maybe\", \"note\": \"\" }."
           ],
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -997,7 +997,7 @@
             "HTTP 409, body code \"MSG234\"."
           ],
           "id": "VOTE_API_IT44",
-          "note": "UC-57 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRound1Tests.cs (Conclusion_OnOpenVoteIs409)",
+          "note": "UC-67 | Automated: tests/TrustCabinet.Web.Tests/Votes/VoteRound1Tests.cs (Conclusion_OnOpenVoteIs409)",
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "An open vote in an InProgress meeting."
@@ -1007,7 +1007,7 @@
             "Send POST /api/meetings/{meetingId}/votes/{voteId}/conclusion with Body: { \"conclusion\": \"Passed\" }."
           ],
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         }
       ]

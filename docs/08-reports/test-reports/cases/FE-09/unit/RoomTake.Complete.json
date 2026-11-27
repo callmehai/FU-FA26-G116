@@ -23,9 +23,9 @@
           "exception": "N/A",
           "log": "File cut to its whole-millisecond size and its WAV lengths sealed; a Transcript in status Pending is created; audit RecordingTakeSaved kept true with takeMs; RecordingsChanged published.",
           "type": "Normal",
-          "note": "UC-44b · BR-341 · BR-345 · MSG363",
+          "note": "UC-52a · BR-108 · MSG363",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -40,9 +40,9 @@
           "exception": "N/A",
           "log": "Joined file written; audit RecordingTakeSaved on the room recording with appended true, takeMs 5000, totalMs 35000; the previous room file and the take's file are deleted after the commit; RecordingsChanged published.",
           "type": "Normal",
-          "note": "UC-44b · BR-341 · BR-345 · BR-345 · BR-360 · MSG363",
+          "note": "UC-52a · BR-108 · UC-54a · MSG363",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -57,9 +57,9 @@
           "exception": "N/A",
           "log": "Audit RecordingTakeSaved with kept true; no files deleted.",
           "type": "Boundary",
-          "note": "UC-44b · BR-341 · BR-345 · BR-345 · MSG363",
+          "note": "UC-52a · BR-108 · MSG363",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -72,9 +72,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-44b · BR-341 · BR-345 · MSG295",
+          "note": "UC-52a · BR-108 · MSG295",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         }
       ]

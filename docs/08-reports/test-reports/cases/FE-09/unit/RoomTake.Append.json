@@ -23,9 +23,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-44a · BR-345 · MSG361",
+          "note": "UC-52a · MSG361",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -39,9 +39,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-44a · BR-345 · MSG361",
+          "note": "UC-52a · MSG361",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -56,9 +56,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-44a · BR-345 · MSG361 · MSG293",
+          "note": "UC-52a · MSG361 · MSG293",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -73,9 +73,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-44a · BR-345 · MSG361",
+          "note": "UC-52a · MSG361",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -88,9 +88,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-44a · BR-345 · MSG361 · MSG362",
+          "note": "UC-52a · MSG361 · MSG362",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -105,9 +105,9 @@
           "exception": "IOException or PersistenceException caught; logged.",
           "log": "Error log 'Failed to write part'.",
           "type": "Abnormal",
-          "note": "UC-44a · BR-345 · MSG361 · MSG298",
+          "note": "UC-52a · MSG361 · MSG298",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         }
       ]

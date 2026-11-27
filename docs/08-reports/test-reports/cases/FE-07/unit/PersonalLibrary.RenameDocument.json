@@ -22,9 +22,9 @@
           "exception": "N/A",
           "log": "Document FileName and UpdatedAt changed and saved; meeting copies keep their own name.",
           "type": "Normal",
-          "note": "UC-71b · BR-276 · MSG183",
+          "note": "UC-40b · MSG183",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -37,9 +37,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-71b · MSG183",
+          "note": "UC-40b · MSG183",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -52,9 +52,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-71b · BR-242 · MSG175",
+          "note": "UC-40b · BR-083 · MSG175",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -67,24 +67,24 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-71b · MSG347",
+          "note": "UC-40b · MSG347",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "UTC005",
           "preconditions": [
-            "One candidate of exactly 10 MB with a valid PDF body."
+            "Owner U1 has document D1 \"bao-cao.pdf\" (application/pdf)."
           ],
-          "inputs": "candidates: [{FileName \"lon.pdf\", Length 10,485,760}].",
-          "return": "No failure; the file size limit is inclusive.",
+          "inputs": "documentId: D1; fileName: 251 \"n\" characters + \".pdf\" (255 characters total).",
+          "return": "Value: library row with the 255-character FileName; endpoint answers MSG183.",
           "exception": "N/A",
-          "log": "N/A",
+          "log": "Document FileName and UpdatedAt changed and saved.",
           "type": "Boundary",
-          "note": "UC-71b · MSG183",
+          "note": "UC-40b · MSG183",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         }
       ]

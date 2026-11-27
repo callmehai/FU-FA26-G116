@@ -23,9 +23,9 @@
           "exception": "N/A",
           "log": "Saved: encrypted sample with its recording; notification to the person; audit row records the collection with the proxy scope.",
           "type": "Normal",
-          "note": "UC-86b · BR-452 · BR-453 · MSG473 · Deviation: no meeting scope since ADR-0075",
+          "note": "UC-57b · BR-118, BR-119 · BR-011 · MSG473",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -38,9 +38,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-86b · BR-449 · MSG475",
+          "note": "UC-57b · BR-118, BR-119, BR-124 · MSG475",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -53,9 +53,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-86b · BR-448 · MSG476 · Deviation: limit is 50 per person, 5 per collector is gone (ADR-0075)",
+          "note": "UC-57b · BR-118, BR-119 · MSG476",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -69,9 +69,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-86b · BR-363 · MSG309",
+          "note": "UC-57b · BR-118, BR-119 · MSG309",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         }
       ]

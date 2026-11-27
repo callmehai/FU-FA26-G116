@@ -22,9 +22,9 @@
           "exception": "N/A",
           "log": "Saved: Draft revision (number + 1) with the issued content and the replaced-revision id; no notification; realtime minutes-changed push to the meeting's readers.",
           "type": "Normal",
-          "note": "UC-83 · BR-410 · MSG432 · Deviation: success also emits a realtime minutes-changed push (working-tree change).",
+          "note": "UC-75 · BR-137, BR-138 · MSG432",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-24",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -38,9 +38,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-83 · MSG397",
+          "note": "UC-75 · MSG397",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-24",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -54,9 +54,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-83 · BR-410 · MSG434",
+          "note": "UC-75 · BR-137, BR-138 · MSG434",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-24",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -71,9 +71,9 @@
           "exception": "N/A",
           "log": "Warning logged: concurrent correction of the revision; the existing correction stands.",
           "type": "Abnormal",
-          "note": "UC-83 · BR-410 · MSG434",
+          "note": "UC-75 · BR-137, BR-138 · MSG434",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-24",
           "tester1": "Phạm Gia Khánh"
         }
       ]

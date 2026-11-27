@@ -24,9 +24,9 @@
           "exception": "N/A",
           "log": "Audit RecordingUploaded (meeting, file name, size, source, purpose, retainUntil); RecordingsChanged published to the meeting; the stored file is kept.",
           "type": "Normal",
-          "note": "UC-44c · BR-343 · BR-347 · MSG290",
+          "note": "UC-52c · BR-109 · BR-110 · MSG290",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -41,9 +41,9 @@
           "exception": "N/A",
           "log": "The stored file is deleted.",
           "type": "Abnormal",
-          "note": "UC-44c · BR-343 · MSG291",
+          "note": "UC-52c · BR-109 · MSG291",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -56,9 +56,9 @@
           "exception": "N/A",
           "log": "The stored file is deleted.",
           "type": "Abnormal",
-          "note": "UC-44c · BR-341 · MSG295",
+          "note": "UC-52c · BR-108 · MSG295",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -71,9 +71,9 @@
           "exception": "N/A",
           "log": "The stored file is deleted.",
           "type": "Abnormal",
-          "note": "UC-44c · BR-340 · MSG358",
+          "note": "UC-52c · BR-107 · MSG358",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -86,9 +86,9 @@
           "exception": "N/A",
           "log": "The stored file is deleted.",
           "type": "Abnormal",
-          "note": "UC-44c · BR-340 · MSG478",
+          "note": "UC-52c · BR-107 · MSG478",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         }
       ]

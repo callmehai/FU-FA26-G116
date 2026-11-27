@@ -9,14 +9,14 @@
           "id": "UTC001",
           "inputs": "Title: \"Chọn địa điểm họp\"; Description: \"\"; Options: [\"Hà Nội\", \"Đà Nẵng\"]; IsAnonymous: false; EligibleRoles: [\"Chair\", \"Member\"].",
           "log": "N/A",
-          "note": "UC-53 · MSG209",
+          "note": "UC-63 · MSG209",
           "preconditions": [
             "Draft input with two distinct options and at least one eligible role."
           ],
           "return": "No errors; roles parsed as [Chair, Member].",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-24",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -24,14 +24,14 @@
           "id": "UTC002",
           "inputs": "Title: \"\"; Description: \"\"; Options: [\"Hà Nội\", \"Đà Nẵng\"]; IsAnonymous: false; EligibleRoles: [\"Member\"].",
           "log": "N/A",
-          "note": "UC-53 · MSG209",
+          "note": "UC-63 · MSG209",
           "preconditions": [
             "Draft input with a blank title."
           ],
           "return": "errors[title] = [\"Nội dung biểu quyết phải có từ 1 đến 300 ký tự.\"]",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-24",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -39,14 +39,14 @@
           "id": "UTC003",
           "inputs": "Title: \"Chọn địa điểm họp\"; Description: 4001 characters; Options: [\"Hà Nội\", \"Đà Nẵng\"]; IsAnonymous: true; EligibleRoles: [\"Member\"].",
           "log": "N/A",
-          "note": "UC-53 · MSG209",
+          "note": "UC-63 · MSG209",
           "preconditions": [
             "Draft input with a description over the limit."
           ],
           "return": "errors[description] = [\"Mô tả không quá 4000 ký tự.\"]; 4000 characters pass.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-24",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -59,9 +59,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-53 · MSG209",
+          "note": "UC-63 · MSG209",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-24",
           "tester1": "Phạm Gia Khánh"
         }
       ],

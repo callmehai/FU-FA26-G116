@@ -33,6 +33,10 @@ from copy import copy
 from datetime import date, datetime
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from integration_cases import (  # noqa: E402
+    TEMPLATE as INT_TEMPLATE, apply, clear_from, harmonise, height_for, styles_of)
+
 ROOT = Path(__file__).resolve().parents[2]
 REPORTS = ROOT / 'docs/08-reports/test-reports'
 NFR = REPORTS / 'cases/nfr'
@@ -43,8 +47,8 @@ TEMPLATE = Path(__file__).resolve().parent / 'templates/nfr-template.xlsx'
 STATUSES = ('Not Run', 'Pass', 'Fail', 'Blocked', 'Skip')
 PRIORITIES = ('Critical', 'High', 'Medium', 'Low')
 FIELDS = {
-    'gwt': ('id', 'scenario', 'role', 'given', 'when', 'then', 'priority', 'status', 'defect', 'notes'),
-    'metric': ('id', 'scenario', 'tool', 'target', 'actual', 'status', 'defect', 'notes'),
+    'gwt': ('id', 'scenario', 'role', 'given', 'when', 'then', 'priority', 'status', 'defect', 'date', 'tester', 'notes'),
+    'metric': ('id', 'scenario', 'tool', 'target', 'actual', 'status', 'defect', 'date', 'tester', 'notes'),
 }
 REQUIRED = {
     'gwt': ('id', 'requirement', 'scenario', 'role', 'given', 'when', 'then', 'priority'),
@@ -164,8 +168,8 @@ def cmd_check(_):
 
 HEAD = {
     'gwt': ('Test Case ID', 'Scenario Name', 'Role / Session', 'Given', 'When', 'Then (Expected)', 'Priority',
-            'Status', 'Defect ID', 'Notes'),
-    'metric': ('Test Case ID', 'Scenario', 'Tool', 'Target', 'Actual', 'Status', 'Defect IDs', 'Notes'),
+            'Status', 'Defect ID', 'Test Date', 'Tester', 'Notes'),
+    'metric': ('Test Case ID', 'Scenario', 'Tool', 'Target', 'Actual', 'Status', 'Defect ID', 'Test Date', 'Tester', 'Notes'),
 }
 
 
@@ -192,35 +196,159 @@ def cmd_md(_):
 
 def build_book(p):
     import openpyxl
-    wb = openpyxl.load_workbook(TEMPLATE)
-    protos = {'gwt': wb['GWT'], 'metric': wb['Metric']}
+    from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
+    from openpyxl.utils import get_column_letter
+
+    # Start from integration-template to inherit Cover & Test Statistics styling, then copy NFR sheet prototypes.
+    wb = openpyxl.load_workbook(INT_TEMPLATE)
+    nfr_wb = openpyxl.load_workbook(TEMPLATE)
+    cover, ts = wb['Cover'], wb['Test Statistics']
+    wb.remove(wb['Test Cases'])
+    wb.remove(wb['Feature'])
+
+    cover_info = p.get('cover', {})
+    cover['B2'] = cover_info.get('title', 'SYSTEM TEST NFRs REPORT DOCUMENT')
+    cover['B4'] = p.get('project', 'TrustCabinet')
+    cover['B5'] = p.get('projectCode', 'SEP490-G116')
+    cover['B6'] = '=B5&"_System_Test_NFRs_v"&F6'
+    cover['F4'] = cover_info.get('creator', 'Nguyễn Trường Huy')
+    cover['F5'] = cover_info.get('issueDate', '2026-11-27')
+    cover['F6'] = cover_info.get('version', '1.1')
+    change_style = styles_of(cover, 11, 6)
+    clear_from(cover, 11)
+    for i, ch in enumerate(cover_info.get('changes', [])):
+        r = 11 + i
+        apply(cover, r, change_style)
+        for col, key in zip('ABCDEF', ('date', 'version', 'item', 'type', 'description', 'reference')):
+            cover[f'{col}{r}'] = ch[key]
+        cover.row_dimensions[r].height = height_for(
+            [(ch['item'], 14.4), (ch['description'], 75.9), (ch['reference'], 48.1)], line_height=15)
+
+    built = []
     for s in p['sheets']:
-        proto = protos[s['layout']]
-        ws = wb.copy_worksheet(proto)
-        ws.title = s['sheet']
+        proto = nfr_wb['GWT' if s['layout'] == 'gwt' else 'Metric']
+        ws = wb.create_sheet(title=s['sheet'])
         for k, d in proto.column_dimensions.items():
             ws.column_dimensions[k].width = d.width
         ws.freeze_panes = proto.freeze_panes
         for dv in proto.data_validations.dataValidation:
             ws.add_data_validation(copy(dv))
-        style = [copy(proto.cell(1, col)._style) for col in range(1, len(HEAD[s['layout']]) + 1)]
-        border = copy(proto.cell(1, 1).border)
         doc = load(sheet_file(s))
-        ai_col = len(HEAD[s['layout']]) + 1
-        ws.cell(1, ai_col, 'AI context')._style = copy(proto.cell(1, ai_col - 1)._style)
-        letter = openpyxl.utils.get_column_letter(ai_col)
+        headers = HEAD[s['layout']]
+        ai_col = len(headers) + 1
+        head_style = copy(proto.cell(1, 1)._style)
+        for col_idx, h_text in enumerate(headers, 1):
+            hc = ws.cell(1, col_idx, h_text)
+            hc._style = copy(head_style)
+            hc.alignment = Alignment(wrap_text=True, horizontal='center', vertical='center')
+        for col_idx, w in ((len(headers) - 2, 13), (len(headers) - 1, 20), (len(headers), 32)):
+            ws.column_dimensions[get_column_letter(col_idx)].width = w
+        ws.row_dimensions[1].height = 24
+        ah = ws.cell(1, ai_col, 'AI context')
+        ah._style = copy(head_style)
+        letter = get_column_letter(ai_col)
         ws.column_dimensions[letter].width = 60
         ws.column_dimensions[letter].hidden = True
-        for r, c in enumerate(doc.get('cases', []), 2):
-            for col, v in enumerate(values_of(s['layout'], c) + [ai_of(c)], 1):
+        border = copy(proto.cell(1, 1).border)
+        cases = doc.get('cases', [])
+        for r, c in enumerate(cases, 2):
+            vals = values_of(s['layout'], c) + [ai_of(c)]
+            for col, v in enumerate(vals, 1):
                 cell = ws.cell(r, col, v or None)
                 cell.border = copy(border)
-                cell.alignment = openpyxl.styles.Alignment(wrap_text=True, vertical='top')
+                cell.font = Font(name='Times New Roman', size=11)
+                cell.alignment = Alignment(wrap_text=True, vertical='top')
             longest = max(len(line) for v in values_of(s['layout'], c) for line in (v.split('\n') or ['']))
             ws.row_dimensions[r].height = min(15 * max(2, longest // 28 + sum(v.count('\n') for v in values_of(s['layout'], c)) // 3 + 1), 300)
-        del style
-    for proto in protos.values():
-        wb.remove(proto)
+        built.append((s, len(cases)))
+
+    # Populate Test Statistics sheet
+    ts['B1'] = 'SYSTEM TEST NFRs STATISTICS'
+    ts['C3'] = p.get('project', 'TrustCabinet')
+    ts['C4'] = p.get('projectCode', 'SEP490-G116')
+    ts['C5'] = f"{p.get('projectCode', 'SEP490-G116')}_System_Test_NFRs_v{cover_info.get('version', '1.1')}"
+    ts['G5'] = cover_info.get('issueDate', '2026-11-27')
+    ts['C6'] = 'Round 1 NFRs: Pass / Fail / Blocked / Skip / Not Run across Report 3 §IV.2 quality attributes.'
+    ts.column_dimensions['C'].width = 28
+    ts.column_dimensions['I'].width = 18
+    for col, label in zip('BCDEFGHI', ('No', 'Quality Attribute', 'Pass', 'Fail', 'Blocked', 'Skip', 'Not Run', 'Total Test Cases')):
+        ts[f'{col}10'] = label
+        ts[f'{col}10']._style = copy(ts['H10']._style) if col == 'I' else copy(ts[f'{col}10']._style)
+
+    data_style = styles_of(ts, 11, 8) + [copy(ts.cell(11, 8)._style)]
+    total_style = styles_of(ts, 12, 8) + [copy(ts.cell(12, 8)._style)]
+    cover_style = styles_of(ts, 14, 8) + [copy(ts.cell(14, 8)._style)]
+    clear_from(ts, 11)
+    for i, (s, n) in enumerate(built, 1):
+        r = 10 + i
+        apply(ts, r, data_style)
+        ts[f'B{r}'] = i
+        ts[f'C{r}'] = f"{s['sheet']} ({s['attribute']})"
+        status_col = 'H' if s['layout'] == 'gwt' else 'F'
+        last_row = max(n + 1, 2)
+        rng = f"'{s['sheet']}'!{status_col}2:{status_col}{last_row}"
+        for col, st in zip('DEFGH', ('Pass', 'Fail', 'Blocked', 'Skip', 'Not Run')):
+            ts[f'{col}{r}'] = f'=COUNTIF({rng},"{st}")'
+        ts[f'I{r}'] = f'=SUM(D{r}:H{r})'
+        ts.row_dimensions[r].height = 24
+    last = 10 + len(built)
+    t = last + 1
+    apply(ts, t, total_style)
+    ts[f'C{t}'] = 'Sub total'
+    for col in 'DEFGHI':
+        ts[f'{col}{t}'] = f'=SUM({col}11:{col}{last})'
+    ts.row_dimensions[t].height = 21
+
+    thin = Side(style='thin')
+    for k, (label, formula) in enumerate((
+            ('Test coverage', f'=IFERROR((D{t}+E{t})*100/(I{t}-G{t}),0)'),
+            ('Test successful coverage', f'=IFERROR(D{t}*100/(I{t}-G{t}),0)'))):
+        r = t + 2 + k
+        apply(ts, r, cover_style)
+        ts[f'C{r}'] = label
+        ts[f'E{r}'] = formula
+        ts[f'F{r}'] = '%'
+        for col_idx in range(2, 10):
+            ts.cell(r, col_idx).border = Border(
+                left=thin if col_idx == 2 else None,
+                right=thin if col_idx == 9 else None,
+                top=thin if k == 0 else None,
+                bottom=thin if k == 1 else None,
+            )
+    ts.row_dimensions[3].height = 18
+    ts.row_dimensions[4].height = 18
+    ts.row_dimensions[5].height = 18
+    ts.row_dimensions[6].height = 36
+
+    # Harmonise Cover, Test Statistics and all NFR sheets to Times New Roman (no Tahoma / MS PGothic leftovers)
+    for name in ('Cover', 'Test Statistics'):
+        ws = wb[name]
+        for row in ws.iter_rows():
+            for cell in row:
+                f = copy(cell.font)
+                sz = 20 if (f.sz or 0) >= 20 else 11
+                rgb = f.color.rgb if f.color is not None and f.color.type == 'rgb' else None
+                colour = f.color if (cell.hyperlink or rgb not in ('FF993300', 'FF008000', 'FF0000FF')) else None
+                cell.font = Font(name='Times New Roman', sz=sz, b=f.b, i=False if sz == 11 else f.i,
+                                 u=f.u if cell.hyperlink else None, color=colour)
+                fl = cell.fill
+                if fl.fill_type == 'solid' and fl.fgColor.type == 'rgb' and fl.fgColor.rgb in ('FF000080', 'FF333399'):
+                    cell.fill = PatternFill('solid', fgColor='FF76923C')
+    for ws in wb.worksheets:
+        if ws.title in ('Cover', 'Test Statistics'):
+            continue
+        for row in ws.iter_rows():
+            for cell in row:
+                f = cell.font
+                cell.font = Font(name='Times New Roman', size=11, bold=f.bold,
+                                 italic=f.italic, underline=f.underline,
+                                 strike=f.strike, color=f.color, vertAlign=f.vertAlign)
+    wb._named_styles['Normal'].font = Font(name='Times New Roman', sz=11)
+    for idx in range(len(wb._fonts)):
+        wf = wb._fonts[idx]
+        wb._fonts[idx] = Font(name='Times New Roman', sz=wf.sz or 11, bold=wf.bold,
+                              italic=wf.italic, underline=wf.underline,
+                              strike=wf.strike, color=wf.color, vertAlign=wf.vertAlign)
     return wb
 
 

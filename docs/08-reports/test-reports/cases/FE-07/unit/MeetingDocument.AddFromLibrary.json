@@ -21,9 +21,9 @@
           "exception": "N/A",
           "log": "Two MeetingDocument rows added pointing at the same stored files (no bytes copied); one save.",
           "type": "Normal",
-          "note": "UC-33a · BR-209 · MSG161",
+          "note": "UC-36a · BR-072, BR-073 · MSG161",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -36,9 +36,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-33a · BR-193 · MSG165",
+          "note": "UC-36a · BR-072, BR-073 · MSG165",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -51,9 +51,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-33a · BR-184 · MSG162",
+          "note": "UC-36a · BR-070, BR-071 · MSG162",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -66,9 +66,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-33a · BR-195 · MSG172",
+          "note": "UC-36a · BR-070, BR-071 · MSG172",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         }
       ]

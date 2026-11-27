@@ -22,9 +22,9 @@
           "exception": "N/A",
           "log": "A ClipAdded change is published to the meeting.",
           "type": "Normal",
-          "note": "UC-04 · BR-352 · MSG318",
+          "note": "UC-04 · BR-113 · MSG318",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -39,7 +39,7 @@
           "type": "Boundary",
           "note": "UC-04 · MSG319",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -52,9 +52,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-04 · BR-353 · MSG380",
+          "note": "UC-04 · BR-109 · MSG380",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         }
       ]

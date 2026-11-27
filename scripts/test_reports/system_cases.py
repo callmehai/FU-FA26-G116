@@ -63,9 +63,9 @@ TEXT_COLOURS = ('FF993300', 'FF008000', 'FF0000FF')   # brown labels, green note
 
 
 def harmonise(wb):
-    """Give Cover, Test Cases and Test Statistics the look of the feature sheets: Calibri 11, the green
-    header fill, thin borders, black text (links stay blue), instead of the house template's Tahoma,
-    navy headers, hair borders and brown/green/blue text. Same as the fixed integration script."""
+    """Give Cover, Test Cases and Test Statistics the look of the feature sheets: Times New Roman 11,
+    the green header fill, thin borders, black text (links stay blue), instead of the house template's
+    Tahoma, navy headers, hair borders and brown/green/blue text."""
     from openpyxl.styles import Border, Font, PatternFill, Side
     thin = Side(style='thin')
     for name in ('Cover', 'Test Cases', 'Test Statistics'):
@@ -81,7 +81,7 @@ def harmonise(wb):
                     colour = None
                 else:
                     colour = font.color
-                cell.font = Font(name='Calibri', sz=size, b=font.b, i=False if size == 11 else font.i,
+                cell.font = Font(name='Times New Roman', sz=size, b=font.b, i=False if size == 11 else font.i,
                                  u=font.u if cell.hyperlink else None, color=colour)
                 fill = cell.fill
                 if fill.fill_type == 'solid' and fill.fgColor.type == 'rgb' and fill.fgColor.rgb in HEADER_BLUE:
@@ -95,10 +95,8 @@ def harmonise(wb):
                 al.wrap_text = True
                 cell.alignment = al
 
-    # Feature sheets: their data cells carry Calibri without a size, and the workbook default font
-    # (template) is MS PGothic, so any cell left unstyled shows another face. Make both explicit.
-    # NOTE: never copy() a StyleProxy — the copy does not serialise and the
-    # cell falls back to the Normal style on reload. Build a real Font.
+    # Unify all workflow sheet cells and template font entries to Times New Roman 11.
+    # NOTE: never copy() a StyleProxy — build a fresh Font and clear template scheme entries.
     from openpyxl.styles import Font as _IFont
     for ws in wb.worksheets:
         if ws.title in ('Cover', 'Test Cases', 'Test Statistics'):
@@ -106,17 +104,20 @@ def harmonise(wb):
         for row in ws.iter_rows():
             for cell in row:
                 font = cell.font
-                if font.name != 'Calibri' or font.sz != 11:
-                    cell.font = _IFont(name='Calibri', size=11, bold=font.bold,
-                                       italic=font.italic, underline=font.underline,
-                                       strike=font.strike, color=font.color,
-                                       vertAlign=font.vertAlign)
+                cell.font = _IFont(name='Times New Roman', size=11, bold=font.bold,
+                                   italic=font.italic, underline=font.underline,
+                                   strike=font.strike, color=font.color,
+                                   vertAlign=font.vertAlign)
                 al = copy(cell.alignment)
                 al.wrap_text = True
                 cell.alignment = al
     normal = wb._named_styles['Normal']
-    normal.font = Font(name='Calibri', sz=11)
-    wb._fonts[0] = Font(name='Calibri', sz=11)
+    normal.font = Font(name='Times New Roman', sz=11)
+    for idx in range(len(wb._fonts)):
+        wf = wb._fonts[idx]
+        wb._fonts[idx] = _IFont(name='Times New Roman', sz=wf.sz or 11, bold=wf.bold,
+                                italic=wf.italic, underline=wf.underline,
+                                strike=wf.strike, color=wf.color, vertAlign=wf.vertAlign)
 
 
 def plan():
@@ -146,6 +147,12 @@ def cmd_scaffold(_):
 def run_checks():
     errors, todo, seen = [], [], set()
     p = plan()
+    r52_ids = set()
+    for ui_path in (REPORTS / 'cases').glob('FE-*/ui.json'):
+        ui_doc = load(ui_path)
+        for ug in ui_doc.get('groups', []):
+            for uc in ug.get('cases', []):
+                r52_ids.add(uc['id'])
     sheets = [wf['sheet'] for wf in p['workflows']]
     if len(set(sheets)) != len(sheets):
         errors.append('plan.json: duplicate sheet name')
@@ -202,6 +209,10 @@ def run_checks():
                             errors.append(f'{at}: round{n} {status} needs tester{n}')
                     if status == 'Failed' and 'Bug:' not in str(c.get('aiNote', '')):
                         errors.append(f'{at}: a Failed round needs "Bug: <Jira key or short reason>" in aiNote')
+                for m52 in re.findall(r'5\.2:\s*([A-Z]+_FT\d+(?:\s*,\s*[A-Z]+_FT\d+)*)', str(c.get('aiNote', ''))):
+                    for ref_id in re.split(r'\s*,\s*', m52):
+                        if ref_id not in r52_ids:
+                            errors.append(f'{at}: broken 5.2 reference {ref_id}')
     return errors, todo
 
 
@@ -248,6 +259,20 @@ def cmd_md(_):
     print(f'previews in {PREVIEW.relative_to(ROOT)}')
 
 
+def visible_note(c):
+    status = c.get('round1', 'Pending')
+    ai = str(c.get('aiNote', ''))
+    parts = [pt.strip() for pt in ai.split('·') if pt.strip()]
+    kept = []
+    for pt in parts:
+        if re.fullmatch(r'(?:BF-\d+|UC-\d+[a-z]?|BR-\d{3}|MSG\d{2,3}|EX-\d+|AF-\d+)(?:\s*,\s*(?:BF-\d+|UC-\d+[a-z]?|BR-\d{3}|MSG\d{2,3}|EX-\d+|AF-\d+))*', pt):
+            continue
+        kept.append(pt)
+    if status == 'Pending':
+        return ' | '.join(kept) if kept else 'Pending — not executed yet'
+    return f"{status}: {' | '.join(kept)}" if kept else status
+
+
 def build_workbook(p, target):
     import openpyxl
     from openpyxl.worksheet.datavalidation import DataValidation
@@ -258,6 +283,7 @@ def build_workbook(p, target):
     cover['B2'] = p['title']
     cover['B4'] = p['project']
     cover['B5'] = p['projectCode']
+    cover['B6'] = '=B5&"_System_Test_v"&F6'
     cover['F4'] = p['cover']['creator']
     cover['F5'] = p['cover']['issueDate']
     cover['F6'] = p['cover']['version']
@@ -274,7 +300,7 @@ def build_workbook(p, target):
     group_style = styles_of(proto, 11, 16)
     case_style = styles_of(proto, 12, 16)
     widths = {k: v.width for k, v in proto.column_dimensions.items()}
-    widths['O'] = 32
+    widths['O'] = 42
     built = []
     for wf in p['workflows']:
         path = wf_file(wf)
@@ -304,7 +330,7 @@ def build_workbook(p, target):
                 values = [c['id'], c['description'], numbered(c['procedure']), numbered(c['expected']),
                           bulleted(c['preconditions']), c.get('round1', 'Pending'), c.get('date1'), c.get('tester1'),
                           c.get('round2'), c.get('date2'), c.get('tester2'),
-                          c.get('round3'), c.get('date3'), c.get('tester3'), None]
+                          c.get('round3'), c.get('date3'), c.get('tester3'), visible_note(c)]
                 for col, v in enumerate(values, 1):
                     if v and col in (7, 10, 13):
                         v = date.fromisoformat(v)
@@ -313,11 +339,11 @@ def build_workbook(p, target):
                 ai._style = copy(ws.cell(r, 15)._style)
                 ws.row_dimensions[r].height = height_for(
                     # Hidden P (long aiNote) must not drive the height.
-                    [(values[i], widths.get(col, 10)) for i, col in enumerate('ABCDE')])
+                    [(values[i], widths.get(col, 10)) for i, col in enumerate('ABCDE')] + [(values[14], widths['O'])])
                 case_rows.append(r)
                 r += 1
         last = max(r - 1, 12)
-        ws['B4'] = len(case_rows)
+        ws['B4'] = f'=COUNTIF(A12:A{last},"SYS_*")'
         if case_rows:
             dv = DataValidation(type='list', formula1='"' + ','.join(STATUSES) + '"', allow_blank=True)
             ws.add_data_validation(dv)
@@ -340,9 +366,9 @@ def build_workbook(p, target):
     # names, "the attendee UI is not implemented", "remain in Report 5.2.2").
     tc['D5'] = p['environment']
     tc['B6'] = ('Execution: run each workflow in order; a later case runs on data left by an earlier one — '
-                'check each precondition first. Round 1: Passed = ran on the app with evidence in the hidden AI context column; '
-                'Failed = ran with Bug in AI context; Pending = not run; N/A = blocked by a failed predecessor with the reason in AI context. '
-                'Enter actual outcome, test date and tester for each completed round; the Note column stays empty.')
+                'check each precondition first. Round 1: Passed = ran on the app with evidence in Note and hidden AI context; '
+                'Failed = ran with Bug in Note; Pending = not run; N/A = blocked by a failed predecessor. '
+                'The Note column summarizes execution outcome, build, 5.2 references and evidence.')
     from openpyxl.styles import Alignment
     tc['D5'].alignment = Alignment(wrap_text=True, vertical='center', horizontal='left')
     tc['B6'].alignment = Alignment(wrap_text=True, vertical='center', horizontal='left')
@@ -373,6 +399,8 @@ def build_workbook(p, target):
     ts['C4'] = p['projectCode']
     ts['C5'] = f"{p['projectCode']}_System_Test_v{p['cover']['version']}"
     ts['G5'] = p['cover']['issueDate']
+    ts['H10'] = 'Number of test cases'
+    ts.column_dimensions['C'].width = max(ts.column_dimensions['C'].width or 24, 34)
     # Keep the template's Notes (C6) as-is for the same reason as above.
     clear_from(ts, 11)
     for i, (wf, _) in enumerate(built, 1):
@@ -388,6 +416,8 @@ def build_workbook(p, target):
     ts[f'C{t}'] = 'Sub total'
     for col in 'DEFGH':
         ts[f'{col}{t}'] = f'=SUM({col}11:{col}{last})'
+    from openpyxl.styles import Border as _Border, Side as _Side
+    _thin = _Side(style='thin')
     for k, (label, formula) in enumerate((
             ('Test coverage', f'=IFERROR((D{t}+E{t})*100/(H{t}-G{t}),0)'),
             ('Test successful coverage', f'=IFERROR(D{t}*100/(H{t}-G{t}),0)'))):
@@ -396,10 +426,18 @@ def build_workbook(p, target):
         ts[f'C{r}'] = label
         ts[f'E{r}'] = formula
         ts[f'F{r}'] = '%'
+        for col_idx in range(2, 9):
+            ts.cell(r, col_idx).border = _Border(
+                left=_thin if col_idx == 2 else None,
+                right=_thin if col_idx == 8 else None,
+                top=_thin if k == 0 else None,
+                bottom=_thin if k == 1 else None,
+            )
 
     for r in range(11, t):
-        ts.row_dimensions[r].height = 21 if len(str(ts[f'C{r}'].value)) <= 18 else 32
+        ts.row_dimensions[r].height = max(21, height_for([(ts[f'C{r}'].value, 32)], line_height=15))
     ts.row_dimensions[t].height = 21
+    ts.row_dimensions[6].height = max(36, height_for([(ts['C6'].value, 55)], line_height=15))
     notes = copy(ts['C6'].alignment)
     notes.wrap_text = True
     notes.vertical = 'top'

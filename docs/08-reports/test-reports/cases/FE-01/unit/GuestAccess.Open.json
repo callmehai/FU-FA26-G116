@@ -9,7 +9,7 @@
           "id": "UTC001",
           "inputs": "invitationId: I1; linkToken: <valid link token of I1>.",
           "log": "N/A",
-          "note": "UC-04 · BR-152",
+          "note": "UC-04 · BR-052",
           "preconditions": [
             "Invitation I1 for nguyen@example.com is not revoked.",
             "Its meeting \"Họp giao ban\" is Published, planned 09:00-10:00."
@@ -17,7 +17,7 @@
           "return": "GuestAccessResult success with GuestInvitationView { invitationId I1, meeting { id, title \"Họp giao ban\", status \"Published\", planned start/end }, maskedEmail \"ng***@example.com\" }.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-02",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -25,14 +25,14 @@
           "id": "UTC002",
           "inputs": "invitationId: I1; linkToken: \"wrong-token\".",
           "log": "N/A",
-          "note": "UC-04 · BR-152 · MSG371",
+          "note": "UC-04 · BR-052 · MSG371",
           "preconditions": [
             "Invitation I1 exists."
           ],
           "return": "GuestAccessResult Failure(InvalidInvitation) (MSG371); the invitation store is not read.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-02",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -47,7 +47,7 @@
           "return": "GuestAccessResult Failure(Unavailable) (MSG374).",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-02",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -62,7 +62,7 @@
           "return": "maskedEmail = \"a***@example.com\" (one leading character when the local part is 3 characters or fewer).",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-02",
           "tester1": "Phạm Gia Khánh"
         }
       ],

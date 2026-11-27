@@ -21,9 +21,9 @@
           "exception": "N/A",
           "log": "Audit SpeechClipDeleted (sentence, meeting, speaker, byOwner true); a ClipDeleted change is published.",
           "type": "Normal",
-          "note": "UC-80 · BR-355 · MSG322",
+          "note": "UC-53 · BR-113 · MSG322",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -36,9 +36,9 @@
           "exception": "N/A",
           "log": "Audit SpeechClipDeleted (byOwner false); a ClipDeleted change is published.",
           "type": "Normal",
-          "note": "UC-46d · BR-355 · MSG322",
+          "note": "UC-55d · BR-113 · MSG322",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -51,9 +51,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-46d · BR-355 · MSG323",
+          "note": "UC-55d · BR-113 · MSG323",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -67,9 +67,9 @@
           "exception": "PersistenceException caught; logged.",
           "log": "Error log 'Failed to delete speech clip'.",
           "type": "Abnormal",
-          "note": "UC-80 · BR-355 · MSG304",
+          "note": "UC-53 · BR-113 · MSG304",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         }
       ]

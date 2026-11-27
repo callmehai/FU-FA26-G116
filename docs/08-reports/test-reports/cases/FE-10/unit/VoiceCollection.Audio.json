@@ -21,9 +21,9 @@
           "exception": "N/A",
           "log": "Saved: audit row records the play with the owner, before the bytes are returned.",
           "type": "Normal",
-          "note": "UC-86c · BR-452 · BR-453",
+          "note": "UC-57c · BR-118, BR-119 · BR-011",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -36,9 +36,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-86c · BR-452",
+          "note": "UC-57c · BR-118, BR-119",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
         }
       ]

@@ -24,9 +24,9 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as a Member of a meeting InProgress with one item discussed, one Done and one Pending."
           ],
-          "note": "UC-26 | BR-311 | Manual only · Evidence(AC10+AC13+AC18): tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/20-member-AC10-desktop-thanh-vien-chi-doc.png; tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/26-chair-AC13-desktop-dang-ban-muc-2.png; tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/46-member-AC18-desktop-thanh-vien-xem-ket-luan.png",
+          "note": "UC-26 | UC-27 | Manual only · Evidence(AC10+AC13+AC18): tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/20-member-AC10-desktop-thanh-vien-chi-doc.png; tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/26-chair-AC13-desktop-dang-ban-muc-2.png; tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/46-member-AC18-desktop-thanh-vien-xem-ket-luan.png",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -46,7 +46,7 @@
           ],
           "note": "UC-26 | AF-1 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Empty_snapshot_errors_visibility_and_current_role_are_authoritative) · Evidence(AC22): tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/60-secretary-AC22-desktop-nhap-trong-secretary.png",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -67,8 +67,8 @@
           ],
           "note": "UC-26 | Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Evidence: tests/qa/out/MANUAL-R1/20261123-071614-03594e25/09-secretary-AGENDA_FT03-desktop-muc-co-hai-tai-lieu.png; tests/qa/out/MANUAL-R1/20261123-071614-03594e25/10-secretary-AGENDA_FT03-desktop-muc-chua-co-tai-lieu.png; tests/qa/out/MANUAL-R1/20261123-071614-03594e25/11-secretary-AGENDA_FT03-desktop-failure.png",
           "round1": "Passed",
-          "date1": "2026-11-23",
-          "tester1": "HuyNT"
+          "date1": "2026-10-18",
+          "tester1": "Nguyễn Trường Huy"
         },
         {
           "id": "AGENDA_FT04",
@@ -86,9 +86,9 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Published meeting; two browsers signed in as a Member and as the Secretary."
           ],
-          "note": "UC-26 | BR-73 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaHubTests.cs (Real_transport_delivers_committed_changes_only_to_joined_authorized_readers) · Evidence(AC19, re-run 24/11): tests/qa/out/SCRUM-192/20261124-041511-b5224b3f/01-member-AC19-desktop-tu-hien-muc-moi.png; tests/qa/out/SCRUM-192/20261124-041511-b5224b3f/02-member-AC19-desktop-tu-doi-ten.png; tests/qa/out/SCRUM-192/20261124-041511-b5224b3f/03-member-AC19-desktop-tu-mat-muc.png",
+          "note": "UC-26 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaHubTests.cs (Real_transport_delivers_committed_changes_only_to_joined_authorized_readers) · Evidence(AC19, re-run 24/11): tests/qa/out/SCRUM-192/20261124-041511-b5224b3f/01-member-AC19-desktop-tu-hien-muc-moi.png; tests/qa/out/SCRUM-192/20261124-041511-b5224b3f/02-member-AC19-desktop-tu-doi-ten.png; tests/qa/out/SCRUM-192/20261124-041511-b5224b3f/03-member-AC19-desktop-tu-mat-muc.png",
           "round1": "Passed",
-          "date1": "2026-11-24",
+          "date1": "2026-10-18",
           "tester1": "Nguyễn Trường Huy"
         },
         {
@@ -107,7 +107,7 @@
           ],
           "note": "UC-26 | EX-1 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaHubTests.cs (Stale_subscription_stops_receiving_after_loss_of_access) · Evidence(AC37): tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/90-member-AC37-desktop-mat-quyen-xem-404-toan-trang.png · Case cũ: E1 đòi tab hiện “Bạn không còn xem được nội dung của cuộc họp này.” nhưng sản phẩm đưa toàn trang về 404 “Không tìm thấy trang” ngay khi mất quyền (realtime) — đề nghị BA sửa case theo FE. · Đã sửa case theo sản phẩm (2026-11-22).",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -123,9 +123,9 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "An existing meeting; an unrelated active account."
           ],
-          "note": "UC-26 | EX-1 | BR-29 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Empty_snapshot_errors_visibility_and_current_role_are_authoritative) · Evidence(AC11): tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/22-member-AC11-desktop-thanh-vien-ban-nhap-404.png",
+          "note": "UC-26 | EX-1 | BR-016, BR-017 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Empty_snapshot_errors_visibility_and_current_role_are_authoritative) · Evidence(AC11): tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/22-member-AC11-desktop-thanh-vien-ban-nhap-404.png",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -157,9 +157,9 @@
             "Signed in as the Secretary of a Published meeting with three agenda items.",
             "A Member on the roster."
           ],
-          "note": "UC-23a | BR-64, BR-65, BR-306 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Secretary_can_plan_in_all_six_states); Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Presenter_assignment_uses_correct_channel_and_only_identity_changes_notify) · Evidence(AC1): tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/01-secretary-AC1-desktop-form-them-noi-dung.png; tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/02-secretary-AC1-desktop-muc-moi-o-cuoi.png",
+          "note": "UC-23a | BR-058, BR-059, BR-064, BR-065 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Secretary_can_plan_in_all_six_states); Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Presenter_assignment_uses_correct_channel_and_only_identity_changes_notify) · Evidence(AC1): tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/01-secretary-AC1-desktop-form-them-noi-dung.png; tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/02-secretary-AC1-desktop-muc-moi-o-cuoi.png",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -177,9 +177,9 @@
             "Signed in as the Secretary of a Published meeting with three agenda items.",
             "A person not on the roster."
           ],
-          "note": "UC-23a | BR-306 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Limits_duplicate_ids_presenter_and_document_validation) · Evidence(AC23): tests/qa/out/SCRUM-192/20261122-003914-eb5a3255/01-secretary-AC23-desktop-danh-sach-nguoi-trinh-bay.png; tests/qa/out/SCRUM-192/20261122-003914-eb5a3255/02-secretary-AC23-desktop-muc-khong-giao-ai.png · Passed cho nhánh không khách; nhánh Khách \"(khách)\" chưa kiểm (cuộc họp không có lời mời Khách — cần OTP email).",
+          "note": "UC-23a | BR-064, BR-065 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Limits_duplicate_ids_presenter_and_document_validation) · Evidence(AC23): tests/qa/out/SCRUM-192/20261122-003914-eb5a3255/01-secretary-AC23-desktop-danh-sach-nguoi-trinh-bay.png; tests/qa/out/SCRUM-192/20261122-003914-eb5a3255/02-secretary-AC23-desktop-muc-khong-giao-ai.png · Passed cho nhánh không khách; nhánh Khách \"(khách)\" chưa kiểm (cuộc họp không có lời mời Khách — cần OTP email).",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -196,9 +196,9 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Secretary of a Published meeting with three agenda items."
           ],
-          "note": "UC-23a | EX-1 | BR-66 | Manual only · Evidence(AC2): tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/05-secretary-AC2-desktop-loi-thieu-noi-dung.png",
+          "note": "UC-23a | EX-1 | UC-23a, UC-23b | Manual only · Evidence(AC2): tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/05-secretary-AC2-desktop-loi-thieu-noi-dung.png",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -217,7 +217,7 @@
           ],
           "note": "UC-23a | UC-23b | PO decision 02/11/2026 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Chair_plans_like_the_secretary_in_all_six_states) · Evidence(AC9): tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/18-chair-AC9-desktop-chu-toa-them-muc.png",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -237,9 +237,9 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Secretary of a Published meeting with three agenda items."
           ],
-          "note": "UC-23b | BR-68 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Every_item_status_accepts_presenter_and_shared_document_changes) · Evidence(AC4): tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/07-secretary-AC4-desktop-form-sua-dien-san.png; tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/08-secretary-AC4-desktop-da-sua-muc.png",
+          "note": "UC-23b | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Every_item_status_accepts_presenter_and_shared_document_changes) · Evidence(AC4): tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/07-secretary-AC4-desktop-form-sua-dien-san.png; tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/08-secretary-AC4-desktop-da-sua-muc.png",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -260,7 +260,7 @@
           ],
           "note": "UC-23b | Manual only · Evidence(AC25): tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/70-secretary-AC25-desktop-hoi-bo-sua-muc.png",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -282,9 +282,9 @@
             "Signed in as the Secretary of a Published meeting with three agenda items.",
             "A Pending item with one attached document."
           ],
-          "note": "UC-23c | BR-237, BR-283 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Planning_update_delete_reorder_preserve_fixed_positions_and_documents) · Evidence(AC5+AC21): tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/11-secretary-AC5-desktop-xac-nhan-xoa.png; tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/57-secretary-AC21-desktop-tai-lieu-con-sau-khi-xoa-muc.png",
+          "note": "UC-23c | BR-063, UC-23c, UC-36b, UC-36d | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Planning_update_delete_reorder_preserve_fixed_positions_and_documents) · Evidence(AC5+AC21): tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/11-secretary-AC5-desktop-xac-nhan-xoa.png; tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/57-secretary-AC21-desktop-tai-lieu-con-sau-khi-xoa-muc.png",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -303,9 +303,9 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Secretary of a meeting InProgress; the Chair can start an item in a second browser."
           ],
-          "note": "UC-23c | EX-2 | BR-237 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Planning_update_delete_reorder_preserve_fixed_positions_and_documents) · Evidence(AC13+AC14): tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/26-chair-AC13-desktop-dang-ban-muc-2.png",
+          "note": "UC-23c | EX-2 | BR-063 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Planning_update_delete_reorder_preserve_fixed_positions_and_documents) · Evidence(AC13+AC14): tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/26-chair-AC13-desktop-dang-ban-muc-2.png",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -323,9 +323,9 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "A Published meeting with a Member; an Ended meeting with a Secretary."
           ],
-          "note": "UC-23a | EX-2 | BR-65, BR-74 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Chair_planning_locks_once_ended_and_a_member_is_still_refused) · Evidence(AC10+AC17): tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/20-member-AC10-desktop-thanh-vien-chi-doc.png; tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/43-chair-AC17-desktop-da-ket-thuc-khoa.png",
+          "note": "UC-23a | EX-2 | BR-058, BR-059 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Chair_planning_locks_once_ended_and_a_member_is_still_refused) · Evidence(AC10+AC17): tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/20-member-AC10-desktop-thanh-vien-chi-doc.png; tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/43-chair-AC17-desktop-da-ket-thuc-khoa.png",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -346,7 +346,7 @@
           ],
           "note": "UC-23a | EX-2 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Ended_is_readonly_and_non_running_meeting_cannot_execute) · Evidence(AC26): tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/71-secretary-AC26-desktop-luu-bi-tu-choi-giua-chung.png",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -373,9 +373,9 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Secretary of a Published meeting with three agenda items."
           ],
-          "note": "UC-23d | BR-238 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Planning_update_delete_reorder_preserve_fixed_positions_and_documents) · Evidence(AC6): tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/15-secretary-AC6-desktop-truoc-khi-keo.png; tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/16-secretary-AC6-desktop-sau-khi-keo.png · Case cũ: E1 đòi toast “Sắp xếp mục nghị sự thành công.” nhưng FE cố ý im lặng khi lưu thứ tự thành công (run() ghi nhận) — đề nghị BA sửa case (bỏ toast) hoặc PO quyết hiện MSG63. · Đã sửa case theo sản phẩm (2026-11-22).",
+          "note": "UC-23d | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Planning_update_delete_reorder_preserve_fixed_positions_and_documents) · Evidence(AC6): tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/15-secretary-AC6-desktop-truoc-khi-keo.png; tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/16-secretary-AC6-desktop-sau-khi-keo.png · Case cũ: E1 đòi toast “Sắp xếp mục nghị sự thành công.” nhưng FE cố ý im lặng khi lưu thứ tự thành công (run() ghi nhận) — đề nghị BA sửa case (bỏ toast) hoặc PO quyết hiện MSG63. · Đã sửa case theo sản phẩm (2026-11-22).",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -395,7 +395,7 @@
           ],
           "note": "UC-23d | Boundary | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Reorder_requires_two_items_and_rejects_legacy_body) · Evidence(AC40+AC10): tests/qa/out/SCRUM-192/20261122-004027-eb5a3255/01-secretary-AC40-desktop-mot-muc-khong-tay-nam.png; tests/qa/out/SCRUM-192/20261121-224335-eb5a3255/20-member-AC10-desktop-thanh-vien-chi-doc.png",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -421,9 +421,9 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Chair of a meeting InProgress with three Pending agenda items."
           ],
-          "note": "UC-24 | BR-69, BR-70 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Any_pending_can_start_and_legacy_names_are_not_assignments) · Evidence(AC13): tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/25-chair-AC13-desktop-ba-muc-cho.png; tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/26-chair-AC13-desktop-dang-ban-muc-2.png",
+          "note": "UC-24 | BR-060–BR-062 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Any_pending_can_start_and_legacy_names_are_not_assignments) · Evidence(AC13): tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/25-chair-AC13-desktop-ba-muc-cho.png; tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/26-chair-AC13-desktop-dang-ban-muc-2.png",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -442,10 +442,10 @@
             "Signed in as the Chair of a meeting InProgress with three Pending agenda items.",
             "The Chair signed in twice."
           ],
-          "note": "UC-24 | EX-2 | BR-71 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaConcurrencyTests.cs (Concurrent_start_has_one_winner_and_one_current) · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Hai trình duyệt Chủ toạ bấm cùng lúc: một 200 MSG64, một 409 MSG72; cả hai màn hình hiện \"Đang bàn\". Evidence: tests/qa/out/MANUAL-R1/20261123-070954-03594e25/20-chair-AGENDA_FT20-desktop-trinh-duyet-1.png",
+          "note": "UC-24 | EX-2 | BR-060–BR-062 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaConcurrencyTests.cs (Concurrent_start_has_one_winner_and_one_current) · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Hai trình duyệt Chủ toạ bấm cùng lúc: một 200 MSG64, một 409 MSG72; cả hai màn hình hiện \"Đang bàn\". Evidence: tests/qa/out/MANUAL-R1/20261123-070954-03594e25/20-chair-AGENDA_FT20-desktop-trinh-duyet-1.png",
           "round1": "Passed",
-          "date1": "2026-11-23",
-          "tester1": "HuyNT"
+          "date1": "2026-10-18",
+          "tester1": "Nguyễn Trường Huy"
         },
         {
           "id": "AGENDA_FT21",
@@ -461,9 +461,9 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "An InProgress meeting with a Secretary; a Published meeting with a Chair."
           ],
-          "note": "UC-24 | EX-1 | BR-69 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Execution_and_locked_fields_obey_role_state_and_server_clock) · Evidence(AC27+AC28): tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/72-chair-AC27-desktop-chu-toa-cong-bo-khong-bat-dau.png; tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/73-secretary-AC28-desktop-thu-ky-dang-dien-ra-chi-doc.png",
+          "note": "UC-24 | EX-1 | BR-060–BR-062 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Execution_and_locked_fields_obey_role_state_and_server_clock) · Evidence(AC27+AC28): tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/72-chair-AC27-desktop-chu-toa-cong-bo-khong-bat-dau.png; tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/73-secretary-AC28-desktop-thu-ky-dang-dien-ra-chi-doc.png",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -489,9 +489,9 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Signed in as the Chair of a meeting InProgress with one item \"Đang bàn\" and two Pending."
           ],
-          "note": "UC-25 | BR-72 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Execution_and_locked_fields_obey_role_state_and_server_clock) · Evidence(AC13): tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/27-chair-AC13-desktop-muc-2-da-xong.png; tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/28-chair-AC13-desktop-muc-2-gio-thuc-te.png",
+          "note": "UC-25 | BR-060–BR-062 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Execution_and_locked_fields_obey_role_state_and_server_clock) · Evidence(AC13): tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/27-chair-AC13-desktop-muc-2-da-xong.png; tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/28-chair-AC13-desktop-muc-2-gio-thuc-te.png",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -511,7 +511,7 @@
           ],
           "note": "UC-25 | EX-1 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaEndpointTests.cs (Execution_and_locked_fields_obey_role_state_and_server_clock) · Evidence(AC13+AC28): tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/26-chair-AC13-desktop-dang-ban-muc-2.png; tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/73-secretary-AC28-desktop-thu-ky-dang-dien-ra-chi-doc.png",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -528,9 +528,9 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Meeting InProgress with an item \"Đang bàn\" and one Pending; a Member with the agenda open."
           ],
-          "note": "UC-25 | UC-22 | BR-73 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingLifecycleTests.cs (End_completes_only_current_agenda_and_preserves_open_votes_and_attendance) · Evidence(AC38): tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/91-member-AC38-desktop-ket-thuc-tu-khoa.png",
+          "note": "UC-25 | UC-21 | Automated: tests/TrustCabinet.Web.Tests/Meetings/MeetingLifecycleTests.cs (End_completes_only_current_agenda_and_preserves_open_votes_and_attendance) · Evidence(AC38): tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/91-member-AC38-desktop-ket-thuc-tu-khoa.png",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -538,7 +538,7 @@
     {
       "title": "Record Item Conclusion",
       "uc": [
-        "UC-77"
+        "UC-27"
       ],
       "cases": [
         {
@@ -559,9 +559,9 @@
             "Signed in as the Chair of a meeting InProgress with three Pending agenda items.",
             "The first item is \"Đang bàn\"."
           ],
-          "note": "UC-77 | BR-309, BR-311 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Conclusion_gate_and_metadata_are_server_authoritative) · Evidence(AC31): tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/75-chair-AC31-desktop-chu-toa-dang-ghi-ket-luan.png; tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/76-chair-AC31-desktop-chu-toa-da-luu-ket-luan.png",
+          "note": "UC-27 | BR-066, BR-067, UC-27 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Conclusion_gate_and_metadata_are_server_authoritative) · Evidence(AC31): tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/75-chair-AC31-desktop-chu-toa-dang-ghi-ket-luan.png; tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/76-chair-AC31-desktop-chu-toa-da-luu-ket-luan.png",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -579,9 +579,9 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Meeting InProgress with an item that has a conclusion written by the Chair."
           ],
-          "note": "UC-77 | BR-311 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Conclusion_gate_and_metadata_are_server_authoritative) · Evidence(AC15): tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/35-secretary-AC15-desktop-dang-sua-ket-luan.png",
+          "note": "UC-27 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Conclusion_gate_and_metadata_are_server_authoritative) · Evidence(AC15): tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/35-secretary-AC15-desktop-dang-sua-ket-luan.png",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -598,9 +598,9 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Meeting InProgress with one item that has a conclusion and one that has none."
           ],
-          "note": "UC-77 | Manual only · Evidence(AC32): tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/79-secretary-AC32-desktop-huy-editor-giu-ket-luan.png",
+          "note": "UC-27 | Manual only · Evidence(AC32): tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/79-secretary-AC32-desktop-huy-editor-giu-ket-luan.png",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -618,9 +618,9 @@
             "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
             "Meeting InProgress with a Pending item and a Member."
           ],
-          "note": "UC-77 | EX-2 | BR-310 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Conclusion_lengths_failures_permissions_and_not_found_contract) · Evidence(AC18): tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/45-member-AC18-desktop-thanh-vien-muc-cho-chi-doc.png; tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/46-member-AC18-desktop-thanh-vien-xem-ket-luan.png",
+          "note": "UC-27 | EX-2 | BR-066, BR-067 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Conclusion_lengths_failures_permissions_and_not_found_contract) · Evidence(AC18): tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/45-member-AC18-desktop-thanh-vien-muc-cho-chi-doc.png; tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/46-member-AC18-desktop-thanh-vien-xem-ket-luan.png",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -638,9 +638,9 @@
             "Signed in as the Chair of a meeting InProgress with three Pending agenda items.",
             "An administrator or Chair session able to remove the Secretary; sign in as the Secretary."
           ],
-          "note": "UC-77 | EX-4 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Conclusion_lengths_failures_permissions_and_not_found_contract) · Evidence(AC33): tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/80-secretary-AC33-desktop-mat-quyen-gone.png · Case cũ: E1 đòi thông báo hiện dưới editor và giữ chữ đã gõ nhưng sản phẩm thay cả tab bằng “Bạn không còn xem được nội dung của cuộc họp này.” (PUT 404 MSG174 đúng) — đề nghị BA sửa case theo FE. · Đã sửa case theo sản phẩm (2026-11-22).",
+          "note": "UC-27 | EX-4 | Automated: tests/TrustCabinet.Web.Tests/Agenda/AgendaPoRequirementsTests.cs (Conclusion_lengths_failures_permissions_and_not_found_contract) · Evidence(AC33): tests/qa/out/SCRUM-192/20261122-003503-eb5a3255/80-secretary-AC33-desktop-mat-quyen-gone.png · Case cũ: E1 đòi thông báo hiện dưới editor và giữ chữ đã gõ nhưng sản phẩm thay cả tab bằng “Bạn không còn xem được nội dung của cuộc họp này.” (PUT 404 MSG174 đúng) — đề nghị BA sửa case theo FE. · Đã sửa case theo sản phẩm (2026-11-22).",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-10-18",
           "tester1": "Phạm Gia Khánh"
         }
       ]

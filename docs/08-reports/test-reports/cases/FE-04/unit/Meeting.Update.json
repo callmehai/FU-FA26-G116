@@ -16,14 +16,14 @@
           "id": "UTC001",
           "inputs": "input: new title \"Họp mới\", same times.",
           "log": "Saved: Meeting row with new title and UpdatedAt; no history row.",
-          "note": "UC-15 · BR-27 · BR-28 · MSG30",
+          "note": "UC-14 · BR-014 · MSG30",
           "preconditions": [
             "Draft meeting owned by the actor."
           ],
           "return": "Success; title updated, status still Draft; Rescheduled false; MSG30.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -31,14 +31,14 @@
           "id": "UTC002",
           "inputs": "input: any.",
           "log": "N/A",
-          "note": "UC-15 · BR-34 · MSG33",
+          "note": "UC-14 · BR-018 · MSG33",
           "preconditions": [
             "Meeting is WaitingApproval."
           ],
           "return": "Failure NotEditable; MSG33; the input is not read or validated.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -46,14 +46,14 @@
           "id": "UTC003",
           "inputs": "input: title \"\".",
           "log": "N/A",
-          "note": "UC-15 · BR-24 · MSG31",
+          "note": "UC-14 · BR-013 · MSG31",
           "preconditions": [
             "Draft meeting; title blank."
           ],
           "return": "Invalid; errors { title }; MSG31; nothing saved.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -61,14 +61,14 @@
           "id": "UTC004",
           "inputs": "input: same title, mode, sensitivity, description; start +1 day, end +1 day.",
           "log": "Saved: Meeting; history row Reschedule (Published to Published) by the organizer; invitation emails staged with previous times; notification \"Cuộc họp đã dời lịch\" for every current invitee except the organizer.",
-          "note": "UC-15 · BR-27 · BR-75 · BR-76 · BR-158 · MSG138",
+          "note": "UC-14 · BR-014 · BR-015 · MSG138",
           "preconditions": [
             "Published meeting; the planned start moves to a later time."
           ],
           "return": "Success with Rescheduled true; MSG138; status stays Published.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         }
       ]

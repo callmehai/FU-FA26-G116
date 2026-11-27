@@ -9,7 +9,7 @@
           "id": "UTC001",
           "inputs": "roleId: \"Thư ký\"; capabilities: [MeetingCreator, VoiceCollector].",
           "log": "Capabilities replaced; audit row RolePermissionsUpdated (details { name, before, after }); log \"Permissions for role {RoleId} changed by {ActorId}; 2 account(s) to notify.\"; capabilities-changed notice sent after commit",
-          "note": "UC-11 · BR-16 · BR-23 · BR-313 · MSG16",
+          "note": "UC-10 · BR-009 · BR-007 · BR-008 · MSG16",
           "preconditions": [
             "Actor is an administrator holding AdminUsers.",
             "Roles: \"Quản trị viên\" [AdminUsers], \"Thư ký\" [MeetingCreator], 2 active accounts hold \"Thư ký\"."
@@ -17,7 +17,7 @@
           "return": "RolePermissionResult Success (MSG16) with the matrix showing \"Thư ký\" = [MeetingCreator, VoiceCollector]; the 2 active holders are told their capabilities changed, their sessions stay.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-02",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -25,14 +25,14 @@
           "id": "UTC002",
           "inputs": "roleId: <random Guid with no role>; capabilities: [MeetingCreator].",
           "log": "Warning log \"Permission configuration for role {RoleId} rejected: ...\".",
-          "note": "UC-11 · BR-23 · MSG17",
+          "note": "UC-10 · BR-007 · MSG17",
           "preconditions": [
             "Actor is an administrator holding AdminUsers."
           ],
           "return": "RolePermissionResult InvalidConfiguration (MSG17) with errors[roleId] = \"Vai trò không hợp lệ.\"; nothing saved.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-02",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -40,7 +40,7 @@
           "id": "UTC003",
           "inputs": "roleId: \"Thư ký\"; capabilities: [(Capability)999] (a value outside the catalogue).",
           "log": "Warning log \"Permission configuration ... rejected\".",
-          "note": "UC-11 · BR-23 · MSG17",
+          "note": "UC-10 · BR-007 · MSG17",
           "preconditions": [
             "Actor is an administrator holding AdminUsers.",
             "Role \"Thư ký\" exists."
@@ -48,7 +48,7 @@
           "return": "RolePermissionResult InvalidConfiguration (MSG17) with errors[capabilities] = \"Danh sách quyền chứa giá trị không hợp lệ.\"; nothing saved.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-02",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -56,7 +56,7 @@
           "id": "UTC004",
           "inputs": "roleId: \"Quản trị viên\"; capabilities: [].",
           "log": "Warning log ...",
-          "note": "UC-11 · BR-23 · MSG17",
+          "note": "UC-10 · BR-007 · MSG17",
           "preconditions": [
             "Actor is an administrator holding AdminUsers.",
             "\"Quản trị viên\" is the only role holding AdminUsers and its only holder is the actor."
@@ -64,7 +64,7 @@
           "return": "RolePermissionResult InvalidConfiguration (MSG17) with errors[adminUsers] = \"Không thể lưu cấu hình này: sau khi lưu sẽ không còn tài khoản đang hoạt động nào giữ quyền quản trị người dùng, nên không ai vào được màn hình phân quyền nữa.\"; the matrix is unchanged.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-02",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -72,7 +72,7 @@
           "id": "UTC005",
           "inputs": "roleId: \"Quản trị viên\"; capabilities: [] (removes AdminUsers).",
           "log": "Audit row RolePermissionsUpdated; holders of \"Quản trị viên\" notified.",
-          "note": "UC-11 · BR-23 · MSG16",
+          "note": "UC-10 · BR-007 · MSG16",
           "preconditions": [
             "Actor is an administrator holding AdminUsers.",
             "AdminUsers is held by \"Quản trị viên\" and by \"Thư ký\", which has 1 active holder."
@@ -80,7 +80,7 @@
           "return": "RolePermissionResult Success (MSG16): \"Thư ký\" keeps an active account with AdminUsers, so someone can still administer.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-02",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -88,7 +88,7 @@
           "id": "UTC006",
           "inputs": "roleId: \"Thư ký\"; capabilities: [MeetingCreator, VoiceCollector].",
           "log": "Error log \"Permissions for role {RoleId} changed, but telling its accounts failed.\"",
-          "note": "UC-11 · BR-313 · MSG16",
+          "note": "UC-10 · BR-008 · MSG16",
           "preconditions": [
             "Actor is an administrator holding AdminUsers.",
             "The change is saved but telling the role's accounts fails (hub unavailable)."
@@ -96,7 +96,7 @@
           "return": "RolePermissionResult Success (MSG16): the failure is logged, not raised; accounts pick the change up at their next token refresh.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-02",
           "tester1": "Phạm Gia Khánh"
         }
       ],

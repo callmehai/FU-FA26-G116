@@ -15,14 +15,14 @@
           "id": "UTC001",
           "inputs": "input {Title: \"Budget review\"; Description: \"Q3\"; PresenterId: null; PresenterGuestInvitationId: null; DocumentIds: null}.",
           "log": "N/A",
-          "note": "UC-23a · BR-66",
+          "note": "UC-23a · UC-23a, UC-23b",
           "preconditions": [
             "Title and description in range, no presenter, no documents."
           ],
           "return": "No errors.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -30,14 +30,14 @@
           "id": "UTC002",
           "inputs": "input {Title: \"\"}.",
           "log": "N/A",
-          "note": "UC-23a · BR-66 · MSG66",
+          "note": "UC-23a · UC-23a, UC-23b · MSG66",
           "preconditions": [
             "Title is empty."
           ],
           "return": "Errors: title only.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -45,14 +45,14 @@
           "id": "UTC003",
           "inputs": "input {Title: 301 characters}.",
           "log": "N/A",
-          "note": "UC-23a · BR-66 · MSG66",
+          "note": "UC-23a · UC-23a, UC-23b · MSG66",
           "preconditions": [
             "Title is 301 characters."
           ],
           "return": "Errors: title only.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         }
       ],

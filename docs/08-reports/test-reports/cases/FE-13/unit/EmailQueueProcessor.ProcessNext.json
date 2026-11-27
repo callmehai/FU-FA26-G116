@@ -21,9 +21,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "BR-38 · BR-76",
+          "note": "BR-022, BR-023 · UC-14",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -36,9 +36,9 @@
           "exception": "N/A",
           "log": "The message is marked Failed at once with the error \"Not sent: the recipient's domain never receives mail (Email:UndeliverableDomains).\" and no retry; an information line is logged.",
           "type": "Abnormal",
-          "note": "BR-38 · BR-76",
+          "note": "BR-022, BR-023 · UC-14",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -51,9 +51,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "BR-38 · BR-76",
+          "note": "BR-022, BR-023 · UC-14",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -67,9 +67,9 @@
           "exception": "N/A",
           "log": "Before the claim, rows that reached MaxAttempts are marked Failed; nothing is sent.",
           "type": "Boundary",
-          "note": "BR-38 · BR-76",
+          "note": "BR-022, BR-023 · UC-14",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         }
       ],

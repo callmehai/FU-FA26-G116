@@ -21,9 +21,9 @@
           "exception": "N/A",
           "log": "Folder saved under the owner lock.",
           "type": "Normal",
-          "note": "UC-72a · BR-220 · MSG187",
+          "note": "UC-41a · UC-41a, UC-41b · MSG187",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -36,9 +36,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-72a · BR-242 · MSG179",
+          "note": "UC-41a · BR-083 · MSG179",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -51,9 +51,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-72a · BR-220 · MSG188",
+          "note": "UC-41a · UC-41a, UC-41b · MSG188",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -66,9 +66,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-72a · BR-191 · MSG187",
+          "note": "UC-41a · UC-37, UC-40b, UC-40c, UC-41a, UC-41b, UC-41c, UC-41d · MSG187",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -81,9 +81,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-72a · BR-191 · MSG189",
+          "note": "UC-41a · UC-37, UC-40b, UC-40c, UC-41a, UC-41b, UC-41c, UC-41d · MSG189",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         }
       ]

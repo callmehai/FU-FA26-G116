@@ -21,9 +21,9 @@
           "exception": "N/A",
           "log": "Draft vote row with creator = actor; DraftCreated event published to Chair and Secretary only.",
           "type": "Normal",
-          "note": "UC-53 · BR-252 · BR-256 · BR-257 · MSG210",
+          "note": "UC-63 · BR-086, BR-087 · BR-089 · MSG210",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-24",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -36,9 +36,9 @@
           "exception": "N/A",
           "log": "Ballot saved; BallotCast event published (never names the voter).",
           "type": "Normal",
-          "note": "UC-55 · BR-258 · BR-271 · MSG227",
+          "note": "UC-65 · BR-092, BR-093 · MSG227",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-24",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -51,9 +51,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-55 · BR-190 · BR-268 · MSG224",
+          "note": "UC-65 · BR-091 · MSG224",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-24",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -66,9 +66,9 @@
           "exception": "N/A",
           "log": "Vote closed; Closed event published.",
           "type": "Normal",
-          "note": "UC-56 · BR-261 · BR-270 · MSG229",
+          "note": "UC-66 · BR-098 · MSG229",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-24",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -81,9 +81,9 @@
           "exception": "N/A",
           "log": "ConclusionRecorded event published.",
           "type": "Normal",
-          "note": "UC-57 · BR-262 · BR-263 · MSG235",
+          "note": "UC-67 · BR-099 · MSG235",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-24",
           "tester1": "Phạm Gia Khánh"
         }
       ]

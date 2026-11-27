@@ -7,7 +7,7 @@
     {
       "title": "GET /api/meetings/{id}/call",
       "uc": [
-        "UC-37"
+        "UC-43"
       ],
       "cases": [
         {
@@ -27,9 +27,9 @@
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
             "Member account supplied by QA lead."
           ],
-          "note": "UC-37 | Automated: tests/TrustCabinet.Web.Tests/Calls/CallEndpointsTests.cs (Invited_member_sees_the_room_and_gets_a_token)",
+          "note": "UC-43 | Automated: tests/TrustCabinet.Web.Tests/Calls/CallEndpointsTests.cs (Invited_member_sees_the_room_and_gets_a_token)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -47,9 +47,9 @@
             "LiveKit configured on the test build (the online room works in a browser).",
             "A Published (not started) Online meeting with the Member on its roster."
           ],
-          "note": "UC-37 AF-3 | BR-143 | Automated: tests/TrustCabinet.Web.Tests/Calls/CallRoomServiceTests.cs (Room_status_follows_meeting_status_and_mode)",
+          "note": "UC-43 AF-3 | BR-025 | Automated: tests/TrustCabinet.Web.Tests/Calls/CallRoomServiceTests.cs (Room_status_follows_meeting_status_and_mode)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -67,9 +67,9 @@
             "LiveKit configured on the test build (the online room works in a browser).",
             "An InProgress meeting with mode InPerson and the Member on its roster."
           ],
-          "note": "UC-37 EX-2 | Automated: tests/TrustCabinet.Web.Tests/Calls/CallRoomServiceTests.cs (Room_status_follows_meeting_status_and_mode)",
+          "note": "UC-43 EX-2 | Automated: tests/TrustCabinet.Web.Tests/Calls/CallRoomServiceTests.cs (Room_status_follows_meeting_status_and_mode)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -87,9 +87,9 @@
             "LiveKit configured on the test build (the online room works in a browser).",
             "An Ended Online meeting with the Member on its roster."
           ],
-          "note": "UC-37 EX-1 | Automated: tests/TrustCabinet.Web.Tests/Calls/CallRoomServiceTests.cs (Room_status_follows_meeting_status_and_mode)",
+          "note": "UC-43 EX-1 | Automated: tests/TrustCabinet.Web.Tests/Calls/CallRoomServiceTests.cs (Room_status_follows_meeting_status_and_mode)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -106,11 +106,11 @@
           "preconditions": [
             "Backend running on the test build (GET /api/health answers 200).",
             "LiveKit configured on the test build (the online room works in a browser).",
-            "An Online meeting that was Published, had the Member on its roster, then was Cancelled (UC-75)."
+            "An Online meeting that was Published, had the Member on its roster, then was Cancelled (UC-22)."
           ],
-          "note": "UC-37 EX-6 | BR-299 | Automated: tests/TrustCabinet.Web.Tests/Calls/CallRoomServiceTests.cs (Room_status_follows_meeting_status_and_mode)",
+          "note": "UC-43 EX-6 | BR-028 | Automated: tests/TrustCabinet.Web.Tests/Calls/CallRoomServiceTests.cs (Room_status_follows_meeting_status_and_mode)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -128,9 +128,9 @@
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
             "A build where the LiveKit settings are empty (QA lead's local build)."
           ],
-          "note": "UC-37 EX-3 | Automated: tests/TrustCabinet.Web.Tests/Calls/RoomRound1Tests.cs (Unconfigured_livekit_reports_the_room_unavailable)",
+          "note": "UC-43 EX-3 | Automated: tests/TrustCabinet.Web.Tests/Calls/RoomRound1Tests.cs (Unconfigured_livekit_reports_the_room_unavailable)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -149,9 +149,9 @@
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
             "QA lead can stop and restart the LiveKit service of the build."
           ],
-          "note": "UC-37 | Automated: tests/TrustCabinet.Web.Tests/Calls/CallRoomServiceTests.cs (Room_view_counts_people_in_the_room_and_survives_livekit_being_down)",
+          "note": "UC-43 | Automated: tests/TrustCabinet.Web.Tests/Calls/CallRoomServiceTests.cs (Room_view_counts_people_in_the_room_and_survives_livekit_being_down)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -171,9 +171,9 @@
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
             "The Organizer created M1 but holds no participant assignment on it."
           ],
-          "note": "UC-37 PRE-3 | EX-4 | BR-97 | Automated: tests/TrustCabinet.Web.Tests/Calls/CallEndpointsTests.cs (Someone_not_invited_gets_the_same_empty_404_as_an_unknown_meeting)",
+          "note": "UC-43 PRE-3 | EX-4 | BR-044 | Automated: tests/TrustCabinet.Web.Tests/Calls/CallEndpointsTests.cs (Someone_not_invited_gets_the_same_empty_404_as_an_unknown_meeting)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -191,9 +191,9 @@
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster.",
             "The Member account is deactivated."
           ],
-          "note": "UC-37 PRE-3 | Automated: tests/TrustCabinet.Web.Tests/Calls/RoomRound1Tests.cs (Deactivated_member_reads_nothing) · Rewritten after app PR #535 removed attendance delegation (InvitationResponse.Delegated gone): the old delegation case is replaced by the deactivated-member refusal, which the code answers with 403.",
+          "note": "UC-43 PRE-3 | Automated: tests/TrustCabinet.Web.Tests/Calls/RoomRound1Tests.cs (Deactivated_member_reads_nothing) · Rewritten after app PR #535 removed attendance delegation (InvitationResponse.Delegated gone): the old delegation case is replaced by the deactivated-member refusal, which the code answers with 403.",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -211,9 +211,9 @@
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
             "A verified Guest of M1 with a declared display name (POST /api/guest-access/invitations/{invitationId}/verify, then PUT /api/guest-access/session/profile); keep its accessToken."
           ],
-          "note": "UC-37 AF-2 | SCRUM-59 | Automated: tests/TrustCabinet.Web.Tests/Calls/CallEndpointsTests.cs (Verified_guest_reads_the_room_and_joins_only_after_confirming_the_recording_notice)",
+          "note": "UC-43 AF-2 | SCRUM-59 | Automated: tests/TrustCabinet.Web.Tests/Calls/CallEndpointsTests.cs (Verified_guest_reads_the_room_and_joins_only_after_confirming_the_recording_notice)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -231,9 +231,9 @@
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
             "A verified Guest session of another meeting M2."
           ],
-          "note": "UC-37 EX-4 | Automated: tests/TrustCabinet.Web.Tests/Calls/CallEndpointsTests.cs (Guest_token_of_another_meeting_gets_the_same_empty_404)",
+          "note": "UC-43 EX-4 | Automated: tests/TrustCabinet.Web.Tests/Calls/CallEndpointsTests.cs (Guest_token_of_another_meeting_gets_the_same_empty_404)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -241,7 +241,7 @@
     {
       "title": "POST /api/meetings/{id}/call/join",
       "uc": [
-        "UC-37"
+        "UC-43"
       ],
       "cases": [
         {
@@ -262,9 +262,9 @@
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
             "Member account supplied by QA lead."
           ],
-          "note": "UC-37 | BR-323 | BR-329 | Automated: tests/TrustCabinet.Web.Tests/Calls/CallEndpointsTests.cs (Invited_member_sees_the_room_and_gets_a_token)",
+          "note": "UC-43 | BR-100 | UC-46 | Automated: tests/TrustCabinet.Web.Tests/Calls/CallEndpointsTests.cs (Invited_member_sees_the_room_and_gets_a_token)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -283,9 +283,9 @@
             "LiveKit configured on the test build (the online room works in a browser).",
             "A Published Online meeting with the Member on its roster."
           ],
-          "note": "UC-37 AF-3 | BR-143 | Automated: tests/TrustCabinet.Web.Tests/Calls/CallEndpointsTests.cs (Join_refusals_carry_their_code)",
+          "note": "UC-43 AF-3 | BR-025 | Automated: tests/TrustCabinet.Web.Tests/Calls/CallEndpointsTests.cs (Join_refusals_carry_their_code)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -303,9 +303,9 @@
             "LiveKit configured on the test build (the online room works in a browser).",
             "An Ended Online meeting with the Member on its roster."
           ],
-          "note": "UC-37 EX-1 | SCRUM-69 | Automated: tests/TrustCabinet.Web.Tests/Calls/CallRoomServiceTests.cs (Join_is_refused_in_order_not_invited_in_person_not_open_not_configured)",
+          "note": "UC-43 EX-1 | SCRUM-69 | Automated: tests/TrustCabinet.Web.Tests/Calls/CallRoomServiceTests.cs (Join_is_refused_in_order_not_invited_in_person_not_open_not_configured)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -323,9 +323,9 @@
             "LiveKit configured on the test build (the online room works in a browser).",
             "An InProgress meeting with mode InPerson and the Member on its roster."
           ],
-          "note": "UC-37 EX-2 | Automated: tests/TrustCabinet.Web.Tests/Calls/CallEndpointsTests.cs (Join_refusals_carry_their_code)",
+          "note": "UC-43 EX-2 | Automated: tests/TrustCabinet.Web.Tests/Calls/CallEndpointsTests.cs (Join_refusals_carry_their_code)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -344,9 +344,9 @@
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
             "The Organizer created M1 but holds no participant assignment on it."
           ],
-          "note": "UC-37 PRE-3 | EX-4 | Automated: tests/TrustCabinet.Web.Tests/Calls/CallEndpointsTests.cs (Someone_not_invited_gets_the_same_empty_404_as_an_unknown_meeting)",
+          "note": "UC-43 PRE-3 | EX-4 | Automated: tests/TrustCabinet.Web.Tests/Calls/CallEndpointsTests.cs (Someone_not_invited_gets_the_same_empty_404_as_an_unknown_meeting)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -366,9 +366,9 @@
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
             "A verified Guest of M1 with a declared display name (POST /api/guest-access/invitations/{invitationId}/verify, then PUT /api/guest-access/session/profile); keep its accessToken."
           ],
-          "note": "UC-37 EX-9 | SCRUM-59 | Automated: tests/TrustCabinet.Web.Tests/Calls/CallEndpointsTests.cs (Verified_guest_reads_the_room_and_joins_only_after_confirming_the_recording_notice)",
+          "note": "UC-43 EX-9 | SCRUM-59 | Automated: tests/TrustCabinet.Web.Tests/Calls/CallEndpointsTests.cs (Verified_guest_reads_the_room_and_joins_only_after_confirming_the_recording_notice)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -389,9 +389,9 @@
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
             "A verified Guest of M1 with a declared display name (POST /api/guest-access/invitations/{invitationId}/verify, then PUT /api/guest-access/session/profile); keep its accessToken."
           ],
-          "note": "UC-37 EX-9 | Automated: tests/TrustCabinet.Web.Tests/Calls/CallEndpointsTests.cs (Verified_guest_reads_the_room_and_joins_only_after_confirming_the_recording_notice)",
+          "note": "UC-43 EX-9 | Automated: tests/TrustCabinet.Web.Tests/Calls/CallEndpointsTests.cs (Verified_guest_reads_the_room_and_joins_only_after_confirming_the_recording_notice)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -414,9 +414,9 @@
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
             "A verified Guest of M1 with a declared display name (POST /api/guest-access/invitations/{invitationId}/verify, then PUT /api/guest-access/session/profile); keep its accessToken."
           ],
-          "note": "UC-37 step 5 | SCRUM-59 | Automated: tests/TrustCabinet.Web.Tests/Calls/CallEndpointsTests.cs (Verified_guest_reads_the_room_and_joins_only_after_confirming_the_recording_notice) | Automated: tests/TrustCabinet.Web.Tests/Calls/GuestCallRoomServiceTests.cs (Guest_gets_a_member_ticket_only_after_confirming_the_recording_notice_and_it_is_audited)",
+          "note": "UC-43 step 5 | SCRUM-59 | Automated: tests/TrustCabinet.Web.Tests/Calls/CallEndpointsTests.cs (Verified_guest_reads_the_room_and_joins_only_after_confirming_the_recording_notice) | Automated: tests/TrustCabinet.Web.Tests/Calls/GuestCallRoomServiceTests.cs (Guest_gets_a_member_ticket_only_after_confirming_the_recording_notice_and_it_is_audited)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -434,16 +434,16 @@
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
             "A verified Guest session of another meeting M2."
           ],
-          "note": "UC-37 EX-4 | Automated: tests/TrustCabinet.Web.Tests/Calls/CallEndpointsTests.cs (Guest_token_of_another_meeting_gets_the_same_empty_404)",
+          "note": "UC-43 EX-4 | Automated: tests/TrustCabinet.Web.Tests/Calls/CallEndpointsTests.cs (Guest_token_of_another_meeting_gets_the_same_empty_404)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         },
         {
           "id": "ROOM_API_IT21",
           "description": "Verify a Guest of an Ended meeting gets 404, not MSG117.",
           "procedure": [
-            "As the Chair, end M1 (UC-22).",
+            "As the Chair, end M1 (UC-21).",
             "Send POST /api/meetings/{M1}/call/join with the Guest token and Body: { \"recordingNoticeAcknowledged\": true }."
           ],
           "expected": [
@@ -455,9 +455,9 @@
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
             "A verified Guest of M1 with a declared display name (POST /api/guest-access/invitations/{invitationId}/verify, then PUT /api/guest-access/session/profile); keep its accessToken."
           ],
-          "note": "UC-37 EX-1 | Automated: tests/TrustCabinet.Web.Tests/Calls/GuestCallRoomServiceTests.cs (Guest_of_another_meeting_or_without_access_is_not_found_and_the_room_rules_still_apply)",
+          "note": "UC-43 EX-1 | Automated: tests/TrustCabinet.Web.Tests/Calls/GuestCallRoomServiceTests.cs (Guest_of_another_meeting_or_without_access_is_not_found_and_the_room_rules_still_apply)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -465,7 +465,7 @@
     {
       "title": "POST /api/meetings/{id}/call/participants/{identity}/mute",
       "uc": [
-        "UC-41"
+        "UC-47"
       ],
       "cases": [
         {
@@ -485,9 +485,9 @@
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
             "The Chair and the Member are connected to the M1 room in a browser (joined through \"Vào phòng\" and shown in the room); the Member's microphone is on."
           ],
-          "note": "UC-41 | BR-325 | Automated: tests/TrustCabinet.Web.Tests/Calls/CallEndpointsTests.cs (Only_the_chair_mutes_and_only_someone_with_a_microphone)",
+          "note": "UC-47 | BR-102 | Automated: tests/TrustCabinet.Web.Tests/Calls/CallEndpointsTests.cs (Only_the_chair_mutes_and_only_someone_with_a_microphone)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -507,9 +507,9 @@
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
             "The Chair is connected to the M1 room in a browser (joined through \"Vào phòng\" and shown in the room) with the microphone on."
           ],
-          "note": "UC-41 EX-1 | Automated: tests/TrustCabinet.Web.Tests/Calls/CallEndpointsTests.cs (Only_the_chair_mutes_and_only_someone_with_a_microphone)",
+          "note": "UC-47 EX-1 | Automated: tests/TrustCabinet.Web.Tests/Calls/CallEndpointsTests.cs (Only_the_chair_mutes_and_only_someone_with_a_microphone)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -517,7 +517,7 @@
           "description": "Verify the former Chair is refused right after handing the Chair role over.",
           "procedure": [
             "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
-            "Hand the Chair role to the Member (UC-73).",
+            "Hand the Chair role to the Member (UC-34).",
             "Send POST /api/meetings/{M1}/call/participants/{secretaryUserId}/mute with the token from step 1."
           ],
           "expected": [
@@ -529,9 +529,9 @@
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
             "The Secretary is connected to the M1 room in a browser (joined through \"Vào phòng\" and shown in the room) with the microphone on."
           ],
-          "note": "UC-41 EX-1 | BR-329 | Automated: tests/TrustCabinet.Web.Tests/Calls/RoomRound1Tests.cs (Former_chair_mutes_nothing_after_handover)",
+          "note": "UC-47 EX-1 | UC-46 | Automated: tests/TrustCabinet.Web.Tests/Calls/RoomRound1Tests.cs (Former_chair_mutes_nothing_after_handover)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -549,9 +549,9 @@
             "LiveKit configured on the test build (the online room works in a browser).",
             "An Ended Online meeting chaired by the Chair."
           ],
-          "note": "UC-41 EX-5 | Automated: tests/TrustCabinet.Web.Tests/Calls/CallEndpointsTests.cs (Mute_in_a_room_that_is_not_open_is_MSG117)",
+          "note": "UC-47 EX-5 | Automated: tests/TrustCabinet.Web.Tests/Calls/CallEndpointsTests.cs (Mute_in_a_room_that_is_not_open_is_MSG117)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -570,9 +570,9 @@
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
             "A verified Guest is connected to the M1 room in a browser (joined through \"Vào phòng\" and shown in the room) with the microphone on; the Chair reads the identity guest-{guestSessionId} from the room."
           ],
-          "note": "UC-41 | SCRUM-59 | Automated: tests/TrustCabinet.Web.Tests/Calls/CallEndpointsTests.cs (Verified_guest_reads_the_room_and_joins_only_after_confirming_the_recording_notice) | Automated: tests/TrustCabinet.Web.Tests/Calls/GuestCallRoomServiceTests.cs (Chair_mutes_a_guest_like_any_member)",
+          "note": "UC-47 | SCRUM-59 | Automated: tests/TrustCabinet.Web.Tests/Calls/CallEndpointsTests.cs (Verified_guest_reads_the_room_and_joins_only_after_confirming_the_recording_notice) | Automated: tests/TrustCabinet.Web.Tests/Calls/GuestCallRoomServiceTests.cs (Chair_mutes_a_guest_like_any_member)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -590,9 +590,9 @@
             "LiveKit configured on the test build (the online room works in a browser).",
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments)."
           ],
-          "note": "UC-41 | Automated: tests/TrustCabinet.Web.Tests/Calls/CallEndpointsTests.cs (Verified_guest_reads_the_room_and_joins_only_after_confirming_the_recording_notice)",
+          "note": "UC-47 | Automated: tests/TrustCabinet.Web.Tests/Calls/CallEndpointsTests.cs (Verified_guest_reads_the_room_and_joins_only_after_confirming_the_recording_notice)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -610,9 +610,9 @@
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
             "A verified Guest of M1 with a declared display name (POST /api/guest-access/invitations/{invitationId}/verify, then PUT /api/guest-access/session/profile); keep its accessToken."
           ],
-          "note": "UC-41 EX-1 | ADR-0016 | Automated: tests/TrustCabinet.Web.Tests/Calls/CallEndpointsTests.cs (Verified_guest_reads_the_room_and_joins_only_after_confirming_the_recording_notice)",
+          "note": "UC-47 EX-1 | ADR-0016 | Automated: tests/TrustCabinet.Web.Tests/Calls/CallEndpointsTests.cs (Verified_guest_reads_the_room_and_joins_only_after_confirming_the_recording_notice)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -630,9 +630,9 @@
             "LiveKit configured on the test build (the online room works in a browser).",
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments)."
           ],
-          "note": "UC-41 | Automated: tests/TrustCabinet.Web.Tests/Calls/RoomRound1Tests.cs (Outsider_mutes_nothing)",
+          "note": "UC-47 | Automated: tests/TrustCabinet.Web.Tests/Calls/RoomRound1Tests.cs (Outsider_mutes_nothing)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -640,8 +640,8 @@
     {
       "title": "POST /api/livekit/webhook",
       "uc": [
-        "UC-37",
-        "UC-38"
+        "UC-43",
+        "UC-44"
       ],
       "cases": [
         {
@@ -663,9 +663,9 @@
             "A signing helper run by the QA lead that signs a body with the test build's LiveKit API key and secret (bare JWT in Authorization, claim sha256 = SHA-256 of the body); the secret never appears in the case.",
             "Read-only database access supplied by QA lead."
           ],
-          "note": "UC-37 | Automated: tests/TrustCabinet.Web.Tests/Calls/CallEndpointsTests.cs (Webhook_with_a_bad_signature_is_401_and_a_good_one_is_handled) | Automated: tests/TrustCabinet.Web.Tests/Calls/LiveKitWebhookParsingTests.cs (A_header_signed_with_another_secret_or_missing_is_rejected; A_body_changed_after_signing_is_rejected)",
+          "note": "UC-43 | Automated: tests/TrustCabinet.Web.Tests/Calls/CallEndpointsTests.cs (Webhook_with_a_bad_signature_is_401_and_a_good_one_is_handled) | Automated: tests/TrustCabinet.Web.Tests/Calls/LiveKitWebhookParsingTests.cs (A_header_signed_with_another_secret_or_missing_is_rejected; A_body_changed_after_signing_is_rejected)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -689,9 +689,9 @@
             "Read-only database access supplied by QA lead.",
             "A signing helper run by the QA lead that signs a body with the test build's LiveKit API key and secret (bare JWT in Authorization, claim sha256 = SHA-256 of the body); the secret never appears in the case."
           ],
-          "note": "UC-37 POST-1 | BR-330 | Automated: tests/TrustCabinet.Web.Tests/Calls/CallEndpointsTests.cs (Webhook_with_a_bad_signature_is_401_and_a_good_one_is_handled) | Automated: tests/TrustCabinet.Web.Tests/Calls/CallRoomServiceTests.cs (Repeated_join_webhooks_open_one_stint_and_leave_closes_it)",
+          "note": "UC-43 POST-1 | BR-101 | Automated: tests/TrustCabinet.Web.Tests/Calls/CallEndpointsTests.cs (Webhook_with_a_bad_signature_is_401_and_a_good_one_is_handled) | Automated: tests/TrustCabinet.Web.Tests/Calls/CallRoomServiceTests.cs (Repeated_join_webhooks_open_one_stint_and_leave_closes_it)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -710,9 +710,9 @@
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
             "The Member and the Secretary are connected to the M1 room in a browser (joined through \"Vào phòng\" and shown in the room) on desktop Chrome."
           ],
-          "note": "UC-39c AF-1 | BR-326 | Automated: tests/TrustCabinet.Web.Tests/Calls/CallRoomServiceTests.cs (A_new_screen_share_mutes_the_previous_presenter)",
+          "note": "UC-45c AF-1 | UC-45c | Automated: tests/TrustCabinet.Web.Tests/Calls/CallRoomServiceTests.cs (A_new_screen_share_mutes_the_previous_presenter)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -720,7 +720,7 @@
     {
       "title": "GET /api/meetings/{meetingId}/speaking-requests",
       "uc": [
-        "UC-79"
+        "UC-50"
       ],
       "cases": [
         {
@@ -740,9 +740,9 @@
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
             "The Member raised a hand before the Secretary."
           ],
-          "note": "UC-79 step 3 | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingEndpointTests.cs (Raising_twice_keeps_one_request_and_the_queue_follows_request_order)",
+          "note": "UC-50 step 3 | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingEndpointTests.cs (Raising_twice_keeps_one_request_and_the_queue_follows_request_order)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -761,9 +761,9 @@
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
             "The Member has a hand raised."
           ],
-          "note": "UC-79 | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingEndpointTests.cs (Raising_twice_keeps_one_request_and_the_queue_follows_request_order)",
+          "note": "UC-50 | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingEndpointTests.cs (Raising_twice_keeps_one_request_and_the_queue_follows_request_order)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -780,9 +780,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments)."
           ],
-          "note": "UC-79 | Automated: tests/TrustCabinet.Web.Tests/Calls/RoomRound1Tests.cs (Organizer_outside_the_roster_still_reads_the_queue)",
+          "note": "UC-50 | Automated: tests/TrustCabinet.Web.Tests/Calls/RoomRound1Tests.cs (Organizer_outside_the_roster_still_reads_the_queue)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -800,9 +800,9 @@
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
             "A user with no role on M1, supplied by QA lead."
           ],
-          "note": "UC-79 | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingEndpointTests.cs (Raising_needs_an_in_progress_meeting_the_room_and_a_readable_meeting)",
+          "note": "UC-50 | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingEndpointTests.cs (Raising_needs_an_in_progress_meeting_the_room_and_a_readable_meeting)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -810,7 +810,7 @@
     {
       "title": "POST /api/meetings/{meetingId}/speaking-requests",
       "uc": [
-        "UC-79"
+        "UC-50"
       ],
       "cases": [
         {
@@ -830,9 +830,9 @@
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
             "The Member is connected to the M1 room in a browser (joined through \"Vào phòng\" and shown in the room); one agenda item is InProgress."
           ],
-          "note": "UC-79 steps 1-2 | BR-337 | BR-338 | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingEndpointTests.cs (Raising_twice_keeps_one_request_and_the_queue_follows_request_order; Readers_hear_the_queue_change_and_only_the_invited_person_hears_the_invitation)",
+          "note": "UC-50 steps 1-2 | BR-104–BR-106 | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingEndpointTests.cs (Raising_twice_keeps_one_request_and_the_queue_follows_request_order; Readers_hear_the_queue_change_and_only_the_invited_person_hears_the_invitation)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -853,9 +853,9 @@
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
             "The Member is connected to the M1 room in a browser (joined through \"Vào phòng\" and shown in the room) with no hand raised."
           ],
-          "note": "UC-79 EX-2 | BR-337 | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingEndpointTests.cs (Raising_twice_keeps_one_request_and_the_queue_follows_request_order)",
+          "note": "UC-50 EX-2 | BR-104–BR-106 | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingEndpointTests.cs (Raising_twice_keeps_one_request_and_the_queue_follows_request_order)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -873,9 +873,9 @@
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
             "The Member is on the roster but not connected to the room (or was connected for less than the seconds LiveKit takes to report the join)."
           ],
-          "note": "UC-79 step 2 | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingEndpointTests.cs (Raising_needs_an_in_progress_meeting_the_room_and_a_readable_meeting)",
+          "note": "UC-50 step 2 | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingEndpointTests.cs (Raising_needs_an_in_progress_meeting_the_room_and_a_readable_meeting)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -883,7 +883,7 @@
     {
       "title": "DELETE /api/meetings/{meetingId}/speaking-requests/{requestId}",
       "uc": [
-        "UC-79"
+        "UC-50"
       ],
       "cases": [
         {
@@ -903,9 +903,9 @@
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
             "The Member is connected to the M1 room in a browser (joined through \"Vào phòng\" and shown in the room) with a hand raised."
           ],
-          "note": "UC-79 AF-1 | BR-337 | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingEndpointTests.cs (Raising_needs_an_in_progress_meeting_the_room_and_a_readable_meeting)",
+          "note": "UC-50 AF-1 | BR-104–BR-106 | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingEndpointTests.cs (Raising_needs_an_in_progress_meeting_the_room_and_a_readable_meeting)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -925,9 +925,9 @@
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
             "The Member has a hand raised."
           ],
-          "note": "UC-79 | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingReviewGapTests.cs (Someone_elses_request_answers_404_whatever_the_meeting_status)",
+          "note": "UC-50 | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingReviewGapTests.cs (Someone_elses_request_answers_404_whatever_the_meeting_status)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -935,7 +935,7 @@
     {
       "title": "POST /api/meetings/{meetingId}/speaking-requests/{requestId}/invite",
       "uc": [
-        "UC-79"
+        "UC-50"
       ],
       "cases": [
         {
@@ -956,9 +956,9 @@
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
             "The Member is connected to the M1 room in a browser (joined through \"Vào phòng\" and shown in the room) with a hand raised; nobody is invited or speaking."
           ],
-          "note": "UC-79 steps 4-5 | BR-338 | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingEndpointTests.cs (A_turn_runs_invited_speaking_finished_and_its_times_are_kept; Readers_hear_the_queue_change_and_only_the_invited_person_hears_the_invitation)",
+          "note": "UC-50 steps 4-5 | BR-104–BR-106 | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingEndpointTests.cs (A_turn_runs_invited_speaking_finished_and_its_times_are_kept; Readers_hear_the_queue_change_and_only_the_invited_person_hears_the_invitation)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -977,9 +977,9 @@
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
             "The Chair is not connected to the room; the Member is in the room with a hand raised."
           ],
-          "note": "UC-79 PRE-2 | Deviation: UC-79 PRE-2 requires the actor in the room; the code lets the Chair run turns from outside it (noted on SCRUM-27). | Automated: tests/TrustCabinet.Web.Tests/Calls/RoomRound1Tests.cs (Chair_invites_from_the_meeting_page)",
+          "note": "UC-50 PRE-2 | Deviation: UC-50 PRE-2 requires the actor in the room; the code lets the Chair run turns from outside it (noted on SCRUM-27). | Automated: tests/TrustCabinet.Web.Tests/Calls/RoomRound1Tests.cs (Chair_invites_from_the_meeting_page)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -998,9 +998,9 @@
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
             "The Member is Invited (or Speaking); the Secretary has a hand raised."
           ],
-          "note": "UC-79 step 4 | BR-338 | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingEndpointTests.cs (Only_the_current_chair_manages_the_queue_and_one_person_holds_the_floor)",
+          "note": "UC-50 step 4 | BR-104–BR-106 | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingEndpointTests.cs (Only_the_current_chair_manages_the_queue_and_one_person_holds_the_floor)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1019,9 +1019,9 @@
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
             "The Secretary has a hand raised."
           ],
-          "note": "UC-79 PRE-3 | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingEndpointTests.cs (Only_the_current_chair_manages_the_queue_and_one_person_holds_the_floor)",
+          "note": "UC-50 PRE-3 | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingEndpointTests.cs (Only_the_current_chair_manages_the_queue_and_one_person_holds_the_floor)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -1029,7 +1029,7 @@
     {
       "title": "POST /api/meetings/{meetingId}/speaking-requests/{requestId}/start",
       "uc": [
-        "UC-79"
+        "UC-50"
       ],
       "cases": [
         {
@@ -1048,9 +1048,9 @@
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
             "The Member is connected to the M1 room in a browser (joined through \"Vào phòng\" and shown in the room) and has been invited."
           ],
-          "note": "UC-79 step 6 | BR-339 | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingEndpointTests.cs (A_turn_runs_invited_speaking_finished_and_its_times_are_kept)",
+          "note": "UC-50 step 6 | BR-104–BR-106 | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingEndpointTests.cs (A_turn_runs_invited_speaking_finished_and_its_times_are_kept)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -1058,7 +1058,7 @@
     {
       "title": "POST /api/meetings/{meetingId}/speaking-requests/{requestId}/finish",
       "uc": [
-        "UC-79"
+        "UC-50"
       ],
       "cases": [
         {
@@ -1080,9 +1080,9 @@
             "The Member is connected to the M1 room in a browser (joined through \"Vào phòng\" and shown in the room) and is speaking.",
             "Read-only database access supplied by QA lead."
           ],
-          "note": "UC-79 step 7 | BR-339 | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingEndpointTests.cs (A_turn_runs_invited_speaking_finished_and_its_times_are_kept)",
+          "note": "UC-50 step 7 | BR-104–BR-106 | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingEndpointTests.cs (A_turn_runs_invited_speaking_finished_and_its_times_are_kept)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1102,9 +1102,9 @@
             "The Member has been invited and has not started.",
             "Read-only database access supplied by QA lead."
           ],
-          "note": "UC-79 step 7 | Automated: tests/TrustCabinet.Web.Tests/Calls/RoomRound1Tests.cs (Chair_finishes_an_invited_turn_that_never_started)",
+          "note": "UC-50 step 7 | Automated: tests/TrustCabinet.Web.Tests/Calls/RoomRound1Tests.cs (Chair_finishes_an_invited_turn_that_never_started)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1125,9 +1125,9 @@
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
             "The Member started speaking, then the Member's stint was closed (left the room); the Chair is not in the room."
           ],
-          "note": "UC-79 step 7 | Deviation: the Chair needs no room connection to close a turn (noted on SCRUM-27). | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingReviewGapTests.cs (The_chair_finishes_a_turn_from_outside_the_room_and_the_speaker_cannot)",
+          "note": "UC-50 step 7 | Deviation: the Chair needs no room connection to close a turn (noted on SCRUM-27). | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingReviewGapTests.cs (The_chair_finishes_a_turn_from_outside_the_room_and_the_speaker_cannot)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1146,9 +1146,9 @@
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
             "The Member is speaking."
           ],
-          "note": "UC-79 | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingEndpointTests.cs (Only_the_current_chair_manages_the_queue_and_one_person_holds_the_floor)",
+          "note": "UC-50 | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingEndpointTests.cs (Only_the_current_chair_manages_the_queue_and_one_person_holds_the_floor)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1156,7 +1156,7 @@
           "description": "Verify the former Chair loses the controls at the next request after a handover.",
           "procedure": [
             "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
-            "Hand the Chair role to the Member (UC-73).",
+            "Hand the Chair role to the Member (UC-34).",
             "Send POST /api/meetings/{M1}/speaking-requests/{requestId}/finish for the Secretary's Invited request with the token from step 1."
           ],
           "expected": [
@@ -1168,9 +1168,9 @@
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
             "The Secretary has been invited."
           ],
-          "note": "UC-79 EX-4 | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingEndpointTests.cs (Only_the_current_chair_manages_the_queue_and_one_person_holds_the_floor)",
+          "note": "UC-50 EX-4 | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingEndpointTests.cs (Only_the_current_chair_manages_the_queue_and_one_person_holds_the_floor)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -1178,7 +1178,7 @@
     {
       "title": "POST /api/meetings/{meetingId}/speaking-requests/{requestId}/decline",
       "uc": [
-        "UC-79"
+        "UC-50"
       ],
       "cases": [
         {
@@ -1198,9 +1198,9 @@
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
             "The Member is connected to the M1 room in a browser (joined through \"Vào phòng\" and shown in the room) with a hand raised."
           ],
-          "note": "UC-79 AF-3 | BR-338 | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingEndpointTests.cs (Only_the_current_chair_manages_the_queue_and_one_person_holds_the_floor)",
+          "note": "UC-50 AF-3 | BR-104–BR-106 | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingEndpointTests.cs (Only_the_current_chair_manages_the_queue_and_one_person_holds_the_floor)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1221,9 +1221,9 @@
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
             "The Member is Invited; the Secretary has a hand raised."
           ],
-          "note": "UC-79 AF-3 | Automated: tests/TrustCabinet.Web.Tests/Calls/RoomRound1Tests.cs (Declining_an_invited_person_frees_the_floor)",
+          "note": "UC-50 AF-3 | Automated: tests/TrustCabinet.Web.Tests/Calls/RoomRound1Tests.cs (Declining_an_invited_person_frees_the_floor)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1242,9 +1242,9 @@
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
             "The Secretary has a hand raised."
           ],
-          "note": "UC-79 PRE-3 | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingEndpointTests.cs (Only_the_current_chair_manages_the_queue_and_one_person_holds_the_floor)",
+          "note": "UC-50 PRE-3 | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingEndpointTests.cs (Only_the_current_chair_manages_the_queue_and_one_person_holds_the_floor)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -1252,7 +1252,7 @@
     {
       "title": "POST /api/meetings/{meetingId}/speaking-requests/{requestId}/move-up",
       "uc": [
-        "UC-79"
+        "UC-50"
       ],
       "cases": [
         {
@@ -1271,9 +1271,9 @@
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
             "The Member raised a hand before the Secretary."
           ],
-          "note": "UC-79 AF-2 | BR-338 | Deviation: no screen offers reordering; UC-79 AF-2 is reachable only through this endpoint. | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingEndpointTests.cs (Only_the_current_chair_manages_the_queue_and_one_person_holds_the_floor)",
+          "note": "UC-50 AF-2 | BR-104–BR-106 | Deviation: no screen offers reordering; UC-50 AF-2 is reachable only through this endpoint. | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingEndpointTests.cs (Only_the_current_chair_manages_the_queue_and_one_person_holds_the_floor)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1292,9 +1292,9 @@
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
             "Two hands are raised."
           ],
-          "note": "UC-79 AF-2 | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingReviewGapTests.cs (Moving_at_the_ends_of_the_queue_changes_nothing_and_only_queued_requests_move) | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingEndpointTests.cs (A_move_that_changes_nothing_sends_no_event)",
+          "note": "UC-50 AF-2 | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingReviewGapTests.cs (Moving_at_the_ends_of_the_queue_changes_nothing_and_only_queued_requests_move) | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingEndpointTests.cs (A_move_that_changes_nothing_sends_no_event)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1313,9 +1313,9 @@
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
             "Two hands are raised."
           ],
-          "note": "UC-79 PRE-3 | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingEndpointTests.cs (Only_the_current_chair_manages_the_queue_and_one_person_holds_the_floor)",
+          "note": "UC-50 PRE-3 | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingEndpointTests.cs (Only_the_current_chair_manages_the_queue_and_one_person_holds_the_floor)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -1323,7 +1323,7 @@
     {
       "title": "POST /api/meetings/{meetingId}/speaking-requests/{requestId}/move-down",
       "uc": [
-        "UC-79"
+        "UC-50"
       ],
       "cases": [
         {
@@ -1342,9 +1342,9 @@
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
             "Two hands are raised."
           ],
-          "note": "UC-79 AF-2 | BR-338 | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingReviewGapTests.cs (Moving_at_the_ends_of_the_queue_changes_nothing_and_only_queued_requests_move)",
+          "note": "UC-50 AF-2 | BR-104–BR-106 | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingReviewGapTests.cs (Moving_at_the_ends_of_the_queue_changes_nothing_and_only_queued_requests_move)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1363,9 +1363,9 @@
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
             "Two hands are raised."
           ],
-          "note": "UC-79 PRE-3 | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingEndpointTests.cs (Only_the_current_chair_manages_the_queue_and_one_person_holds_the_floor)",
+          "note": "UC-50 PRE-3 | Automated: tests/TrustCabinet.Web.Tests/Speaking/SpeakingEndpointTests.cs (Only_the_current_chair_manages_the_queue_and_one_person_holds_the_floor)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -1373,7 +1373,7 @@
     {
       "title": "GET /api/meetings/{meetingId}/notes",
       "uc": [
-        "UC-82"
+        "UC-28"
       ],
       "cases": [
         {
@@ -1391,9 +1391,9 @@
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
             "M1 is Normal; the Secretary has saved a meeting-wide note and a note on the second agenda item, which is InProgress."
           ],
-          "note": "UC-82 | BR-397 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MeetingNoteEndpointTests.cs (Secretary_writes_notes_and_the_chair_reads_them_read_only)",
+          "note": "UC-28 | BR-134 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MeetingNoteEndpointTests.cs (Secretary_writes_notes_and_the_chair_reads_them_read_only)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1411,9 +1411,9 @@
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
             "The Secretary has saved notes."
           ],
-          "note": "UC-82 | BR-395 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MeetingNoteEndpointTests.cs (Secretary_writes_notes_and_the_chair_reads_them_read_only)",
+          "note": "UC-28 | UC-55b | Automated: tests/TrustCabinet.Web.Tests/Summaries/MeetingNoteEndpointTests.cs (Secretary_writes_notes_and_the_chair_reads_them_read_only)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1432,9 +1432,9 @@
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
             "The Secretary has saved notes."
           ],
-          "note": "UC-82 EX-8 | BR-395 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MeetingNoteEndpointTests.cs (Only_the_secretary_writes_and_only_the_chair_and_secretary_read)",
+          "note": "UC-28 EX-8 | UC-55b | Automated: tests/TrustCabinet.Web.Tests/Summaries/MeetingNoteEndpointTests.cs (Only_the_secretary_writes_and_only_the_chair_and_secretary_read)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1452,9 +1452,9 @@
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
             "Admin account supplied by QA lead."
           ],
-          "note": "UC-82 EX-8 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MeetingNoteEndpointTests.cs (An_administrator_who_is_not_on_the_meeting_sees_no_notes)",
+          "note": "UC-28 EX-8 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MeetingNoteEndpointTests.cs (An_administrator_who_is_not_on_the_meeting_sees_no_notes)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1474,9 +1474,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments)."
           ],
-          "note": "UC-82 EX-1 | BR-395 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MeetingNoteEndpointTests.cs (A_secretary_who_is_replaced_stops_writing_and_the_new_one_starts_blank)",
+          "note": "UC-28 EX-1 | UC-55b | Automated: tests/TrustCabinet.Web.Tests/Summaries/MeetingNoteEndpointTests.cs (A_secretary_who_is_replaced_stops_writing_and_the_new_one_starts_blank)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1493,9 +1493,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InProgress meeting with sensitivity Secret where the caller is Secretary."
           ],
-          "note": "UC-82 | BR-403 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MeetingNoteEndpointTests.cs (The_state_says_whether_the_meeting_is_secret)",
+          "note": "UC-28 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MeetingNoteEndpointTests.cs (The_state_says_whether_the_meeting_is_secret)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1513,9 +1513,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A Published and a Cancelled meeting where the caller is Secretary."
           ],
-          "note": "UC-82 EX-2 | BR-396 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MeetingNoteEndpointTests.cs (Notes_are_not_written_before_the_sitting_starts_or_after_it_is_cancelled)",
+          "note": "UC-28 EX-2 | UC-60, UC-61 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MeetingNoteEndpointTests.cs (Notes_are_not_written_before_the_sitting_starts_or_after_it_is_cancelled)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -1523,7 +1523,7 @@
     {
       "title": "PUT /api/meetings/{meetingId}/notes",
       "uc": [
-        "UC-82"
+        "UC-28"
       ],
       "cases": [
         {
@@ -1544,9 +1544,9 @@
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
             "The Secretary has no note on the second item yet."
           ],
-          "note": "UC-82 | BR-398 | BR-400 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MeetingNoteEndpointTests.cs (Secretary_writes_notes_and_the_chair_reads_them_read_only)",
+          "note": "UC-28 | BR-134 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MeetingNoteEndpointTests.cs (Secretary_writes_notes_and_the_chair_reads_them_read_only)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1564,9 +1564,9 @@
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments).",
             "The Secretary saved the meeting-wide note \"Họp đúng giờ.\" and kept its updatedAt."
           ],
-          "note": "UC-82 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MeetingNoteEndpointTests.cs (Secretary_writes_notes_and_the_chair_reads_them_read_only)",
+          "note": "UC-28 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MeetingNoteEndpointTests.cs (Secretary_writes_notes_and_the_chair_reads_them_read_only)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1583,9 +1583,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments)."
           ],
-          "note": "UC-82 EX-1 | BR-395 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MeetingNoteEndpointTests.cs (Only_the_secretary_writes_and_only_the_chair_and_secretary_read)",
+          "note": "UC-28 EX-1 | UC-55b | Automated: tests/TrustCabinet.Web.Tests/Summaries/MeetingNoteEndpointTests.cs (Only_the_secretary_writes_and_only_the_chair_and_secretary_read)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1603,9 +1603,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments)."
           ],
-          "note": "UC-82 EX-1 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MeetingNoteEndpointTests.cs (Only_the_secretary_writes_and_only_the_chair_and_secretary_read)",
+          "note": "UC-28 EX-1 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MeetingNoteEndpointTests.cs (Only_the_secretary_writes_and_only_the_chair_and_secretary_read)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1623,9 +1623,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "A Published and a Cancelled meeting where the caller is Secretary."
           ],
-          "note": "UC-82 EX-2 | BR-396 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MeetingNoteEndpointTests.cs (Notes_are_not_written_before_the_sitting_starts_or_after_it_is_cancelled)",
+          "note": "UC-28 EX-2 | UC-60, UC-61 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MeetingNoteEndpointTests.cs (Notes_are_not_written_before_the_sitting_starts_or_after_it_is_cancelled)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1646,9 +1646,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An Ended meeting without a minutes draft where the caller is Secretary."
           ],
-          "note": "UC-82 EX-2 | BR-396 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MeetingNoteEndpointTests.cs (After_the_meeting_ends_notes_are_written_until_the_minutes_draft_is_built)",
+          "note": "UC-28 EX-2 | UC-60, UC-61 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MeetingNoteEndpointTests.cs (After_the_meeting_ends_notes_are_written_until_the_minutes_draft_is_built)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1666,9 +1666,9 @@
             "Backend running on the test build (GET /api/health answers 200).",
             "An InProgress Online meeting M1 with a Chair, a Secretary and a Member on its roster (current assignments)."
           ],
-          "note": "UC-82 | BR-399 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MeetingNoteEndpointTests.cs (A_save_tells_the_chair_and_secretary_windows_but_nobody_else)",
+          "note": "UC-28 | Automated: tests/TrustCabinet.Web.Tests/Summaries/MeetingNoteEndpointTests.cs (A_save_tells_the_chair_and_secretary_windows_but_nobody_else)",
           "round1": "Passed",
-          "date1": "2026-11-21",
+          "date1": "2026-11-14",
           "tester1": "Phạm Gia Khánh"
         }
       ]

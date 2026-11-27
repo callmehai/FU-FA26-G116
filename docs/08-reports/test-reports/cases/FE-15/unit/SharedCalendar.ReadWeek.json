@@ -1,5 +1,5 @@
 {
-  "feature": "FE-16",
+  "feature": "FE-15",
   "module": "CAL",
   "sheet": "SharedCalendar.ReadWeek",
   "description": "Reading a shared calendar week and the busy time behind it.",
@@ -24,9 +24,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-85c · BR-419 · BR-420 · Deviation: code now shows the whole week (Monday to Sunday) and the whole day (00:00–24:00), not Monday to Friday 08:00–17:00",
+          "note": "UC-81c · BR-146, BR-147",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -42,9 +42,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Normal",
-          "note": "UC-85c · BR-424 · MSG439",
+          "note": "UC-81c · BR-142, BR-143 · MSG439",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -58,9 +58,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-85c · BR-430 · MSG448",
+          "note": "UC-81c · BR-140, BR-141 · MSG448",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -74,9 +74,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "UC-85c · Deviation: week now ends Sunday 2026-11-22, not Friday 2026-11-20",
+          "note": "UC-81c",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-25",
           "tester1": "Phạm Gia Khánh"
         }
       ]

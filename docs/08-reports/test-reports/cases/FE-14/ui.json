@@ -1,0 +1,392 @@
+{
+  "feature": "FE-14",
+  "code": "RPT",
+  "sheet": "Reporting",
+  "precondition": "Test build of frontend + backend; Organizer, Member and Administrator accounts supplied by QA lead; meetings in several statuses and months for the Organizer; Chrome and a second browser for the two-user cases; Excel.",
+  "groups": [
+    {
+      "title": "Key Figures",
+      "uc": [
+        "UC-79a"
+      ],
+      "cases": [
+        {
+          "id": "RPT_FT01",
+          "description": "Report opens from the sidebar with the key figures and the query table.",
+          "procedure": [
+            "Sign in as any internal user and click \"Báo cáo\" in the sidebar."
+          ],
+          "expected": [
+            "The browser opens /mgmt/reports; backend answers GET /api/reports/meetings with 200 for the default twelve months and GET /api/reports/query with 200 for the default table (entity=meetings, grouped by month).",
+            "Title \"Báo cáo\" with the button \"Xuất Excel\"; pickers \"Từ\" and \"đến\" show \"Tháng MM/yyyy\" of the month twelve months ago and the current month.",
+            "The band \"Số liệu chính\" shows the seven manager figures (\"Đã họp\", \"Sắp họp\", \"Đã huỷ\", \"Tỷ lệ có mặt\", \"Thông qua\", \"Biên bản ban hành\", \"Giờ ghi âm\"); the panel \"Truy vấn báo cáo\" shows \"Dữ liệu\", \"Nhóm theo\" and \"Hiển thị\" with the month table and \"Số liệu lúc <time>\"."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as an active internal user who can read meetings in the last twelve months."
+          ],
+          "note": "UC-79a | BR-149, BR-150 | Manual only · Round1 Passed (2026-11-24): AC2: tests/qa/out/SCRUM-202/20261124-165755-ab67d6ab/02-member-AC2-desktop-bao-cao-mac-dinh.png; tests/qa/out/SCRUM-202/20261124-165858-ab67d6ab/02-member-AC2-phone-bao-cao-mac-dinh.png",
+          "round1": "Passed",
+          "date1": "2026-11-27",
+          "tester1": "Phạm Gia Khánh"
+        },
+        {
+          "id": "RPT_FT02",
+          "description": "The default query table groups meetings by month with figures, bars and a total.",
+          "procedure": [
+            "Open /mgmt/reports?from=2026-01&to=2026-03.",
+            "Read the \"Truy vấn báo cáo\" table."
+          ],
+          "expected": [
+            "\"Dữ liệu\" reads \"Cuộc họp\", \"Nhóm theo\" reads \"Tháng\" and \"Hiển thị\" reads \"Tất cả\"; one row per month (01/2026, 02/2026, 03/2026) with \"Số cuộc họp\" and the other figures, a bar for the biggest count, and a footer row \"Tổng\".",
+            "A month with no meeting shows a dimmed 0; no meeting title, id or participant is shown when grouped by month."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as an Organizer with meetings in 01/2026–03/2026."
+          ],
+          "note": "UC-79a | BR-052 | Manual only · Round1 Passed (2026-11-24): AC2: tests/qa/out/SCRUM-202/20261124-165755-ab67d6ab/02-member-AC2-desktop-bao-cao-mac-dinh.png; tests/qa/out/SCRUM-202/20261124-165858-ab67d6ab/02-member-AC2-phone-bao-cao-mac-dinh.png",
+          "round1": "Passed",
+          "date1": "2026-11-27",
+          "tester1": "Phạm Gia Khánh"
+        },
+        {
+          "id": "RPT_FT03",
+          "description": "The key-figures band shows the seven manager numbers over the readable meetings.",
+          "procedure": [
+            "Open /mgmt/reports?from=2026-01&to=2026-12.",
+            "Read the band \"Số liệu chính\"."
+          ],
+          "expected": [
+            "Rows \"Đã họp\", \"Sắp họp\" and \"Đã huỷ\" with counts; \"Tỷ lệ có mặt\" (for example \"87,3 %\") or \"Chưa có\"; \"Thông qua\" with \"<passed>/<closed> biểu quyết\"; \"Biên bản ban hành\" with \"<n> chờ duyệt\" when any waits; \"Giờ ghi âm\" with \"<n> gỡ băng\".",
+            "Every figure counts only the meetings the viewer may read."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as an Organizer with Ended meetings, some with attendance and issued minutes."
+          ],
+          "note": "UC-79a | BR-049–BR-051 | Manual only · Round1 Passed (2026-11-24): AC2+AC4: tests/qa/out/SCRUM-202/20261124-165755-ab67d6ab/02-member-AC2-desktop-bao-cao-mac-dinh.png; tests/qa/out/SCRUM-202/20261124-165858-ab67d6ab/02-member-AC2-phone-bao-cao-mac-dinh.png; tests/qa/out/SCRUM-202/20261124-165755-ab67d6ab/04-qa-fe15-reporter-trustcabinet-local-AC4-desktop-so-lieu-thang-xa.png; tests/qa/out/SCRUM-202/20261124-165858-ab67d6ab/04-qa-fe15-reporter-trustcabinet-local-AC4-phone-so-lieu-thang-xa.png",
+          "round1": "Passed",
+          "date1": "2026-11-27",
+          "tester1": "Phạm Gia Khánh"
+        },
+        {
+          "id": "RPT_FT04",
+          "description": "Changing a month updates the URL and the figures, and survives a reload.",
+          "procedure": [
+            "Open /mgmt/reports.",
+            "Choose another month in \"Từ tháng\".",
+            "Reload the page."
+          ],
+          "expected": [
+            "The URL becomes /mgmt/reports?from=<yyyy-MM>&to=<yyyy-MM> without adding a history entry; figures refresh with the previous ones dimmed while loading.",
+            "After the reload the same period and figures are shown."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as an active internal user."
+          ],
+          "note": "UC-79a | Manual only · Round1 Passed (2026-11-24): AC6: tests/qa/out/SCRUM-202/20261124-165755-ab67d6ab/09-secretary-AC6-desktop-khoang-ba-thang.png; tests/qa/out/SCRUM-202/20261124-165858-ab67d6ab/09-secretary-AC6-phone-khoang-ba-thang.png",
+          "round1": "Passed",
+          "date1": "2026-11-27",
+          "tester1": "Phạm Gia Khánh"
+        },
+        {
+          "id": "RPT_FT05",
+          "description": "Choosing a start month after the end month moves the end month with it.",
+          "procedure": [
+            "Open /mgmt/reports?from=2026-01&to=2026-03.",
+            "In \"Từ tháng\" choose \"Tháng 06/2026\"."
+          ],
+          "expected": [
+            "\"đến\" becomes \"Tháng 06/2026\"; no error appears and the figures for June load."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as an active internal user."
+          ],
+          "note": "UC-79a | Manual only · Round1 Passed (2026-11-24): AC7: tests/qa/out/SCRUM-202/20261124-165755-ab67d6ab/12-secretary-AC7-desktop-chon-tu-thang-sau-den-thang.png; tests/qa/out/SCRUM-202/20261124-165858-ab67d6ab/12-secretary-AC7-phone-chon-tu-thang-sau-den-thang.png",
+          "round1": "Passed",
+          "date1": "2026-11-27",
+          "tester1": "Phạm Gia Khánh"
+        },
+        {
+          "id": "RPT_FT06",
+          "description": "Choosing a period longer than 24 months moves the other end.",
+          "procedure": [
+            "Open /mgmt/reports?from=2025-01&to=2026-12.",
+            "In \"Từ tháng\" choose \"Tháng 01/2024\"."
+          ],
+          "expected": [
+            "\"đến\" moves to \"Tháng 12/2025\" so that the period is 24 months; figures load and no error appears."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as an active internal user."
+          ],
+          "note": "UC-79a | Manual only · Round1 Passed (2026-11-24): AC6+AC7: tests/qa/out/SCRUM-202/20261124-165755-ab67d6ab/09-secretary-AC6-desktop-khoang-ba-thang.png; tests/qa/out/SCRUM-202/20261124-165858-ab67d6ab/09-secretary-AC6-phone-khoang-ba-thang.png",
+          "round1": "Passed",
+          "date1": "2026-11-27",
+          "tester1": "Phạm Gia Khánh"
+        },
+        {
+          "id": "RPT_FT07",
+          "description": "A period typed in the URL that breaks UC-79a shows the error and calls no API.",
+          "procedure": [
+            "Open /mgmt/reports?from=2024-01&to=2026-12."
+          ],
+          "expected": [
+            "Under the toolbar: \"Khoảng thời gian không hợp lệ. Chọn tối đa 24 tháng, tháng bắt đầu không sau tháng kết thúc.\"; no figures are shown, the browser sends neither GET /api/reports/meetings nor GET /api/reports/query, and \"Xuất Excel\" is disabled.",
+            "Choosing a valid month clears the message and loads the figures."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as an active internal user."
+          ],
+          "note": "UC-79a EX-1 | UC-79a | Manual only · Round1 Passed (2026-11-24): AC7: tests/qa/out/SCRUM-202/20261124-165755-ab67d6ab/10-secretary-AC7-desktop-bat-dau-sau-ket-thuc.png; tests/qa/out/SCRUM-202/20261124-165755-ab67d6ab/11-secretary-AC7-desktop-qua-24-thang.png; tests/qa/out/SCRUM-202/20261124-165755-ab67d6ab/13-secretary-AC7-desktop-url-sai-dang-dung-mac-dinh.png; tests/qa/out/SCRUM-202/20261124-165858-ab67d6ab/10-secretary-AC7-phone-bat-dau-sau-ket-thuc.png; tests/qa/out/SCRUM-202/20261124-165858-ab67d6ab/11-secretary-AC7-phone-qua-24-thang.png; tests/qa/out/SCRUM-202/20261124-165858-ab67d6ab/13-secretary-AC7-phone-url-sai-dang-dung-mac-dinh.png",
+          "round1": "Passed",
+          "date1": "2026-11-27",
+          "tester1": "Phạm Gia Khánh"
+        },
+        {
+          "id": "RPT_FT08",
+          "description": "Period with no readable meeting shows the empty message.",
+          "procedure": [
+            "Sign in as an account that can read no meeting in the period (for example a Member who is on none of the meetings) and open /mgmt/reports?from=2027-05&to=2027-06."
+          ],
+          "expected": [
+            "Backend answers 200 with \"total\": 0; the band shows zeros and \"Chưa có\", and the \"Truy vấn báo cáo\" panel shows \"Không có cuộc họp nào bạn xem được trong khoảng này.\" (MSG466, produced by the frontend) instead of the table.",
+            "\"Xuất Excel\" stays enabled."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as an account that created no meeting and is on none."
+          ],
+          "note": "UC-79a AF-2 | MSG466 | Manual only · Round1 Passed (2026-11-24): AC9: tests/qa/out/SCRUM-202/20261124-165755-ab67d6ab/14-qa-fe15-reporter-trustcabinet-local-AC9-desktop-mac-dinh-khong-co-cuoc-hop.png; tests/qa/out/SCRUM-202/20261124-165755-ab67d6ab/15-qa-fe15-reporter-trustcabinet-local-AC9-desktop-khoang-trong-msg466.png; tests/qa/out/SCRUM-202/20261124-165858-ab67d6ab/14-qa-fe15-reporter-trustcabinet-local-AC9-phone-mac-dinh-khong-co-cuoc-hop.png; tests/qa/out/SCRUM-202/20261124-165858-ab67d6ab/15-qa-fe15-reporter-trustcabinet-local-AC9-phone-khoang-trong-msg466.png",
+          "round1": "Passed",
+          "date1": "2026-11-27",
+          "tester1": "Phạm Gia Khánh"
+        },
+        {
+          "id": "RPT_FT09",
+          "description": "Report shows an error with a retry button when the backend fails.",
+          "procedure": [
+            "Open /mgmt/reports while the report request fails (QA lead stops the database, or the response is overridden with 500/MSG464 in the browser).",
+            "Restore the backend, then click \"Thử lại\"."
+          ],
+          "expected": [
+            "Backend answers 500/MSG464; a red alert \"Không tải được báo cáo. Vui lòng thử lại.\" with the button \"Thử lại\" replaces the figures.",
+            "After \"Thử lại\" the figures load."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "QA lead can stop and start the database of the test build."
+          ],
+          "note": "UC-79a EX-2 | MSG464 | Manual only · Round1 Passed (2026-11-24): AC11: tests/qa/out/SCRUM-202/20261124-165755-ab67d6ab/18-secretary-AC11-desktop-msg464-thu-lai.png; tests/qa/out/SCRUM-202/20261124-165755-ab67d6ab/19-secretary-AC11-desktop-msg464-dai-so-lieu.png; tests/qa/out/SCRUM-202/20261124-165858-ab67d6ab/18-secretary-AC11-phone-msg464-thu-lai.png; tests/qa/out/SCRUM-202/20261124-165858-ab67d6ab/19-secretary-AC11-phone-msg464-dai-so-lieu.png",
+          "round1": "Passed",
+          "date1": "2026-11-27",
+          "tester1": "Phạm Gia Khánh"
+        },
+        {
+          "id": "RPT_FT10",
+          "description": "Report counts only the meetings the viewer may read.",
+          "procedure": [
+            "As the organizer open /mgmt/reports?from=<yyyy-MM>&to=<yyyy-MM> (a month with a Draft of theirs) and read the \"Số liệu chính\" band.",
+            "As a user who is on none of the organizer's meetings open the same URL and read the band."
+          ],
+          "expected": [
+            "The organizer's band counts the meetings they may read, including their Draft; the other user's band excludes it.",
+            "Each viewer's band matches the GET /api/reports/meetings read as that viewer (total, byStatus, bySensitivity)."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Two accounts supplied by QA lead in two browsers; A has Draft meetings B cannot read."
+          ],
+          "note": "UC-79a | BR-149, BR-150 | Manual only · Round1 Passed (2026-11-24): AC5: tests/qa/out/SCRUM-202/20261124-165755-ab67d6ab/08-member-AC5-desktop-dai-so-theo-nguoi-xem.png; tests/qa/out/SCRUM-202/20261124-165858-ab67d6ab/08-member-AC5-phone-dai-so-theo-nguoi-xem.png",
+          "round1": "Passed",
+          "date1": "2026-11-27",
+          "tester1": "Phạm Gia Khánh"
+        },
+        {
+          "id": "RPT_FT11",
+          "description": "Report is reachable without any capability, and a Guest cannot use it.",
+          "procedure": [
+            "Sign in as a Member with no administrative capability and click \"Báo cáo\".",
+            "Using the Guest token of an invitation link, request GET /api/reports/meetings."
+          ],
+          "expected": [
+            "Step 1: the page opens and loads figures.",
+            "Step 2: the backend answers 403 with no message code; a Guest has no internal account and no report."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "A Member account and a Guest invitation link."
+          ],
+          "note": "UC-79a | BR-149, BR-150 | Manual only · Round1 Passed (2026-11-24): AC1: tests/qa/out/SCRUM-202/20261124-165755-ab67d6ab/01-anon-AC1-desktop-chua-dang-nhap-ve-dang-nhap.png; tests/qa/out/SCRUM-202/20261124-165858-ab67d6ab/01-anon-AC1-phone-chua-dang-nhap-ve-dang-nhap.png",
+          "round1": "Passed",
+          "date1": "2026-11-27",
+          "tester1": "Phạm Gia Khánh"
+        }
+      ]
+    },
+    {
+      "title": "Export Report",
+      "uc": [
+        "UC-79b"
+      ],
+      "cases": [
+        {
+          "id": "RPT_FT12",
+          "description": "Excel export downloads the viewed query table.",
+          "procedure": [
+            "Open /mgmt/reports?from=2026-02&to=2026-03.",
+            "Click \"Xuất Excel\".",
+            "Open the downloaded file in Excel."
+          ],
+          "expected": [
+            "The button reads \"Đang xuất…\" while the request runs; backend answers GET /api/reports/query/export with 200 and the browser saves bao-cao-cuoc-hop_2026-02_2026-03.xlsx.",
+            "The sheet shows \"Nhóm theo\" = \"Tháng\", the month rows \"02/2026\" and \"03/2026\" with the asked figures, and a \"Tổng\" row; no meeting title appears when grouped by month.",
+            "An audit row \"report.exported\" is recorded for the user."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as an Organizer with meetings in 02/2026–03/2026; Excel on the tester machine."
+          ],
+          "note": "UC-79b | BR-152 BR-010 | Manual only · Round1 Passed (2026-11-24): AC10: tests/qa/out/SCRUM-202/20261124-165755-ab67d6ab/16-qa-fe15-reporter-trustcabinet-local-AC10-desktop-sau-khi-xuat-excel.png; tests/qa/out/SCRUM-202/20261124-165858-ab67d6ab/16-qa-fe15-reporter-trustcabinet-local-AC10-phone-sau-khi-xuat-excel.png",
+          "round1": "Passed",
+          "date1": "2026-11-27",
+          "tester1": "Phạm Gia Khánh"
+        },
+        {
+          "id": "RPT_FT13",
+          "description": "Excel export is disabled for an invalid period.",
+          "procedure": [
+            "Open /mgmt/reports?from=2024-01&to=2026-12."
+          ],
+          "expected": [
+            "\"Xuất Excel\" is disabled and the MSG463 message shows under the toolbar; no export request is sent."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as an active internal user."
+          ],
+          "note": "UC-79b EX-1 | UC-79a | Manual only · Round1 Passed (2026-11-24): AC7: tests/qa/out/SCRUM-202/20261124-165755-ab67d6ab/10-secretary-AC7-desktop-bat-dau-sau-ket-thuc.png; tests/qa/out/SCRUM-202/20261124-165858-ab67d6ab/10-secretary-AC7-phone-bat-dau-sau-ket-thuc.png",
+          "round1": "Passed",
+          "date1": "2026-11-27",
+          "tester1": "Phạm Gia Khánh"
+        },
+        {
+          "id": "RPT_FT14",
+          "description": "Export failure shows an error toast and no file is saved.",
+          "procedure": [
+            "Open /mgmt/reports.",
+            "Make the export request fail (QA lead stops the database, or the response is overridden with 500/MSG465 in the browser), then click \"Xuất Excel\"."
+          ],
+          "expected": [
+            "Backend answers 500/MSG465; a toast \"Không xuất được báo cáo. Vui lòng thử lại.\" appears and no file is downloaded.",
+            "The button returns to \"Xuất Excel\" and the page stays on /mgmt/reports."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Report loaded; QA lead can stop the database of the test build."
+          ],
+          "note": "UC-79b EX-2 | MSG465 | Manual only · Round1 Passed (2026-11-24): AC11: tests/qa/out/SCRUM-202/20261124-165755-ab67d6ab/20-secretary-AC11-desktop-msg465-toast.png; tests/qa/out/SCRUM-202/20261124-165858-ab67d6ab/20-secretary-AC11-phone-msg465-toast.png",
+          "round1": "Passed",
+          "date1": "2026-11-27",
+          "tester1": "Phạm Gia Khánh"
+        },
+        {
+          "id": "RPT_FT15",
+          "description": "Excel export works for a period with no readable meeting.",
+          "procedure": [
+            "Sign in as an account that can read no meeting in the period and open /mgmt/reports?from=2027-05&to=2027-06.",
+            "Click \"Xuất Excel\"."
+          ],
+          "expected": [
+            "A file bao-cao-cuoc-hop_2027-05_2027-06.xlsx is saved with total 0 and no group rows."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as an account that created no meeting and is on none."
+          ],
+          "note": "UC-79b | BR-010 | Manual only · Round1 Passed (2026-11-24): AC9 (desktop export asserts the file, phone checks the screen): tests/qa/out/SCRUM-202/20261124-165755-ab67d6ab/15-qa-fe15-reporter-trustcabinet-local-AC9-desktop-khoang-trong-msg466.png; tests/qa/out/SCRUM-202/20261124-165858-ab67d6ab/15-qa-fe15-reporter-trustcabinet-local-AC9-phone-khoang-trong-msg466.png",
+          "round1": "Passed",
+          "date1": "2026-11-27",
+          "tester1": "Phạm Gia Khánh"
+        }
+      ]
+    },
+    {
+      "title": "Query Report",
+      "uc": [
+        "UC-79a"
+      ],
+      "cases": [
+        {
+          "id": "RPT_FT16",
+          "description": "Changing the grouping and display updates the table and the URL, and survives a reload.",
+          "procedure": [
+            "Open /mgmt/reports?from=<yyyy-MM>&to=<yyyy-MM> (a month with more than five readable meetings) with \"Dữ liệu\" = \"Cuộc họp\" and \"Nhóm theo\" = \"Từng cuộc họp\".",
+            "In \"Hiển thị\" choose \"5 nhóm đầu\".",
+            "Reload the page."
+          ],
+          "expected": [
+            "The table shows five rows with \"5 / <n> nhóm\"; the URL keeps groupBy=meeting and top=5 without adding a history entry.",
+            "After the reload the same five rows are shown; each meeting is named as a link the viewer may open."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as an Organizer with votes in the period."
+          ],
+          "note": "UC-79a | Manual only · Round1 Passed (2026-11-24): AC4: tests/qa/out/SCRUM-202/20261124-165755-ab67d6ab/06-qa-fe15-reporter-trustcabinet-local-AC4-desktop-tung-cuoc-hop.png; tests/qa/out/SCRUM-202/20261124-165755-ab67d6ab/07-qa-fe15-reporter-trustcabinet-local-AC4-desktop-nam-nhom-dau.png; tests/qa/out/SCRUM-202/20261124-165858-ab67d6ab/06-qa-fe15-reporter-trustcabinet-local-AC4-phone-tung-cuoc-hop.png; tests/qa/out/SCRUM-202/20261124-165858-ab67d6ab/07-qa-fe15-reporter-trustcabinet-local-AC4-phone-nam-nhom-dau.png",
+          "round1": "Passed",
+          "date1": "2026-11-27",
+          "tester1": "Phạm Gia Khánh"
+        },
+        {
+          "id": "RPT_FT17",
+          "description": "Filters narrow the table and can be cleared one by one or all at once.",
+          "procedure": [
+            "Open /mgmt/reports with \"Dữ liệu\" = \"Người dự họp\" and \"Nhóm theo\" = \"Điểm danh\".",
+            "In \"Hình thức\" choose \"Trực tiếp\", then click \"Xoá lọc\".",
+            "In \"Hình thức\" choose \"Trực tuyến\".",
+            "Click \"Xoá bộ lọc\" in the empty message."
+          ],
+          "expected": [
+            "The table narrows to InPerson rows and the URL keeps the filter; \"Xoá lọc\" removes every filter and the full table returns.",
+            "With a filter that matches nothing the panel shows \"Không có dữ liệu khớp bộ lọc.\" with \"Xoá bộ lọc\", which also restores the table."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as an Organizer with meetings in several statuses."
+          ],
+          "note": "UC-79a | Manual only · Round1 Passed (2026-11-24): AC10: tests/qa/out/SCRUM-202/20261124-165755-ab67d6ab/17-qa-fe15-reporter-trustcabinet-local-AC10-desktop-loc-va-xoa-loc.png; tests/qa/out/SCRUM-202/20261124-165858-ab67d6ab/17-qa-fe15-reporter-trustcabinet-local-AC10-phone-loc-va-xoa-loc.png",
+          "round1": "Passed",
+          "date1": "2026-11-27",
+          "tester1": "Phạm Gia Khánh"
+        },
+        {
+          "id": "RPT_FT18",
+          "description": "Sorting reorders the table and a long grouping is cut with a count.",
+          "procedure": [
+            "Open /mgmt/reports with \"Dữ liệu\" = \"Cuộc họp\" and \"Nhóm theo\" = \"Chủ toạ\".",
+            "Click the \"Số cuộc họp\" header, then the group header.",
+            "In \"Hiển thị\" choose \"5 nhóm đầu\" on a grouping with more than five groups."
+          ],
+          "expected": [
+            "Clicking a figure header sorts biggest first with a pressed sort button and the bar follows the sorted figure; clicking the group header restores the natural order.",
+            "The table shows five rows with \"5 / <n> nhóm\"; grouping by \"Từng cuộc họp\" names each meeting as a link the viewer may open."
+          ],
+          "preconditions": [
+            "Frontend and backend running on the test build; browser Chrome (latest), fresh profile or Incognito.",
+            "Signed in as an Organizer with meetings chaired by several people."
+          ],
+          "note": "UC-79a | Manual only · Round1 Passed (2026-11-24): AC2 (sort, desktop) + AC4 (cut, links): tests/qa/out/SCRUM-202/20261124-165755-ab67d6ab/03-member-AC2-desktop-nhom-theo-trang-thai.png; tests/qa/out/SCRUM-202/20261124-165755-ab67d6ab/07-qa-fe15-reporter-trustcabinet-local-AC4-desktop-nam-nhom-dau.png; tests/qa/out/SCRUM-202/20261124-165755-ab67d6ab/06-qa-fe15-reporter-trustcabinet-local-AC4-desktop-tung-cuoc-hop.png",
+          "round1": "Passed",
+          "date1": "2026-11-27",
+          "tester1": "Phạm Gia Khánh"
+        }
+      ]
+    }
+  ]
+}

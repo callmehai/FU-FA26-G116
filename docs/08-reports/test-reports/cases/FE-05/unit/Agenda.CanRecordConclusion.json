@@ -16,14 +16,14 @@
           "id": "UTC001",
           "inputs": "meeting InProgress; item InProgress; hasMinutes: false; actor: Chair.",
           "log": "N/A",
-          "note": "UC-77 · BR-65",
+          "note": "UC-27 · BR-058, BR-059",
           "preconditions": [
             "Running meeting, running item, no minutes, actor is Chair."
           ],
           "return": "true.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -31,14 +31,14 @@
           "id": "UTC002",
           "inputs": "meeting Ended; item Done; hasMinutes: true; actor: Chair.",
           "log": "N/A",
-          "note": "UC-77 · MSG273",
+          "note": "UC-27 · MSG273",
           "preconditions": [
             "Minutes exist for the meeting."
           ],
           "return": "false.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -46,14 +46,14 @@
           "id": "UTC003",
           "inputs": "meeting Cancelled; item Done; actor: Chair.",
           "log": "N/A",
-          "note": "UC-77 · MSG273",
+          "note": "UC-27 · MSG273",
           "preconditions": [
             "Meeting was cancelled."
           ],
           "return": "false.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         }
       ]

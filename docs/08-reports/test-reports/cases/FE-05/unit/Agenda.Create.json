@@ -16,7 +16,7 @@
           "id": "UTC001",
           "inputs": "actor: Secretary S; input {Title: \"Opening\"}.",
           "log": "Item saved Pending at position 1 with empty description and no presenter; agenda change \"Created\" published; no presenter notice.",
-          "note": "UC-23a · BR-65 · BR-66 · BR-67 · MSG60",
+          "note": "UC-23a · BR-058, BR-059 · UC-23a, UC-23b · MSG60",
           "preconditions": [
             "Meeting in status Draft; active Chair C, active Secretary S, active Member M on the roster.",
             "Meeting has no agenda items."
@@ -24,7 +24,7 @@
           "return": "Success; 201 / MSG60; new item id returned.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -32,14 +32,14 @@
           "id": "UTC002",
           "inputs": "actor: S; input {Title: 301 characters}.",
           "log": "N/A",
-          "note": "UC-23a · BR-66 · MSG66",
+          "note": "UC-23a · UC-23a, UC-23b · MSG66",
           "preconditions": [
             "Meeting in status Draft; active Chair C, active Secretary S, active Member M on the roster."
           ],
           "return": "Failure Invalid on title; 400 / MSG66.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -47,7 +47,7 @@
           "id": "UTC003",
           "inputs": "actor: organizer; input {Title: \"A\"}.",
           "log": "N/A",
-          "note": "UC-23a · BR-65 · MSG67",
+          "note": "UC-23a · BR-058, BR-059 · MSG67",
           "preconditions": [
             "Meeting in status Draft; active Chair C, active Secretary S, active Member M on the roster.",
             "Actor is the organizer without a roster seat."
@@ -55,7 +55,7 @@
           "return": "Failure Forbidden; 403 / MSG67.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -70,7 +70,7 @@
           "return": "Failure TooLarge; 413 / MSG87.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -86,7 +86,7 @@
           "return": "Failure SaveFailed; 503 / MSG68.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         }
       ]

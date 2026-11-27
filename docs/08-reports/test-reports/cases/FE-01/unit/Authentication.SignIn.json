@@ -5,12 +5,12 @@
     {
       "cases": [
         {
-          "date1": "2026-11-23",
+          "date1": "2026-10-02",
           "exception": "N/A",
           "id": "UTC001",
           "inputs": "email: \"organizer@example.com\"; password: \"<correct password>\".",
           "log": "Sign-in succeeded for account {UserId}.; audit row SignedIn (actor = the user, object = User, details { method: \"password\" }).",
-          "note": "UC-01 · BR-01 · BR-444",
+          "note": "UC-01 · NFR · BR-009",
           "preconditions": [
             "Active account organizer@example.com exists with role Meeting Organizer holding capabilities [MeetingCreator].",
             "Password hasher verifies the stored hash for the supplied password."
@@ -21,12 +21,12 @@
           "type": "Normal"
         },
         {
-          "date1": "2026-11-23",
+          "date1": "2026-10-02",
           "exception": "N/A",
           "id": "UTC002",
           "inputs": "email: \"nobody@example.com\"; password: \"<any password>\".",
           "log": "Sign-in rejected: invalid credentials.; no audit row (an unknown email is not recorded).",
-          "note": "UC-01 · BR-02 · BR-444 · MSG01",
+          "note": "UC-01 · BR-004 · BR-009 · MSG01",
           "preconditions": [
             "No account exists for nobody@example.com."
           ],
@@ -36,12 +36,12 @@
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-23",
+          "date1": "2026-10-02",
           "exception": "N/A",
           "id": "UTC003",
           "inputs": "email: \"former@example.com\"; password: \"<correct password>\".",
           "log": "Sign-in rejected: account {UserId} is deactivated.; audit row SignInFailed (details { method: \"password\", reason: \"account_deactivated\" }).",
-          "note": "UC-01 · BR-03 · BR-444 · MSG02",
+          "note": "UC-01 · BR-001 · BR-009 · MSG02",
           "preconditions": [
             "Account former@example.com exists and is deactivated."
           ],
@@ -51,7 +51,7 @@
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-23",
+          "date1": "2026-10-02",
           "exception": "N/A",
           "id": "UTC004",
           "inputs": "email: \"\"; password: \"<any password>\".",
@@ -66,12 +66,12 @@
           "type": "Boundary"
         },
         {
-          "date1": "2026-11-23",
+          "date1": "2026-10-02",
           "exception": "N/A",
           "id": "UTC005",
           "inputs": "email: \"organizer@example.com\"; password: \"<wrong password>\".",
           "log": "Sign-in rejected: invalid credentials.; audit row SignInFailed (details { method: \"password\", reason: \"invalid_password\" }).",
-          "note": "UC-01 · BR-02 · BR-444 · MSG01",
+          "note": "UC-01 · BR-004 · BR-009 · MSG01",
           "preconditions": [
             "Active account exists for organizer@example.com."
           ],
@@ -81,12 +81,12 @@
           "type": "Abnormal"
         },
         {
-          "date1": "2026-11-23",
+          "date1": "2026-10-02",
           "exception": "N/A",
           "id": "UTC006",
           "inputs": "email: \"former@example.com\"; password: \"<wrong password>\".",
           "log": "Sign-in rejected: invalid credentials.; audit row SignInFailed (details { method: \"password\", reason: \"invalid_password\" }).",
-          "note": "UC-01 · BR-03 · BR-444 · MSG01",
+          "note": "UC-01 · BR-001 · BR-009 · MSG01",
           "preconditions": [
             "Account former@example.com exists and is deactivated."
           ],

@@ -21,9 +21,9 @@
           "exception": "N/A",
           "log": "One document read confirmation row saved for the user and the document, with no link to any ballot.",
           "type": "Normal",
-          "note": "UC-74 · BR-289 · BR-290 · MSG253",
+          "note": "UC-42 · BR-094, BR-095 · MSG253",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-24",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -36,9 +36,9 @@
           "exception": "N/A",
           "log": "No new row written.",
           "type": "Normal",
-          "note": "UC-74 · BR-291 · MSG253",
+          "note": "UC-42 · MSG253",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-24",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -51,9 +51,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-74 · UC-55 · BR-190 · MSG224",
+          "note": "UC-42 · UC-65 · BR-091 · MSG224",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-24",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -66,9 +66,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "UC-74 · BR-290 · MSG254",
+          "note": "UC-42 · MSG254",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-11-24",
           "tester1": "Phạm Gia Khánh"
         }
       ]

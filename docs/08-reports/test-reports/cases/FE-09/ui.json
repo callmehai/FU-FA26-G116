@@ -7,8 +7,8 @@
     {
       "title": "Recording List & Playback",
       "uc": [
-        "UC-43a",
-        "UC-43b"
+        "UC-51a",
+        "UC-51b"
       ],
       "cases": [
         {
@@ -27,10 +27,10 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript."
           ],
-          "note": "UC-43a · UC-43b · Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Tệp tải lên: \"Tải lên\", \"Có bản gỡ băng\", 00:02, 63 KB, ngày lưu; trình phát mở sẵn. Evidence: tests/qa/out/MANUAL-R1/20261123-071738-03594e25/01-secretary-REC_FT01-desktop-danh-sach-ban-ghi.png",
+          "note": "UC-51a · UC-51b · Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Tệp tải lên: \"Tải lên\", \"Có bản gỡ băng\", 00:02, 63 KB, ngày lưu; trình phát mở sẵn. Evidence: tests/qa/out/MANUAL-R1/20261123-071738-03594e25/01-secretary-REC_FT01-desktop-danh-sach-ban-ghi.png",
           "round1": "Passed",
-          "date1": "2026-11-23",
-          "tester1": "HuyNT"
+          "date1": "2026-11-01",
+          "tester1": "Nguyễn Trường Huy"
         },
         {
           "id": "REC_FT02",
@@ -48,9 +48,9 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript."
           ],
-          "note": "UC-43a · Retention (Law 91/2025) · Manual only · Round1 Passed (2026-11-22): AC19+AC25: tests/qa/out/SCRUM-196/20261122-133302-39c00e3b/11-secretary-AC19-desktop-han-luu-tru-180-ngay.png; tests/qa/out/SCRUM-196/20261122-135539-39c00e3b/01-member-AC25-desktop-danh-sach-chu-thich.png · Máy tính: chú thích hiện đúng \"Lưu bởi … · Mục đích … · Tự xoá ngày 21/05/2027\". Điện thoại: chạm dòng thông tin KHÔNG hiện chú thích (AC19 phone Failed, AC25 phone ghi chú) — nghi lỗi, xem bugs.",
-          "round1": "Passed",
-          "date1": "2026-11-22",
+          "note": "UC-51a · Retention (Law 91/2025) · Manual only · Round1 Failed (2026-11-22): AC19+AC25: tests/qa/out/SCRUM-196/20261122-133302-39c00e3b/11-secretary-AC19-desktop-han-luu-tru-180-ngay.png; tests/qa/out/SCRUM-196/20261122-135539-39c00e3b/01-member-AC25-desktop-danh-sach-chu-thich.png · Máy tính: chú thích hiện đúng \"Lưu bởi … · Mục đích … · Tự xoá ngày 21/05/2027\". Điện thoại: chạm dòng thông tin KHÔNG hiện chú thích (AC19 phone Failed, AC25 phone ghi chú) — nghi lỗi, xem bugs.",
+          "round1": "Failed",
+          "date1": "2026-11-01",
           "tester1": "Nguyễn Trường Huy"
         },
         {
@@ -69,9 +69,9 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). No recording yet. Repeat on an Ended meeting."
           ],
-          "note": "UC-43a · Manual only · Round1 Passed (2026-11-22): AC20: tests/qa/out/SCRUM-196/20261122-140038-39c00e3b/29-secretary-AC20-desktop-dang-dien-ra-chua-co-ban-ghi.png; tests/qa/out/SCRUM-196/20261122-140038-39c00e3b/31-secretary-AC20-desktop-da-ket-thuc-van-tai-len.png",
+          "note": "UC-51a · Manual only · Round1 Passed (2026-11-22): AC20: tests/qa/out/SCRUM-196/20261122-140038-39c00e3b/29-secretary-AC20-desktop-dang-dien-ra-chua-co-ban-ghi.png; tests/qa/out/SCRUM-196/20261122-140038-39c00e3b/31-secretary-AC20-desktop-da-ket-thuc-van-tai-len.png",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-01",
           "tester1": "Nguyễn Trường Huy"
         },
         {
@@ -92,9 +92,9 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript."
           ],
-          "note": "UC-43b · Manual only · Round1 Passed (2026-11-22): AC25+AC15: tests/qa/out/SCRUM-196/20261122-135539-39c00e3b/02-member-AC25-desktop-trinh-phat-tua-toc-do-tat-tieng.png; tests/qa/out/SCRUM-196/20261122-135812-39c00e3b/01-member-AC15-desktop-thanh-vien-dang-nghe.png · Tua (0,30 s -> 5,27 s), tốc độ, âm lượng và tắt tiếng đổi đúng trên thẻ audio; chạy với tệp tổng hợp tiếng nhân tạo (không phải giọng thật).",
+          "note": "UC-51b · Manual only · Round1 Passed (2026-11-22): AC25+AC15: tests/qa/out/SCRUM-196/20261122-135539-39c00e3b/02-member-AC25-desktop-trinh-phat-tua-toc-do-tat-tieng.png; tests/qa/out/SCRUM-196/20261122-135812-39c00e3b/01-member-AC15-desktop-thanh-vien-dang-nghe.png · Tua (0,30 s -> 5,27 s), tốc độ, âm lượng và tắt tiếng đổi đúng trên thẻ audio; chạy với tệp tổng hợp tiếng nhân tạo (không phải giọng thật).",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-01",
           "tester1": "Nguyễn Trường Huy"
         },
         {
@@ -112,9 +112,9 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript."
           ],
-          "note": "UC-43a · Manual only · Round1 Passed (2026-11-22): AC15+AC25: tests/qa/out/SCRUM-196/20261122-135539-39c00e3b/02-member-AC25-desktop-trinh-phat-tua-toc-do-tat-tieng.png; tests/qa/out/SCRUM-196/20261122-135812-39c00e3b/01-member-AC15-desktop-thanh-vien-dang-nghe.png; tests/qa/out/SCRUM-196/20261122-135812-39c00e3b/02-member-AC15-phone-thanh-vien-dang-nghe.png · Đã sửa case theo sản phẩm (2026-11-22).",
+          "note": "UC-51a · Manual only · Round1 Passed (2026-11-22): AC15+AC25: tests/qa/out/SCRUM-196/20261122-135539-39c00e3b/02-member-AC25-desktop-trinh-phat-tua-toc-do-tat-tieng.png; tests/qa/out/SCRUM-196/20261122-135812-39c00e3b/01-member-AC15-desktop-thanh-vien-dang-nghe.png; tests/qa/out/SCRUM-196/20261122-135812-39c00e3b/02-member-AC15-phone-thanh-vien-dang-nghe.png · Đã sửa case theo sản phẩm (2026-11-22).",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-01",
           "tester1": "Nguyễn Trường Huy"
         },
         {
@@ -133,9 +133,9 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The Secretary has the room mic on."
           ],
-          "note": "UC-43a · UC-44b · Manual only · Round1 Passed (2026-11-22): AC29: tests/qa/out/SCRUM-196/20261122-135150-39c00e3b/05-member-AC29-desktop-thanh-vien-thay-dang-ghi.png; tests/qa/out/SCRUM-196/20261122-135150-39c00e3b/06-member-AC29-desktop-tu-lam-moi-sau-khi-tat-mic.png",
+          "note": "UC-51a · UC-52a · Manual only · Round1 Passed (2026-11-22): AC29: tests/qa/out/SCRUM-196/20261122-135150-39c00e3b/05-member-AC29-desktop-thanh-vien-thay-dang-ghi.png; tests/qa/out/SCRUM-196/20261122-135150-39c00e3b/06-member-AC29-desktop-tu-lam-moi-sau-khi-tat-mic.png",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-01",
           "tester1": "Nguyễn Trường Huy"
         },
         {
@@ -153,9 +153,9 @@
             "Backend and frontend running on the test build.",
             "An Online meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). No room recording exists."
           ],
-          "note": "UC-43a · ADR-0040 · Manual only · Round1 Passed (2026-11-22): AC11: tests/qa/out/SCRUM-196/20261122-140038-39c00e3b/24-secretary-AC11-desktop-truc-tuyen-chi-micro-tung-nguoi.png; tests/qa/out/SCRUM-196/20261122-140038-39c00e3b/25-secretary-AC11-phone-truc-tuyen-chi-micro-tung-nguoi.png",
+          "note": "UC-51a · ADR-0040 · Manual only · Round1 Passed (2026-11-22): AC11: tests/qa/out/SCRUM-196/20261122-140038-39c00e3b/24-secretary-AC11-desktop-truc-tuyen-chi-micro-tung-nguoi.png; tests/qa/out/SCRUM-196/20261122-140038-39c00e3b/25-secretary-AC11-phone-truc-tuyen-chi-micro-tung-nguoi.png",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-01",
           "tester1": "Nguyễn Trường Huy"
         },
         {
@@ -173,9 +173,9 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript. The caller is not a participant."
           ],
-          "note": "UC-43a · Manual only · Round1 Passed (2026-11-22): AC16: tests/qa/out/SCRUM-196/20261122-140038-39c00e3b/28-admin-AC16-desktop-nguoi-tao-khong-co-tab-ban-ghi.png",
+          "note": "UC-51a · Manual only · Round1 Passed (2026-11-22): AC16: tests/qa/out/SCRUM-196/20261122-140038-39c00e3b/28-admin-AC16-desktop-nguoi-tao-khong-co-tab-ban-ghi.png",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-01",
           "tester1": "Nguyễn Trường Huy"
         },
         {
@@ -194,9 +194,9 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript."
           ],
-          "note": "UC-43b · Manual only · Round1 Passed (2026-11-22): AC26: tests/qa/out/SCRUM-196/20261122-134121-39c00e3b/11-member-AC26-desktop-loi-link-nghe-tren-dong.png; tests/qa/out/SCRUM-196/20261122-134121-39c00e3b/12-member-AC26-desktop-khong-phat-duoc-tep.png; tests/qa/out/SCRUM-196/20261122-134121-39c00e3b/15-member-AC26-phone-loi-link-nghe-tren-dong.png · Chèn lỗi bằng page.route (GET …/playback trả 404; GET …/audio bị huỷ).",
+          "note": "UC-51b · Manual only · Round1 Passed (2026-11-22): AC26: tests/qa/out/SCRUM-196/20261122-134121-39c00e3b/11-member-AC26-desktop-loi-link-nghe-tren-dong.png; tests/qa/out/SCRUM-196/20261122-134121-39c00e3b/12-member-AC26-desktop-khong-phat-duoc-tep.png; tests/qa/out/SCRUM-196/20261122-134121-39c00e3b/15-member-AC26-phone-loi-link-nghe-tren-dong.png · Chèn lỗi bằng page.route (GET …/playback trả 404; GET …/audio bị huỷ).",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-01",
           "tester1": "Nguyễn Trường Huy"
         }
       ]
@@ -204,7 +204,7 @@
     {
       "title": "Download Recording",
       "uc": [
-        "UC-43c"
+        "UC-51c"
       ],
       "cases": [
         {
@@ -223,9 +223,9 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript."
           ],
-          "note": "UC-43c · Manual only · Round1 Passed (2026-11-22): AC17: tests/qa/out/SCRUM-196/20261122-133302-39c00e3b/03-chair-AC17-desktop-chu-toa-tai-ve.png · Dùng bản ghi mp3: trình duyệt nhận qa-fe09-s1.mp3. Bản ghi định dạng khác cần ffmpeg ở máy chủ; máy chạy test không có ffmpeg nên API trả 503 MSG482 (giới hạn môi trường, không phải lỗi sản phẩm). Dòng audit recording.downloaded có trong audit_log. · Đã sửa case theo sản phẩm (2026-11-22).",
+          "note": "UC-51c · Manual only · Round1 Passed (2026-11-22): AC17: tests/qa/out/SCRUM-196/20261122-133302-39c00e3b/03-chair-AC17-desktop-chu-toa-tai-ve.png · Dùng bản ghi mp3: trình duyệt nhận qa-fe09-s1.mp3. Bản ghi định dạng khác cần ffmpeg ở máy chủ; máy chạy test không có ffmpeg nên API trả 503 MSG482 (giới hạn môi trường, không phải lỗi sản phẩm). Dòng audit recording.downloaded có trong audit_log. · Đã sửa case theo sản phẩm (2026-11-22).",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-01",
           "tester1": "Nguyễn Trường Huy"
         },
         {
@@ -243,9 +243,9 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript."
           ],
-          "note": "UC-43c · Manual only · Round1 Passed (2026-11-22): AC34: tests/qa/out/SCRUM-196/20261122-140013-39c00e3b/04-secretary-AC34-desktop-thu-ky-tai-mp3.png; tests/qa/out/SCRUM-196/20261122-140013-39c00e3b/08-secretary-AC34-phone-thu-ky-tai-mp3.png · Tải qua nút \"Tải MP3\"; tệp lưu s1.mp3. · Đã sửa case theo sản phẩm (2026-11-22).",
+          "note": "UC-51c · Manual only · Round1 Passed (2026-11-22): AC34: tests/qa/out/SCRUM-196/20261122-140013-39c00e3b/04-secretary-AC34-desktop-thu-ky-tai-mp3.png; tests/qa/out/SCRUM-196/20261122-140013-39c00e3b/08-secretary-AC34-phone-thu-ky-tai-mp3.png · Tải qua nút \"Tải MP3\"; tệp lưu s1.mp3. · Đã sửa case theo sản phẩm (2026-11-22).",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-01",
           "tester1": "Nguyễn Trường Huy"
         },
         {
@@ -263,9 +263,9 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript."
           ],
-          "note": "UC-43c · MSG355 · Manual only · Round1 Passed (2026-11-22): AC14+AC15: tests/qa/out/SCRUM-196/20261122-135812-39c00e3b/01-member-AC15-desktop-thanh-vien-dang-nghe.png; tests/qa/out/SCRUM-196/20261122-135812-39c00e3b/02-member-AC15-phone-thanh-vien-dang-nghe.png · API Thành viên tải bản ghi 403 MSG355 (AC14, tests/qa/out/SCRUM-196/20261122-133302-39c00e3b/results.json). · Đã sửa case theo sản phẩm (2026-11-22).",
+          "note": "UC-51c · MSG355 · Manual only · Round1 Passed (2026-11-22): AC14+AC15: tests/qa/out/SCRUM-196/20261122-135812-39c00e3b/01-member-AC15-desktop-thanh-vien-dang-nghe.png; tests/qa/out/SCRUM-196/20261122-135812-39c00e3b/02-member-AC15-phone-thanh-vien-dang-nghe.png · API Thành viên tải bản ghi 403 MSG355 (AC14, tests/qa/out/SCRUM-196/20261122-133302-39c00e3b/results.json). · Đã sửa case theo sản phẩm (2026-11-22).",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-01",
           "tester1": "Nguyễn Trường Huy"
         },
         {
@@ -283,10 +283,10 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The meeting is Secret (Mật) with one stored recording."
           ],
-          "note": "UC-43c · MSG356 · Manual only · Đã sửa case theo sản phẩm (2026-11-22). · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Chủ toạ và Thư ký không có \"Tải MP3\"; API tải về 403 MSG356, nghe 200. Evidence: tests/qa/out/MANUAL-R1/20261123-070954-03594e25/21-chair-REC_FT13-desktop-chair-hop-mat-khong-tai.png; tests/qa/out/MANUAL-R1/20261123-070954-03594e25/22-secretary-REC_FT13-desktop-secretary-hop-mat-khong-tai.png",
+          "note": "UC-51c · MSG356 · Manual only · Đã sửa case theo sản phẩm (2026-11-22). · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Chủ toạ và Thư ký không có \"Tải MP3\"; API tải về 403 MSG356, nghe 200. Evidence: tests/qa/out/MANUAL-R1/20261123-070954-03594e25/21-chair-REC_FT13-desktop-chair-hop-mat-khong-tai.png; tests/qa/out/MANUAL-R1/20261123-070954-03594e25/22-secretary-REC_FT13-desktop-secretary-hop-mat-khong-tai.png",
           "round1": "Passed",
-          "date1": "2026-11-23",
-          "tester1": "HuyNT"
+          "date1": "2026-11-01",
+          "tester1": "Nguyễn Trường Huy"
         },
         {
           "id": "REC_FT14",
@@ -303,9 +303,9 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript. A second account that can change participants."
           ],
-          "note": "UC-43c · Manual only · Round1 Passed (2026-11-22): AC27: tests/qa/out/SCRUM-196/20261122-134121-39c00e3b/17-chair-AC27-desktop-tai-bi-tu-choi-toast.png · Chèn lỗi: GET …/download trả 403 MSG355 (page.route) thay cho \"gỡ vai trò ở trình duyệt khác\"; toast đỏ đúng chữ máy chủ, không lưu tệp; bỏ chặn thì tải được. · Đã sửa case theo sản phẩm (2026-11-22).",
+          "note": "UC-51c · Manual only · Round1 Passed (2026-11-22): AC27: tests/qa/out/SCRUM-196/20261122-134121-39c00e3b/17-chair-AC27-desktop-tai-bi-tu-choi-toast.png · Chèn lỗi: GET …/download trả 403 MSG355 (page.route) thay cho \"gỡ vai trò ở trình duyệt khác\"; toast đỏ đúng chữ máy chủ, không lưu tệp; bỏ chặn thì tải được. · Đã sửa case theo sản phẩm (2026-11-22).",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-01",
           "tester1": "Nguyễn Trường Huy"
         }
       ]
@@ -313,8 +313,7 @@
     {
       "title": "Record Room Microphone",
       "uc": [
-        "UC-44a",
-        "UC-44b"
+        "UC-52a"
       ],
       "cases": [
         {
@@ -332,9 +331,9 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The browser has a microphone; the speech worker is running."
           ],
-          "note": "UC-44a · Manual only · Round1 Passed (2026-11-22): AC1+AC34: tests/qa/out/SCRUM-196/20261122-140038-39c00e3b/01-secretary-AC1-desktop-xac-nhan-da-bao-moi-nguoi.png; tests/qa/out/SCRUM-196/20261122-140038-39c00e3b/03-secretary-AC1-desktop-doi-tab-van-ghi.png; tests/qa/out/SCRUM-196/20261122-140013-39c00e3b/01-secretary-AC34-desktop-the-mic-thu-nho.png",
+          "note": "UC-52a · Manual only · Round1 Passed (2026-11-22): AC1+AC34: tests/qa/out/SCRUM-196/20261122-140038-39c00e3b/01-secretary-AC1-desktop-xac-nhan-da-bao-moi-nguoi.png; tests/qa/out/SCRUM-196/20261122-140038-39c00e3b/03-secretary-AC1-desktop-doi-tab-van-ghi.png; tests/qa/out/SCRUM-196/20261122-140013-39c00e3b/01-secretary-AC34-desktop-the-mic-thu-nho.png",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-01",
           "tester1": "Nguyễn Trường Huy"
         },
         {
@@ -351,9 +350,9 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The browser has a microphone; the speech worker is running."
           ],
-          "note": "UC-44a · Manual only · Round1 Passed (2026-11-22): AC4+AC15: tests/qa/out/SCRUM-196/20261122-140038-39c00e3b/15-chair-AC4-desktop-nguoi-khac-thay-dang-ghi.png; tests/qa/out/SCRUM-196/20261122-135812-39c00e3b/01-member-AC15-desktop-thanh-vien-dang-nghe.png",
+          "note": "UC-52a · Manual only · Round1 Passed (2026-11-22): AC4+AC15: tests/qa/out/SCRUM-196/20261122-140038-39c00e3b/15-chair-AC4-desktop-nguoi-khac-thay-dang-ghi.png; tests/qa/out/SCRUM-196/20261122-135812-39c00e3b/01-member-AC15-desktop-thanh-vien-dang-nghe.png",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-01",
           "tester1": "Nguyễn Trường Huy"
         },
         {
@@ -372,9 +371,9 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The browser has a microphone; the speech worker is running. No room recording yet."
           ],
-          "note": "UC-44a · Consent (Law 91/2025) · Manual only · Round1 Passed (2026-11-22): AC1+AC3: tests/qa/out/SCRUM-196/20261122-140038-39c00e3b/01-secretary-AC1-desktop-xac-nhan-da-bao-moi-nguoi.png; tests/qa/out/SCRUM-196/20261122-140038-39c00e3b/11-secretary-AC3-desktop-chua-tich-xac-nhan.png",
+          "note": "UC-52a · Consent (Law 91/2025) · Manual only · Round1 Passed (2026-11-22): AC1+AC3: tests/qa/out/SCRUM-196/20261122-140038-39c00e3b/01-secretary-AC1-desktop-xac-nhan-da-bao-moi-nguoi.png; tests/qa/out/SCRUM-196/20261122-140038-39c00e3b/11-secretary-AC3-desktop-chua-tich-xac-nhan.png",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-01",
           "tester1": "Nguyễn Trường Huy"
         },
         {
@@ -392,9 +391,9 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The browser has a microphone; the speech worker is running. No room recording yet."
           ],
-          "note": "UC-44a · Manual only · Round1 Passed (2026-11-22): AC3: tests/qa/out/SCRUM-196/20261122-140038-39c00e3b/12-secretary-AC3-desktop-huy-khong-ghi.png; tests/qa/out/SCRUM-196/20261122-140038-39c00e3b/14-secretary-AC3-phone-huy-khong-ghi.png",
+          "note": "UC-52a · Manual only · Round1 Passed (2026-11-22): AC3: tests/qa/out/SCRUM-196/20261122-140038-39c00e3b/12-secretary-AC3-desktop-huy-khong-ghi.png; tests/qa/out/SCRUM-196/20261122-140038-39c00e3b/14-secretary-AC3-phone-huy-khong-ghi.png",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-01",
           "tester1": "Nguyễn Trường Huy"
         },
         {
@@ -414,9 +413,9 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The browser has a microphone; the speech worker is running. No room recording yet."
           ],
-          "note": "UC-44a · UC-44b · Manual only · Round1 Passed (2026-11-22): AC1+AC4+AC29: tests/qa/out/SCRUM-196/20261122-140038-39c00e3b/02-secretary-AC1-desktop-dang-ghi-ca-phong.png; tests/qa/out/SCRUM-196/20261122-140038-39c00e3b/15-chair-AC4-desktop-nguoi-khac-thay-dang-ghi.png; tests/qa/out/SCRUM-196/20261122-135150-39c00e3b/05-member-AC29-desktop-thanh-vien-thay-dang-ghi.png",
+          "note": "UC-52a · Manual only · Round1 Passed (2026-11-22): AC1+AC4+AC29: tests/qa/out/SCRUM-196/20261122-140038-39c00e3b/02-secretary-AC1-desktop-dang-ghi-ca-phong.png; tests/qa/out/SCRUM-196/20261122-140038-39c00e3b/15-chair-AC4-desktop-nguoi-khac-thay-dang-ghi.png; tests/qa/out/SCRUM-196/20261122-135150-39c00e3b/05-member-AC29-desktop-thanh-vien-thay-dang-ghi.png",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-01",
           "tester1": "Nguyễn Trường Huy"
         },
         {
@@ -434,9 +433,9 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The browser has a microphone; the speech worker is running. The mic is on."
           ],
-          "note": "UC-44b · Manual only · Re-run AC35 24/11: Passed: tests/qa/out/SCRUM-196/20261124-112940-ece83cb4/01-secretary-AC35-desktop-tat-mic-luu-luot.png; tests/qa/out/SCRUM-196/20261124-112940-ece83cb4/02-secretary-AC35-desktop-co-ban-go-bang.png · Toast \"Đã lưu lượt ghi.\", dòng \"Mic phòng\"; lượt ghi âm tiếng Việt (said.wav qua API) được chuyển chữ (\"Có bản gỡ băng\"), tải lại tab vẫn còn; gỡ băng: \"Kính thưa các đồng chí. / Hôm nay chúng ta họp để thông qua kế hoạch đào tạo cán bộ năm, hai nghìn không trăm hai mươi bảy.\"",
+          "note": "UC-52a · Manual only · Re-run AC35 24/11: Passed: tests/qa/out/SCRUM-196/20261124-112940-ece83cb4/01-secretary-AC35-desktop-tat-mic-luu-luot.png; tests/qa/out/SCRUM-196/20261124-112940-ece83cb4/02-secretary-AC35-desktop-co-ban-go-bang.png · Toast \"Đã lưu lượt ghi.\", dòng \"Mic phòng\"; lượt ghi âm tiếng Việt (said.wav qua API) được chuyển chữ (\"Có bản gỡ băng\"), tải lại tab vẫn còn; gỡ băng: \"Kính thưa các đồng chí. / Hôm nay chúng ta họp để thông qua kế hoạch đào tạo cán bộ năm, hai nghìn không trăm hai mươi bảy.\"",
           "round1": "Passed",
-          "date1": "2026-11-24",
+          "date1": "2026-11-01",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -455,9 +454,9 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The browser has a microphone; the speech worker is running. One saved room recording."
           ],
-          "note": "UC-44b · Manual only · Round1 Passed (2026-11-22): AC2: tests/qa/out/SCRUM-196/20261122-140038-39c00e3b/09-secretary-AC2-desktop-luot-2-dang-ghi.png; tests/qa/out/SCRUM-196/20261122-140038-39c00e3b/10-secretary-AC2-desktop-noi-thanh-2-luot.png · Bản gỡ băng làm lại chỉ kiểm tới nhãn \"Đang chuyển chữ\" (speech worker không chạy).",
+          "note": "UC-52a · Manual only · Round1 Passed (2026-11-22): AC2: tests/qa/out/SCRUM-196/20261122-140038-39c00e3b/09-secretary-AC2-desktop-luot-2-dang-ghi.png; tests/qa/out/SCRUM-196/20261122-140038-39c00e3b/10-secretary-AC2-desktop-noi-thanh-2-luot.png · Bản gỡ băng làm lại chỉ kiểm tới nhãn \"Đang chuyển chữ\" (speech worker không chạy).",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-01",
           "tester1": "Nguyễn Trường Huy"
         },
         {
@@ -475,9 +474,9 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The browser has a microphone; the speech worker is running."
           ],
-          "note": "UC-44b · MSG365 · Manual only · Round1 Passed (2026-11-22): AC30+AC6: tests/qa/out/SCRUM-196/20261122-135150-39c00e3b/09-secretary-AC30-desktop-bat-tat-ngay.png · Mic thử của trình duyệt luôn có tiếng nên không tạo được lượt rỗng thật: toast xanh kiểm bằng phản hồi chèn 200 MSG365 (page.route); API lượt rỗng thật kiểm ở AC6.",
+          "note": "UC-52a · MSG365 · Manual only · Round1 Passed (2026-11-22): AC30+AC6: tests/qa/out/SCRUM-196/20261122-135150-39c00e3b/09-secretary-AC30-desktop-bat-tat-ngay.png · Mic thử của trình duyệt luôn có tiếng nên không tạo được lượt rỗng thật: toast xanh kiểm bằng phản hồi chèn 200 MSG365 (page.route); API lượt rỗng thật kiểm ở AC6.",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-01",
           "tester1": "Nguyễn Trường Huy"
         },
         {
@@ -494,9 +493,9 @@
             "Backend and frontend running on the test build.",
             "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead)."
           ],
-          "note": "UC-44a · ADR-0040 · Manual only · Round1 Passed (2026-11-22): AC11: tests/qa/out/SCRUM-196/20261122-140038-39c00e3b/24-secretary-AC11-desktop-truc-tuyen-chi-micro-tung-nguoi.png",
+          "note": "UC-52a · ADR-0040 · Manual only · Round1 Passed (2026-11-22): AC11: tests/qa/out/SCRUM-196/20261122-140038-39c00e3b/24-secretary-AC11-desktop-truc-tuyen-chi-micro-tung-nguoi.png",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-01",
           "tester1": "Nguyễn Trường Huy"
         },
         {
@@ -515,9 +514,9 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The browser has a microphone; the speech worker is running."
           ],
-          "note": "UC-44b · MSG360 · Manual only · Round1 Passed (2026-11-25): tester tự kiểm trên build đang chạy, không có ảnh evidence.",
+          "note": "UC-52a · MSG360 · Manual only · Round1 Passed (2026-11-25): tester tự kiểm trên build đang chạy, không có ảnh evidence.",
           "round1": "Passed",
-          "date1": "2026-11-25",
+          "date1": "2026-11-01",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -535,9 +534,9 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The browser has a microphone; the speech worker is running."
           ],
-          "note": "UC-44b · Manual only · Round1 Passed (2026-11-25): tester tự kiểm trên build đang chạy, không có ảnh evidence.",
+          "note": "UC-52a · Manual only · Round1 Passed (2026-11-25): tester tự kiểm trên build đang chạy, không có ảnh evidence.",
           "round1": "Passed",
-          "date1": "2026-11-25",
+          "date1": "2026-11-01",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -555,9 +554,9 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The browser has a microphone; the speech worker is running."
           ],
-          "note": "UC-44b · Manual only · Round1 Passed (2026-11-25): tester tự kiểm trên build đang chạy, không có ảnh evidence.",
+          "note": "UC-52a · Manual only · Round1 Passed (2026-11-25): tester tự kiểm trên build đang chạy, không có ảnh evidence.",
           "round1": "Passed",
-          "date1": "2026-11-25",
+          "date1": "2026-11-01",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -574,9 +573,9 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The browser has a microphone; the speech worker is running."
           ],
-          "note": "UC-44a · MSG359 · Manual only · Round1 Passed (2026-11-25): tester tự kiểm trên build đang chạy, không có ảnh evidence.",
+          "note": "UC-52a · MSG359 · Manual only · Round1 Passed (2026-11-25): tester tự kiểm trên build đang chạy, không có ảnh evidence.",
           "round1": "Passed",
-          "date1": "2026-11-25",
+          "date1": "2026-11-01",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -584,7 +583,7 @@
     {
       "title": "Upload Audio File",
       "uc": [
-        "UC-44c"
+        "UC-52c"
       ],
       "cases": [
         {
@@ -605,9 +604,9 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The speech worker running."
           ],
-          "note": "UC-44c · MSG290 · Manual only · Re-run AC36 24/11: Passed: tests/qa/out/SCRUM-196/20261124-112859-ece83cb4/01-secretary-AC36-desktop-hop-luu-tep-tieng-viet.png; tests/qa/out/SCRUM-196/20261124-112859-ece83cb4/02-secretary-AC36-desktop-tai-len-co-ban-go-bang.png · Hộp xác nhận tải tệp, 201 MSG290; dòng \"Tải lên\" (said.wav, 00:08, 239 KB), chuyển chữ xong \"Có bản gỡ băng\" chữ tiếng Việt (\"Kính thưa các đồng chí. Hôm nay chúng ta họp để thông qua kế hoạch đào tạo cán bộ năm, hai nghìn không trăm hai mươi bảy.\"), tải lại vẫn còn",
+          "note": "UC-52c · MSG290 · Manual only · Re-run AC36 24/11: Passed: tests/qa/out/SCRUM-196/20261124-112859-ece83cb4/01-secretary-AC36-desktop-hop-luu-tep-tieng-viet.png; tests/qa/out/SCRUM-196/20261124-112859-ece83cb4/02-secretary-AC36-desktop-tai-len-co-ban-go-bang.png · Hộp xác nhận tải tệp, 201 MSG290; dòng \"Tải lên\" (said.wav, 00:08, 239 KB), chuyển chữ xong \"Có bản gỡ băng\" chữ tiếng Việt (\"Kính thưa các đồng chí. Hôm nay chúng ta họp để thông qua kế hoạch đào tạo cán bộ năm, hai nghìn không trăm hai mươi bảy.\"), tải lại vẫn còn",
           "round1": "Passed",
-          "date1": "2026-11-24",
+          "date1": "2026-11-01",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -627,9 +626,9 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead)."
           ],
-          "note": "UC-44c · Consent (Law 91/2025) · Manual only · Round1 Passed (2026-11-22): AC7+AC34: tests/qa/out/SCRUM-196/20261122-140038-39c00e3b/19-secretary-AC7-desktop-hop-luu-tep-ghi-am.png; tests/qa/out/SCRUM-196/20261122-140013-39c00e3b/02-secretary-AC34-desktop-huy-hop-tai-len.png",
+          "note": "UC-52c · Consent (Law 91/2025) · Manual only · Round1 Passed (2026-11-22): AC7+AC34: tests/qa/out/SCRUM-196/20261122-140038-39c00e3b/19-secretary-AC7-desktop-hop-luu-tep-ghi-am.png; tests/qa/out/SCRUM-196/20261122-140013-39c00e3b/02-secretary-AC34-desktop-huy-hop-tai-len.png",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-01",
           "tester1": "Nguyễn Trường Huy"
         },
         {
@@ -648,9 +647,9 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead)."
           ],
-          "note": "UC-44c · MSG292 · Manual only · Round1 Passed (2026-11-22): AC8: tests/qa/out/SCRUM-196/20261122-140038-39c00e3b/23-secretary-AC8-desktop-tu-choi-dinh-dang.png",
+          "note": "UC-52c · MSG292 · Manual only · Round1 Passed (2026-11-22): AC8: tests/qa/out/SCRUM-196/20261122-140038-39c00e3b/23-secretary-AC8-desktop-tu-choi-dinh-dang.png",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-01",
           "tester1": "Nguyễn Trường Huy"
         },
         {
@@ -669,9 +668,9 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead)."
           ],
-          "note": "UC-44c · MSG293 · Boundary: 300 MB · Manual only · Round1 Failed (2026-11-22): AC32: tests/qa/out/SCRUM-196/20261122-135539-39c00e3b/07-secretary-AC32-desktop-failure.png · Screen path 22/11: the upload tray reported \"Không kết nối được máy chủ. Vui lòng kiểm tra mạng và thử lại.\" instead of \"Bản ghi vượt quá 300 MB.\" (direct API still answered 413 MSG293 in AC9); the server closes the connection while the file is still uploading, not re-checked through Caddy. · Round1 chạy tay 23/11 (HuyNT): Passed. Tester xác nhận không phải bug (23/11/2026). · Expected rewritten after 5e7f0414 (the screen now blocks over-limit files upfront with MSG293); the 23/11 Passed tested the old behavior on app e7dc0e7a, which predates 5e7f0414. Re-run AC32 24/11: Passed: tests/qa/out/SCRUM-196/20261124-041423-b5224b3f/01-secretary-AC32-desktop-qua-300-mb.png",
+          "note": "UC-52c · MSG293 · Boundary: 300 MB · Manual only · Round1 Failed (2026-11-22): AC32: tests/qa/out/SCRUM-196/20261122-135539-39c00e3b/07-secretary-AC32-desktop-failure.png · Screen path 22/11: the upload tray reported \"Không kết nối được máy chủ. Vui lòng kiểm tra mạng và thử lại.\" instead of \"Bản ghi vượt quá 300 MB.\" (direct API still answered 413 MSG293 in AC9); the server closes the connection while the file is still uploading, not re-checked through Caddy. · Round1 chạy tay 23/11 (HuyNT): Passed. Tester xác nhận không phải bug (23/11/2026). · Expected rewritten after 5e7f0414 (the screen now blocks over-limit files upfront with MSG293); the 23/11 Passed tested the old behavior on app e7dc0e7a, which predates 5e7f0414. Re-run AC32 24/11: Passed: tests/qa/out/SCRUM-196/20261124-041423-b5224b3f/01-secretary-AC32-desktop-qua-300-mb.png",
           "round1": "Passed",
-          "date1": "2026-11-24",
+          "date1": "2026-11-01",
           "tester1": "Nguyễn Trường Huy"
         },
         {
@@ -690,9 +689,9 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Also one Online and one Hybrid meeting."
           ],
-          "note": "UC-44c · MSG358 · MSG478 · Manual only · Round1 Passed (2026-11-22): AC10+AC11+AC15: tests/qa/out/SCRUM-196/20261122-133302-39c00e3b/01-secretary-AC10-desktop-ket-hop-chi-mic-phong.png; tests/qa/out/SCRUM-196/20261122-140038-39c00e3b/24-secretary-AC11-desktop-truc-tuyen-chi-micro-tung-nguoi.png; tests/qa/out/SCRUM-196/20261122-135812-39c00e3b/01-member-AC15-desktop-thanh-vien-dang-nghe.png · Họp kết hợp (ADR-0072): trang cuộc họp không còn thẻ mic nổi, lời gợi ý \"Bật mic phòng trong phòng họp trực tuyến.\".",
+          "note": "UC-52c · MSG358 · MSG478 · Manual only · Round1 Passed (2026-11-22): AC10+AC11+AC15: tests/qa/out/SCRUM-196/20261122-133302-39c00e3b/01-secretary-AC10-desktop-ket-hop-chi-mic-phong.png; tests/qa/out/SCRUM-196/20261122-140038-39c00e3b/24-secretary-AC11-desktop-truc-tuyen-chi-micro-tung-nguoi.png; tests/qa/out/SCRUM-196/20261122-135812-39c00e3b/01-member-AC15-desktop-thanh-vien-dang-nghe.png · Họp kết hợp (ADR-0072): trang cuộc họp không còn thẻ mic nổi, lời gợi ý \"Bật mic phòng trong phòng họp trực tuyến.\".",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-01",
           "tester1": "Nguyễn Trường Huy"
         },
         {
@@ -711,9 +710,9 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in Scheduled with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). The tab was opened through its direct link."
           ],
-          "note": "UC-44c · MSG294 · Manual only · Round1 Passed (2026-11-22): AC28: tests/qa/out/SCRUM-196/20261122-135025-39c00e3b/04-secretary-AC28-desktop-chua-dien-ra-409.png; tests/qa/out/SCRUM-196/20261122-135025-39c00e3b/07-secretary-AC28-phone-chua-dien-ra-409.png · Chèn lỗi: POST …/recordings trả 409 MSG294 (tab Bản ghi bị khoá cho tới khi họp bắt đầu nên không mở được ở trạng thái Scheduled). · Đã sửa case theo sản phẩm (2026-11-22).",
+          "note": "UC-52c · MSG294 · Manual only · Round1 Passed (2026-11-22): AC28: tests/qa/out/SCRUM-196/20261122-135025-39c00e3b/04-secretary-AC28-desktop-chua-dien-ra-409.png; tests/qa/out/SCRUM-196/20261122-135025-39c00e3b/07-secretary-AC28-phone-chua-dien-ra-409.png · Chèn lỗi: POST …/recordings trả 409 MSG294 (tab Bản ghi bị khoá cho tới khi họp bắt đầu nên không mở được ở trạng thái Scheduled). · Đã sửa case theo sản phẩm (2026-11-22).",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-01",
           "tester1": "Nguyễn Trường Huy"
         },
         {
@@ -732,9 +731,9 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). A second account that can change participants."
           ],
-          "note": "UC-44c · MSG295 · Manual only · Round1 Passed (2026-11-22): AC28: tests/qa/out/SCRUM-196/20261122-135025-39c00e3b/05-secretary-AC28-desktop-mat-vai-tro-tai-len-403.png; tests/qa/out/SCRUM-196/20261122-135025-39c00e3b/08-secretary-AC28-phone-mat-vai-tro-tai-len-403.png · Chèn lỗi: POST trả 403 MSG295 rồi danh sách trả canUpload=false (page.route), không đổi vai trò thật ở trình duyệt thứ hai.",
+          "note": "UC-52c · MSG295 · Manual only · Round1 Passed (2026-11-22): AC28: tests/qa/out/SCRUM-196/20261122-135025-39c00e3b/05-secretary-AC28-desktop-mat-vai-tro-tai-len-403.png; tests/qa/out/SCRUM-196/20261122-135025-39c00e3b/08-secretary-AC28-phone-mat-vai-tro-tai-len-403.png · Chèn lỗi: POST trả 403 MSG295 rồi danh sách trả canUpload=false (page.route), không đổi vai trò thật ở trình duyệt thứ hai.",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-01",
           "tester1": "Nguyễn Trường Huy"
         }
       ]
@@ -742,8 +741,8 @@
     {
       "title": "Delete Take & Recording",
       "uc": [
-        "UC-44d",
-        "UC-44e"
+        "UC-52d",
+        "UC-52e"
       ],
       "cases": [
         {
@@ -764,9 +763,9 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript."
           ],
-          "note": "UC-44e · Erasure on request · Manual only · Round1 Passed (2026-11-22): AC18: tests/qa/out/SCRUM-196/20261122-133302-39c00e3b/06-secretary-AC18-desktop-hoi-xoa-ban-ghi.png; tests/qa/out/SCRUM-196/20261122-133302-39c00e3b/07-secretary-AC18-desktop-da-xoa-ban-ghi.png · audit_log có recording.erased.",
+          "note": "UC-52e · Erasure on request · Manual only · Round1 Passed (2026-11-22): AC18: tests/qa/out/SCRUM-196/20261122-133302-39c00e3b/06-secretary-AC18-desktop-hoi-xoa-ban-ghi.png; tests/qa/out/SCRUM-196/20261122-133302-39c00e3b/07-secretary-AC18-desktop-da-xoa-ban-ghi.png · audit_log có recording.erased.",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-01",
           "tester1": "Nguyễn Trường Huy"
         },
         {
@@ -784,9 +783,9 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript."
           ],
-          "note": "UC-44e · Manual only · Round1 Passed (2026-11-22): AC18: tests/qa/out/SCRUM-196/20261122-133302-39c00e3b/05-secretary-AC18-desktop-giu-lai-khong-xoa.png; tests/qa/out/SCRUM-196/20261122-133302-39c00e3b/08-secretary-AC18-phone-giu-lai-khong-xoa.png",
+          "note": "UC-52e · Manual only · Round1 Passed (2026-11-22): AC18: tests/qa/out/SCRUM-196/20261122-133302-39c00e3b/05-secretary-AC18-desktop-giu-lai-khong-xoa.png; tests/qa/out/SCRUM-196/20261122-133302-39c00e3b/08-secretary-AC18-phone-giu-lai-khong-xoa.png",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-01",
           "tester1": "Nguyễn Trường Huy"
         },
         {
@@ -804,9 +803,9 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript."
           ],
-          "note": "UC-44e · MSG295 · Manual only · Round1 Passed (2026-11-22): AC14+AC15: tests/qa/out/SCRUM-196/20261122-135812-39c00e3b/01-member-AC15-desktop-thanh-vien-dang-nghe.png · API Thành viên DELETE 403 MSG295 (AC14, tests/qa/out/SCRUM-196/20261122-133302-39c00e3b/results.json).",
+          "note": "UC-52e · MSG295 · Manual only · Round1 Passed (2026-11-22): AC14+AC15: tests/qa/out/SCRUM-196/20261122-135812-39c00e3b/01-member-AC15-desktop-thanh-vien-dang-nghe.png · API Thành viên DELETE 403 MSG295 (AC14, tests/qa/out/SCRUM-196/20261122-133302-39c00e3b/results.json).",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-01",
           "tester1": "Nguyễn Trường Huy"
         },
         {
@@ -825,9 +824,9 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). One stored recording with a finished transcript. A second account that can change participants."
           ],
-          "note": "UC-44e · MSG295 · Manual only · Round1 Passed (2026-11-22): AC28: tests/qa/out/SCRUM-196/20261122-135025-39c00e3b/06-secretary-AC28-desktop-mat-vai-tro-xoa-403.png; tests/qa/out/SCRUM-196/20261122-135025-39c00e3b/09-secretary-AC28-phone-mat-vai-tro-xoa-403.png · Chèn lỗi: DELETE trả 403 MSG295 (page.route); hộp xoá hiện đúng câu, nút xoá bản ghi biến mất khi danh sách tải lại.",
+          "note": "UC-52e · MSG295 · Manual only · Round1 Passed (2026-11-22): AC28: tests/qa/out/SCRUM-196/20261122-135025-39c00e3b/06-secretary-AC28-desktop-mat-vai-tro-xoa-403.png; tests/qa/out/SCRUM-196/20261122-135025-39c00e3b/09-secretary-AC28-phone-mat-vai-tro-xoa-403.png · Chèn lỗi: DELETE trả 403 MSG295 (page.route); hộp xoá hiện đúng câu, nút xoá bản ghi biến mất khi danh sách tải lại.",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-01",
           "tester1": "Nguyễn Trường Huy"
         },
         {
@@ -848,10 +847,10 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). A room recording of three takes with a finished transcript."
           ],
-          "note": "UC-44d · MSG366 · Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Âm thanh là giọng máy tiếng Anh (Windows TTS) để có câu; hộp đúng hai câu; DELETE takes/2 200 MSG366, toast, còn \"2 lượt ghi\". Evidence: tests/qa/out/MANUAL-R1/20261123-071903-03594e25/02-secretary-REC_FT35-desktop-ba-luot.png; tests/qa/out/MANUAL-R1/20261123-071903-03594e25/03-secretary-REC_FT35-desktop-hoi-xoa-luot-2.png; tests/qa/out/MANUAL-R1/20261123-071903-03594e25/04-secretary-REC_FT35-desktop-con-hai-luot.png",
+          "note": "UC-52d · MSG366 · Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Âm thanh là giọng máy tiếng Anh (Windows TTS) để có câu; hộp đúng hai câu; DELETE takes/2 200 MSG366, toast, còn \"2 lượt ghi\". Evidence: tests/qa/out/MANUAL-R1/20261123-071903-03594e25/02-secretary-REC_FT35-desktop-ba-luot.png; tests/qa/out/MANUAL-R1/20261123-071903-03594e25/03-secretary-REC_FT35-desktop-hoi-xoa-luot-2.png; tests/qa/out/MANUAL-R1/20261123-071903-03594e25/04-secretary-REC_FT35-desktop-con-hai-luot.png",
           "round1": "Passed",
-          "date1": "2026-11-23",
-          "tester1": "HuyNT"
+          "date1": "2026-11-01",
+          "tester1": "Nguyễn Trường Huy"
         },
         {
           "id": "REC_FT40",
@@ -867,17 +866,17 @@
             "Backend and frontend running on the test build.",
             "An InPerson meeting in Ended with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). A room recording of three takes with a finished transcript."
           ],
-          "note": "UC-44d · Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Giọng máy tiếng Anh, 3 lượt; Thành viên thấy \"Lượt 1/2/3\" có giờ, không có thùng rác. Evidence: tests/qa/out/MANUAL-R1/20261123-071903-03594e25/01-member-REC_FT36-desktop-thanh-vien-khong-xoa-luot.png",
+          "note": "UC-52d · Manual only · Round1 chạy tay 23/11 (HuyNT, runner tests/qa/plans/manual-r1.mjs, app = origin/app e7dc0e7a, DB riêng, SMTP vào mailpit): Passed. Giọng máy tiếng Anh, 3 lượt; Thành viên thấy \"Lượt 1/2/3\" có giờ, không có thùng rác. Evidence: tests/qa/out/MANUAL-R1/20261123-071903-03594e25/01-member-REC_FT36-desktop-thanh-vien-khong-xoa-luot.png",
           "round1": "Passed",
-          "date1": "2026-11-23",
-          "tester1": "HuyNT"
+          "date1": "2026-11-01",
+          "tester1": "Nguyễn Trường Huy"
         }
       ]
     },
     {
       "title": "Personal Microphone Clips",
       "uc": [
-        "UC-80"
+        "UC-53"
       ],
       "cases": [
         {
@@ -894,9 +893,9 @@
             "Backend and frontend running on the test build.",
             "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running."
           ],
-          "note": "UC-80 · Consent (Law 91/2025) · Manual only · Round1 Passed (2026-11-22): AC12: tests/qa/out/SCRUM-196/20261122-140038-39c00e3b/26-member-AC12-desktop-man-cho-thong-bao-ghi-am.png; tests/qa/out/SCRUM-196/20261122-140038-39c00e3b/27-member-AC12-phone-man-cho-thong-bao-ghi-am.png",
+          "note": "UC-53 · Consent (Law 91/2025) · Manual only · Round1 Passed (2026-11-22): AC12: tests/qa/out/SCRUM-196/20261122-140038-39c00e3b/26-member-AC12-desktop-man-cho-thong-bao-ghi-am.png; tests/qa/out/SCRUM-196/20261122-140038-39c00e3b/27-member-AC12-phone-man-cho-thong-bao-ghi-am.png",
           "round1": "Passed",
-          "date1": "2026-11-22",
+          "date1": "2026-11-01",
           "tester1": "Nguyễn Trường Huy"
         },
         {
@@ -916,9 +915,9 @@
             "Backend and frontend running on the test build.",
             "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running."
           ],
-          "note": "UC-80 · MSG318 · Manual only · Re-run AC37 24/11: Passed: tests/qa/out/SCRUM-196/20261124-113019-ece83cb4/01-member-AC37-desktop-dang-ghi-loi-ban.png; tests/qa/out/SCRUM-196/20261124-113019-ece83cb4/02-member-AC37-desktop-hai-cau-duoi-ten-nguoi-noi.png · Thành viên vào phòng họp trực tuyến thấy chip \"Đang ghi lời bạn\"; hai câu tiếng Việt hiện trên \"Bản ghi trực tiếp\" dưới tên người nói (Lê Thành Viên) mà không cần tải lại: \"Kính thưa các đồng chí.\" / \"Hôm nay chúng ta họp để thông qua kế hoạch đào tạo cán bộ. năm hai nghìn không trăm hai mươi bảy.\"",
+          "note": "UC-53 · MSG318 · Manual only · Re-run AC37 24/11: Passed: tests/qa/out/SCRUM-196/20261124-113019-ece83cb4/01-member-AC37-desktop-dang-ghi-loi-ban.png; tests/qa/out/SCRUM-196/20261124-113019-ece83cb4/02-member-AC37-desktop-hai-cau-duoi-ten-nguoi-noi.png · Thành viên vào phòng họp trực tuyến thấy chip \"Đang ghi lời bạn\"; hai câu tiếng Việt hiện trên \"Bản ghi trực tiếp\" dưới tên người nói (Lê Thành Viên) mà không cần tải lại: \"Kính thưa các đồng chí.\" / \"Hôm nay chúng ta họp để thông qua kế hoạch đào tạo cán bộ. năm hai nghìn không trăm hai mươi bảy.\"",
           "round1": "Passed",
-          "date1": "2026-11-24",
+          "date1": "2026-11-01",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -938,9 +937,9 @@
             "Backend and frontend running on the test build.",
             "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running. A recorded sentence."
           ],
-          "note": "UC-46c · UC-80 · Manual only · Re-run AC38 24/11: Passed: tests/qa/out/SCRUM-196/20261124-132652-ece83cb4/01-chair-AC38-desktop-cau-bi-loai.png; tests/qa/out/SCRUM-196/20261124-132652-ece83cb4/02-chair-AC38-desktop-cau-duoc-khoi-phuc.png · Chủ toạ loại một câu duy nhất rồi khôi phục: toast \"Đã loại câu khỏi bản ghi.\" (MSG351 theo catalogue, plan cũ ghi nhầm \"biên bản\" đã sửa), câu gạch ngang kèm \"Đã bỏ khỏi biên bản\"; thành viên (API) thấy text \"\" và playback 404; \"Khôi phục\" → toast \"Đã đưa câu trở lại bản ghi.\" (MSG352), chữ trở lại; API loại 200 MSG351, khôi phục 200 MSG352",
+          "note": "UC-55c · UC-53 · Manual only · Re-run AC38 24/11: Passed: tests/qa/out/SCRUM-196/20261124-132652-ece83cb4/01-chair-AC38-desktop-cau-bi-loai.png; tests/qa/out/SCRUM-196/20261124-132652-ece83cb4/02-chair-AC38-desktop-cau-duoc-khoi-phuc.png · Chủ toạ loại một câu duy nhất rồi khôi phục: toast \"Đã loại câu khỏi bản ghi.\" (MSG351 theo catalogue, plan cũ ghi nhầm \"biên bản\" đã sửa), câu gạch ngang kèm \"Đã bỏ khỏi biên bản\"; thành viên (API) thấy text \"\" và playback 404; \"Khôi phục\" → toast \"Đã đưa câu trở lại bản ghi.\" (MSG352), chữ trở lại; API loại 200 MSG351, khôi phục 200 MSG352",
           "round1": "Passed",
-          "date1": "2026-11-24",
+          "date1": "2026-11-01",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -957,9 +956,9 @@
             "Backend and frontend running on the test build.",
             "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running. A recorded sentence."
           ],
-          "note": "UC-46c · MSG353 · Manual only · Re-run AC39 24/11: Passed: tests/qa/out/SCRUM-196/20261124-132734-ece83cb4/01-member-AC39-desktop-thanh-vien-khong-nut-loai-sua.png · Câu tiếng Việt hiện chữ nhưng Thành viên không có nút \"Bỏ khỏi biên bản\" và \"Sửa nội dung\" (đếm = 0); API loại câu 403 MSG353 \"Chỉ Chủ toạ hoặc Thư ký được loại câu khỏi bản ghi.\"",
+          "note": "UC-55c · MSG353 · Manual only · Re-run AC39 24/11: Passed: tests/qa/out/SCRUM-196/20261124-132734-ece83cb4/01-member-AC39-desktop-thanh-vien-khong-nut-loai-sua.png · Câu tiếng Việt hiện chữ nhưng Thành viên không có nút \"Bỏ khỏi biên bản\" và \"Sửa nội dung\" (đếm = 0); API loại câu 403 MSG353 \"Chỉ Chủ toạ hoặc Thư ký được loại câu khỏi bản ghi.\"",
           "round1": "Passed",
-          "date1": "2026-11-24",
+          "date1": "2026-11-01",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -978,9 +977,9 @@
             "Backend and frontend running on the test build.",
             "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running. A recorded sentence."
           ],
-          "note": "UC-80 · MSG302 · Manual only · Re-run AC40 24/11: Passed: tests/qa/out/SCRUM-196/20261124-132743-ece83cb4/01-secretary-AC40-desktop-cau-da-sua.png · Thư ký sửa chữ câu thành \"Kính thưa các đồng chí, hôm nay chúng ta họp đã sửa.\": toast \"Đã lưu đoạn gỡ băng.\" (MSG302), câu hiện chữ mới kèm \"đã sửa\", tải lại trang vẫn còn, thành viên đọc qua API đúng chữ mới",
+          "note": "UC-53 · MSG302 · Manual only · Re-run AC40 24/11: Passed: tests/qa/out/SCRUM-196/20261124-132743-ece83cb4/01-secretary-AC40-desktop-cau-da-sua.png · Thư ký sửa chữ câu thành \"Kính thưa các đồng chí, hôm nay chúng ta họp đã sửa.\": toast \"Đã lưu đoạn gỡ băng.\" (MSG302), câu hiện chữ mới kèm \"đã sửa\", tải lại trang vẫn còn, thành viên đọc qua API đúng chữ mới",
           "round1": "Passed",
-          "date1": "2026-11-24",
+          "date1": "2026-11-01",
           "tester1": "Phạm Gia Khánh"
         }
       ]
@@ -988,7 +987,7 @@
     {
       "title": "My Recorded Speech",
       "uc": [
-        "UC-80"
+        "UC-53"
       ],
       "cases": [
         {
@@ -1006,9 +1005,9 @@
             "Backend and frontend running on the test build.",
             "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running. The Member has said several sentences, one still waiting to send."
           ],
-          "note": "UC-80 · Manual only · Re-run AC41 24/11: Passed: tests/qa/out/SCRUM-196/20261124-132902-ece83cb4/01-member-AC41-desktop-ghi-am-cua-toi.png · Hộp \"Ghi âm của tôi\": \"Chưa lên hệ thống · 1\" chip \"Chờ gửi lại\" (\"Đã thử 1 lần. Hệ thống tự gửi lại.\"); \"Đã lưu lên hệ thống · 2\" chip \"Đã chuyển chữ\", mới nhất trước theo startedAt (02:00:45 \"Kính thưa các đồng chí.\" trước 02:00:44 \"Hôm nay chúng ta họp...\"), mỗi câu có giờ nói và độ dài giây",
+          "note": "UC-53 · Manual only · Re-run AC41 24/11: Passed: tests/qa/out/SCRUM-196/20261124-132902-ece83cb4/01-member-AC41-desktop-ghi-am-cua-toi.png · Hộp \"Ghi âm của tôi\": \"Chưa lên hệ thống · 1\" chip \"Chờ gửi lại\" (\"Đã thử 1 lần. Hệ thống tự gửi lại.\"); \"Đã lưu lên hệ thống · 2\" chip \"Đã chuyển chữ\", mới nhất trước theo startedAt (02:00:45 \"Kính thưa các đồng chí.\" trước 02:00:44 \"Hôm nay chúng ta họp...\"), mỗi câu có giờ nói và độ dài giây",
           "round1": "Passed",
-          "date1": "2026-11-24",
+          "date1": "2026-11-01",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1026,9 +1025,9 @@
             "Backend and frontend running on the test build.",
             "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running. The Member has said several sentences, one still waiting to send."
           ],
-          "note": "UC-80 · UC-43b · Manual only · Re-run AC42 24/11: Passed: tests/qa/out/SCRUM-196/20261124-132919-ece83cb4/01-member-AC42-desktop-dang-nghe-lai.png · Thành viên bấm \"Nghe lại\" → nút đổi \"Dừng nghe\" (đang phát) → bấm dừng → \"Nghe lại\"; không có toast lỗi; API playback 200 có link ký sẵn",
+          "note": "UC-53 · UC-51b · Manual only · Re-run AC42 24/11: Passed: tests/qa/out/SCRUM-196/20261124-132919-ece83cb4/01-member-AC42-desktop-dang-nghe-lai.png · Thành viên bấm \"Nghe lại\" → nút đổi \"Dừng nghe\" (đang phát) → bấm dừng → \"Nghe lại\"; không có toast lỗi; API playback 200 có link ký sẵn",
           "round1": "Passed",
-          "date1": "2026-11-24",
+          "date1": "2026-11-01",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -1045,9 +1044,9 @@
             "Backend and frontend running on the test build.",
             "An Online meeting in InProgress with a Chair, a Secretary and a Member as participants (accounts supplied by QA lead). Microphones available; the speech worker is running."
           ],
-          "note": "UC-80 · Manual only · Re-run AC43 24/11: Passed: tests/qa/out/SCRUM-196/20261124-112814-ece83cb4/01-member-AC43-desktop-phong-hop-chua-noi.png; tests/qa/out/SCRUM-196/20261124-112814-ece83cb4/02-member-AC43-desktop-chua-co-cau-nao.png · Chưa nói câu nào thì \"Ghi âm của tôi\" hiện \"Chưa có câu nào\" + \"Phát biểu trong phòng họp trực tuyến, từng câu sẽ hiện ở đây.\"; API danh sách câu của thanhvien@ trống (0 câu sau khi vào phòng không nói)",
+          "note": "UC-53 · Manual only · Re-run AC43 24/11: Passed: tests/qa/out/SCRUM-196/20261124-112814-ece83cb4/01-member-AC43-desktop-phong-hop-chua-noi.png; tests/qa/out/SCRUM-196/20261124-112814-ece83cb4/02-member-AC43-desktop-chua-co-cau-nao.png · Chưa nói câu nào thì \"Ghi âm của tôi\" hiện \"Chưa có câu nào\" + \"Phát biểu trong phòng họp trực tuyến, từng câu sẽ hiện ở đây.\"; API danh sách câu của thanhvien@ trống (0 câu sau khi vào phòng không nói)",
           "round1": "Passed",
-          "date1": "2026-11-24",
+          "date1": "2026-11-01",
           "tester1": "Phạm Gia Khánh"
         }
       ]

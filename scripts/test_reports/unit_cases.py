@@ -535,14 +535,15 @@ def rich_expected(c):
     """
     from openpyxl.cell.rich_text import CellRichText, TextBlock
     from openpyxl.cell.text import InlineFont
-    bold = InlineFont(b=True)
+    bold = InlineFont(rFont='Times New Roman', sz=11, b=True)
+    regular = InlineFont(rFont='Times New Roman', sz=11)
     parts = []
     for i, (label, key) in enumerate((('Return: ', 'return'), ('Exception: ', 'exception'),
                                       ('Log Message: ', 'log'))):
         parts.append(TextBlock(bold, label if i == 0 else '\n' + label))
         val = str(c.get(key, '') or '')
         if val.strip():
-            parts.append(val)
+            parts.append(TextBlock(regular, val))
     return CellRichText(*parts)
 
 
@@ -629,6 +630,7 @@ def build_book(m):
     cover['B2'] = 'UNIT TEST DOCUMENT'
     cover['B4'] = m['project']
     cover['B5'] = m['projectCode']
+    cover['B6'] = '=B5&"_Unit_Test_v"&F6'
     cover['F4'] = m['cover']['creator']
     cover['F5'] = m['cover']['issueDate']
     cover['F6'] = m['cover']['version']
@@ -666,10 +668,12 @@ def build_book(m):
                     cmax = max(cmax, len(part))
     widths['C'] = min(45, max(20, cmax + 2))
     built = []
+    proto['B11'].comment = None
     for entry, doc in entries:
         ws = wb.copy_worksheet(proto)
         ws.title = entry['sheet']
         clear_from(ws, 12)
+        ws['B11'].comment = None
         for k, w in widths.items():
             ws.column_dimensions[k].width = w
         for hidden_col in ('J', 'K', 'M', 'N', 'T'):
@@ -774,7 +778,7 @@ def build_book(m):
             c.alignment = Alignment(wrap_text=True, vertical='top',
                                     horizontal='center' if col == 'B' else 'left')
             if col != 'D':
-                c.font = Font(name='Calibri', size=11, color='000000')
+                c.font = Font(name='Times New Roman', size=11, color='000000')
         tc.row_dimensions[rr].height = height_for(
             [(tc[f'{col}{rr}'].value, w) for col, w in (('C', 24), ('D', 28), ('E', 40), ('F', 32), ('G', 30))])
     tc.freeze_panes = 'B9'
@@ -790,8 +794,12 @@ def build_book(m):
     ts['B4'] = m['project']
     ts['B5'] = m['projectCode']
     ts['B6'] = f"{m['projectCode']}_Unit_Test_v{m['cover']['version']}"
+    ts['F4'] = m['cover']['creator']
+    ts['F5'] = m['cover'].get('reviewer', 'Nguyễn Trường Huy')
     ts['F6'] = m['cover']['issueDate']
-    ts['B7'] = m['book']['note'] + ' Statistics count the latest round that has an executed (Passed or Failed) result.'
+    ts['A7'] = None
+    ts['B7'] = None
+    ts.row_dimensions[7].hidden = True
     clear_from(ts, 12)
     for i, (entry, _, _) in enumerate(built, 1):
         r = 11 + i
@@ -827,8 +835,20 @@ def build_book(m):
     # Pie charts under the summary. The template's own charts point at the old sheet name and rows, so they are replaced.
     ts._charts = []
     from openpyxl.chart import PieChart, Reference
-    from openpyxl.chart.label import DataLabelList
-    for title, c0, c1, anchor in (('Passed Percent', 3, 5, f'B{t + 9}'), ('Test Type', 6, 8, f'F{t + 9}')):
+    from openpyxl.chart.label import DataLabel, DataLabelList
+    # Count Round 1 outcomes so zero-value slices in Passed Percent hide their data labels cleanly
+    outcome_counts = [0, 0, 0]  # Passed, Failed, Pending
+    for _, doc, _ in built:
+        for mo in doc.get('methods', []):
+            for c in mo.get('cases', []):
+                st = c.get('round1', 'Pending')
+                if st == 'Passed':
+                    outcome_counts[0] += 1
+                elif st == 'Failed':
+                    outcome_counts[1] += 1
+                else:
+                    outcome_counts[2] += 1
+    for title, c0, c1, anchor in (('Passed Percent', 3, 5, f'A{t + 8}'), ('Test Type', 6, 8, f'F{t + 8}')):
         pie = PieChart()
         pie.title = title
         pie.add_data(Reference(ts, min_col=c0, max_col=c1, min_row=t), from_rows=True, titles_from_data=False)
@@ -838,25 +858,37 @@ def build_book(m):
         pie.dataLabels.showCatName = False
         pie.dataLabels.showSerName = False
         pie.dataLabels.showPercent = False
+        pie.dataLabels.showLegendKey = False
         pie.dataLabels.showLeaderLines = False
-        pie.width, pie.height = 11, 7.5
+        pie.dataLabels.dLblPos = 'inEnd' if title == 'Passed Percent' else 'bestFit'
+        if title == 'Passed Percent':
+            pie.dataLabels.dLbl = [
+                DataLabel(idx=idx, showVal=False, showCatName=False, showSerName=False,
+                          showPercent=False, showLegendKey=False, showLeaderLines=False)
+                for idx, cnt in enumerate(outcome_counts) if cnt == 0
+            ]
+        pie.legend.position = 'r'
+        pie.width, pie.height = 9.5, 7.0
         ts.add_chart(pie, anchor)
 
-    # Fonts follow the integration book: Calibri 11 everywhere (bold, italic,
-    # underline and colours kept; links stay blue). The template is Tahoma 10.
-    # NOTE: never copy() a StyleProxy — the copy does not serialise and the
-    # cell falls back to the Normal style on reload. Build a real Font.
+    # Unify fonts across all sheets to Times New Roman 11 (keep bold, underline, colors; links stay blue).
+    # NOTE: never copy() a StyleProxy — build a fresh Font and clear template scheme entries.
     from openpyxl.styles import Font as _Font
     for _ws in wb.worksheets:
         for _row in _ws.iter_rows():
             for _cell in _row:
                 _f = _cell.font
-                if _f.name != 'Calibri' or _f.sz != 11 or _f.italic:
-                    _cell.font = _Font(name='Calibri', size=11, bold=_f.bold,
-                                       italic=False, underline=_f.underline,
-                                       strike=_f.strike, color=_f.color,
-                                       vertAlign=_f.vertAlign)
-    wb._named_styles['Normal'].font = _Font(name='Calibri', sz=11)
+                _sz = _f.sz if (_ws.title in ('Cover', 'Statistics') and (_f.sz or 0) >= 14) else 11
+                _cell.font = _Font(name='Times New Roman', size=_sz, bold=_f.bold,
+                                   italic=False if _sz == 11 else _f.italic,
+                                   underline=_f.underline, strike=_f.strike,
+                                   color=_f.color, vertAlign=_f.vertAlign)
+    wb._named_styles['Normal'].font = _Font(name='Times New Roman', sz=11)
+    for _idx in range(len(wb._fonts)):
+        _wf = wb._fonts[_idx]
+        wb._fonts[_idx] = _Font(name='Times New Roman', sz=_wf.sz or 11, bold=_wf.bold,
+                                italic=_wf.italic, underline=_wf.underline,
+                                strike=_wf.strike, color=_wf.color, vertAlign=_wf.vertAlign)
 
     target = REPORTS / m['book']['file']
     try:

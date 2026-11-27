@@ -10,6 +10,6 @@ Layer: Application · `backend/TrustCabinet.Application/Recordings/RecordingCont
 
 | ID | Pre-conditions | Inputs | Expected | Type | Note |
 |---|---|---|---|---|---|
-| UTC001 | The actor is the Chair of a Normal meeting. | actor: the Chair. | Return: None; export allowed.<br>Exception: N/A<br>Log Message: N/A | Normal | UC-43c · UC-45b · BR-351 |
-| UTC002 | The actor is a Member of a Normal meeting. | actor: a Member. | Return: ExportForbidden (shown as MSG355).<br>Exception: N/A<br>Log Message: N/A | Abnormal | UC-43c · UC-45b · BR-351 · MSG355 |
-| UTC003 | The actor is a Member of a Secret meeting. | actor: a Member. | Return: ExportForbidden; the role check comes before the Secret check.<br>Exception: N/A<br>Log Message: N/A | Boundary | UC-43c · BR-351 · MSG355 |
+| UTC001 | The actor is the Chair of a Normal meeting. | actor: the Chair. | Return: None; export allowed.<br>Exception: N/A<br>Log Message: N/A | Normal | UC-51c · UC-54b · BR-111, BR-112 |
+| UTC002 | The actor is a Member of a Normal meeting. | actor: a Member. | Return: ExportForbidden (shown as MSG355).<br>Exception: N/A<br>Log Message: N/A | Abnormal | UC-51c · UC-54b · BR-111, BR-112 · MSG355 |
+| UTC003 | The actor is a Member of a Secret meeting. | actor: a Member. | Return: ExportForbidden; the role check comes before the Secret check.<br>Exception: N/A<br>Log Message: N/A | Boundary | UC-51c · BR-111, BR-112 · MSG355 |

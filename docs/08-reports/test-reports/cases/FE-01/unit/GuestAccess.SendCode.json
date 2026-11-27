@@ -9,7 +9,7 @@
           "id": "UTC001",
           "inputs": "invitationId: I1; linkToken: <valid link token>.",
           "log": "Challenge row added; verification email sent to the invited address.",
-          "note": "UC-04 · BR-153 · MSG375",
+          "note": "UC-04 · BR-053, BR-054 · MSG375",
           "preconditions": [
             "Open invitation I1 for guest.a@example.com, name \"Trần Khách\", meeting \"Họp giao ban\".",
             "No verification code was created for I1 in the last 24 hours.",
@@ -18,7 +18,7 @@
           "return": "GuestAccessResult success with GuestCodeSent { expiresInSeconds: 900, resendAfterSeconds: 60 } (MSG375); one challenge row saved with a 6-digit code stored only as a hash, expiring in 15 minutes; the code is sent to guest.a@example.com.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-02",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -26,14 +26,14 @@
           "id": "UTC002",
           "inputs": "invitationId: I1; linkToken: \"wrong-token\".",
           "log": "N/A",
-          "note": "UC-04 · BR-152 · MSG371",
+          "note": "UC-04 · BR-052 · MSG371",
           "preconditions": [
             "Invitation I1 exists."
           ],
           "return": "GuestAccessResult Failure(InvalidInvitation) (MSG371); no code is created or sent.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-02",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -41,14 +41,14 @@
           "id": "UTC003",
           "inputs": "invitationId: I1; linkToken: <valid link token>.",
           "log": "N/A",
-          "note": "UC-04 · BR-153 · MSG373",
+          "note": "UC-04 · BR-053, BR-054 · MSG373",
           "preconditions": [
             "The last code of I1 was created 20 seconds ago; resend interval is 60 seconds."
           ],
           "return": "GuestAccessResult Failure(TooSoon) with retryAfterSeconds 40 (MSG373); no new code, nothing sent.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-02",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -56,14 +56,14 @@
           "id": "UTC004",
           "inputs": "invitationId: I1; linkToken: <valid link token>.",
           "log": "Challenge row added; verification email sent.",
-          "note": "UC-04 · BR-153 · MSG375",
+          "note": "UC-04 · BR-053, BR-054 · MSG375",
           "preconditions": [
             "The last code of I1 was created exactly 60 seconds ago."
           ],
           "return": "GuestAccessResult success (MSG375): the wait has just elapsed, so a new code is created and sent.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-02",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -71,14 +71,14 @@
           "id": "UTC005",
           "inputs": "invitationId: I1; linkToken: <valid link token>.",
           "log": "N/A",
-          "note": "UC-04 · BR-153 · MSG379",
+          "note": "UC-04 · BR-053, BR-054 · MSG379",
           "preconditions": [
             "20 codes were created for I1 in the last 24 hours (the oldest 23 hours ago); the newest was 2 minutes ago."
           ],
           "return": "GuestAccessResult Failure(DailyLimit) (MSG379) with retryAfterSeconds = 3600 (until the oldest counted code is 24 hours old); nothing sent.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-02",
           "tester1": "Phạm Gia Khánh"
         }
       ],

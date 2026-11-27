@@ -22,11 +22,20 @@
         "type": "M",
         "description": "604 cases for 149 functions (Normal, Abnormal, Boundary); round 1 run, all passed; summary charts added.",
         "reference": "Report 5.0 Test Documentation"
+      },
+      {
+        "date": "27/11/2026",
+        "version": "2.2",
+        "item": "All sheets",
+        "type": "M",
+        "description": "Internal meeting rules (+3 UTCs, 607/607 Passed); rewrote 8 mis-copied UTCs; aligned FE/UC/BR IDs and iteration test dates to Reports 2 & 3; cleared template comments.",
+        "reference": "Report 5.0 Test Documentation"
       }
     ],
-    "creator": "TrustCabinet Team",
-    "issueDate": "2026-11-23",
-    "version": "2.1"
+    "creator": "Phạm Gia Khánh",
+    "reviewer": "Nguyễn Trường Huy",
+    "issueDate": "2026-11-27",
+    "version": "2.2"
   },
   "inventory": {
     "infrastructure": [
@@ -2242,7 +2251,7 @@
     },
     {
       "description": "Meeting report: who may read, period handling and totals.",
-      "feature": "FE-15",
+      "feature": "FE-14",
       "methods": [
         {
           "decides": null,
@@ -2258,7 +2267,7 @@
     },
     {
       "description": "Meeting report export: format and permission.",
-      "feature": "FE-15",
+      "feature": "FE-14",
       "methods": [
         {
           "decides": null,
@@ -2274,7 +2283,7 @@
     },
     {
       "description": "Calendar share state machine: who may request, share, respond, change, withdraw and end.",
-      "feature": "FE-16",
+      "feature": "FE-15",
       "methods": [
         {
           "decides": "Pending and Effective shares expose different actions to owner and viewer; accept with a pending change, sensitivity coverage (never Secret) and lapse rules gate each action.",
@@ -2290,7 +2299,7 @@
     },
     {
       "description": "Requesting and directly sharing a calendar: validation, duplicates, notification.",
-      "feature": "FE-16",
+      "feature": "FE-15",
       "methods": [
         {
           "decides": null,
@@ -2306,7 +2315,7 @@
     },
     {
       "description": "Answering a share request: accept and decline with state rules.",
-      "feature": "FE-16",
+      "feature": "FE-15",
       "methods": [
         {
           "decides": null,
@@ -2322,7 +2331,7 @@
     },
     {
       "description": "Answering a share request: accept and decline with state rules.",
-      "feature": "FE-16",
+      "feature": "FE-15",
       "methods": [
         {
           "decides": null,
@@ -2338,7 +2347,7 @@
     },
     {
       "description": "Changing, withdrawing and ending a share.",
-      "feature": "FE-16",
+      "feature": "FE-15",
       "methods": [
         {
           "decides": null,
@@ -2354,7 +2363,7 @@
     },
     {
       "description": "Changing, withdrawing and ending a share.",
-      "feature": "FE-16",
+      "feature": "FE-15",
       "methods": [
         {
           "decides": null,
@@ -2370,7 +2379,7 @@
     },
     {
       "description": "Changing, withdrawing and ending a share.",
-      "feature": "FE-16",
+      "feature": "FE-15",
       "methods": [
         {
           "decides": null,
@@ -2386,7 +2395,7 @@
     },
     {
       "description": "Finding a meeting time and creating a draft meeting from a slot.",
-      "feature": "FE-16",
+      "feature": "FE-15",
       "methods": [
         {
           "decides": null,
@@ -2402,7 +2411,7 @@
     },
     {
       "description": "Finding a meeting time and creating a draft meeting from a slot.",
-      "feature": "FE-16",
+      "feature": "FE-15",
       "methods": [
         {
           "decides": null,
@@ -2418,7 +2427,7 @@
     },
     {
       "description": "Reading a shared calendar week and the busy time behind it.",
-      "feature": "FE-16",
+      "feature": "FE-15",
       "methods": [
         {
           "decides": null,

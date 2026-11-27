@@ -16,14 +16,14 @@
           "id": "UTC001",
           "inputs": "meeting: Draft, AssignedApproverId set; actorId: creator.",
           "log": "N/A",
-          "note": "UC-16 · BR-29",
+          "note": "UC-15 · BR-016, BR-017",
           "preconditions": [
             "Draft meeting with a stale AssignedApproverId."
           ],
           "return": "Details with AssignedApproverId null (hidden before submission).",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -31,14 +31,14 @@
           "id": "UTC002",
           "inputs": "actorId: Member.",
           "log": "N/A",
-          "note": "UC-16 · UC-29 · BR-29",
+          "note": "UC-15 · UC-31 · BR-016, BR-017",
           "preconditions": [
             "Published meeting with a Chair, two Secretaries named \"Bình\" and \"An\", and the actor is a Member who has not answered."
           ],
           "return": "Chair set; Secretaries ordered by name (An, Bình); MyMeetingRole \"Member\"; MyResponse null; CanRespond true.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -46,14 +46,14 @@
           "id": "UTC003",
           "inputs": "meeting: Cancelled; CancelledAt set; CancelledBy \"Lan\"; reason \"Hoãn\".",
           "log": "N/A",
-          "note": "UC-16 · UC-75 · BR-298",
+          "note": "UC-15 · UC-22",
           "preconditions": [
             "Meeting is Cancelled with a stored cancellation time and canceller."
           ],
           "return": "Cancellation { time, CancelledById, CancelledByName \"Lan\", Reason \"Hoãn\" }.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -61,14 +61,14 @@
           "id": "UTC004",
           "inputs": "two Chair rows, one not Current.",
           "log": "N/A",
-          "note": "UC-16 · BR-124",
+          "note": "UC-15 · BR-021",
           "preconditions": [
             "Meeting has an inactive Chair row (replaced) next to the current Chair."
           ],
           "return": "Chair is the current one only.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         }
       ]

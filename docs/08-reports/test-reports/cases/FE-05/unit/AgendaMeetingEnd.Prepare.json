@@ -16,7 +16,7 @@
           "id": "UTC001",
           "inputs": "meetingId; endedAt: 2026-12-01T10:30:00Z.",
           "log": "Item Status Done, ActualEndedAt 10:30:00Z; meeting row locked first; change to be published after the caller commits.",
-          "note": "UC-22 · UC-25 · BR-72",
+          "note": "UC-21 · UC-25 · BR-060–BR-062",
           "preconditions": [
             "Meeting being ended inside the caller's meeting transaction.",
             "An agenda item is InProgress, started 2026-12-01T09:00:00Z."
@@ -24,7 +24,7 @@
           "return": "AgendaChange {ChangeType: \"MeetingEnded\"; AgendaItemId: that item; Title: the item title; OccurredAt: 10:30:00Z; new EventId}.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -32,14 +32,14 @@
           "id": "UTC002",
           "inputs": "meetingId; endedAt: now.",
           "log": "No item is modified.",
-          "note": "UC-22 · BR-72",
+          "note": "UC-21 · BR-060–BR-062",
           "preconditions": [
             "Meeting has items that are all Pending or Done; none InProgress."
           ],
           "return": "null; nothing changes.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -47,14 +47,14 @@
           "id": "UTC003",
           "inputs": "endedAt: 2026-12-01T08:00:00Z (before the start).",
           "log": "Item stays InProgress; the caller's transaction is expected to roll back.",
-          "note": "UC-22 · BR-72",
+          "note": "UC-21 · BR-060–BR-062",
           "preconditions": [
             "An item is InProgress, started 2026-12-01T09:00:00Z."
           ],
           "return": "No value is returned.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         }
       ]

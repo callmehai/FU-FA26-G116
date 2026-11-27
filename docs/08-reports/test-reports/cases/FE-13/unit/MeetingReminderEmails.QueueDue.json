@@ -21,9 +21,9 @@
           "exception": "N/A",
           "log": "Two EmailMessage rows queued, subject \"Cuộc họp sắp bắt đầu: Họp giao ban\", deduplication key \"email-starting-soon:<meetingId>:<start unix seconds>:<participant id>\"; the text names the start time, place and the link https://tc.example.vn/mgmt/meetings/<meetingId>; the HTML shows the role (Chủ toạ / Thành viên), the chair and the organizer contact \"An (an@example.vn)\"; one commit.",
           "type": "Normal",
-          "note": "BR-303",
+          "note": "UC-76",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -36,9 +36,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "BR-303",
+          "note": "UC-76",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -51,9 +51,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Boundary",
-          "note": "BR-303",
+          "note": "UC-76",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -66,9 +66,9 @@
           "exception": "N/A",
           "log": "N/A",
           "type": "Abnormal",
-          "note": "BR-303",
+          "note": "UC-76",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-16",
           "tester1": "Phạm Gia Khánh"
         }
       ]

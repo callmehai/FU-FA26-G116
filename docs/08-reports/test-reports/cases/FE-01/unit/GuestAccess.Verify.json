@@ -9,7 +9,7 @@
           "id": "UTC001",
           "inputs": "invitationId: I1; linkToken: <valid link token>; code: \"123456\".",
           "log": "Audit row GuestVerified (no actor; object GuestSession; details { meetingId, guestInvitationId }); session row added.",
-          "note": "UC-04 · BR-153 · BR-155 · BR-444",
+          "note": "UC-04 · BR-053, BR-054 · BR-009",
           "preconditions": [
             "Open invitation I1 (meeting Published) with latest challenge K1, code \"123456\", created 2 minutes ago, not consumed, 0 failed attempts.",
             "Session lifetime is 12 hours."
@@ -17,7 +17,7 @@
           "return": "GuestAccessResult success with GuestVerified { accessToken, expiresAt = now + 12 hours, meetingId, profileCompleted: false }; K1 is marked consumed and one guest session row is created.",
           "type": "Normal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-02",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -25,14 +25,14 @@
           "id": "UTC002",
           "inputs": "invitationId: I1; linkToken: \"wrong-token\"; code: \"123456\".",
           "log": "N/A",
-          "note": "UC-04 · BR-152 · MSG371",
+          "note": "UC-04 · BR-052 · MSG371",
           "preconditions": [
             "Invitation I1 exists."
           ],
           "return": "GuestAccessResult Failure(InvalidInvitation) (MSG371); no challenge is read.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-02",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -40,14 +40,14 @@
           "id": "UTC003",
           "inputs": "invitationId: I1; linkToken: <valid link token>; code: \"123456\".",
           "log": "N/A",
-          "note": "UC-04 · BR-153 · MSG126",
+          "note": "UC-04 · BR-053, BR-054 · MSG126",
           "preconditions": [
             "No challenge was ever created for I1."
           ],
           "return": "GuestAccessResult Failure(InvalidCode) (MSG126) without remainingAttempts.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-02",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -55,14 +55,14 @@
           "id": "UTC004",
           "inputs": "invitationId: I1; linkToken: <valid link token>; code: <correct code>.",
           "log": "N/A",
-          "note": "UC-04 · BR-153 · MSG126",
+          "note": "UC-04 · BR-053, BR-054 · MSG126",
           "preconditions": [
             "The latest challenge expires at exactly the current time (15 minutes after creation)."
           ],
           "return": "GuestAccessResult Failure(InvalidCode) (MSG126): a code whose expiry is not later than now is refused.",
           "type": "Boundary",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-02",
           "tester1": "Phạm Gia Khánh"
         },
         {
@@ -70,14 +70,14 @@
           "id": "UTC005",
           "inputs": "invitationId: I1; linkToken: <valid link token>; code: <even the correct code>.",
           "log": "N/A",
-          "note": "UC-04 · BR-153 · MSG372",
+          "note": "UC-04 · BR-053, BR-054 · MSG372",
           "preconditions": [
             "The latest challenge already has 5 failed attempts."
           ],
           "return": "GuestAccessResult Failure(CodeLocked) (MSG372); no session.",
           "type": "Abnormal",
           "round1": "Passed",
-          "date1": "2026-11-23",
+          "date1": "2026-10-02",
           "tester1": "Phạm Gia Khánh"
         }
       ],
