@@ -15,7 +15,7 @@ Report 6 – Software User Guides
 | 21/11/2026 | A | HuyNQ | Initial release: deliverable package, installation guides (development machine and test server) and the user manual for the Administrator, Secretary, Chair, Member and Guest roles plus the features every user has, with screenshots from the test server. |
 | 25/11/2026 | M, D | LocHD | [PR #548] §2: email through Resend only; documents only on the self-hosted SeaweedFS, the Cloudflare R2 rows removed. |
 | 26/11/2026 | M, D | KhanhPG, LocHD | No outside AI service: the AI Configuration section and its figure removed, later figures renumbered; the sensitivity levels and the administrator’s tasks updated. |
-| 27/11/2026 | M | LocHD | AI Configuration menu item removed from the administrator screenshots (ADR-0088). |
+| 27/11/2026 | M | LocHD | AI Configuration menu item removed from the administrator screenshots. |
 
 *A - Added M - Modified D - Deleted
 

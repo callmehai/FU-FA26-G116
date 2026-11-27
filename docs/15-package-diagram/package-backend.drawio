@@ -82,6 +82,9 @@
         <mxCell id="p2-web-SpeakingChangePublisher" parent="p2-web" style="rounded=0;verticalAlign=middle;align=center;fontStyle=1;fontSize=12;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="SpeakingChangePublisher" vertex="1">
           <mxGeometry x="270" y="620" width="200" height="34" as="geometry" />
         </mxCell>
+        <mxCell id="p2-web-DataRetentionWorker" parent="p2-web" style="rounded=0;verticalAlign=middle;align=center;fontStyle=1;fontSize=12;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="DataRetentionWorker" vertex="1">
+          <mxGeometry x="270" y="670" width="200" height="34" as="geometry" />
+        </mxCell>
         <mxCell id="p2-app-Abstractions" parent="p2-app" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="Abstractions" vertex="1">
           <mxGeometry x="40" y="60" width="170" height="60" as="geometry" />
         </mxCell>
@@ -133,26 +136,29 @@
         <mxCell id="p2-app-Reports" parent="p2-app" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="Reports" vertex="1">
           <mxGeometry x="240" y="450" width="170" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="p2-app-Speaking" parent="p2-app" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="Speaking" vertex="1">
+        <mxCell id="p2-app-Retention" parent="p2-app" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="Retention" vertex="1">
           <mxGeometry x="440" y="450" width="170" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="p2-app-Summaries" parent="p2-app" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="Summaries" vertex="1">
+        <mxCell id="p2-app-Speaking" parent="p2-app" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="Speaking" vertex="1">
           <mxGeometry x="640" y="450" width="170" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="p2-app-Transcription" parent="p2-app" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="Transcription" vertex="1">
+        <mxCell id="p2-app-Summaries" parent="p2-app" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="Summaries" vertex="1">
           <mxGeometry x="840" y="450" width="170" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="p2-app-Users" parent="p2-app" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="Users" vertex="1">
+        <mxCell id="p2-app-Transcription" parent="p2-app" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="Transcription" vertex="1">
           <mxGeometry x="40" y="580" width="170" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="p2-app-VoiceId" parent="p2-app" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="VoiceId" vertex="1">
+        <mxCell id="p2-app-Users" parent="p2-app" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="Users" vertex="1">
           <mxGeometry x="240" y="580" width="170" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="p2-app-Votes" parent="p2-app" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="Votes" vertex="1">
+        <mxCell id="p2-app-VoiceId" parent="p2-app" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="VoiceId" vertex="1">
           <mxGeometry x="440" y="580" width="170" height="60" as="geometry" />
         </mxCell>
+        <mxCell id="p2-app-Votes" parent="p2-app" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="Votes" vertex="1">
+          <mxGeometry x="640" y="580" width="170" height="60" as="geometry" />
+        </mxCell>
         <mxCell id="p2-app-DependencyInjection" parent="p2-app" style="rounded=0;verticalAlign=middle;align=center;fontStyle=1;fontSize=12;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="DependencyInjection" vertex="1">
-          <mxGeometry x="640" y="580" width="170" height="44" as="geometry" />
+          <mxGeometry x="840" y="580" width="170" height="44" as="geometry" />
         </mxCell>
         <mxCell id="p2-domain-Access" parent="p2-domain" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="Access" vertex="1">
           <mxGeometry x="40" y="60" width="170" height="60" as="geometry" />
@@ -288,6 +294,9 @@
         </mxCell>
         <mxCell id="p2-infra-CalendarSharing" parent="p2-infra" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=12;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="CalendarSharing" vertex="1">
           <mxGeometry x="640" y="490" width="170" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-infra-Retention" parent="p2-infra" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=12;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="Retention" vertex="1">
+          <mxGeometry x="840" y="490" width="170" height="60" as="geometry" />
         </mxCell>
         <mxCell id="p2-infra-Reports" parent="p2-infra" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="Reports" vertex="1">
           <mxGeometry x="440" y="318" width="170" height="60" as="geometry" />

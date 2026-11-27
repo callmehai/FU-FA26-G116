@@ -34,7 +34,7 @@ Mỗi góc nhìn là một cặp file cùng tên: `.drawio` là source editable,
   trên trang Frontend).
 - Mũi tên kết thúc ở thân package, không cắm vào tab.
 - Hai mũi tên phải cắt nhau thì chỗ cắt vẽ nét nhảy (cung), để không đọc nhầm thành rẽ nhánh: trang Application
-  (3 chỗ) và trang Tổng quan (2 chỗ, ở các mũi tên từ project test).
+  (5 chỗ) và trang Tổng quan (2 chỗ, ở các mũi tên từ project test).
 
 ## Phụ thuộc không vẽ thành mũi tên
 
@@ -57,14 +57,14 @@ Application (CA-02).
 
 | Tới | Module dùng |
 |---|---|
-| `Abstractions` | cả 22 module |
-| `Audit` | Access, Attendance, Authentication, CalendarSharing, Calls, Documents, GuestAccess, Participants, Recordings, Reports, Summaries, Transcription, Users, VoiceId, Votes |
-| `Meetings` | Agenda, CalendarSharing, Documents, Notes, Notifications, Participants, Recordings, Summaries, Transcription |
+| `Abstractions` | cả 23 module |
+| `Audit` | Access, Attendance, Authentication, CalendarSharing, Calls, Documents, GuestAccess, Participants, Recordings, Reports, Retention, Summaries, Transcription, Users, VoiceId, Votes |
+| `Meetings` | Agenda, CalendarSharing, Documents, Notes, Notifications, Participants, Recordings, Retention, Summaries, Transcription |
 | `Participants` | Agenda, Attendance, Calls, Documents, Email, Meetings, Speaking, Votes |
 | `Notifications` | Agenda, CalendarSharing, Email, Meetings, Summaries, VoiceId |
 
 Vì vậy `Abstractions`, `Attendance`, `Audit`, `Notifications`, `Reports` đứng riêng trên hình. Class
-`DependencyInjection` (`AddApplication()`) ở namespace gốc dùng cả 22 module.
+`DependencyInjection` (`AddApplication()`) ở namespace gốc dùng cả 23 module.
 
 **Trang Backend — Application → Domain** (ngoài `Entities`, `Enums`):
 
@@ -85,6 +85,7 @@ Vì vậy `Abstractions`, `Attendance`, `Audit`, `Notifications`, `Reports` đ�
 | Participants | Agenda, Audit, GuestAccess, Meetings, Participants |
 | Recordings | Audit, Meetings, Participants, Recordings, Transcription |
 | Reports | Audit, Meetings |
+| Retention | Audit, Recordings |
 | Speaking | Agenda, GuestAccess, Meetings, Participants |
 | Summaries | Audit, Meetings, Participants, Summaries |
 | Transcription | Audit, Participants, Transcription, VoiceId |
@@ -133,11 +134,12 @@ Vì vậy `Abstractions`, `Attendance`, `Audit`, `Notifications`, `Reports` đ�
 
 | Web | Module Application | Package Domain |
 |---|---|---|
-| `Endpoints` | cả 23 module trừ `Abstractions` | Access, Agenda, Attendance, Audit, CalendarSharing, Documents, Entities, Enums, Meetings, Participants, Recordings, Transcription, VoiceId, Votes |
+| `Endpoints` | `Abstractions` và mọi module trừ `Retention` | Access, Agenda, Attendance, Audit, CalendarSharing, Documents, Entities, Enums, Meetings, Participants, Recordings, Transcription, VoiceId, Votes |
 | `AttendanceChangePublisher` | Attendance, Meetings | — |
 | `CallRoomJanitor` | Calls | — |
 | `CapabilitiesChangePublisher` | Access | — |
 | `CombinedRecordingWorker`, `RecordingRetentionWorker` | Recordings | — |
+| `DataRetentionWorker` | Retention | — |
 | `HttpCallerContext` | Audit | — |
 | `MeetingGuestIdentity` | Agenda, GuestAccess | Meetings |
 | `MeetingHub` | Agenda, Meetings | Meetings |

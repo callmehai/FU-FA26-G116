@@ -24,7 +24,7 @@ Table of Contents
 | 19–23/11/2026 | M | KhanhPG, BA | Aligned with the app after the 21/11 trial: three system roles with Chair and Secretary as meeting roles, Take Meeting Notes, report queries, hand corrections kept when a recording is transcribed again. |
 | 24–26/11/2026 | M | HuyNQ, LocHD, KhanhPG | Business rules renumbered BR-001–153 and use cases UC-01–UC-81; UC diagrams in strict UML; system-run steps moved to Report 4; section III screens matched to wireframe v16 and the running app. |
 | 26/11/2026 | M, D | LocHD, KhanhPG | Review by KhanhPG: the AI drafting service and the in-house services are no longer actors or external APIs; Organizer replaced by the Member who created the Meeting; actor and screen descriptions without UC/BR references; Change Log condensed. Section III screens condensed to the G158 template: one “Related UC” line per screen, no business-rule references, shorter field descriptions. |
-| 27/11/2026 | M | LocHD | AI Configuration removed (ADR-0088): every draft is written by the team’s own AI server; screen figures re-captured from wireframe v17 without the AI Configuration menu item; MSG394 now reads “Please try again later”. |
+| 27/11/2026 | M | LocHD | AI Configuration removed: every draft is written by the team’s own AI server; screen figures re-captured from wireframe v17 without the AI Configuration menu item; MSG394 now reads “Please try again later”. Meeting reminders and data retention periods given their own business rules; the outside language-model API removed from the deployment requirement. |
 
 *A - Added M - Modified D - Deleted
 
@@ -4782,7 +4782,7 @@ Field Description
 
 #### 16.1 Process Notifications (JOB-01)
 
-Every 5 seconds, the system creates the “meeting starting soon” reminder, once per recipient, for Meetings that start within the next 15 minutes, queues the matching reminder email and delivers new in-app notifications to the people who are signed in; deactivated users receive none. A notification that could not be delivered at once still appears in the notification list.
+Every 5 seconds, the system creates the “meeting starting soon” reminder, once per recipient, for Published Meetings that start within the next 15 minutes: an in-app reminder and an email for each current internal participant, and an email for each Guest whose invitation is not revoked, whatever their invitation response. It then delivers new in-app notifications to the people who are signed in; deactivated users receive none. A notification that could not be delivered at once still appears in the notification list.
 
 #### 16.2 Deliver Queued Emails (JOB-02)
 
@@ -4942,7 +4942,7 @@ The quality attributes below are stated as measurable targets for a single-organ
 
 | Requirement | Description |
 | --- | --- |
-| Self-hosted containerised deployment | The complete system (application, PostgreSQL, Redis, the SeaweedFS file store and the media server) can be deployed on a single Linux host inside TrustSoft's network using Docker Compose; outgoing email is sent through the Resend email service, and the outside language-model API for Normal meetings is optional (Report 2, constraints 2 and 5). |
+| Self-hosted containerised deployment | The complete system (application, PostgreSQL, Redis, the SeaweedFS file store and the media server) can be deployed on a single Linux host inside TrustSoft's network using Docker Compose; outgoing email is sent through the Resend email service (Report 2, constraint 5). |
 | Single deployable application | The web front end and the API are delivered as one application served from the same origin; a new environment can be installed from the documented procedure within 1 working day by a person with basic Linux and Docker knowledge. |
 | Environment independence | All environment-specific values (URLs, credentials, Resend and Google settings, speech worker and language model addresses) are supplied by configuration, so the same build runs in development, test and production. |
 
@@ -5114,6 +5114,8 @@ The quality attributes below are stated as measurable targets for a single-organ
 | BR-152 | Header figures show numbers only; query tables show a person's name or a Meeting's code and title, only for Meetings the viewer reads; a Guest shows only a name. |
 | BR-153 | The report query counts only records the viewer can read: draft Votes and unissued minutes for the Chair and Secretary, recordings for participants. |
 | BR-154 | When transcription runs again, what cannot be matched leaves only a trace in the audit log, without the transcript text. |
+| BR-155 | When a Published Meeting starts within 15 minutes, each current internal participant with an active account gets one in-app reminder and one reminder email, and each Guest whose invitation is not revoked gets one reminder email, whatever their invitation response; a rescheduled Meeting is reminded again, and a person invited inside those 15 minutes gets no reminder email. |
+| BR-156 | Data that has outlived its purpose is removed automatically: read notifications 90 days and all notifications 180 days after they are created, a Guest verification code one day after it expires, the body of a sent or failed email 30 days after it is queued, Draft Votes of a Cancelled Meeting, and audio no recording uses 24 hours after it was last written. |
 
 ### 2. System Messages
 
@@ -5594,6 +5596,6 @@ The quality attributes below are stated as measurable targets for a single-organ
 
 One organisation: the system serves a single organisation. It has no departments or organisational units, and no data is shared with another organisation.
 
-Data retention: recordings and recorded speech are erased 180 days after they are made; notifications, guest verification codes and the bodies of sent emails are removed once they are no longer needed recordings and recorded speech are erased 180 days after they are made. Read notifications are removed after 90 days and all notifications after 180 days, guest verification codes after one day and the bodies of sent emails after 30 days. Audio no recording uses, Draft votes of Cancelled Meetings and uploaded files no document uses any more are also removed automatically. Issued minutes, vote conclusions and status histories are kept as immutable records.
+Data retention: recordings and recorded speech are erased 180 days after they are made; notifications, guest verification codes and the bodies of sent emails are removed once they are no longer needed. Read notifications are removed after 90 days and all notifications after 180 days, guest verification codes after one day and the bodies of sent emails after 30 days. Audio no recording uses, Draft votes of Cancelled Meetings and uploaded files no document uses any more are also removed automatically. Issued minutes, vote conclusions and status histories are kept as immutable records.
 
 Out of scope in this version: tracking tasks or action items after the meeting, signing the minutes electronically, connecting to eOffice or another document system, and native mobile apps.

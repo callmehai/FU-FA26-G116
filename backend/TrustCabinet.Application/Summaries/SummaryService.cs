@@ -59,7 +59,7 @@ public sealed class SummaryService(IMeetingSummaryRepository summaries, ISummary
                 var manages = Manages(meeting, actorId);
                 var row = await summaries.FindWithPeopleAsync(meetingId, token);
                 var visible = row is not null && (manages || row.ReviewedAt is not null);
-                // Ready for this meeting: an ordinary one may be written by the API, any other only by the in-house model.
+                // Every meeting is written by the team's own model (ADR-0088), so readiness is that model's configuration.
                 var ready = model.IsConfigured;
                 return new(Data: new SummaryState(visible ? View(row!) : null, manages, ready,
                     manages ? await sources.ReadinessAsync(meetingId, token) : null));

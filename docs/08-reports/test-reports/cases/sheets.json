@@ -30,8 +30,8 @@
       { "date": "23/11/2026", "version": "2.2", "item": "All sheets", "type": "M", "description": "Cases merged to 819; round 1 run again: 807 passed, 12 pending in FE-10.", "reference": "Report 5.0 Test Documentation", "books": ["api"] },
       { "date": "24/11/2026", "version": "2.3", "item": "All sheets", "type": "M", "description": "Report query and export cases added: 825 cases, all passed.", "reference": "Report 5.0 Test Documentation", "books": ["api"] },
       { "date": "24/11/2026", "version": "2.1", "item": "All sheets", "type": "M", "description": "Round 1 run after the report screen rework: 563 cases, all passed.", "reference": "Report 5.0 Test Documentation", "books": ["ui"] },
-      { "date": "27/11/2026", "version": "2.4", "item": "Transcription & Summary", "type": "D", "description": "AI Configuration screen removed (ADR-0088): its 11 endpoint cases deleted, 814 cases.", "reference": "Report 5.0 Test Documentation", "books": ["api"] },
-      { "date": "27/11/2026", "version": "2.2", "item": "Transcription & Summary", "type": "D", "description": "AI Configuration screen removed (ADR-0088): its 7 cases deleted, 556 cases.", "reference": "Report 5.0 Test Documentation", "books": ["ui"] }
+      { "date": "27/11/2026", "version": "2.4", "item": "Transcription & Summary", "type": "D", "description": "AI Configuration screen removed: its 11 endpoint cases deleted, 814 cases.", "reference": "Report 5.0 Test Documentation", "books": ["api"] },
+      { "date": "27/11/2026", "version": "2.2", "item": "Transcription & Summary", "type": "D", "description": "AI Configuration screen removed: its 7 cases deleted, 556 cases.", "reference": "Report 5.0 Test Documentation", "books": ["ui"] }
     ]
   },
   "excludedRoutes": {

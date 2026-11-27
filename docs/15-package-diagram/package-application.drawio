@@ -108,10 +108,10 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="p4-e-transcription-voiceid" parent="1" source="p4-Transcription" target="p4-VoiceId" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;jumpStyle=arc;jumpSize=10;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=1;exitY=0.3667;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.3667;entryDx=0;entryDy=0;entryPerimeter=0;" value="«use»">
-          <mxGeometry relative="1" as="geometry" />
+          <mxGeometry x="0" relative="1" as="geometry"><mxPoint as="offset" x="-8" y="0" /></mxGeometry>
         </mxCell>
         <mxCell id="p4-e-voiceid-transcription" parent="1" source="p4-VoiceId" target="p4-Transcription" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;jumpStyle=arc;jumpSize=10;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0;exitY=0.75;exitDx=0;exitDy=0;exitPerimeter=0;entryX=1;entryY=0.75;entryDx=0;entryDy=0;entryPerimeter=0;" value="«use»">
-          <mxGeometry relative="1" as="geometry" />
+          <mxGeometry x="0" relative="1" as="geometry"><mxPoint as="offset" x="-8" y="0" /></mxGeometry>
         </mxCell>
         <mxCell id="p4-e-voiceid-recordings" parent="1" source="p4-VoiceId" target="p4-Recordings" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;jumpStyle=arc;jumpSize=10;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0.1176;exitY=0.2;exitDx=0;exitDy=0;exitPerimeter=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" value="«use»">
           <mxGeometry x="0" relative="1" as="geometry"><mxPoint as="offset" x="-12" y="0" />
@@ -204,6 +204,26 @@
         </mxCell>
         <mxCell id="p4-e-summaries-notes" parent="1" source="p4-Summaries" target="p4-Notes" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;jumpStyle=arc;jumpSize=10;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" value="«use»">
           <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p4-Retention" parent="p4-app" style="shape=folder;tabWidth=40;tabHeight=12;tabPosition=left;verticalAlign=middle;align=center;spacingTop=12;fontStyle=1;fontSize=13;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;" value="Retention" vertex="1">
+          <mxGeometry x="40" y="480" width="170" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="p4-e-retention-votes" parent="1" source="p4-Retention" target="p4-Votes" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;jumpStyle=arc;jumpSize=10;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" value="«use»">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="60" y="550" />
+              <mxPoint x="60" y="130" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p4-e-retention-recordings" parent="1" source="p4-Retention" target="p4-Recordings" edge="1" style="endArrow=open;endFill=0;endSize=10;dashed=1;rounded=0;jumpStyle=arc;jumpSize=10;html=1;strokeColor=#000000;fontColor=#000000;fontFamily=Helvetica;fontSize=12;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;entryX=1;entryY=0.75;entryDx=0;entryDy=0;entryPerimeter=0;" value="«use»">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="165" y="620" />
+              <mxPoint x="985" y="620" />
+              <mxPoint x="985" y="285" />
+            </Array>
+          </mxGeometry>
         </mxCell>
       </root>
     </mxGraphModel>
