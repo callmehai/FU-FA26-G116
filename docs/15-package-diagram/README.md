@@ -20,7 +20,7 @@ Mỗi góc nhìn là một cặp file cùng tên: `.drawio` là source editable,
 | Backend | Package con của `TrustCabinet.Web`, `.Application`, `.Infrastructure`, `.Domain`; class ở namespace gốc của Web, Application và Infrastructure; phụ thuộc trong Web, trong Infrastructure, `«import»` giữa bốn project | [drawio](package-backend.drawio) · [PNG](package-backend.png) |
 | Application | Phụ thuộc giữa các module trong `TrustCabinet.Application` | [drawio](package-application.drawio) · [PNG](package-application.png) |
 | Domain | Phụ thuộc giữa các package nghiệp vụ trong `TrustCabinet.Domain` | [drawio](package-domain.drawio) · [PNG](package-domain.png) |
-| Frontend | `frontend/src` với 24 feature trong `features/` | [drawio](package-frontend.drawio) · [PNG](package-frontend.png) |
+| Frontend | `frontend/src` với 23 feature trong `features/` | [drawio](package-frontend.drawio) · [PNG](package-frontend.png) |
 
 ## Quy ước
 
@@ -50,21 +50,21 @@ liệt kê đủ ở đây.
 | `Enums` | Access, Agenda, Attendance, Audit, CalendarSharing, Documents, Entities, GuestAccess, Meetings, Participants, Recordings, Votes |
 
 `Calls`, `Summaries`, `VoiceId` và `Enums` không phụ thuộc package nào. `Entities` chứa `Common` (lớp gốc `Entity`).
-Ai, Authentication, Notes, Notifications và Users không còn package Domain: chúng chỉ có interface và DTO, nay ở
+Authentication, Notes, Notifications và Users không còn package Domain: chúng chỉ có interface và DTO, nay ở
 Application (CA-02).
 
 **Trang Application — phụ thuộc tới năm module dùng chung:**
 
 | Tới | Module dùng |
 |---|---|
-| `Abstractions` | cả 23 module |
-| `Audit` | Access, Ai, Attendance, Authentication, CalendarSharing, Calls, Documents, GuestAccess, Participants, Recordings, Reports, Summaries, Transcription, Users, VoiceId, Votes |
+| `Abstractions` | cả 22 module |
+| `Audit` | Access, Attendance, Authentication, CalendarSharing, Calls, Documents, GuestAccess, Participants, Recordings, Reports, Summaries, Transcription, Users, VoiceId, Votes |
 | `Meetings` | Agenda, CalendarSharing, Documents, Notes, Notifications, Participants, Recordings, Summaries, Transcription |
 | `Participants` | Agenda, Attendance, Calls, Documents, Email, Meetings, Speaking, Votes |
 | `Notifications` | Agenda, CalendarSharing, Email, Meetings, Summaries, VoiceId |
 
 Vì vậy `Abstractions`, `Attendance`, `Audit`, `Notifications`, `Reports` đứng riêng trên hình. Class
-`DependencyInjection` (`AddApplication()`) ở namespace gốc dùng cả 23 module.
+`DependencyInjection` (`AddApplication()`) ở namespace gốc dùng cả 22 module.
 
 **Trang Backend — Application → Domain** (ngoài `Entities`, `Enums`):
 
@@ -72,7 +72,7 @@ Vì vậy `Abstractions`, `Attendance`, `Audit`, `Notifications`, `Reports` đ�
 |---|---|
 | Access | Access, Audit |
 | Agenda | Agenda, GuestAccess, Meetings |
-| Ai, Authentication, Users | Audit |
+| Authentication, Users | Audit |
 | Attendance | Agenda, Attendance, Audit, GuestAccess, Meetings, Participants |
 | Audit | Audit |
 | CalendarSharing | Audit, CalendarSharing, Meetings, Participants |
@@ -98,7 +98,6 @@ Vì vậy `Abstractions`, `Attendance`, `Audit`, `Notifications`, `Reports` đ�
 | Package Infrastructure | Module Application |
 |---|---|
 | Agenda | Agenda, Notes |
-| Ai, Summaries | Ai, Summaries |
 | Documents | Abstractions, Documents, Meetings |
 | Email | Email, Notifications, Users |
 | GuestAccess | Agenda, Email, GuestAccess, Participants |
@@ -159,7 +158,7 @@ Vì vậy `Abstractions`, `Attendance`, `Audit`, `Notifications`, `Reports` đ�
 `DependencyInjection` (`AddTrustCabinetDatabase()`) và hai package Authentication, Documents; `DatabaseMigrationCommand`
 dùng `DependencyInjection` (`MigrateForDeploymentAsync`, mũi tên duy nhất vẽ từ Web sang Infrastructure).
 
-**Trang Backend — trong Infrastructure:** `DependencyInjection` dùng mọi package trừ Ai, Configurations, Migrations
+**Trang Backend — trong Infrastructure:** `DependencyInjection` dùng mọi package trừ Configurations, Migrations
 (chỉ vẽ mũi tên tới `Seed`). Mọi package nghiệp vụ dùng `TrustCabinetDbContext` ở namespace cha; `TrustCabinetDbContext`
 áp mọi lớp trong `Configurations`; `Migrations` sinh từ nó.
 

@@ -1,7 +1,4 @@
 [
-  "GET /api/admin/ai",
-  "PUT /api/admin/ai",
-  "POST /api/admin/ai/test",
   "GET /api/audit-log",
   "GET /api/audit-log/event-types",
   "POST /api/auth/google",

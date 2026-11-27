@@ -4,16 +4,16 @@
   "books": {
     "ui": {
       "file": "Report5.2_Integration_Test.xlsx",
-      "version": "2.1",
-      "issueDate": "2026-11-24",
+      "version": "2.2",
+      "issueDate": "2026-11-27",
       "title": "INTEGRATION TEST DOCUMENT",
       "environment": "1. TrustCabinet test build (frontend + backend + PostgreSQL + Redis + SeaweedFS)\n2. LiveKit and the speech worker for the online room and transcription\n3. Google Chrome (latest)\n4. Microsoft Edge (latest)\n5. A controlled mailbox for invitation and verification emails",
       "note": "Statuses: Passed, Failed, Pending, N/A. Round 1 starts as Pending; only a real execution sets Passed or Failed. FE-14 Dashboard has no sheet: UC-69 is a placeholder and nothing of it is implemented."
     },
     "api": {
       "file": "Report5.2.2_Integration_Test_API_Test.xlsx",
-      "version": "2.3",
-      "issueDate": "2026-11-24",
+      "version": "2.4",
+      "issueDate": "2026-11-27",
       "title": "API TEST",
       "environment": "1. TrustCabinet test build (backend + PostgreSQL + Redis + SeaweedFS)\n2. Postman or curl (docs/03-api/postman)\n3. A controlled mailbox for invitation and verification emails",
       "note": "Statuses: Passed, Failed, Pending, N/A. Round 1 starts as Pending; only a real execution sets Passed or Failed. One group per endpoint. FE-14 Dashboard has no sheet: UC-69 is a placeholder and has no endpoint."
@@ -29,7 +29,9 @@
       { "date": "21/11/2026", "version": "2.1", "item": "All sheets", "type": "M", "description": "Round 1 run: 1537 cases, all passed.", "reference": "Report 5.0 Test Documentation", "books": ["api"] },
       { "date": "23/11/2026", "version": "2.2", "item": "All sheets", "type": "M", "description": "Cases merged to 819; round 1 run again: 807 passed, 12 pending in FE-10.", "reference": "Report 5.0 Test Documentation", "books": ["api"] },
       { "date": "24/11/2026", "version": "2.3", "item": "All sheets", "type": "M", "description": "Report query and export cases added: 825 cases, all passed.", "reference": "Report 5.0 Test Documentation", "books": ["api"] },
-      { "date": "24/11/2026", "version": "2.1", "item": "All sheets", "type": "M", "description": "Round 1 run after the report screen rework: 563 cases, all passed.", "reference": "Report 5.0 Test Documentation", "books": ["ui"] }
+      { "date": "24/11/2026", "version": "2.1", "item": "All sheets", "type": "M", "description": "Round 1 run after the report screen rework: 563 cases, all passed.", "reference": "Report 5.0 Test Documentation", "books": ["ui"] },
+      { "date": "27/11/2026", "version": "2.4", "item": "Transcription & Summary", "type": "D", "description": "AI Configuration screen removed (ADR-0088): its 11 endpoint cases deleted, 814 cases.", "reference": "Report 5.0 Test Documentation", "books": ["api"] },
+      { "date": "27/11/2026", "version": "2.2", "item": "Transcription & Summary", "type": "D", "description": "AI Configuration screen removed (ADR-0088): its 7 cases deleted, 556 cases.", "reference": "Report 5.0 Test Documentation", "books": ["ui"] }
     ]
   },
   "excludedRoutes": {
@@ -359,7 +361,7 @@
       "ucs": ["UC-45", "UC-46", "UC-47", "UC-48", "UC-49", "UC-50", "UC-81"],
       "notImplemented": { "UC-51": "Publish Meeting Summary is a placeholder." },
       "ui": {
-        "requirement": "Transcript view, edit and speaker attribution, the AI summary draft (generate, view, edit, approve), Voice ID with consent, voice samples collected by the Secretary, and the AI settings screen.",
+        "requirement": "Transcript view, edit and speaker attribution, the AI summary draft (generate, view, edit, approve), Voice ID with consent, and voice samples collected by the Secretary.",
         "groups": [
           { "title": "View & Export Transcript", "uc": ["UC-45a", "UC-45b"] },
           { "title": "Re-run Transcription", "uc": ["UC-45c"] },
@@ -368,12 +370,11 @@
           { "title": "Generate Summary", "uc": ["UC-47"] },
           { "title": "View, Edit & Approve Summary", "uc": ["UC-48", "UC-49", "UC-50"] },
           { "title": "My Voice ID", "uc": ["UC-81"] },
-          { "title": "Collect Voice Samples", "uc": ["UC-86"] },
-          { "title": "AI Settings", "uc": ["UC-47"] }
+          { "title": "Collect Voice Samples", "uc": ["UC-86"] }
         ]
       },
       "api": {
-        "requirement": "Transcription, transcript editing, speaker attribution, summary, Voice ID, voice collection and AI settings endpoints.",
+        "requirement": "Transcription, transcript editing, speaker attribution, summary, Voice ID and voice collection endpoints.",
         "groups": [
           { "title": "POST /api/recordings/{recordingId}/transcribe", "uc": ["UC-45c"] },
           { "title": "GET /api/recordings/{recordingId}/transcript", "uc": ["UC-45a"] },
@@ -396,10 +397,7 @@
           { "title": "GET /api/users/{userId}/voice-collection", "uc": ["UC-86"] },
           { "title": "POST /api/users/{userId}/voice-collection/samples", "uc": ["UC-86"] },
           { "title": "GET /api/users/{userId}/voice-collection/samples/{sampleId}/audio", "uc": ["UC-86"] },
-          { "title": "DELETE /api/users/{userId}/voice-collection/samples/{sampleId}", "uc": ["UC-86"] },
-          { "title": "GET /api/admin/ai", "uc": ["UC-47"] },
-          { "title": "PUT /api/admin/ai", "uc": ["UC-47"] },
-          { "title": "POST /api/admin/ai/test", "uc": ["UC-47"] }
+          { "title": "DELETE /api/users/{userId}/voice-collection/samples/{sampleId}", "uc": ["UC-86"] }
         ]
       }
     },

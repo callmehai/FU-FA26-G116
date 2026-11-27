@@ -47,5 +47,6 @@ việc chuyển dữ liệu cá nhân ra ngoài (Luật 91/2025/QH15). Máy dự
 - Lời thoại không còn đường nào ra khỏi hệ thống của nhóm.
 - Ít hơn một bảng (`ai_provider_settings`), một màn hình, ba endpoint, sáu mã thông báo.
 - Wireframe lên v17 (bỏ màn 3.4, mục Cấu hình AI ở sidebar). Report 3 chụp lại 33 hình màn hình từ v17 cho hết mục Cấu hình AI
-  ở sidebar và sửa câu `MSG394`; Report 3 không có UC cấu hình AI. Hướng dẫn sử dụng (Report 6) và các test case của màn
-  (TRANS_API_IT92, IT94–IT101, TRANS_FT58–FT64) gỡ ở bước sau.
+  ở sidebar và sửa câu `MSG394`; Report 3 không có UC cấu hình AI. Report 6 chụp lại 11 hình không còn mục Cấu hình AI.
+  Report 4 vẽ lại sơ đồ kiến trúc và package không còn package `Ai` của quản trị. Test report bỏ 7 test case UI và 11 test
+  case API của màn (còn 556 UI, 814 API), Report 2 ghi số mới.
