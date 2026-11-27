@@ -97,9 +97,7 @@
           "log": "No audit row.",
           "type": "Abnormal",
           "note": "UC-35b · BR-055 · BR-081 · MSG485",
-          "round1": "Passed",
-          "date1": "2026-11-27",
-          "tester1": "Phạm Gia Khánh"
+          "round1": "Pending"
         },
         {
           "id": "UTC007",
@@ -112,9 +110,7 @@
           "log": "Audit row document.downloaded recorded.",
           "type": "Normal",
           "note": "UC-35b · BR-010 · BR-081",
-          "round1": "Passed",
-          "date1": "2026-11-27",
-          "tester1": "Phạm Gia Khánh"
+          "round1": "Pending"
         }
       ]
     }

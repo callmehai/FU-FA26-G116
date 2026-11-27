@@ -1439,9 +1439,7 @@
           ],
           "note": "UC-35b · BR-010 · Manual only",
           "id": "DOC_API_IT65",
-          "round1": "Passed",
-          "date1": "2026-11-27",
-          "tester1": "Phạm Gia Khánh"
+          "round1": "Pending"
         },
         {
           "description": "Verify a Guest can view an Internal meeting's document online but is refused download with 403 MSG485.",
@@ -1459,9 +1457,7 @@
           ],
           "note": "UC-35b · BR-055 · BR-081 · MSG485 · Manual only",
           "id": "DOC_API_IT66",
-          "round1": "Passed",
-          "date1": "2026-11-27",
-          "tester1": "Phạm Gia Khánh"
+          "round1": "Pending"
         }
       ]
     },

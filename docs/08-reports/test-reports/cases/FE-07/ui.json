@@ -922,9 +922,7 @@
           ],
           "note": "UC-35b · BR-010 · BR-081 · MSG485 · Manual only",
           "id": "DOC_FT43",
-          "round1": "Passed",
-          "date1": "2026-11-27",
-          "tester1": "Phạm Gia Khánh"
+          "round1": "Pending"
         },
         {
           "description": "Verify a document removed while it is open shows the not-found page.",

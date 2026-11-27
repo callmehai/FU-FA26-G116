@@ -87,9 +87,7 @@
           "log": "Audit row minutes.downloaded recorded.",
           "type": "Normal",
           "note": "UC-69 · BR-010 · BR-139",
-          "round1": "Passed",
-          "date1": "2026-11-27",
-          "tester1": "Phạm Gia Khánh"
+          "round1": "Pending"
         }
       ]
     }
