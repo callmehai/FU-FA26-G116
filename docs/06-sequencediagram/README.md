@@ -6,6 +6,10 @@
 
 - Mỗi Use Case có source `.txt` và ảnh `.png` cùng tên trong thư mục theo Feature. Nội dung `.txt` là
   bản cần sửa; sau khi sửa, xuất lại cả hai ảnh (sequencediagram.org và `drawio-png/`) bằng `python scripts/export_sequence.py <mã UC hoặc file .txt>`.
+  Ảnh sequencediagram.org xuất ở 3 lần kích thước thật (`export-diagrams.js --scale=3`: SVG của engine raster lại,
+  chỉ giảm palette, không thu về 1920 px) để chữ còn đọc được khi Report 4 in sơ đồ rộng bằng khổ trang (review
+  supervisor 27/11/2026). Sau khi xuất: `python scripts/fill_report4_diagrams.py --write --refresh <mã UC>` thay ảnh
+  trong Report 4 (giữ bề rộng hiển thị) và `python scripts/push_diagrams.py sequence --confirm` đẩy Drive tại chỗ.
 - [`TrustCabinet_Sequence_Diagrams.drawio`](TrustCabinet_Sequence_Diagrams.drawio) là file draw.io gộp
   các sequence thành từng tab, dùng để duyệt và chỉnh sửa sơ đồ native. Khi thay đổi một source, cập
   nhật đúng PNG và tab UC tương ứng trong file gộp; giữ nguyên các tab khác. Ảnh xuất từ các tab UC

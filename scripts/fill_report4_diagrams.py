@@ -173,6 +173,16 @@ class Report:
             self.docpr += 1
         return para
 
+    @staticmethod
+    def keep_width(para: str, data: bytes) -> str:
+        """Same displayed width as the picture it replaces (a landscape page stays landscape-wide), so a
+        higher-resolution export of the same diagram is sharper, not bigger; the height follows its aspect."""
+        w, h = png_size(data)
+        cx = int(re.search(r'<wp:extent cx="(\d+)"', para).group(1))
+        cy = int(cx * h / w)
+        para = re.sub(r"<wp:extent [^>]*/>", f'<wp:extent cx="{cx}" cy="{cy}"/>', para)
+        return re.sub(r'<a:ext cx="\d+" cy="\d+"/>', f'<a:ext cx="{cx}" cy="{cy}"/>', para)
+
     def uc_block(self, num: str, uc: str, title: str, png: Path) -> list[str]:
         what = f"{uc} – {title}"
         return [self.settext(self.h4, f"{num} {what}"), self.picture(png, f"Sequence Diagram of {what}"),
@@ -290,7 +300,7 @@ class Report:
             data = png.read_bytes()
             if target and self.blobs[target] != data and self.media.get(target) != data:
                 self.media[target] = data
-                self.P[i - 1] = self.fit(self.P[i - 1], data, "")
+                self.P[i - 1] = self.keep_width(self.P[i - 1], data)
                 self.log.append(f"refresh {t[:70]}")
 
     def fix_captions_and_alt(self) -> None:
