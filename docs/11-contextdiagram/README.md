@@ -12,6 +12,11 @@ Cũng ngày 25/11/2026, luồng dữ liệu bám theo quyền của vai trò h�
 
 Ngày 26/11/2026 bỏ ô *AI drafting service* và hai luồng của nó (review Report 3 của KhanhPG): dự thảo AI viết bằng mô hình ngôn ngữ của nhóm, trong ranh giới hệ thống; chỉ còn hai dịch vụ ngoài là OAuth Provider và Resend Email. Cùng ngày dàn lại actor cho đều hai bên: Secretary sang cột phải dưới Resend Email, Guest xuống đáy cạnh Participant, Chair hạ thấp cách Approver; luồng và nhãn không đổi.
 
+Ngày 27/11/2026 dàn lại đường kẻ, actor và luồng giữ nguyên: actor bao quanh hình tròn (Member trên, Secretary
+dưới, Chair trái, OAuth Provider và Resend Email phải, Approver, System Admin, Participant, Guest ở bốn góc). Mỗi actor
+đúng một luồng ra, một luồng vào, vẽ thành một cặp đường song song cách nhau 80 px; các đường cắm vào hình tròn cũng
+cách đều 80 px, không đường nào cắt nhau. Guest chuyển từ cạnh Participant sang góc dưới phải.
+
 Khi chỉnh sửa, giữ ranh giới hệ thống và các hệ thống/actor bên ngoài đúng theo tài liệu kiến trúc;
 cập nhật PNG sau khi sửa source. Dùng [quy tắc chỉnh draw.io](../../DRAWIO_EDITING_RULES.md) và
 [drawio-skill](../../.agents/skills/drawio-skill/SKILL.md) của repository.
