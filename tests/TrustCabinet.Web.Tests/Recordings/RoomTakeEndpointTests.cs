@@ -546,4 +546,94 @@ public sealed class RoomTakeEndpointTests(RecordingFixture fixture) : IClassFixt
         Assert.Contains("Lượt một đây.", said);
         Assert.Contains("Lượt ba đây nhé.", said);
     }
+
+    /// <summary>Three takes recorded and transcribed as <paramref name="heard"/>; returns the scenario, the secretary and the room recording.</summary>
+    private async Task<(RecordingFixture.Scenario S, HttpClient Secretary, Guid Room)> RecordedThreeTakes(SpeechTranscription heard)
+    {
+        var s = await fixture.Seed(mode: MeetingMode.InPerson);
+        fixture.Speech.Failure = null;
+        var secretary = fixture.Client(s.Secretary);
+        var tapes = new[] { Tape(2 * Part + 12, 1), Tape(Part + 460, 2), Tape(Part + 12, 3) };
+        var room = (await Record(secretary, await Open(secretary, s), tapes[0])).GetProperty("recordingId").GetGuid();
+        foreach (var tape in tapes[1..]) await Record(secretary, await Open(secretary, s, consent: false), tape);
+        fixture.Speech.Result = heard;
+        await ProcessAll();
+        return (s, secretary, room);
+    }
+
+    [Fact]
+    public async Task The_text_file_saved_after_the_first_take_is_cut_holds_nothing_said_in_it()
+    {
+        var (_, secretary, room) = await RecordedThreeTakes(new(511, "vi", "gipformer-1.5-68m-int8@abc123def456", "", [
+            new(10, 3010, "SPEAKER_00", "Lượt một bị xóa đây.", WordStartsMs: [10L, 60L, 120L, 180L]),
+            new(200, 380, "SPEAKER_01", "Xin chào mọi người vào họp", WordStartsMs: [200L, 225L, 260L, 290L, 320L]),
+            new(397, 3397, "SPEAKER_01", "Lượt ba đây nhé.", WordStartsMs: [397L, 420L, 450L])],
+            [new("SPEAKER_00", 273, []), new("SPEAKER_01", 91, [])]));
+        using var _ = secretary;
+
+        await AssertCode(await secretary.DeleteAsync($"/api/recordings/{room}/takes/1"), 200, "MSG366");
+
+        var text = await (await secretary.GetAsync($"/api/recordings/{room}/transcript.txt")).Content.ReadAsStringAsync();
+        Assert.DoesNotContain("bị xóa", text);
+        Assert.DoesNotContain("Xin chào", text);
+        Assert.Contains("mọi người vào họp", text);
+    }
+
+    [Fact]
+    public async Task Cutting_a_take_after_the_draft_makes_the_draft_read_as_behind()
+    {
+        var (s, secretary, room) = await RecordedThreeTakes(new(511, "vi", "gipformer-1.5-68m-int8@abc123def456", "", [
+            new(10, 3010, "SPEAKER_00", "Lượt một đây.", WordStartsMs: [10L, 60L, 120L]),
+            new(259, 3259, "SPEAKER_01", "Lượt hai đây.", WordStartsMs: [259L, 290L, 320L]),
+            new(397, 3397, "SPEAKER_00", "Lượt ba đây.", WordStartsMs: [397L, 420L, 450L])],
+            [new("SPEAKER_00", 273, []), new("SPEAKER_01", 91, [])]));
+        using var _ = secretary;
+        async Task<DateTimeOffset> Changed()
+            => (await secretary.GetFromJsonAsync<JsonElement>($"/api/meetings/{s.MeetingId}/summary"))
+                .GetProperty("readiness").GetProperty("transcriptChangedAt").GetDateTimeOffset();
+        var before = await Changed();
+        // The test clock stands still; the cut happens three minutes after the transcript was last touched.
+        fixture.Clock.Now = fixture.Clock.Now.AddMinutes(3);
+
+        await AssertCode(await secretary.DeleteAsync($"/api/recordings/{room}/takes/2"), 200, "MSG366");
+
+        Assert.True(await Changed() > before);
+    }
+
+    [Fact]
+    public async Task A_take_cut_while_the_transcript_is_running_leaves_the_draft_nothing_said_in_it_once_it_is_made_again()
+    {
+        var (s, secretary, room) = await RecordedThreeTakes(new(511, "vi", "gipformer-1.5-68m-int8@abc123def456", "", [
+            new(10, 3010, "SPEAKER_00", "Lượt một đây.", WordStartsMs: [10L, 60L, 120L]),
+            new(259, 3259, "SPEAKER_01", "Lượt hai bị xóa đây.", WordStartsMs: [259L, 290L, 320L, 340L, 360L]),
+            new(397, 3397, "SPEAKER_00", "Lượt ba đây.", WordStartsMs: [397L, 420L, 450L])],
+            [new("SPEAKER_00", 273, []), new("SPEAKER_01", 91, [])]));
+        using var _ = secretary;
+        await using (var db = fixture.Db())
+            await db.Transcripts.Where(x => x.RecordingId == room)
+                .ExecuteUpdateAsync(u => u.SetProperty(x => x.Status, TranscriptStatus.Processing));
+
+        await AssertCode(await secretary.DeleteAsync($"/api/recordings/{room}/takes/2"), 200, "MSG366");
+
+        // Before the worker is done again, the draft must not read the old run's lines of the erased take.
+        async Task<string> Read()
+        {
+            await using var db = fixture.Db();
+            var read = await new MeetingTranscriptReader(new MeetingTranscriptQuery(db)).ReadAsync(s.MeetingId, default);
+            return string.Join(" | ", read.Select(l => $"{l.Speaker}: {l.Text}"));
+        }
+        Assert.DoesNotContain("bị xóa", await Read());
+
+        // The shorter file is transcribed again: only its two lines, one voice.
+        fixture.Speech.Result = new(373, "vi", "gipformer-1.5-68m-int8@abc123def456", "", [
+            new(10, 3010, "SPEAKER_00", "Lượt một đây.", WordStartsMs: [10L, 60L, 120L]),
+            new(259, 3259, "SPEAKER_00", "Lượt ba đây.", WordStartsMs: [259L, 290L, 320L])],
+            [new("SPEAKER_00", 273, [])]);
+        await ProcessAll();
+        var said = await Read();
+        Assert.DoesNotContain("bị xóa", said);
+        Assert.DoesNotContain("Người nói 2", said);
+        Assert.Contains("Lượt một đây.", said);
+        Assert.Contains("Lượt ba đây.", said);
+    }
 }

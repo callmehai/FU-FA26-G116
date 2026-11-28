@@ -28,10 +28,10 @@ Câu hỏi bổ sung cho mọi chức năng xóa, loại, sửa, hủy, rút, v�
 
 | # | Kịch bản | Đầu ra phải kiểm tra | Tình trạng |
 |---|---|---|---|
-| A1 | Xóa lượt đầu / giữa / cuối, rồi tạo dự thảo | Đầu vào AI không còn chữ lượt đó, không còn người nói chỉ có ở lượt đó | Đã có 3 case đỏ (TRANS_API_IT44–46) |
-| A2 | Xóa lượt, rồi tải `transcript.txt` | Tệp không còn chữ lượt đó | **Thiếu.** Tệp dựng từ chính các dòng đó, cùng lỗi |
-| A3 | Có dự thảo, rồi xóa lượt | Dự thảo hiện "đã cũ" (đồng hồ `UpdatedAt` đổi) | **Thiếu.** `CutTranscript` có cập nhật `UpdatedAt`, nhưng không test nào giữ |
-| A4 | Xóa lượt khi bản ghi lời đang Pending / Processing, rồi tạo dự thảo | Chạy lại từ tệp ngắn, dự thảo không đọc bản cũ | **Thiếu** ở tầng tích hợp. Unit chỉ kiểm trạng thái |
+| A1 | Xóa lượt đầu / giữa / cuối, rồi tạo dự thảo | Đầu vào AI không còn chữ lượt đó, không còn người nói chỉ có ở lượt đó | Đã có 3 case đỏ (TRANS_API_IT45–47) |
+| A2 | Xóa lượt, rồi tải `transcript.txt` | Tệp không còn chữ lượt đó | Đã kiểm chứng 2026-11-28: **đỏ**, cùng lỗi SCRUM-284 (TRANS_API_IT15) |
+| A3 | Có dự thảo, rồi xóa lượt | Dự thảo hiện "đã cũ" (đồng hồ `UpdatedAt` đổi) | Đã kiểm chứng 2026-11-28: **xanh** (TRANS_API_IT52), `readiness.transcriptChangedAt` tăng sau khi cắt |
+| A4 | Xóa lượt khi bản ghi lời đang Pending / Processing, rồi tạo dự thảo | Chạy lại từ tệp ngắn, dự thảo không đọc bản cũ | Đã kiểm chứng 2026-11-28: **xanh** (TRANS_API_IT48). Chạy lại từ tệp ngắn cho đúng; lượt bị xóa không còn chữ |
 | A5 | Dòng đã được thư ký sửa tay nằm vắt qua ranh giới lượt, rồi xóa lượt | Phần sửa tay còn đúng sau cắt. Dòng đã sửa không còn `WordStartsMs` | **Thiếu**, cần xác minh |
 | A6 | Người nói đã được gán tên chỉ có ở lượt bị xóa | Tên và gợi ý đi cùng, không rò sang dự thảo | **Thiếu** |
 | A7 | Cuộc họp hybrid, xóa lượt, bản ghi gộp dựng lại | Bản gộp không còn âm thanh lượt đó; tạo dự thảo vẫn đúng | **Thiếu** ở tầng tích hợp |

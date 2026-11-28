@@ -29,7 +29,7 @@ Agent đọc [AGENTS.md](AGENTS.md) trước — cấu trúc sheet, cách viết
 
 **Cả 5.2 và 5.2.2 sinh từ `cases/`** (nhóm thống nhất ngày 20/11/2026; bản 1.2 làm tay — 13 sheet, 411 case `XXX_IT01` — đã bỏ, ID cũ không còn). Kết quả chạy test ghi vào JSON (`round1`, `date1`, `tester1`…) chứ không gõ vào Excel, vì mỗi lần `build` workbook được dựng lại từ file mẫu.
 
-Số case trong `cases/` đã đồng bộ đánh số Feature theo Report 3 (`FE-01` → `FE-15`; bỏ placeholder `UC-69`), ánh xạ đầy đủ UC/BR ID mới và gắn ngày chạy test theo cuối từng Iteration của Report 2: API `820` case (`817 Passed, 3 Failed` tại `TRANS_API_IT44` → `IT46`, bug SCRUM-284), UI `558` case (`557 Passed, 1 Failed` tại `REC_FT02`), Unit `623` case (`614 Passed, 9 Failed` tại `RoomTake.DeleteTake`, bug SCRUM-284). Mọi vòng mới bắt đầu ở `Pending` cho tới khi chạy thật:
+Số case trong `cases/` đã đồng bộ đánh số Feature theo Report 3 (`FE-01` → `FE-15`; bỏ placeholder `UC-69`), ánh xạ đầy đủ UC/BR ID mới và gắn ngày chạy test theo cuối từng Iteration của Report 2: API `823` case (`819 Passed, 4 Failed` tại `TRANS_API_IT15` và `IT45` → `IT47`, bug SCRUM-284), UI `558` case (`557 Passed, 1 Failed` tại `REC_FT02`), Unit `623` case (`614 Passed, 9 Failed` tại `RoomTake.DeleteTake`, bug SCRUM-284). Mọi vòng mới bắt đầu ở `Pending` cho tới khi chạy thật:
 
 | Feature | Sheet | 5.2 UI | 5.2.2 API |
 |---|---|---:|---:|
