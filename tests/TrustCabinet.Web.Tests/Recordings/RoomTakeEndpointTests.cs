@@ -6,10 +6,12 @@ using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using TrustCabinet.Application.Recordings;
+using TrustCabinet.Application.Summaries;
 using TrustCabinet.Application.Transcription;
 using TrustCabinet.Domain.Audit;
 using TrustCabinet.Domain.Entities;
 using TrustCabinet.Domain.Enums;
+using TrustCabinet.Infrastructure.Summaries;
 
 namespace TrustCabinet.Web.Tests.Recordings;
 
@@ -454,5 +456,94 @@ public sealed class RoomTakeEndpointTests(RecordingFixture fixture) : IClassFixt
         // One take left: erasing it is erasing the recording.
         await AssertCode(await secretary.DeleteAsync($"/api/recordings/{room}/takes/2"), 200, "MSG366");
         await AssertCode(await secretary.DeleteAsync($"/api/recordings/{room}/takes/1"), 409, "MSG367");
+    }
+
+    /// <summary>
+    /// Three takes of 249, 138 and 124 ms; the worker's <paramref name="heard"/> is written as the transcript, take
+    /// <paramref name="cut"/> is erased, and what the summary then reads is returned, one "speaker: text" per line.
+    /// </summary>
+    private async Task<string> SaidAfterCutting(SpeechTranscription heard, int cut)
+    {
+        var s = await fixture.Seed(mode: MeetingMode.InPerson);
+        fixture.Speech.Failure = null;
+        using var secretary = fixture.Client(s.Secretary);
+        var tapes = new[] { Tape(2 * Part + 12, 1), Tape(Part + 460, 2), Tape(Part + 12, 3) };
+        var room = (await Record(secretary, await Open(secretary, s), tapes[0])).GetProperty("recordingId").GetGuid();
+        foreach (var tape in tapes[1..]) await Record(secretary, await Open(secretary, s, consent: false), tape);
+        fixture.Speech.Result = heard;
+        await ProcessAll();
+        await AssertCode(await secretary.DeleteAsync($"/api/recordings/{room}/takes/{cut}"), 200, "MSG366");
+
+        await using var db = fixture.Db();
+        var read = await new MeetingTranscriptReader(new MeetingTranscriptQuery(db)).ReadAsync(s.MeetingId, default);
+        return string.Join(" | ", read.Select(l => $"{l.Speaker}: {l.Text}"));
+    }
+
+    [Fact]
+    public async Task What_the_summary_reads_after_the_first_take_is_cut_holds_nothing_said_in_it()
+    {
+        // Line 2 is placed in take 2 (it holds most of it) but its first two words were said in take 1.
+        var said = await SaidAfterCutting(new(511, "vi", "gipformer-1.5-68m-int8@abc123def456", "", [
+            new(10, 3010, "SPEAKER_00", "Lượt một bị xóa đây.", WordStartsMs: [10L, 60L, 120L, 180L]),
+            new(200, 380, "SPEAKER_01", "Xin chào mọi người vào họp", WordStartsMs: [200L, 225L, 260L, 290L, 320L]),
+            new(397, 3397, "SPEAKER_01", "Lượt ba đây nhé.", WordStartsMs: [397L, 420L, 450L])],
+            [new("SPEAKER_00", 273, []), new("SPEAKER_01", 91, [])]), cut: 1);
+
+        Assert.DoesNotContain("bị xóa", said);
+        Assert.DoesNotContain("Xin chào", said);
+        Assert.Contains("mọi người vào họp", said);
+        Assert.Contains("Lượt ba đây nhé.", said);
+    }
+
+    [Fact]
+    public async Task What_the_summary_reads_after_the_last_take_is_cut_holds_nothing_said_in_it()
+    {
+        // Line 2 is placed in take 2 but its last two words were said in take 3.
+        var said = await SaidAfterCutting(new(511, "vi", "gipformer-1.5-68m-int8@abc123def456", "", [
+            new(10, 3010, "SPEAKER_00", "Lượt một đây nhé.", WordStartsMs: [10L, 60L, 120L]),
+            new(300, 420, "SPEAKER_00", "Phần này vẫn giữ rồi bỏ", WordStartsMs: [300L, 320L, 340L, 360L, 390L, 410L]),
+            new(397, 3397, "SPEAKER_01", "Lượt ba bị xóa đây.", WordStartsMs: [397L, 420L, 450L, 480L, 500L])],
+            [new("SPEAKER_00", 273, []), new("SPEAKER_01", 91, [])]), cut: 3);
+
+        Assert.DoesNotContain("bị xóa", said);
+        Assert.DoesNotContain("Người nói 2", said);
+        Assert.DoesNotContain("rồi bỏ", said);
+        Assert.Contains("Phần này vẫn giữ", said);
+        Assert.Contains("Lượt một đây nhé.", said);
+    }
+
+    [Fact]
+    public async Task What_the_summary_reads_after_a_middle_take_is_cut_holds_nothing_said_in_it_and_no_voice_only_heard_in_it()
+    {
+        var s = await fixture.Seed(mode: MeetingMode.InPerson);
+        fixture.Speech.Failure = null;
+        using var secretary = fixture.Client(s.Secretary);
+        // Three takes: 249, 138 and 124 ms of PCM, the transcript Completed before the middle one is cut.
+        var tapes = new[] { Tape(2 * Part + 12, 1), Tape(Part + 460, 2), Tape(Part + 12, 3) };
+        var room = (await Record(secretary, await Open(secretary, s), tapes[0])).GetProperty("recordingId").GetGuid();
+        foreach (var tape in tapes[1..]) await Record(secretary, await Open(secretary, s, consent: false), tape);
+
+        // The worker lays lines end to end and times each word on the whole stretch it heard. Line 2 is placed in take 1
+        // (it holds most of it) but its last word was said in take 2; line 3 is the voice heard only in take 2.
+        fixture.Speech.Result = new(511, "vi", "gipformer-1.5-68m-int8@abc123def456", "", [
+            new(10, 3010, "SPEAKER_00", "Lượt một đây.", WordStartsMs: [10L, 100L, 200L]),
+            new(100, 280, "SPEAKER_00", "Phần này vẫn được giữ lại rồi bỏ", WordStartsMs: [100L, 110L, 120L, 140L, 160L, 190L, 230L, 260L]),
+            new(259, 3259, "SPEAKER_01", "Lượt hai bị xóa đây.", WordStartsMs: [259L, 280L, 300L, 330L, 350L]),
+            new(397, 3397, "SPEAKER_00", "Lượt ba đây nhé.", WordStartsMs: [397L, 420L, 450L])],
+            [new("SPEAKER_00", 273, []), new("SPEAKER_01", 91, [])]);
+        await ProcessAll();
+
+        await AssertCode(await secretary.DeleteAsync($"/api/recordings/{room}/takes/2"), 200, "MSG366");
+
+        await using var db = fixture.Db();
+        var read = await new MeetingTranscriptReader(new MeetingTranscriptQuery(db)).ReadAsync(s.MeetingId, default);
+        var said = string.Join(" | ", read.Select(l => $"{l.Speaker}: {l.Text}"));
+        Assert.DoesNotContain("bị xóa", said);
+        Assert.DoesNotContain("Người nói 2", said);
+        // The word said in the erased take, at the end of a line that stays, is gone too.
+        Assert.DoesNotContain("rồi bỏ", said);
+        Assert.Contains("giữ lại rồi", said);
+        Assert.Contains("Lượt một đây.", said);
+        Assert.Contains("Lượt ba đây nhé.", said);
     }
 }

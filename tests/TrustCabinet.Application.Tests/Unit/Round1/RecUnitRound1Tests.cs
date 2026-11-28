@@ -3,6 +3,7 @@ using Microsoft.Extensions.Options;
 using TrustCabinet.Application.Abstractions;
 using TrustCabinet.Application.Meetings;
 using TrustCabinet.Application.Recordings;
+using TrustCabinet.Application.Summaries;
 using TrustCabinet.Application.Tests.Fakes;
 using TrustCabinet.Application.Transcription;
 using TrustCabinet.Domain.Audit;
@@ -848,6 +849,341 @@ public sealed class RecUnitRound1Tests
         Assert.Equal(RecordingFailure.LastTake, outcome.Failure);
         Assert.Equal(736_044, recording.ByteSize);
         Assert.Empty(f.Files.Deleted);
+    }
+
+    // A room line is placed in the take holding most of it, but its text keeps every word the worker heard, and its word
+    // times are clamped to the line (WordTimings.Within). So a line placed in take 1 can end with words said in take 2.
+
+    [Fact(DisplayName = "RoomTakeService.DeleteTakeAsync/UTC005: the words of an erased take at the end of a line are cut from its text")]
+    [Trait("UTC", "RoomTakeService.DeleteTakeAsync/UTC005")]
+    [Trait("Trait", "UTC")]
+    public async Task DeleteTake_the_words_of_an_erased_take_at_the_end_of_a_line_are_cut_from_its_text()
+    {
+        var f = MakeTakeSvc();
+        var (recording, transcript) = TakeWithTranscript(f);
+        transcript.Segments.Clear();
+        // Placed in take 1 (ends where take 2 starts); the last two words were said in take 2 and sit at the line's edge.
+        transcript.Segments.Add(new TranscriptSegment
+        {
+            TranscriptId = transcript.Id, Position = 1, StartMs = 8_000, EndMs = 10_000, Text = "một hai ba bốn",
+            WordStartsMs = [8_000, 9_000, 10_000, 10_000], SpeakerLabel = "S1",
+        });
+
+        var outcome = await f.Service.DeleteTakeAsync(recording.Id, 2, f.Secretary);
+
+        Assert.Equal(RecordingFailure.None, outcome.Failure);
+        var line = Assert.Single(transcript.Segments);
+        Assert.Equal("một hai", line.Text);
+        Assert.Equal(2, line.WordStartsMs!.Length);
+    }
+
+    [Fact(DisplayName = "RoomTakeService.DeleteTakeAsync/UTC006: a line whose words were all said in the erased take goes with its voice")]
+    [Trait("UTC", "RoomTakeService.DeleteTakeAsync/UTC006")]
+    [Trait("Trait", "UTC")]
+    public async Task DeleteTake_a_line_whose_words_were_all_said_in_the_erased_take_goes_with_its_voice()
+    {
+        var f = MakeTakeSvc();
+        var (recording, transcript) = TakeWithTranscript(f);
+        transcript.Segments.Clear();
+        transcript.Segments.Add(new TranscriptSegment { TranscriptId = transcript.Id, Position = 1, StartMs = 1_000, EndMs = 4_000, Text = "A", SpeakerLabel = "S1", WordStartsMs = [1_000] });
+        // Placed at the end of take 1, yet every word is on take 2's side of the cut.
+        transcript.Segments.Add(new TranscriptSegment
+        {
+            TranscriptId = transcript.Id, Position = 2, StartMs = 9_900, EndMs = 10_000, Text = "ba bốn năm",
+            WordStartsMs = [10_000, 10_000, 10_000], SpeakerLabel = "S2",
+        });
+
+        var outcome = await f.Service.DeleteTakeAsync(recording.Id, 2, f.Secretary);
+
+        Assert.Equal(RecordingFailure.None, outcome.Failure);
+        Assert.Equal(["A"], transcript.Segments.Select(s => s.Text));
+        Assert.DoesNotContain(transcript.Speakers, s => s.Label == "S2");
+    }
+
+    [Fact(DisplayName = "RoomTakeService.DeleteTakeAsync/UTC007: the summary no longer reads an erased take or its voice")]
+    [Trait("UTC", "RoomTakeService.DeleteTakeAsync/UTC007")]
+    [Trait("Trait", "UTC")]
+    public async Task DeleteTake_the_summary_no_longer_reads_an_erased_take_or_its_voice()
+    {
+        var f = MakeTakeSvc();
+        var (recording, transcript) = TakeWithTranscript(f);
+        transcript.Segments.Clear();
+        transcript.Speakers.Clear();
+        transcript.Segments.Add(new TranscriptSegment { TranscriptId = transcript.Id, Position = 1, StartMs = 1_000, EndMs = 4_000, Text = "Lượt một.", SpeakerLabel = "SPEAKER_00", WordStartsMs = [1_000, 2_000] });
+        transcript.Segments.Add(new TranscriptSegment
+        {
+            TranscriptId = transcript.Id, Position = 2, StartMs = 9_000, EndMs = 10_000, Text = "Lượt hai bị xóa",
+            WordStartsMs = [9_000, 10_000, 10_000, 10_000], SpeakerLabel = "SPEAKER_01",
+        });
+        transcript.Segments.Add(new TranscriptSegment { TranscriptId = transcript.Id, Position = 3, StartMs = 16_000, EndMs = 20_000, Text = "Lượt ba.", SpeakerLabel = "SPEAKER_00", WordStartsMs = [16_000, 17_000] });
+        transcript.Speakers.Add(new TranscriptSpeaker { TranscriptId = transcript.Id, Label = "SPEAKER_00", SpeechMs = 7_000 });
+        transcript.Speakers.Add(new TranscriptSpeaker { TranscriptId = transcript.Id, Label = "SPEAKER_01", SpeechMs = 1_000 });
+
+        await f.Service.DeleteTakeAsync(recording.Id, 2, f.Secretary);
+
+        var lines = await new MeetingTranscriptReader(new TranscriptOnlyQuery(recording, transcript)).ReadAsync(f.Meeting.Id, default);
+        var said = string.Join(" | ", lines.Select(l => $"{l.Speaker}: {l.Text}"));
+        Assert.DoesNotContain("bị xóa", said);
+        Assert.DoesNotContain("Người nói 2", said);
+        Assert.Contains("Lượt một.", said);
+        Assert.Contains("Lượt ba.", said);
+    }
+
+    [Fact(DisplayName = "RoomTakeService.DeleteTakeAsync/UTC008: the words of an erased first take at the start of the next line are cut")]
+    [Trait("UTC", "RoomTakeService.DeleteTakeAsync/UTC008")]
+    [Trait("Trait", "UTC")]
+    public async Task DeleteTake_the_words_of_an_erased_first_take_at_the_start_of_the_next_line_are_cut()
+    {
+        var f = MakeTakeSvc();
+        var (recording, transcript) = TakeWithTranscript(f);
+        transcript.Segments.Clear();
+        // Placed in take 2 (it holds most of it); the first two words were said in take 1 and sit at the line's start.
+        transcript.Segments.Add(new TranscriptSegment
+        {
+            TranscriptId = transcript.Id, Position = 1, StartMs = 10_000, EndMs = 14_000, Text = "Xin chào mọi người",
+            WordStartsMs = [10_000, 10_000, 11_000, 12_000], SpeakerLabel = "S2",
+        });
+
+        var outcome = await f.Service.DeleteTakeAsync(recording.Id, 1, f.Secretary);
+
+        Assert.Equal(RecordingFailure.None, outcome.Failure);
+        Assert.Equal("mọi người", Assert.Single(transcript.Segments).Text);
+    }
+
+    [Fact(DisplayName = "RoomTakeService.DeleteTakeAsync/UTC009: the words of an erased middle take at the start of the line after it are cut")]
+    [Trait("UTC", "RoomTakeService.DeleteTakeAsync/UTC009")]
+    [Trait("Trait", "UTC")]
+    public async Task DeleteTake_the_words_of_an_erased_middle_take_at_the_start_of_the_line_after_it_are_cut()
+    {
+        var f = MakeTakeSvc();
+        var (recording, transcript) = TakeWithTranscript(f);
+        transcript.Segments.Clear();
+        // Placed in take 3; its first two words were said in take 2.
+        transcript.Segments.Add(new TranscriptSegment
+        {
+            TranscriptId = transcript.Id, Position = 1, StartMs = 15_000, EndMs = 20_000, Text = "một hai ba bốn",
+            WordStartsMs = [15_000, 15_000, 17_000, 18_000], SpeakerLabel = "S1",
+        });
+
+        var outcome = await f.Service.DeleteTakeAsync(recording.Id, 2, f.Secretary);
+
+        Assert.Equal(RecordingFailure.None, outcome.Failure);
+        Assert.Equal("ba bốn", Assert.Single(transcript.Segments).Text);
+    }
+
+    [Fact(DisplayName = "RoomTakeService.DeleteTakeAsync/UTC010: a line of a kept take keeps its whole text")]
+    [Trait("UTC", "RoomTakeService.DeleteTakeAsync/UTC010")]
+    [Trait("Trait", "UTC")]
+    public async Task DeleteTake_a_line_of_a_kept_take_keeps_its_whole_text()
+    {
+        var f = MakeTakeSvc();
+        var (recording, transcript) = TakeWithTranscript(f);
+        transcript.Segments.Clear();
+        transcript.Segments.Add(new TranscriptSegment
+        {
+            TranscriptId = transcript.Id, Position = 1, StartMs = 16_000, EndMs = 20_000, Text = "ba bốn",
+            WordStartsMs = [16_000, 18_000], SpeakerLabel = "S1",
+        });
+
+        await f.Service.DeleteTakeAsync(recording.Id, 2, f.Secretary);
+
+        var line = Assert.Single(transcript.Segments);
+        Assert.Equal("ba bốn", line.Text);
+        Assert.Equal([11_000L, 13_000L], line.WordStartsMs);
+    }
+
+    [Fact(DisplayName = "RoomTakeService.DeleteTakeAsync/UTC011: a line ending where the erased take starts keeps its whole text")]
+    [Trait("UTC", "RoomTakeService.DeleteTakeAsync/UTC011")]
+    [Trait("Trait", "UTC")]
+    public async Task DeleteTake_a_line_ending_where_the_erased_take_starts_keeps_its_whole_text()
+    {
+        var f = MakeTakeSvc();
+        var (recording, transcript) = TakeWithTranscript(f);
+        transcript.Segments.Clear();
+        transcript.Segments.Add(new TranscriptSegment
+        {
+            TranscriptId = transcript.Id, Position = 1, StartMs = 8_000, EndMs = 10_000, Text = "một hai",
+            WordStartsMs = [8_000, 9_000], SpeakerLabel = "S1",
+        });
+
+        await f.Service.DeleteTakeAsync(recording.Id, 2, f.Secretary);
+
+        Assert.Equal("một hai", Assert.Single(transcript.Segments).Text);
+    }
+
+    // Where a line sits against the erased take (10 000–15 000 ms): before, inside, spanning it, starting inside and
+    // ending after it, and the four millisecond edges. Words keep the recording's clock until the cut.
+
+    private static TranscriptSegment Line(Transcript transcript, long start, long end, string text, long[] words, string speaker = "S1")
+        => new() { TranscriptId = transcript.Id, Position = transcript.Segments.Count + 1, StartMs = start, EndMs = end, Text = text, WordStartsMs = words, SpeakerLabel = speaker };
+
+    [Fact(DisplayName = "RoomTakeService.DeleteTakeAsync/UTC012: a line wholly before the erased take is left as it was")]
+    [Trait("UTC", "RoomTakeService.DeleteTakeAsync/UTC012")]
+    [Trait("Trait", "UTC")]
+    public async Task DeleteTake_a_line_wholly_before_the_erased_take_is_left_as_it_was()
+    {
+        var f = MakeTakeSvc();
+        var (recording, transcript) = TakeWithTranscript(f);
+        transcript.Segments.Clear();
+        transcript.Segments.Add(Line(transcript, 2_000, 6_000, "một hai ba", [2_000, 3_000, 5_000]));
+
+        await f.Service.DeleteTakeAsync(recording.Id, 2, f.Secretary);
+
+        var line = Assert.Single(transcript.Segments);
+        Assert.Equal("một hai ba", line.Text);
+        Assert.Equal((2_000L, 6_000L), (line.StartMs, line.EndMs));
+        Assert.Equal([2_000L, 3_000L, 5_000L], line.WordStartsMs);
+    }
+
+    [Fact(DisplayName = "RoomTakeService.DeleteTakeAsync/UTC013: a line wholly inside the erased take goes with its voice")]
+    [Trait("UTC", "RoomTakeService.DeleteTakeAsync/UTC013")]
+    [Trait("Trait", "UTC")]
+    public async Task DeleteTake_a_line_wholly_inside_the_erased_take_goes_with_its_voice()
+    {
+        var f = MakeTakeSvc();
+        var (recording, transcript) = TakeWithTranscript(f);
+        transcript.Segments.Clear();
+        transcript.Segments.Add(Line(transcript, 1_000, 4_000, "A", [1_000]));
+        transcript.Segments.Add(Line(transcript, 11_000, 14_000, "bị xóa", [11_000, 12_000], "S2"));
+
+        await f.Service.DeleteTakeAsync(recording.Id, 2, f.Secretary);
+
+        Assert.Equal(["A"], transcript.Segments.Select(s => s.Text));
+        Assert.DoesNotContain(transcript.Speakers, s => s.Label == "S2");
+    }
+
+    [Fact(DisplayName = "RoomTakeService.DeleteTakeAsync/UTC014: a line wholly after the erased take moves up with its words")]
+    [Trait("UTC", "RoomTakeService.DeleteTakeAsync/UTC014")]
+    [Trait("Trait", "UTC")]
+    public async Task DeleteTake_a_line_wholly_after_the_erased_take_moves_up_with_its_words()
+    {
+        var f = MakeTakeSvc();
+        var (recording, transcript) = TakeWithTranscript(f);
+        transcript.Segments.Clear();
+        transcript.Segments.Add(Line(transcript, 17_000, 21_000, "bốn năm sáu", [17_000, 18_000, 20_000]));
+
+        await f.Service.DeleteTakeAsync(recording.Id, 2, f.Secretary);
+
+        var line = Assert.Single(transcript.Segments);
+        Assert.Equal("bốn năm sáu", line.Text);
+        Assert.Equal((12_000L, 16_000L), (line.StartMs, line.EndMs));
+        Assert.Equal([12_000L, 13_000L, 15_000L], line.WordStartsMs);
+    }
+
+    [Fact(DisplayName = "RoomTakeService.DeleteTakeAsync/UTC015: a line spanning the erased take loses only the words said in it")]
+    [Trait("UTC", "RoomTakeService.DeleteTakeAsync/UTC015")]
+    [Trait("Trait", "UTC")]
+    public async Task DeleteTake_a_line_spanning_the_erased_take_loses_only_the_words_said_in_it()
+    {
+        var f = MakeTakeSvc();
+        var (recording, transcript) = TakeWithTranscript(f);
+        transcript.Segments.Clear();
+        transcript.Segments.Add(Line(transcript, 8_000, 17_000, "một hai ba bốn năm sáu", [8_000, 9_000, 10_000, 12_000, 15_000, 16_000]));
+
+        await f.Service.DeleteTakeAsync(recording.Id, 2, f.Secretary);
+
+        var line = Assert.Single(transcript.Segments);
+        Assert.Equal("một hai năm sáu", line.Text);
+        Assert.Equal([8_000L, 9_000L, 10_000L, 11_000L], line.WordStartsMs);
+    }
+
+    [Fact(DisplayName = "RoomTakeService.DeleteTakeAsync/UTC016: a line starting inside the erased take keeps the words said after it")]
+    [Trait("UTC", "RoomTakeService.DeleteTakeAsync/UTC016")]
+    [Trait("Trait", "UTC")]
+    public async Task DeleteTake_a_line_starting_inside_the_erased_take_keeps_the_words_said_after_it()
+    {
+        var f = MakeTakeSvc();
+        var (recording, transcript) = TakeWithTranscript(f);
+        transcript.Segments.Clear();
+        transcript.Segments.Add(Line(transcript, 13_000, 17_000, "một hai ba bốn", [13_000, 14_000, 15_000, 16_000]));
+
+        await f.Service.DeleteTakeAsync(recording.Id, 2, f.Secretary);
+
+        var line = Assert.Single(transcript.Segments);
+        Assert.Equal("ba bốn", line.Text);
+        Assert.Equal(10_000L, line.StartMs);
+    }
+
+    [Fact(DisplayName = "RoomTakeService.DeleteTakeAsync/UTC017: a line starting one millisecond before the erased take loses the words said in it")]
+    [Trait("UTC", "RoomTakeService.DeleteTakeAsync/UTC017")]
+    [Trait("Trait", "UTC")]
+    public async Task DeleteTake_a_line_starting_one_millisecond_before_the_erased_take_loses_the_words_said_in_it()
+    {
+        var f = MakeTakeSvc();
+        var (recording, transcript) = TakeWithTranscript(f);
+        transcript.Segments.Clear();
+        transcript.Segments.Add(Line(transcript, 9_999, 11_000, "một hai", [9_999, 10_500]));
+
+        await f.Service.DeleteTakeAsync(recording.Id, 2, f.Secretary);
+
+        Assert.Equal("một", Assert.Single(transcript.Segments).Text);
+    }
+
+    [Fact(DisplayName = "RoomTakeService.DeleteTakeAsync/UTC018: a line starting exactly where the erased take starts goes with it")]
+    [Trait("UTC", "RoomTakeService.DeleteTakeAsync/UTC018")]
+    [Trait("Trait", "UTC")]
+    public async Task DeleteTake_a_line_starting_exactly_where_the_erased_take_starts_goes_with_it()
+    {
+        var f = MakeTakeSvc();
+        var (recording, transcript) = TakeWithTranscript(f);
+        transcript.Segments.Clear();
+        transcript.Segments.Add(Line(transcript, 10_000, 12_000, "bị xóa", [10_000, 11_000], "S2"));
+
+        await f.Service.DeleteTakeAsync(recording.Id, 2, f.Secretary);
+
+        Assert.Empty(transcript.Segments);
+        Assert.DoesNotContain(transcript.Speakers, s => s.Label == "S2");
+    }
+
+    [Fact(DisplayName = "RoomTakeService.DeleteTakeAsync/UTC019: a line starting one millisecond before the erased take ends keeps the words said after it")]
+    [Trait("UTC", "RoomTakeService.DeleteTakeAsync/UTC019")]
+    [Trait("Trait", "UTC")]
+    public async Task DeleteTake_a_line_starting_one_millisecond_before_the_erased_take_ends_keeps_the_words_said_after_it()
+    {
+        var f = MakeTakeSvc();
+        var (recording, transcript) = TakeWithTranscript(f);
+        transcript.Segments.Clear();
+        transcript.Segments.Add(Line(transcript, 14_999, 16_000, "một hai", [14_999, 15_500]));
+
+        await f.Service.DeleteTakeAsync(recording.Id, 2, f.Secretary);
+
+        Assert.Equal("hai", Assert.Single(transcript.Segments).Text);
+    }
+
+    [Fact(DisplayName = "RoomTakeService.DeleteTakeAsync/UTC020: a line starting exactly where the erased take ends is kept whole and moved up")]
+    [Trait("UTC", "RoomTakeService.DeleteTakeAsync/UTC020")]
+    [Trait("Trait", "UTC")]
+    public async Task DeleteTake_a_line_starting_exactly_where_the_erased_take_ends_is_kept_whole_and_moved_up()
+    {
+        var f = MakeTakeSvc();
+        var (recording, transcript) = TakeWithTranscript(f);
+        transcript.Segments.Clear();
+        transcript.Segments.Add(Line(transcript, 15_000, 16_000, "một hai", [15_000, 15_500]));
+
+        await f.Service.DeleteTakeAsync(recording.Id, 2, f.Secretary);
+
+        var line = Assert.Single(transcript.Segments);
+        Assert.Equal("một hai", line.Text);
+        Assert.Equal((10_000L, 11_000L), (line.StartMs, line.EndMs));
+    }
+
+    /// <summary>What the summary reads, over one recording's transcript as the take service left it.</summary>
+    private sealed class TranscriptOnlyQuery(Recording recording, Transcript transcript) : IMeetingTranscriptQuery
+    {
+        public Task<bool> IsHybridAsync(Guid meetingId, CancellationToken ct) => Task.FromResult(false);
+
+        public Task<IReadOnlyList<SpokenClip>> ListClipsAsync(Guid meetingId, CancellationToken ct)
+            => Task.FromResult<IReadOnlyList<SpokenClip>>([]);
+
+        public Task<IReadOnlyList<TranscribedRecording>> ListRecordingsAsync(Guid meetingId, CancellationToken ct)
+            => Task.FromResult<IReadOnlyList<TranscribedRecording>>([new(recording.Id, recording.Takes, recording.CreatedAt, transcript.Id)]);
+
+        public Task<IReadOnlyDictionary<string, string?>> ListSpeakerNamesAsync(Guid transcriptId, CancellationToken ct)
+            => Task.FromResult<IReadOnlyDictionary<string, string?>>(transcript.Speakers.ToDictionary(s => s.Label, string? (s) => null));
+
+        public Task<IReadOnlyList<SpokenSegment>> ListSegmentsAsync(Guid transcriptId, CancellationToken ct)
+            => Task.FromResult<IReadOnlyList<SpokenSegment>>([.. transcript.Segments.Where(s => s.Text != "").OrderBy(s => s.Position)
+                .Select(s => new SpokenSegment(s.Id, s.StartMs, s.EndMs, s.Text, s.SpeakerLabel))]);
     }
 
     private sealed record CombinedSvc(FakeRecordingRepository Recordings, FakeSpeechClipRepository Clips,

@@ -29,7 +29,7 @@ Agent đọc [AGENTS.md](AGENTS.md) trước — cấu trúc sheet, cách viết
 
 **Cả 5.2 và 5.2.2 sinh từ `cases/`** (nhóm thống nhất ngày 20/11/2026; bản 1.2 làm tay — 13 sheet, 411 case `XXX_IT01` — đã bỏ, ID cũ không còn). Kết quả chạy test ghi vào JSON (`round1`, `date1`, `tester1`…) chứ không gõ vào Excel, vì mỗi lần `build` workbook được dựng lại từ file mẫu.
 
-Số case trong `cases/` đã đồng bộ đánh số Feature theo Report 3 (`FE-01` → `FE-15`; bỏ placeholder `UC-69`), ánh xạ đầy đủ UC/BR ID mới và gắn ngày chạy test theo cuối từng Iteration của Report 2: API `817` case (`817 Passed`), UI `558` case (`557 Passed, 1 Failed` tại `REC_FT02`), Unit `607` case (`607 Passed`). Mọi vòng mới bắt đầu ở `Pending` cho tới khi chạy thật:
+Số case trong `cases/` đã đồng bộ đánh số Feature theo Report 3 (`FE-01` → `FE-15`; bỏ placeholder `UC-69`), ánh xạ đầy đủ UC/BR ID mới và gắn ngày chạy test theo cuối từng Iteration của Report 2: API `820` case (`817 Passed, 3 Failed` tại `TRANS_API_IT44` → `IT46`, bug SCRUM-284), UI `558` case (`557 Passed, 1 Failed` tại `REC_FT02`), Unit `623` case (`614 Passed, 9 Failed` tại `RoomTake.DeleteTake`, bug SCRUM-284). Mọi vòng mới bắt đầu ở `Pending` cho tới khi chạy thật:
 
 | Feature | Sheet | 5.2 UI | 5.2.2 API |
 |---|---|---:|---:|
@@ -42,13 +42,13 @@ Số case trong `cases/` đã đồng bộ đánh số Feature theo Report 3 (`F
 | FE-07 | Documents | 52 | 93 |
 | FE-08 | Online Room | 54 | 73 |
 | FE-09 | Recording | 48 | 60 |
-| FE-10 | Transcription & Summary | 57 | 90 |
+| FE-10 | Transcription & Summary | 57 | 93 |
 | FE-11 | Voting | 21 | 44 |
 | FE-12 | Minutes | 32 | 52 |
 | FE-13 | Notifications | 24 | 31 |
 | FE-14 | Reporting | 18 | 24 |
 | FE-15 | Calendar | 41 | 51 |
-| | **Tổng** | **558** | **817** |
+| | **Tổng** | **558** | **820** |
 
 Ngày 27/11/2026 bỏ 7 case UI và 11 case API của màn Cấu hình AI ([ADR-0088](../../05-decisions/0088-bo-cau-hinh-ai-chi-dung-may-ai-cua-nhom.md)), thêm 2 case UI, 3 case API và 3 UTC (ở 5.1) cho quy tắc mức Nội bộ ([ADR-0089](../../05-decisions/0089-quy-tac-muc-noi-bo-chan-khach-tai-va-ghi-nhat-ky.md)), đồng thời chạy xác nhận 9 case từng `Pending` còn lại thành `Passed`.
 

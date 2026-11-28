@@ -10,6 +10,7 @@ Mọi thứ phục vụ chạy Round 1 của 5.1 (unit), 5.2 (UI) và 5.2.2 (API
 | [bugs.md](bugs.md) | Bug, nghi bug (cách tái hiện) và quyết định BA/PO của UI Round 1 |
 | [plan-ui.md](plan-ui.md) | Phân việc chạy UI (5.2): nhóm A, AX, H |
 | [plan-api.md](plan-api.md) | Phân việc chạy API (5.2.2) |
+| [gap-integration-derived-data.md](gap-integration-derived-data.md) | Khoảng trống test tích hợp "đổi nguồn, đầu ra dẫn xuất" (từ SCRUM-284) |
 | [prompts.md](prompts.md) | Prompt giao agent và quy tắc chung |
 | [ui-map/](ui-map/README.md) | Bảng ánh xạ AC của `tests/qa/plans/` sang case UI, mỗi Feature một file |
 | [reports/](reports/README.md) | Báo cáo của agent (API theo nhóm Feature, `R1.md` cho UI) |

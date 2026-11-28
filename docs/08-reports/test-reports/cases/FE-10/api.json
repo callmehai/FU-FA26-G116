@@ -1017,6 +1017,81 @@
           "round1": "Passed",
           "date1": "2026-10-31",
           "tester1": "Phạm Gia Khánh"
+        },
+        {
+          "id": "TRANS_API_IT44",
+          "description": "Verify POST /api/meetings/{meetingId}/summary sends the AI nothing said in a take the Secretary erased from the start of the recording.",
+          "procedure": [
+            "Sign in as the meeting Secretary (POST /api/auth/login) and keep the access token.",
+            "Send DELETE /api/recordings/{recordingId}/takes/1\nHeaders: Authorization: Bearer <accessToken>",
+            "Send POST /api/meetings/{meetingId}/summary\nHeaders: Authorization: Bearer <accessToken>",
+            "Read, in the AI server's request log, the meeting text that was sent for this draft."
+          ],
+          "expected": [
+            "Step 2: HTTP 200 with \"code\": \"MSG366\".",
+            "Step 3: HTTP 202 with \"code\": \"MSG384\".",
+            "Step 4: the text sent to the AI holds \"mọi người vào họp\" and \"Lượt ba đây nhé.\", and holds neither \"Lượt một bị xóa đây.\" nor \"Xin chào\": nothing said in the erased take reaches the AI."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member, and a room recording of three takes whose transcript is Completed.",
+            "Active Secretary account of that meeting supplied by QA lead; the AI server is configured and its request log can be read by QA lead.",
+            "The transcript has a line \"Xin chào mọi người vào họp\" placed in take 2 whose first two words (\"Xin chào\") were said at the end of take 1, and a line \"Lượt một bị xóa đây.\" placed in take 1."
+          ],
+          "note": "UC-58 | UC-52d | BR-108 | Defect: SCRUM-284 | Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (What_the_summary_reads_after_the_first_take_is_cut_holds_nothing_said_in_it)",
+          "round1": "Failed",
+          "date1": "2026-11-28",
+          "tester1": "Phạm Gia Khánh"
+        },
+        {
+          "id": "TRANS_API_IT45",
+          "description": "Verify POST /api/meetings/{meetingId}/summary sends the AI nothing said in a middle take the Secretary erased, and no voice heard only in it.",
+          "procedure": [
+            "Sign in as the meeting Secretary (POST /api/auth/login) and keep the access token.",
+            "Send DELETE /api/recordings/{recordingId}/takes/2\nHeaders: Authorization: Bearer <accessToken>",
+            "Send POST /api/meetings/{meetingId}/summary\nHeaders: Authorization: Bearer <accessToken>",
+            "Read, in the AI server's request log, the meeting text that was sent for this draft."
+          ],
+          "expected": [
+            "Step 2: HTTP 200 with \"code\": \"MSG366\".",
+            "Step 3: HTTP 202 with \"code\": \"MSG384\".",
+            "Step 4: the text sent to the AI holds \"Phần này vẫn được giữ lại\" and \"Lượt ba đây nhé.\", and holds neither \"Lượt hai bị xóa đây.\", nor \"Người nói 2\", nor the words \"rồi bỏ\" said in the erased take."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member, and a room recording of three takes whose transcript is Completed.",
+            "Active Secretary account of that meeting supplied by QA lead; the AI server is configured and its request log can be read by QA lead.",
+            "The transcript has a line \"Phần này vẫn được giữ lại rồi bỏ\" placed in take 1 whose last word was said in take 2, and a line \"Lượt hai bị xóa đây.\" by a second voice heard only in take 2."
+          ],
+          "note": "UC-58 | UC-52d | BR-108 | Defect: SCRUM-284 | Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (What_the_summary_reads_after_a_middle_take_is_cut_holds_nothing_said_in_it_and_no_voice_only_heard_in_it)",
+          "round1": "Failed",
+          "date1": "2026-11-28",
+          "tester1": "Phạm Gia Khánh"
+        },
+        {
+          "id": "TRANS_API_IT46",
+          "description": "Verify POST /api/meetings/{meetingId}/summary sends the AI nothing said in the last take the Secretary erased.",
+          "procedure": [
+            "Sign in as the meeting Secretary (POST /api/auth/login) and keep the access token.",
+            "Send DELETE /api/recordings/{recordingId}/takes/3\nHeaders: Authorization: Bearer <accessToken>",
+            "Send POST /api/meetings/{meetingId}/summary\nHeaders: Authorization: Bearer <accessToken>",
+            "Read, in the AI server's request log, the meeting text that was sent for this draft."
+          ],
+          "expected": [
+            "Step 2: HTTP 200 with \"code\": \"MSG366\".",
+            "Step 3: HTTP 202 with \"code\": \"MSG384\".",
+            "Step 4: the text sent to the AI holds \"Phần này vẫn giữ\" and \"Lượt một đây nhé.\", and holds none of \"Lượt ba bị xóa đây.\", \"Người nói 2\" and \"rồi bỏ\"."
+          ],
+          "preconditions": [
+            "Backend running on the test build (GET /api/health answers 200).",
+            "An InPerson meeting in Ended with a Chair, a Secretary and a Member, and a room recording of three takes whose transcript is Completed.",
+            "Active Secretary account of that meeting supplied by QA lead; the AI server is configured and its request log can be read by QA lead.",
+            "The transcript has a line \"Phần này vẫn giữ rồi bỏ\" placed in take 2 whose last two words (\"rồi bỏ\") were said in take 3, and a line \"Lượt ba bị xóa đây.\" by a second voice heard only in take 3."
+          ],
+          "note": "UC-58 | UC-52d | BR-108 | Defect: SCRUM-284 | Automated: tests/TrustCabinet.Web.Tests/Recordings/RoomTakeEndpointTests.cs (What_the_summary_reads_after_the_last_take_is_cut_holds_nothing_said_in_it)",
+          "round1": "Failed",
+          "date1": "2026-11-28",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     },
@@ -1027,7 +1102,7 @@
       ],
       "cases": [
         {
-          "id": "TRANS_API_IT44",
+          "id": "TRANS_API_IT47",
           "description": "Verify GET /api/meetings/{meetingId}/summary shows the Chair or Secretary the state and the readiness of the transcript before any draft exists.",
           "procedure": [
             "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
@@ -1049,7 +1124,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_API_IT45",
+          "id": "TRANS_API_IT48",
           "description": "Verify GET /api/meetings/{meetingId}/summary hides an unreviewed draft from a Member and shows it once it is reviewed.",
           "procedure": [
             "Sign in as the Member of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1072,7 +1147,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_API_IT46",
+          "id": "TRANS_API_IT49",
           "description": "Verify GET /api/meetings/{meetingId}/summary shows the Chair or Secretary a draft that is queued or being written.",
           "procedure": [
             "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
@@ -1102,7 +1177,7 @@
       ],
       "cases": [
         {
-          "id": "TRANS_API_IT47",
+          "id": "TRANS_API_IT50",
           "description": "Verify PUT /api/meetings/{meetingId}/summary saves the three sections and takes the review back.",
           "procedure": [
             "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
@@ -1126,7 +1201,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_API_IT48",
+          "id": "TRANS_API_IT51",
           "description": "Verify PUT /api/meetings/{meetingId}/summary rejects an empty section.",
           "procedure": [
             "Sign in as the Secretary (POST /api/auth/login) and keep the access token.",
@@ -1149,7 +1224,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_API_IT49",
+          "id": "TRANS_API_IT52",
           "description": "Verify PUT /api/meetings/{meetingId}/summary answers 403 for a participant who is neither Chair nor Secretary.",
           "procedure": [
             "Sign in as the Member of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1178,7 +1253,7 @@
       ],
       "cases": [
         {
-          "id": "TRANS_API_IT50",
+          "id": "TRANS_API_IT53",
           "description": "Verify POST /api/meetings/{meetingId}/summary/review marks the draft reviewed so other participants can read it.",
           "procedure": [
             "Sign in as the Chair (POST /api/auth/login) and keep the access token.",
@@ -1202,7 +1277,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_API_IT51",
+          "id": "TRANS_API_IT54",
           "description": "Verify POST /api/meetings/{meetingId}/summary/review answers 403 for a participant who is neither Chair nor Secretary.",
           "procedure": [
             "Sign in as the Member of the meeting (POST /api/auth/login) and keep the access token.",
@@ -1231,7 +1306,7 @@
       ],
       "cases": [
         {
-          "id": "TRANS_API_IT52",
+          "id": "TRANS_API_IT55",
           "description": "Verify GET /api/me/voice shows a person who has not agreed an empty Voice ID with the notice they would agree to.",
           "procedure": [
             "Sign in as the user who never enabled Voice ID (POST /api/auth/login) and keep the access token.",
@@ -1252,7 +1327,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_API_IT53",
+          "id": "TRANS_API_IT56",
           "description": "Verify GET /api/me/voice lists the caller's own samples and never any biometric data.",
           "procedure": [
             "Sign in as the user with Voice ID on and two samples (POST /api/auth/login) and keep the access token.",
@@ -1273,7 +1348,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_API_IT54",
+          "id": "TRANS_API_IT57",
           "description": "Verify GET /api/me/voice shows only the caller's own Voice ID.",
           "procedure": [
             "Sign in as the user A (POST /api/auth/login) and keep the access token.",
@@ -1302,7 +1377,7 @@
       ],
       "cases": [
         {
-          "id": "TRANS_API_IT55",
+          "id": "TRANS_API_IT58",
           "description": "Verify POST /api/me/voice/consent records the person's consent to the current notice.",
           "procedure": [
             "Sign in as the user (POST /api/auth/login) and keep the access token.",
@@ -1323,7 +1398,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_API_IT56",
+          "id": "TRANS_API_IT59",
           "description": "Verify POST /api/me/voice/consent called again keeps the one consent.",
           "procedure": [
             "Sign in as the user already enabled (POST /api/auth/login) and keep the access token.",
@@ -1343,7 +1418,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_API_IT57",
+          "id": "TRANS_API_IT60",
           "description": "Verify POST /api/me/voice/consent refuses a notice version the person did not read.",
           "procedure": [
             "Sign in as the user (POST /api/auth/login) and keep the access token.",
@@ -1365,7 +1440,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_API_IT58",
+          "id": "TRANS_API_IT61",
           "description": "Verify POST /api/me/voice/consent renews an older consent in place and keeps the samples.",
           "procedure": [
             "Sign in as the user whose consent is to notice 1.2 with two samples (POST /api/auth/login) and keep the access token.",
@@ -1387,7 +1462,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_API_IT59",
+          "id": "TRANS_API_IT62",
           "description": "Verify one consent to notice 1.5 covers own and proxy samples; no second consent exists.",
           "procedure": [
             "Sign in as the user (POST /api/auth/login) and keep the access token.",
@@ -1414,7 +1489,7 @@
       ],
       "cases": [
         {
-          "id": "TRANS_API_IT60",
+          "id": "TRANS_API_IT63",
           "description": "Verify DELETE /api/me/voice/consent withdraws consent and erases every sample and machine suggestion of the person.",
           "procedure": [
             "Sign in as the user with Voice ID on, two own samples and one proxy sample a VoiceCollector holder recorded (POST /api/auth/login) and keep the access token.",
@@ -1438,7 +1513,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_API_IT61",
+          "id": "TRANS_API_IT64",
           "description": "Verify DELETE /api/me/voice/consent erases the own and proxy sample sets together.",
           "procedure": [
             "Sign in as the user with one own sample and one proxy sample a VoiceCollector holder recorded (POST /api/auth/login) and keep the access token.",
@@ -1459,7 +1534,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_API_IT62",
+          "id": "TRANS_API_IT65",
           "description": "Verify DELETE /api/me/voice/consent answers 200 even when no consent stands.",
           "procedure": [
             "Sign in as the user who never enabled Voice ID (POST /api/auth/login) and keep the access token.",
@@ -1478,7 +1553,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_API_IT63",
+          "id": "TRANS_API_IT66",
           "description": "Verify after withdrawal no sample can be added by the person or by a collector.",
           "procedure": [
             "Sign in as the user who has just withdrawn (POST /api/auth/login) and keep the access token.",
@@ -1499,7 +1574,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_API_IT64",
+          "id": "TRANS_API_IT67",
           "description": "Verify a withdrawal while the speech worker is matching voices still clears what the worker writes.",
           "procedure": [
             "Sign in as the user with Voice ID on (POST /api/auth/login) and keep the access token.",
@@ -1519,7 +1594,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_API_IT65",
+          "id": "TRANS_API_IT68",
           "description": "Verify turning Voice ID on again after withdrawal restores nothing.",
           "procedure": [
             "Sign in as the user who withdrew earlier (POST /api/auth/login) and keep the access token.",
@@ -1540,7 +1615,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_API_IT66",
+          "id": "TRANS_API_IT69",
           "description": "Verify deactivating an account ends its Voice ID and erases its samples.",
           "procedure": [
             "Sign in as an Administrator (POST /api/auth/login) and keep the access token.",
@@ -1570,7 +1645,7 @@
       ],
       "cases": [
         {
-          "id": "TRANS_API_IT67",
+          "id": "TRANS_API_IT70",
           "description": "Verify POST /api/me/voice/samples stores a valid sample as an encrypted voiceprint.",
           "procedure": [
             "Sign in as the user with Voice ID on (POST /api/auth/login) and keep the access token.",
@@ -1593,7 +1668,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_API_IT68",
+          "id": "TRANS_API_IT71",
           "description": "Verify POST /api/me/voice/samples refuses a person who has not agreed.",
           "procedure": [
             "Sign in as the user without Voice ID consent (POST /api/auth/login) and keep the access token.",
@@ -1614,7 +1689,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_API_IT69",
+          "id": "TRANS_API_IT72",
           "description": "Verify POST /api/me/voice/samples refuses a sixth own sample.",
           "procedure": [
             "Sign in as the user with 5 own samples (POST /api/auth/login) and keep the access token.",
@@ -1635,7 +1710,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_API_IT70",
+          "id": "TRANS_API_IT73",
           "description": "Verify POST /api/me/voice/samples counts only the samples the person recorded.",
           "procedure": [
             "Sign in as the user with 4 own samples and 5 proxy samples a VoiceCollector holder recorded (POST /api/auth/login) and keep the access token.",
@@ -1655,7 +1730,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_API_IT71",
+          "id": "TRANS_API_IT74",
           "description": "Verify POST /api/me/voice/samples rejects a recording that is too short.",
           "procedure": [
             "Sign in as the user with Voice ID on (POST /api/auth/login) and keep the access token.",
@@ -1677,7 +1752,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_API_IT72",
+          "id": "TRANS_API_IT75",
           "description": "Verify POST /api/me/voice/samples rejects a sample that is too quiet or clipped.",
           "procedure": [
             "Sign in as the user with Voice ID on (POST /api/auth/login) and keep the access token.",
@@ -1699,7 +1774,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_API_IT73",
+          "id": "TRANS_API_IT76",
           "description": "Verify POST /api/me/voice/samples rejects a recording with more than one speaker or unreadable audio.",
           "procedure": [
             "Sign in as the user with Voice ID on (POST /api/auth/login) and keep the access token.",
@@ -1722,7 +1797,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_API_IT74",
+          "id": "TRANS_API_IT77",
           "description": "Verify POST /api/me/voice/samples refuses an audio type that is not supported.",
           "procedure": [
             "Sign in as the user with Voice ID on (POST /api/auth/login) and keep the access token.",
@@ -1742,7 +1817,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_API_IT75",
+          "id": "TRANS_API_IT78",
           "description": "Verify POST /api/me/voice/samples refuses a request without a file or that is not multipart.",
           "procedure": [
             "Sign in as the user with Voice ID on (POST /api/auth/login) and keep the access token.",
@@ -1763,7 +1838,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_API_IT76",
+          "id": "TRANS_API_IT79",
           "description": "Verify POST /api/me/voice/samples keeps the recording only under notice 1.1 or later.",
           "procedure": [
             "Sign in as the user whose consent is to notice 1.0 (POST /api/auth/login) and keep the access token.",
@@ -1793,7 +1868,7 @@
       ],
       "cases": [
         {
-          "id": "TRANS_API_IT77",
+          "id": "TRANS_API_IT80",
           "description": "Verify GET /api/me/voice/samples/{sampleId}/audio lets the owner hear their own sample.",
           "procedure": [
             "Sign in as the owner of the sample (POST /api/auth/login) and keep the access token.",
@@ -1814,7 +1889,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_API_IT78",
+          "id": "TRANS_API_IT81",
           "description": "Verify GET /api/me/voice/samples/{sampleId}/audio lets the person hear a sample a collector recorded.",
           "procedure": [
             "Sign in as the person a VoiceCollector holder recorded samples for (POST /api/auth/login) and keep the access token.",
@@ -1833,7 +1908,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_API_IT79",
+          "id": "TRANS_API_IT82",
           "description": "Verify GET /api/me/voice/samples/{sampleId}/audio answers 404 for a sample whose recording was not kept.",
           "procedure": [
             "Sign in as the owner of a sample recorded under notice 1.0 (POST /api/auth/login) and keep the access token.",
@@ -1860,7 +1935,7 @@
       ],
       "cases": [
         {
-          "id": "TRANS_API_IT80",
+          "id": "TRANS_API_IT83",
           "description": "Verify DELETE /api/me/voice/samples/{sampleId} erases one own sample for good.",
           "procedure": [
             "Sign in as the owner of two samples (POST /api/auth/login) and keep the access token.",
@@ -1882,7 +1957,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_API_IT81",
+          "id": "TRANS_API_IT84",
           "description": "Verify DELETE /api/me/voice/samples/{sampleId} also deletes a sample a collector recorded.",
           "procedure": [
             "Sign in as the person a collector recorded for (POST /api/auth/login) and keep the access token.",
@@ -1904,7 +1979,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_API_IT82",
+          "id": "TRANS_API_IT85",
           "description": "Verify DELETE /api/me/voice/samples/{sampleId} answers 404 for someone else's or an unknown sample.",
           "procedure": [
             "Sign in as the another user (POST /api/auth/login) and keep the access token.",
@@ -1932,7 +2007,7 @@
       ],
       "cases": [
         {
-          "id": "TRANS_API_IT83",
+          "id": "TRANS_API_IT86",
           "description": "Verify GET /api/users/{userId}/voice-collection lists the person's consent and every proxy sample taken for them, not their own.",
           "procedure": [
             "Sign in as the collector (POST /api/auth/login) and keep the access token.",
@@ -1956,7 +2031,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_API_IT84",
+          "id": "TRANS_API_IT87",
           "description": "Verify GET /api/users/{userId}/voice-collection answers 403 without the VoiceCollector capability, even to a former Secretary.",
           "procedure": [
             "Sign in as an account whose role does not hold VoiceCollector, including a former Secretary of a meeting (POST /api/auth/login), and keep the access token.",
@@ -1984,7 +2059,7 @@
       ],
       "cases": [
         {
-          "id": "TRANS_API_IT85",
+          "id": "TRANS_API_IT88",
           "description": "Verify POST /api/users/{userId}/voice-collection/samples lets a collector record a consenting person with no meeting and tells the person.",
           "procedure": [
             "Sign in as the collector (POST /api/auth/login) and keep the access token.",
@@ -2009,7 +2084,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_API_IT86",
+          "id": "TRANS_API_IT89",
           "description": "Verify POST /api/users/{userId}/voice-collection/samples refuses a person who has not agreed to the proxy notice.",
           "procedure": [
             "Sign in as the collector (POST /api/auth/login) and keep the access token.",
@@ -2033,7 +2108,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_API_IT87",
+          "id": "TRANS_API_IT90",
           "description": "Verify POST /api/users/{userId}/voice-collection/samples refuses a take the person did not agree to, before the speech worker hears it.",
           "procedure": [
             "Sign in as the collector (POST /api/auth/login) and keep the access token.",
@@ -2065,7 +2140,7 @@
       ],
       "cases": [
         {
-          "id": "TRANS_API_IT88",
+          "id": "TRANS_API_IT91",
           "description": "Verify GET /api/users/{userId}/voice-collection/samples/{sampleId}/audio lets the collector hear any proxy sample of the person and audits the play.",
           "procedure": [
             "Sign in as the collector (POST /api/auth/login) and keep the access token.",
@@ -2087,7 +2162,7 @@
           "tester1": "Phạm Gia Khánh"
         },
         {
-          "id": "TRANS_API_IT89",
+          "id": "TRANS_API_IT92",
           "description": "Verify GET /api/users/{userId}/voice-collection/samples/{sampleId}/audio answers 404 for the person's own sample.",
           "procedure": [
             "Sign in as the collector (POST /api/auth/login) and keep the access token.",
@@ -2116,7 +2191,7 @@
       ],
       "cases": [
         {
-          "id": "TRANS_API_IT90",
+          "id": "TRANS_API_IT93",
           "description": "Verify DELETE /api/users/{userId}/voice-collection/samples/{sampleId} deletes a proxy sample of the person.",
           "procedure": [
             "Sign in as the collector (POST /api/auth/login) and keep the access token.",

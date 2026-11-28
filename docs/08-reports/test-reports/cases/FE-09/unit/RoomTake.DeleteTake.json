@@ -72,6 +72,246 @@
           "round1": "Passed",
           "date1": "2026-10-30",
           "tester1": "Phạm Gia Khánh"
+        },
+        {
+          "id": "UTC005",
+          "preconditions": [
+            "Room recording Available with 3 takes: take 1 at 0 ms for 10,000 ms, take 2 at 10,000 ms for 5,000 ms, take 3 at 15,000 ms for 8,000 ms. Transcript Completed. A line placed in take 1 (8,000-10,000 ms) reads four words; the last two were said in take 2 and sit at the line's edge."
+          ],
+          "inputs": "take 2.",
+          "return": "The line keeps only the two words said in take 1; its word times are cut to match. Today the line keeps all four words.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-52d · BR-108 · Defect: SCRUM-284",
+          "round1": "Failed",
+          "date1": "2026-11-28",
+          "tester1": "Phạm Gia Khánh"
+        },
+        {
+          "id": "UTC006",
+          "preconditions": [
+            "Room recording Available with 3 takes: take 1 at 0 ms for 10,000 ms, take 2 at 10,000 ms for 5,000 ms, take 3 at 15,000 ms for 8,000 ms. Transcript Completed. A line placed at the end of take 1 (9,900-10,000 ms) whose three words were all said in take 2, by a voice heard nowhere else."
+          ],
+          "inputs": "take 2.",
+          "return": "The line is removed together with its voice. Today the line and the voice stay.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-52d · BR-108 · Defect: SCRUM-284",
+          "round1": "Failed",
+          "date1": "2026-11-28",
+          "tester1": "Phạm Gia Khánh"
+        },
+        {
+          "id": "UTC007",
+          "preconditions": [
+            "Room recording Available with 3 takes: take 1 at 0 ms for 10,000 ms, take 2 at 10,000 ms for 5,000 ms, take 3 at 15,000 ms for 8,000 ms. Transcript Completed. Three lines: take 1, a take 2 line ending in words said in take 2 by a second voice, and take 3. The draft of the minutes reads the transcript afterwards."
+          ],
+          "inputs": "take 2.",
+          "return": "The text read for the draft holds no word and no voice from take 2. Today the second voice and its words are still read.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-52d · BR-108 · Defect: SCRUM-284",
+          "round1": "Failed",
+          "date1": "2026-11-28",
+          "tester1": "Phạm Gia Khánh"
+        },
+        {
+          "id": "UTC008",
+          "preconditions": [
+            "Room recording Available with 3 takes: take 1 at 0 ms for 10,000 ms, take 2 at 10,000 ms for 5,000 ms, take 3 at 15,000 ms for 8,000 ms. Transcript Completed. A line placed in take 2 (10,000-14,000 ms) whose first two words were said in take 1."
+          ],
+          "inputs": "take 1.",
+          "return": "The line keeps only the words said in take 2. Today it keeps all of them.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-52d · BR-108 · Defect: SCRUM-284",
+          "round1": "Failed",
+          "date1": "2026-11-28",
+          "tester1": "Phạm Gia Khánh"
+        },
+        {
+          "id": "UTC009",
+          "preconditions": [
+            "Room recording Available with 3 takes: take 1 at 0 ms for 10,000 ms, take 2 at 10,000 ms for 5,000 ms, take 3 at 15,000 ms for 8,000 ms. Transcript Completed. A line placed in take 3 (15,000-20,000 ms) whose first two words were said in take 2."
+          ],
+          "inputs": "take 2.",
+          "return": "The line keeps only the words said in take 3. Today it keeps all of them.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-52d · BR-108 · Defect: SCRUM-284",
+          "round1": "Failed",
+          "date1": "2026-11-28",
+          "tester1": "Phạm Gia Khánh"
+        },
+        {
+          "id": "UTC010",
+          "preconditions": [
+            "Room recording Available with 3 takes: take 1 at 0 ms for 10,000 ms, take 2 at 10,000 ms for 5,000 ms, take 3 at 15,000 ms for 8,000 ms. Transcript Completed. A line wholly in take 3 (16,000-20,000 ms) with two words."
+          ],
+          "inputs": "take 2.",
+          "return": "The line keeps its whole text and moves up by 5,000 ms, words included.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-52d · BR-108",
+          "round1": "Passed",
+          "date1": "2026-11-28",
+          "tester1": "Phạm Gia Khánh"
+        },
+        {
+          "id": "UTC011",
+          "preconditions": [
+            "Room recording Available with 3 takes: take 1 at 0 ms for 10,000 ms, take 2 at 10,000 ms for 5,000 ms, take 3 at 15,000 ms for 8,000 ms. Transcript Completed. A line from 8,000 to 10,000 ms, ending where take 2 starts."
+          ],
+          "inputs": "take 2.",
+          "return": "The line keeps its whole text and its times.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-52d · BR-108",
+          "round1": "Passed",
+          "date1": "2026-11-28",
+          "tester1": "Phạm Gia Khánh"
+        },
+        {
+          "id": "UTC012",
+          "preconditions": [
+            "Room recording Available with 3 takes: take 1 at 0 ms for 10,000 ms, take 2 at 10,000 ms for 5,000 ms, take 3 at 15,000 ms for 8,000 ms. Transcript Completed. A line from 2,000 to 6,000 ms, wholly before take 2, with three words."
+          ],
+          "inputs": "take 2.",
+          "return": "The line is left as it was: text, times and word times.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-52d · BR-108",
+          "round1": "Passed",
+          "date1": "2026-11-28",
+          "tester1": "Phạm Gia Khánh"
+        },
+        {
+          "id": "UTC013",
+          "preconditions": [
+            "Room recording Available with 3 takes: take 1 at 0 ms for 10,000 ms, take 2 at 10,000 ms for 5,000 ms, take 3 at 15,000 ms for 8,000 ms. Transcript Completed. A line from 11,000 to 14,000 ms, wholly inside take 2, by a voice heard only there."
+          ],
+          "inputs": "take 2.",
+          "return": "The line is removed and its voice goes with it.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-52d · BR-108",
+          "round1": "Passed",
+          "date1": "2026-11-28",
+          "tester1": "Phạm Gia Khánh"
+        },
+        {
+          "id": "UTC014",
+          "preconditions": [
+            "Room recording Available with 3 takes: take 1 at 0 ms for 10,000 ms, take 2 at 10,000 ms for 5,000 ms, take 3 at 15,000 ms for 8,000 ms. Transcript Completed. A line from 17,000 to 21,000 ms, wholly after take 2, with three words."
+          ],
+          "inputs": "take 2.",
+          "return": "The line keeps its text and moves up by 5,000 ms, word times included.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Normal",
+          "note": "UC-52d · BR-108",
+          "round1": "Passed",
+          "date1": "2026-11-28",
+          "tester1": "Phạm Gia Khánh"
+        },
+        {
+          "id": "UTC015",
+          "preconditions": [
+            "Room recording Available with 3 takes: take 1 at 0 ms for 10,000 ms, take 2 at 10,000 ms for 5,000 ms, take 3 at 15,000 ms for 8,000 ms. Transcript Completed. A line from 8,000 to 17,000 ms spanning take 2, with six words: two before it, two said inside it, two after it."
+          ],
+          "inputs": "take 2.",
+          "return": "The line keeps the four words said outside take 2 and the word times of the later ones move up. Today it keeps all six.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-52d · BR-108 · Defect: SCRUM-284",
+          "round1": "Failed",
+          "date1": "2026-11-28",
+          "tester1": "Phạm Gia Khánh"
+        },
+        {
+          "id": "UTC016",
+          "preconditions": [
+            "Room recording Available with 3 takes: take 1 at 0 ms for 10,000 ms, take 2 at 10,000 ms for 5,000 ms, take 3 at 15,000 ms for 8,000 ms. Transcript Completed. A line from 13,000 to 17,000 ms that starts inside take 2 and ends in take 3, with four words."
+          ],
+          "inputs": "take 2.",
+          "return": "The two words said in take 3 are kept, and the line starts at 10,000 ms. Today the whole line is removed and the words of take 3 are lost.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Abnormal",
+          "note": "UC-52d · BR-108 · Defect: SCRUM-284",
+          "round1": "Failed",
+          "date1": "2026-11-28",
+          "tester1": "Phạm Gia Khánh"
+        },
+        {
+          "id": "UTC017",
+          "preconditions": [
+            "Room recording Available with 3 takes: take 1 at 0 ms for 10,000 ms, take 2 at 10,000 ms for 5,000 ms, take 3 at 15,000 ms for 8,000 ms. Transcript Completed. A line from 9,999 to 11,000 ms, one millisecond before take 2, with two words: one before the take, one inside it."
+          ],
+          "inputs": "take 2.",
+          "return": "The line keeps the word said before take 2. Today it keeps both.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-52d · BR-108 · Defect: SCRUM-284",
+          "round1": "Failed",
+          "date1": "2026-11-28",
+          "tester1": "Phạm Gia Khánh"
+        },
+        {
+          "id": "UTC018",
+          "preconditions": [
+            "Room recording Available with 3 takes: take 1 at 0 ms for 10,000 ms, take 2 at 10,000 ms for 5,000 ms, take 3 at 15,000 ms for 8,000 ms. Transcript Completed. A line from 10,000 to 12,000 ms, starting exactly where take 2 starts."
+          ],
+          "inputs": "take 2.",
+          "return": "The line is removed and its voice goes with it.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-52d · BR-108",
+          "round1": "Passed",
+          "date1": "2026-11-28",
+          "tester1": "Phạm Gia Khánh"
+        },
+        {
+          "id": "UTC019",
+          "preconditions": [
+            "Room recording Available with 3 takes: take 1 at 0 ms for 10,000 ms, take 2 at 10,000 ms for 5,000 ms, take 3 at 15,000 ms for 8,000 ms. Transcript Completed. A line from 14,999 to 16,000 ms, one millisecond before take 2 ends, with two words: one inside the take, one after it."
+          ],
+          "inputs": "take 2.",
+          "return": "The line keeps the word said after take 2. Today the whole line is removed.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-52d · BR-108 · Defect: SCRUM-284",
+          "round1": "Failed",
+          "date1": "2026-11-28",
+          "tester1": "Phạm Gia Khánh"
+        },
+        {
+          "id": "UTC020",
+          "preconditions": [
+            "Room recording Available with 3 takes: take 1 at 0 ms for 10,000 ms, take 2 at 10,000 ms for 5,000 ms, take 3 at 15,000 ms for 8,000 ms. Transcript Completed. A line from 15,000 to 16,000 ms, starting exactly where take 2 ends."
+          ],
+          "inputs": "take 2.",
+          "return": "The line keeps its whole text and moves up to 10,000 ms.",
+          "exception": "N/A",
+          "log": "N/A",
+          "type": "Boundary",
+          "note": "UC-52d · BR-108",
+          "round1": "Passed",
+          "date1": "2026-11-28",
+          "tester1": "Phạm Gia Khánh"
         }
       ]
     }
